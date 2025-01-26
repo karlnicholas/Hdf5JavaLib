@@ -1,5 +1,6 @@
 package com.github.karlnicholas.hdf5javalib;
 
+import com.github.karlnicholas.hdf5javalib.message.HdfMessage;
 import com.github.karlnicholas.hdf5javalib.message.SymbolTableMessage;
 
 import java.io.IOException;
@@ -8,19 +9,21 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.parseDataObjectHeaderMessages;
+
 public class HdfObjectHeaderV1 {
     private final int version;
     private final int totalHeaderMessages;
     private final long objectReferenceCount;
     private final long objectHeaderSize;
-    private final List<HdfObjectHeader> headerMessages;
+    private final List<HdfMessage> headerMessages;
 
     private HdfObjectHeaderV1(
             int version,
             int totalHeaderMessages,
             long objectReferenceCount,
             long objectHeaderSize,
-            List<HdfObjectHeader> headerMessages
+            List<HdfMessage> headerMessages
     ) {
         this.version = version;
         this.totalHeaderMessages = totalHeaderMessages;
@@ -54,41 +57,23 @@ public class HdfObjectHeaderV1 {
             throw new IllegalArgumentException("Invalid reserved byte in object header: " + reserved);
         }
         int totalHeaderMessages = Short.toUnsignedInt(buffer.getShort());
-        long objectReferenceCount = Integer.toUnsignedLong(buffer.getInt());
-        long objectHeaderSize = Integer.toUnsignedLong(buffer.getInt());
+        int objectReferenceCount = buffer.getInt();
+        int objectHeaderSize = buffer.getInt();
         int reservedInt = buffer.getInt(); // Reserved field (should be 0)
         if (reservedInt != 0) {
             throw new IllegalArgumentException("Invalid reserved field in object header: " + reservedInt);
         }
 
         // Parse header messages
-        List<HdfObjectHeader> headerMessages = new ArrayList<>();
-        long bytesRemaining = objectHeaderSize;
-        for (int i = 0; i < totalHeaderMessages; i++) {
-            if (bytesRemaining <= 0) {
-                break;
-            }
-
-            // Read and parse a header message
-            HdfObjectHeader message = HdfObjectHeader.fromFileChannel(fileChannel, offsetSize, lengthSize);
-            headerMessages.add(message);
-
-            // Adjust bytesRemaining and align to 8-byte boundary
-            int messageSize = 4 + message.getSize(); // 4 bytes for type, size, flags
-            int padding = (8 - (messageSize % 8)) % 8;
-            bytesRemaining -= (messageSize + padding);
-
-            // Skip padding bytes
-            if (padding > 0) {
-                fileChannel.position(fileChannel.position() + padding);
-            }
-        }
+        List<HdfMessage> headerMessages = new ArrayList<>();
+        // Read and parse header messages
+        parseDataObjectHeaderMessages(fileChannel, objectHeaderSize, offsetSize, lengthSize, headerMessages);
 
         return new HdfObjectHeaderV1(version, totalHeaderMessages, objectReferenceCount, objectHeaderSize, headerMessages);
     }
 
     public SymbolTableMessage getHdfSymbolTableMessage() {
-        return (SymbolTableMessage)headerMessages.get(0).getHdfMessage();
+        return (SymbolTableMessage)headerMessages.get(0);
     }
 
     public int getVersion() {
@@ -107,20 +92,18 @@ public class HdfObjectHeaderV1 {
         return objectHeaderSize;
     }
 
-    public List<HdfObjectHeader> getHeaderMessages() {
+    public List<HdfMessage> getHeaderMessages() {
         return headerMessages;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("HdfObjectHeaderV1{")
-                .append("version=").append(version)
-                .append(", totalHeaderMessages=").append(totalHeaderMessages)
-                .append(", objectReferenceCount=").append(objectReferenceCount)
-                .append(", objectHeaderSize=").append(objectHeaderSize)
-                .append(", headerMessages=").append(headerMessages)
-                .append('}');
-        return sb.toString();
+        return "HdfObjectHeaderV1{" +
+                "version=" + version +
+                ", totalHeaderMessages=" + totalHeaderMessages +
+                ", objectReferenceCount=" + objectReferenceCount +
+                ", objectHeaderSize=" + objectHeaderSize +
+                ", headerMessages=" + headerMessages +
+                '}';
     }
 }

@@ -29,7 +29,7 @@ public class HdfObjectHeader {
      * @return A parsed HdfObjectHeader instance.
      * @throws IOException If an I/O error occurs while reading from the FileChannel.
      */
-    public static HdfObjectHeader fromFileChannel(FileChannel fileChannel, int offsetSize, int lengthSize) throws IOException {
+    public static HdfMessage fromFileChannel(FileChannel fileChannel, int offsetSize, int lengthSize) throws IOException {
         // Read the first 10 bytes (type, size, flags, reserved)
         ByteBuffer headerBuffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(headerBuffer);
@@ -47,13 +47,13 @@ public class HdfObjectHeader {
         dataBuffer.flip();
 
         // Parse the message based on its type
-        HdfMessage parsedMessage = null;
         if (type == 0x0011) { // Symbol Table Message
             // Wrap the data bytes in a new ByteBuffer with little-endian order
-            parsedMessage = new SymbolTableMessage().parseHeaderMessage((byte)0, dataBuffer.array(), offsetSize, lengthSize);
+            return new SymbolTableMessage().parseHeaderMessage((byte)0, dataBuffer.array(), offsetSize, lengthSize);
+        } else {
+            throw new IllegalArgumentException("Unknown message type: " + type);
         }
 
-        return new HdfObjectHeader(type, size, flags, parsedMessage);
     }
 
     public int getType() {

@@ -35,28 +35,17 @@ public class HdfUtils {
 
         while (buffer.hasRemaining()) {
             // Header Message Type (2 bytes, little-endian)
-            int messageType = Short.toUnsignedInt(buffer.getShort());
-
-            // Size of Header Message Data (2 bytes, little-endian)
-            int messageDataSize = Short.toUnsignedInt(buffer.getShort());
-
-            // Header Message Flags (1 byte)
+            int type = Short.toUnsignedInt(buffer.getShort());
+            int size = Short.toUnsignedInt(buffer.getShort());
             byte flags = buffer.get();
-
-            // Reserved (3 bytes, should be zero)
-            int reservedBytes = (Byte.toUnsignedInt(buffer.get()) << 16) |
-                    (Byte.toUnsignedInt(buffer.get()) << 8) |
-                    Byte.toUnsignedInt(buffer.get());
-            if (reservedBytes != 0) {
-                throw new IllegalArgumentException("Reserved bytes in Header Message are not zero.");
-            }
+            buffer.position(buffer.position() + 3); // Skip 3 reserved bytes
 
             // Header Message Data
-            byte[] messageData = new byte[messageDataSize];
+            byte[] messageData = new byte[size];
             buffer.get(messageData);
 
             // Add the message to the list
-            headerMessages.add(new HdfDataObjectHeader(messageType, messageDataSize, flags, messageData, offsetSize, lengthSize).getParsedMessage());
+            headerMessages.add(new HdfDataObjectHeader(type, size, flags, messageData, offsetSize, lengthSize).getParsedMessage());
 
         }
     }

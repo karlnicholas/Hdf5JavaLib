@@ -14,8 +14,6 @@ public class HdfDataObjectHeaderPrefixV1 {
     private final int totalHeaderMessages;    // 2 bytes
     private final long objectReferenceCount;  // 4 bytes
     private final long objectHeaderSize;      // 4 bytes
-    CompoundDataType compoundDataType; // Compound type (if applicable)
-
 
     // Constructor for application-defined values
     public HdfDataObjectHeaderPrefixV1(int version, int totalHeaderMessages, long objectReferenceCount, long objectHeaderSize) {
