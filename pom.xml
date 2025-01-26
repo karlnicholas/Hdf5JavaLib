@@ -17,6 +17,11 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.36</version>
+    </dependency>
     <!-- JUnit 5 (Jupiter API for writing tests) -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>

@@ -201,6 +201,9 @@ public class CompoundDataType {
         public int getOffset() {
             return offset;
         }
+        public String getName() {
+            return name;
+        }
     }
 
     public static class FixedPointMember {

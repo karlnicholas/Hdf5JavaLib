@@ -88,22 +88,18 @@ public class HdfReader {
         System.out.println("}");
 
         for (HdfMessage message : dataObjectHeaderMessages) {
-            if ( message instanceof DataTypeMessage) {
-                DataTypeMessage dataTypeMessage = (DataTypeMessage)  message;
+            if (message instanceof DataTypeMessage dataTypeMessage) {
                 // Check if the datatype is Compound
                 if (dataTypeMessage.getDataTypeClass() == 6) {
-                    // Compound datatype
                     compoundDataType = new CompoundDataType(dataTypeMessage, dataTypeMessage.getData());
                 } else {
                     // For other datatype classes, parsing logic will be added later
                     throw new UnsupportedOperationException("Datatype class " + dataTypeMessage.getDataTypeClass() + " not yet implemented.");
                 }
-            } else if ( message instanceof DataLayoutMessage) {
-                DataLayoutMessage dataLayoutMessage = (DataLayoutMessage)  message;
+            } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
                 dataAddress = dataLayoutMessage.getDataAddress().getBigIntegerValue().longValue();
                 dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getBigIntegerValue().longValue();
-            } else if ( message instanceof DataSpaceMessage) {
-                DataSpaceMessage dataSpaceMessage = (DataSpaceMessage)  message;
+            } else if (message instanceof DataSpaceMessage dataSpaceMessage) {
                 dimension = dataSpaceMessage.getDimensions()[0].getBigIntegerValue().longValue();
             }
         }
@@ -144,5 +140,9 @@ public class HdfReader {
 
     public long getDimension() {
         return dimension;
+    }
+
+    public long getDimensionSize() {
+        return dimensionSize;
     }
 }
