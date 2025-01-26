@@ -32,7 +32,7 @@ public class App {
     }
     public static void trySpliterator(FileChannel fileChannel, HdfReader reader) {
 
-        VolumeData hdfDataSource = new VolumeData(reader.getCompoundDataType());
+        HdfDataSource<VolumeData> hdfDataSource = new HdfDataSource(reader.getCompoundDataType(), VolumeData.class);
 
         Spliterator<VolumeData> spliterator = new HdfSpliterator(fileChannel, reader.getDataAddress(), reader.getCompoundDataType().getSize(), reader.getDimension(), hdfDataSource);
 

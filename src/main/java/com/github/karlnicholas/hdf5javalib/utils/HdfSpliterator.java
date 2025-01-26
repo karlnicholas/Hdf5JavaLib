@@ -6,14 +6,14 @@ import java.nio.channels.FileChannel;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
-public class HdfSpliterator<T extends HdfDataSource<T>> implements Spliterator<T> {
+public class HdfSpliterator<T> implements Spliterator<T> {
     private final FileChannel fileChannel;
     private final long recordSize;
     private final long endOffset;
-    private final T hdfDataSource;
     private long currentOffset;
+    private HdfDataSource<T> hdfDataSource;
 
-    public HdfSpliterator(FileChannel fileChannel, long startOffset, long recordSize, long numberOfRecords, T hdfDataSource) {
+    public HdfSpliterator(FileChannel fileChannel, long startOffset, long recordSize, long numberOfRecords, HdfDataSource<T> hdfDataSource) {
         this.fileChannel = fileChannel;
         this.recordSize = recordSize;
         this.currentOffset = startOffset;

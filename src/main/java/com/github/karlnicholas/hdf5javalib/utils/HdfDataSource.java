@@ -3,62 +3,59 @@ package com.github.karlnicholas.hdf5javalib.utils;
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
-public class HdfDataSource<T extends HdfDataSource<T>> {
+public class HdfDataSource<T> {
     private final CompoundDataType compoundDataType;
+    private final Class<T> clazz;
+    private final Map<Field, CompoundDataType.Member> fieldToMemberMap = new HashMap<>();
 
-    public HdfDataSource(CompoundDataType compoundDataType) {
+    public HdfDataSource(CompoundDataType compoundDataType, Class<T> clazz) {
         this.compoundDataType = compoundDataType;
+        this.clazz = clazz;
+
+        // Parse fields and map them to CompoundDataType members
+        for (Field field : clazz.getDeclaredFields()) {
+            field.setAccessible(true);
+
+            compoundDataType.getMembers().stream()
+                    .filter(member -> member.getName().equals(field.getName()))
+                    .findFirst()
+                    .ifPresent(member -> fieldToMemberMap.put(field, member));
+        }
     }
 
     /**
-     * Populates the subclass fields with values derived from the buffer.
+     * Populates a new instance of T with data from the buffer.
      */
-    @SuppressWarnings("unchecked")
     public T populateFromBuffer(ByteBuffer buffer) {
         try {
-            // Create a new instance of the subclass
-            Class<T> clazz = (Class<T>) this.getClass();
-            T instance = clazz.getDeclaredConstructor(CompoundDataType.class).newInstance(compoundDataType);
+            // Create an instance of T
+            T instance = clazz.getDeclaredConstructor().newInstance();
 
-            // Get all declared fields of the subclass
-            Field[] fields = clazz.getDeclaredFields();
+            // Populate fields using the pre-parsed map
+            for (Map.Entry<Field, CompoundDataType.Member> entry : fieldToMemberMap.entrySet()) {
+                Field field = entry.getKey();
+                CompoundDataType.Member member = entry.getValue();
 
-            for (Field field : fields) {
-                field.setAccessible(true);
-                compoundDataType.getMembers().stream().filter(member->member.getName().equals(field.getName())).findFirst().ifPresent(member->{
-                    buffer.position(member.getOffset());
-                    // Example logic: Populate field based on the field name and buffer
-                    if (field.getType() == String.class) {
-                        if ( member.getType() instanceof CompoundDataType.StringMember ) {
-                            String value = ((CompoundDataType.StringMember)member.getType()).getInstance(buffer).getValue();
-                            try {
-                                field.set(instance, value);
-                            } catch (IllegalAccessException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    } else if ( field.getType() == BigInteger.class) {
-                        if ( member.getType() instanceof CompoundDataType.FixedPointMember ) {
-                            BigInteger value = ((CompoundDataType.FixedPointMember)member.getType()).getInstance(buffer).getBigIntegerValue();
-                            try {
-                                field.set(instance, value);
-                            } catch (IllegalAccessException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    }
-                });
+                buffer.position(member.getOffset());
 
-                // Additional logic for other types can be added here
+                if (field.getType() == String.class && member.getType() instanceof CompoundDataType.StringMember) {
+                    String value = ((CompoundDataType.StringMember) member.getType()).getInstance(buffer).getValue();
+                    field.set(instance, value);
+                } else if (field.getType() == BigInteger.class && member.getType() instanceof CompoundDataType.FixedPointMember) {
+                    BigInteger value = ((CompoundDataType.FixedPointMember) member.getType()).getInstance(buffer).getBigIntegerValue();
+                    field.set(instance, value);
+                }
+                // Add more type handling as needed
             }
 
             return instance;
         } catch (Exception e) {
-            throw new RuntimeException("Error populating instance from buffer", e);
+            throw new RuntimeException("Error creating and populating instance of " + clazz.getName(), e);
         }
     }
 }

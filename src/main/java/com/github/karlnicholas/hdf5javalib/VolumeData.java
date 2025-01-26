@@ -2,15 +2,13 @@ package com.github.karlnicholas.hdf5javalib;
 
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.utils.HdfDataSource;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import java.math.BigInteger;
 
 @Getter
 @ToString
-public class VolumeData extends HdfDataSource<VolumeData> {
+public class VolumeData {
     private BigInteger Id;
     private String origCountry;
     private String origSlic;
@@ -29,7 +27,4 @@ public class VolumeData extends HdfDataSource<VolumeData> {
     private BigInteger committedTnt;
     private BigInteger committedDate;
 
-    public VolumeData(CompoundDataType compoundDataType) {
-        super(compoundDataType);
-    }
 }
