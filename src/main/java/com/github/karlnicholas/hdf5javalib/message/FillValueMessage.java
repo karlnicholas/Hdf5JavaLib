@@ -1,6 +1,5 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
-import com.github.karlnicholas.hdf5javalib.HdfDataObjectHeader;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 
 import java.nio.ByteBuffer;

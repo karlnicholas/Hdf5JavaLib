@@ -1,7 +1,5 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
-import com.github.karlnicholas.hdf5javalib.HdfDataObjectHeader;
-
 public class NullMessage implements HdfMessage {
 
     @Override
