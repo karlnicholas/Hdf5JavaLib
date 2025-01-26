@@ -3,9 +3,8 @@ package com.github.karlnicholas.hdf5javalib.utils;
 import com.github.karlnicholas.hdf5javalib.*;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
-import com.github.karlnicholas.hdf5javalib.message.ContinuationMessage;
+import com.github.karlnicholas.hdf5javalib.message.*;
 import com.github.karlnicholas.hdf5javalib.HdfDataObjectHeader;
-import com.github.karlnicholas.hdf5javalib.message.HdfMessage;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -45,8 +44,35 @@ public class HdfUtils {
             buffer.get(messageData);
 
             // Add the message to the list
-            headerMessages.add(new HdfDataObjectHeader(type, size, flags, messageData, offsetSize, lengthSize).getParsedMessage());
+            headerMessages.add(createMessageInstance(type, flags, messageData, offsetSize, lengthSize));
 
+        }
+    }
+
+    public static HdfMessage createMessageInstance(int type, byte flags, byte[] data, int offsetSize, int lengthSize) {
+        switch (type) {
+            case 0:
+                return new NullMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 1:
+                return new DataSpaceMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 3:
+                return new DataTypeMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 5:
+                return new FillValueMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 8:
+                return new DataLayoutMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 12:
+                return new AttributeMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 18:
+                return new ObjectModificationTimeMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 16:
+                return new ContinuationMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 17:
+                return new SymbolTableMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 19:
+                return new BTreeKValuesMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            default:
+                throw new IllegalArgumentException("Unknown message type: " + type);
         }
     }
 
