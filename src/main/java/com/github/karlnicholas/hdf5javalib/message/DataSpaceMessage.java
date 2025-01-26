@@ -58,4 +58,8 @@ public class DataSpaceMessage implements HdfMessage {
                 ", maxDimensions=" + (hasMaxDimensions ? Arrays.toString(maxDimensions) : "Not Present") +
                 '}';
     }
+
+    public HdfFixedPoint[] getDimensions() {
+        return dimensions;
+    }
 }

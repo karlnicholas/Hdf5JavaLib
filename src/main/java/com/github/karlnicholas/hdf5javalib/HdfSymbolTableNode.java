@@ -1,6 +1,9 @@
 package com.github.karlnicholas.hdf5javalib;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,29 +14,44 @@ public class HdfSymbolTableNode {
     private final int numberOfSymbols;
     private final List<HdfSymbolTableEntry> symbolTableEntries;
 
-    public HdfSymbolTableNode(ByteBuffer buffer, int offsetSize) {
+    public HdfSymbolTableNode(String signature, int version, int numberOfSymbols, List<HdfSymbolTableEntry> symbolTableEntries) {
+        this.signature = signature;
+        this.version = version;
+        this.numberOfSymbols = numberOfSymbols;
+        this.symbolTableEntries = symbolTableEntries;
+    }
+
+    public static HdfSymbolTableNode readFromFileChannel(FileChannel fileChannel, int offsetSize) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
+        fileChannel.read(buffer);
+        buffer.flip();
+        String signature; // Should be "SNOD"
+        int version;
+        int numberOfSymbols;
         // Read Signature (4 bytes)
         byte[] signatureBytes = new byte[4];
         buffer.get(signatureBytes);
-        this.signature = new String(signatureBytes, StandardCharsets.US_ASCII);
+        signature = new String(signatureBytes, StandardCharsets.US_ASCII);
         if (!"SNOD".equals(signature)) {
             throw new IllegalArgumentException("Invalid SNOD signature: " + signature);
         }
 
         // Read Version (1 byte)
-        this.version = Byte.toUnsignedInt(buffer.get());
+        version = Byte.toUnsignedInt(buffer.get());
 
         // Skip Reserved Bytes (1 byte)
         buffer.get();
 
         // Read Number of Symbols (2 bytes, little-endian)
-        this.numberOfSymbols = Short.toUnsignedInt(buffer.getShort());
+        numberOfSymbols = Short.toUnsignedInt(buffer.getShort());
 
+        List<HdfSymbolTableEntry> symbolTableEntries;
         // Read Symbol Table Entries
-        this.symbolTableEntries = new ArrayList<>();
+        symbolTableEntries = new ArrayList<>();
         for (int i = 0; i < numberOfSymbols; i++) {
-//            this.symbolTableEntries.add(HdfSymbolTableEntry.fromByteBuffer(buffer, offsetSize));
+            symbolTableEntries.add(HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize));
         }
+        return new HdfSymbolTableNode(signature, version, numberOfSymbols, symbolTableEntries);
     }
 
     public String getSignature() {

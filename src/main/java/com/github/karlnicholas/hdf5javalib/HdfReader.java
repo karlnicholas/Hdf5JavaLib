@@ -1,16 +1,17 @@
 package com.github.karlnicholas.hdf5javalib;
 
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
-import com.github.karlnicholas.hdf5javalib.message.ContinuationMessage;
-import com.github.karlnicholas.hdf5javalib.message.DataTypeMessage;
-import com.github.karlnicholas.hdf5javalib.message.HdfMessage;
+import com.github.karlnicholas.hdf5javalib.message.*;
 import com.github.karlnicholas.hdf5javalib.utils.BtreeV1GroupNode;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.*;
@@ -79,9 +80,6 @@ public class HdfReader {
             this.localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, dataSize, dataSegmentAddress);
             System.out.println(localHeapContents);
 
-            BtreeV1GroupNode btreeV1GroupNode = parseBTreeAndLocalHeap(bTree, localHeapContents);
-            System.out.println(btreeV1GroupNode);
-
             // Parse the Data Object Header Prefix next in line
             System.out.print(fileChannel.position() + " = ");
             dataObjectHeaderPrefix = HdfDataObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
@@ -99,6 +97,9 @@ public class HdfReader {
             dataObjectHeaderMessages.forEach(hm->System.out.println("\t" + hm));
             System.out.println("}");
 
+            long dataAddress = 0;
+            long dimensionSize = 0;
+            long dimension = 0;
             for (HdfMessage message : dataObjectHeaderMessages) {
                 if ( message instanceof DataTypeMessage) {
                     DataTypeMessage dataTypeMessage = (DataTypeMessage)  message;
@@ -110,15 +111,44 @@ public class HdfReader {
                         // For other datatype classes, parsing logic will be added later
                         throw new UnsupportedOperationException("Datatype class " + dataTypeMessage.getDataTypeClass() + " not yet implemented.");
                     }
+                } else if ( message instanceof DataLayoutMessage) {
+                    DataLayoutMessage dataLayoutMessage = (DataLayoutMessage)  message;
+                    dataAddress = dataLayoutMessage.getDataAddress().getBigIntegerValue().longValue();
+                    dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getBigIntegerValue().longValue();
+                } else if ( message instanceof DataSpaceMessage) {
+                    DataSpaceMessage dataSpaceMessage = (DataSpaceMessage)  message;
+                    dimension = dataSpaceMessage.getDimensions()[0].getBigIntegerValue().longValue();
                 }
             }
+            BtreeV1GroupNode btreeV1GroupNode = parseBTreeAndLocalHeap(bTree, localHeapContents);
+            System.out.println(btreeV1GroupNode);
+            fileChannel.position(btreeV1GroupNode.getDataAddress().getBigIntegerValue().longValue());
+            HdfSymbolTableNode hdfSymbolTableNode = HdfSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
+            System.out.println(hdfSymbolTableNode);
+
             System.out.println("DataType{" + compoundDataType + "\r\n}");
-//            parseDataHeaderV1(buffer);
-//            parseDataHeaderV1(buffer);
-//
-//            if (isNextSignature(buffer, "SNOD")) {
-//                parseSymbolTableNode(buffer);
-//            }
+
+            Object[] data = new Object[17];
+            fileChannel.position(dataAddress);
+            for ( int i=0; i <dimension; ++i) {
+                ByteBuffer dataBuffer = ByteBuffer.allocate(compoundDataType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
+                fileChannel.read(dataBuffer);
+                dataBuffer.flip();
+                for ( int column = 0; column < compoundDataType.getNumberOfMembers(); ++column ) {
+                    CompoundDataType.Member member = compoundDataType.getMembers().get(column);
+                    dataBuffer.position(member.getOffset());
+                    if (member.getType() instanceof CompoundDataType.StringMember) {
+                        data[column] = ((CompoundDataType.StringMember) member.getType()).getInstance(dataBuffer);
+                    } else if (member.getType() instanceof CompoundDataType.FixedPointMember) {
+                        data[column] = ((CompoundDataType.FixedPointMember) member.getType()).getInstance(dataBuffer);
+                    } else if (member.getType() instanceof CompoundDataType.FloatingPointMember) {
+                        data[column] = ((CompoundDataType.FloatingPointMember) member.getType()).getInstance(dataBuffer);
+                    } else {
+                        throw new UnsupportedOperationException("Member type " + member.getType() + " not yet implemented.");
+                    }
+                }
+                System.out.println(Arrays.toString(data));
+            }
 
             System.out.println("Parsing complete. NEXT: " + fileChannel.position());
         }

@@ -30,6 +30,14 @@ public class CompoundDataType {
         return value;
     }
 
+    public int getSize() {
+        return size;
+    }
+
+    public List<Member> getMembers() {
+        return members;
+    }
+
     private void readFromByteBuffer(ByteBuffer buffer) {
         this.members = new ArrayList<>();
         buffer.position(8);
@@ -39,7 +47,7 @@ public class CompoundDataType {
             // Align to 8-byte boundary
             alignBufferTo8ByteBoundary(buffer, name.length() + 1);
 
-            long offset = Integer.toUnsignedLong(buffer.getInt());
+            int offset = buffer.getInt();
             int dimensionality = Byte.toUnsignedInt(buffer.get());
             buffer.position(buffer.position() + 3); // Skip reserved bytes
             int dimensionPermutation = buffer.getInt();
@@ -154,15 +162,19 @@ public class CompoundDataType {
         return builder.toString();
     }
 
-    private static class Member {
+    public int getNumberOfMembers() {
+        return numberOfMembers;
+    }
+
+    public static class Member {
         private final String name;
-        private final long offset;
+        private final int offset;
         private final int dimensionality;
         private final int dimensionPermutation;
         private final int[] dimensionSizes;
         private final Object type;
 
-        public Member(String name, long offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, Object type) {
+        public Member(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, Object type) {
             this.name = name;
             this.offset = offset;
             this.dimensionality = dimensionality;
@@ -181,6 +193,13 @@ public class CompoundDataType {
                     ", dimensionSizes=" + java.util.Arrays.toString(dimensionSizes) +
                     ", type=" + type +
                     '}';
+        }
+
+        public Object getType() {
+            return type;
+        }
+        public int getOffset() {
+            return offset;
         }
     }
 
@@ -215,6 +234,10 @@ public class CompoundDataType {
                     ", bitPrecision=" + bitPrecision +
                     '}';
         }
+
+        public HdfFixedPoint getInstance(ByteBuffer dataBuffer) {
+            return HdfFixedPoint.readFromByteBuffer(dataBuffer, (int)size, signed);
+        }
     }
 
     public static class StringMember {
@@ -230,6 +253,12 @@ public class CompoundDataType {
             this.paddingDescription = paddingDescription;
             this.charSet = charSet;
             this.charSetDescription = charSetDescription;
+        }
+
+        public HdfString getInstance(ByteBuffer dataBuffer) {
+            byte[] bytes = new byte[(int)size];
+            dataBuffer.get(bytes);
+            return new HdfString(bytes, paddingType > 0 , charSet > 0 );
         }
 
         @Override
@@ -255,6 +284,14 @@ public class CompoundDataType {
             this.exponentBits = exponentBits;
             this.mantissaBits = mantissaBits;
             this.bigEndian = bigEndian;
+        }
+
+        public Object getInstance(ByteBuffer dataBuffer) {
+            return new Object();
+        }
+
+        public long getSize() {
+            return size;
         }
 
         @Override

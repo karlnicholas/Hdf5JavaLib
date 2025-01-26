@@ -19,10 +19,19 @@ public class HdfString {
             throw new IllegalArgumentException("Null-terminated string must end with a null byte");
         }
 
-        this.bytes = Arrays.copyOf(bytes, bytes.length);
+        int zeroLocation = 0;
+        for(byte b : bytes) {
+            if (b != 0) {
+                zeroLocation++;
+            } else {
+                break;
+            }
+        }
+        if ( nullTerminated) zeroLocation++;
+        this.bytes = Arrays.copyOf(bytes, Math.min(bytes.length, zeroLocation));
         this.nullTerminated = nullTerminated;
         this.utf8Encoding = utf8Encoding;
-        this.length = bytes.length;
+        this.length = this.bytes.length;
     }
 
     // Constructor without HDF metadata parameters, defaults based on HDF specification
