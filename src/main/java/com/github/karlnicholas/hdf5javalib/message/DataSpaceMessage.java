@@ -7,46 +7,72 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 public class DataSpaceMessage implements HdfMessage {
-    private int version; // Version of the dataspace message
-    private int dimensionality; // Number of dimensions (rank)
-    private int flags;
-    private HdfFixedPoint[] dimensions; // Sizes of each dimension
-    private HdfFixedPoint[] maxDimensions; // Maximum sizes of each dimension, if specified
-    private boolean hasMaxDimensions; // Indicates if max dimensions are included
+    private final int version; // Version of the dataspace message
+    private final int dimensionality; // Number of dimensions (rank)
+    private final int flags;
+    private final HdfFixedPoint[] dimensions; // Sizes of each dimension
+    private final HdfFixedPoint[] maxDimensions; // Maximum sizes of each dimension, if specified
+    private final boolean hasMaxDimensions; // Indicates if max dimensions are included
 
-    @Override
-    public HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    // Constructor to initialize all fields
+    public DataSpaceMessage(
+            int version,
+            int dimensionality,
+            int flags,
+            HdfFixedPoint[] dimensions,
+            HdfFixedPoint[] maxDimensions,
+            boolean hasMaxDimensions
+    ) {
+        this.version = version;
+        this.dimensionality = dimensionality;
+        this.flags = flags;
+        this.dimensions = dimensions;
+        this.maxDimensions = maxDimensions;
+        this.hasMaxDimensions = hasMaxDimensions;
+    }
+
+    /**
+     * Parses the header message and returns a constructed instance.
+     *
+     * @param flags      Flags associated with the message.
+     * @param data       Byte array containing the header message data.
+     * @param offsetSize Size of offsets in bytes.
+     * @param lengthSize Size of lengths in bytes.
+     * @return A fully constructed `DataSpaceMessage` instance.
+     */
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+
         // Read the version (1 byte)
-        this.version = Byte.toUnsignedInt(buffer.get());
+        int version = Byte.toUnsignedInt(buffer.get());
 
         // Read the rank (1 byte)
-        this.dimensionality = Byte.toUnsignedInt(buffer.get());
+        int dimensionality = Byte.toUnsignedInt(buffer.get());
 
-        // Check for flags (1 byte, in later versions of the spec)
-        this.flags = Byte.toUnsignedInt(buffer.get());
-        // Skip reserved bytes (if applicable, based on version)
-        byte[] reserved = new byte[5];
-        buffer.get(reserved);
+        // Read flags (1 byte)
+        int parsedFlags = Byte.toUnsignedInt(buffer.get());
+
+        // Skip reserved bytes (5 bytes)
+        buffer.position(buffer.position() + 5);
 
         // Read dimensions
-        this.dimensions = new HdfFixedPoint[dimensionality];
+        HdfFixedPoint[] dimensions = new HdfFixedPoint[dimensionality];
         for (int i = 0; i < dimensionality; i++) {
             dimensions[i] = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
         }
 
         // Check for maximum dimensions flag and read if present
-        this.hasMaxDimensions = (flags & 0x01) != 0; // Bit 0 of flags indicates max dimensions
-        if (this.hasMaxDimensions) {
-            this.maxDimensions = new HdfFixedPoint[dimensionality];
+        boolean hasMaxDimensions = (parsedFlags & 0x01) != 0; // Bit 0 of flags indicates max dimensions
+        HdfFixedPoint[] maxDimensions = null;
+        if (hasMaxDimensions) {
+            maxDimensions = new HdfFixedPoint[dimensionality];
             for (int i = 0; i < dimensionality; i++) {
                 maxDimensions[i] = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
             }
-        } else {
-            this.maxDimensions = null;
         }
 
-        return this;
+        // Return a constructed instance of DataSpaceMessage
+        return new DataSpaceMessage(version, dimensionality, parsedFlags, dimensions, maxDimensions, hasMaxDimensions);
     }
 
     @Override
@@ -59,7 +85,28 @@ public class DataSpaceMessage implements HdfMessage {
                 '}';
     }
 
+    // Getters for all fields
+    public int getVersion() {
+        return version;
+    }
+
+    public int getDimensionality() {
+        return dimensionality;
+    }
+
+    public int getFlags() {
+        return flags;
+    }
+
     public HdfFixedPoint[] getDimensions() {
         return dimensions;
+    }
+
+    public HdfFixedPoint[] getMaxDimensions() {
+        return maxDimensions;
+    }
+
+    public boolean hasMaxDimensions() {
+        return hasMaxDimensions;
     }
 }

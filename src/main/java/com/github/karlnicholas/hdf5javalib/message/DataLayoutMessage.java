@@ -6,119 +6,92 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-/**
- * Represents a Data Layout Message in an HDF5 file.
- * Header Message Name: Data Layout
- * Header Message Type: 0x0008
- */
 public class DataLayoutMessage implements HdfMessage {
-    private int version; // Version of the data layout message
-    private int layoutClass; // Layout class (e.g., compact, contiguous, chunked)
-    private HdfFixedPoint dataAddress; // Address of the data in the file (if applicable)
-    private HdfFixedPoint[] dimensionSizes; // Sizes of each dimension (if applicable)
-    private int compactDataSize; // Size of compact data (for compact storage only)
-    private byte[] compactData; // The compact data itself (for compact storage only)
-    private HdfFixedPoint datasetElementSize; // Size of each dataset element (for chunked storage only)
+    private final int version;
+    private final int layoutClass;
+    private final HdfFixedPoint dataAddress;
+    private final HdfFixedPoint[] dimensionSizes;
+    private final int compactDataSize;
+    private final byte[] compactData;
+    private final HdfFixedPoint datasetElementSize;
 
-    @Override
-    public HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    // Constructor to initialize all fields
+    public DataLayoutMessage(
+            int version,
+            int layoutClass,
+            HdfFixedPoint dataAddress,
+            HdfFixedPoint[] dimensionSizes,
+            int compactDataSize,
+            byte[] compactData,
+            HdfFixedPoint datasetElementSize
+    ) {
+        this.version = version;
+        this.layoutClass = layoutClass;
+        this.dataAddress = dataAddress;
+        this.dimensionSizes = dimensionSizes;
+        this.compactDataSize = compactDataSize;
+        this.compactData = compactData;
+        this.datasetElementSize = datasetElementSize;
+    }
+
+    /**
+     * Parses the header message and returns a constructed instance.
+     *
+     * @param flags      Flags associated with the message (not used here).
+     * @param data       Byte array containing the header message data.
+     * @param offsetSize Size of offsets in bytes.
+     * @param lengthSize Size of lengths in bytes (not used here).
+     * @return A fully constructed `DataLayoutMessage` instance.
+     */
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+
         // Read version (1 byte)
-        this.version = Byte.toUnsignedInt(buffer.get());
+        int version = Byte.toUnsignedInt(buffer.get());
         if (version < 1 || version > 3) {
             throw new IllegalArgumentException("Unsupported Data Layout Message version: " + version);
         }
 
         // Read layout class (1 byte)
-        this.layoutClass = Byte.toUnsignedInt(buffer.get());
+        int layoutClass = Byte.toUnsignedInt(buffer.get());
 
-        // Parse layout-specific fields based on the layout class
+        // Initialize fields
+        HdfFixedPoint dataAddress = null;
+        HdfFixedPoint[] dimensionSizes = null;
+        int compactDataSize = 0;
+        byte[] compactData = null;
+        HdfFixedPoint datasetElementSize = null;
+
+        // Parse based on layout class
         switch (layoutClass) {
             case 0: // Compact Storage
-                parseCompactLayout(buffer);
+                compactDataSize = Short.toUnsignedInt(buffer.getShort()); // Compact data size (2 bytes)
+                compactData = new byte[compactDataSize];
+                buffer.get(compactData); // Read compact data
                 break;
 
             case 1: // Contiguous Storage
-                parseContiguousLayout(buffer, offsetSize);
+                dataAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false); // Data address
+                dimensionSizes = new HdfFixedPoint[1];
+                dimensionSizes[0] = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false); // Dimension size
                 break;
 
             case 2: // Chunked Storage
-                parseChunkedLayout(buffer, offsetSize);
+                dataAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false); // Data address
+                int numDimensions = Byte.toUnsignedInt(buffer.get()); // Number of dimensions (1 byte)
+                dimensionSizes = new HdfFixedPoint[numDimensions];
+                for (int i = 0; i < numDimensions; i++) {
+                    dimensionSizes[i] = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false); // Dimension sizes
+                }
+                datasetElementSize = HdfFixedPoint.readFromByteBuffer(buffer, 4, false); // Dataset element size (4 bytes)
                 break;
 
             default:
                 throw new IllegalArgumentException("Unsupported layout class: " + layoutClass);
         }
 
-        return this;
-    }
-
-    /**
-     * Parses the fields for compact storage layout.
-     *
-     * @param buffer The ByteBuffer containing the data.
-     */
-    private void parseCompactLayout(ByteBuffer buffer) {
-        // Read Compact Data Size (2 bytes)
-        this.compactDataSize = Short.toUnsignedInt(buffer.getShort());
-
-        // Read Compact Data (variable size)
-        this.compactData = new byte[compactDataSize];
-        buffer.get(this.compactData);
-    }
-
-    /**
-     * Parses the fields for contiguous storage layout.
-     *
-     * @param buffer     The ByteBuffer containing the data.
-     * @param offsetSize The size of the offsets in bytes (e.g., 4 or 8 bytes).
-     */
-    private void parseContiguousLayout(ByteBuffer buffer, int offsetSize) {
-        // Read Data Address
-        this.dataAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-
-        // Read Dimension Sizes
-        this.dimensionSizes = new HdfFixedPoint[1]; // Version 3 defines only one dimension size for contiguous storage
-        this.dimensionSizes[0] = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-    }
-
-    /**
-     * Parses the fields for chunked storage layout.
-     *
-     * @param buffer     The ByteBuffer containing the data.
-     * @param offsetSize The size of the offsets in bytes (e.g., 4 or 8 bytes).
-     */
-    private void parseChunkedLayout(ByteBuffer buffer, int offsetSize) {
-        // Read Data Address
-        // Read Data Address
-        this.dataAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-
-        // Read Dimension Sizes
-        int numDimensions = Byte.toUnsignedInt(buffer.get());
-        this.dimensionSizes = new HdfFixedPoint[numDimensions];
-        for (int i = 0; i < numDimensions; i++) {
-            this.dimensionSizes[i] = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-        }
-
-        // Read Dataset Element Size (4 bytes)
-        this.datasetElementSize = HdfFixedPoint.readFromByteBuffer(buffer, 4, false);
-    }
-
-    /**
-     * Reads an offset from the buffer based on the specified offset size.
-     *
-     * @param buffer     The ByteBuffer containing the data.
-     * @param offsetSize The size of the offset (4 bytes for 32-bit, 8 bytes for 64-bit).
-     * @return The parsed offset as a long.
-     */
-    private long readOffset(ByteBuffer buffer, int offsetSize) {
-        if (offsetSize == 4) {
-            return Integer.toUnsignedLong(buffer.getInt());
-        } else if (offsetSize == 8) {
-            return buffer.getLong();
-        } else {
-            throw new IllegalArgumentException("Unsupported offset size: " + offsetSize);
-        }
+        // Return a constructed instance of DataLayoutMessage
+        return new DataLayoutMessage(version, layoutClass, dataAddress, dimensionSizes, compactDataSize, compactData, datasetElementSize);
     }
 
     @Override
@@ -134,7 +107,7 @@ public class DataLayoutMessage implements HdfMessage {
                 '}';
     }
 
-    // Getters for the fields
+    // Getters for all fields
     public int getVersion() {
         return version;
     }

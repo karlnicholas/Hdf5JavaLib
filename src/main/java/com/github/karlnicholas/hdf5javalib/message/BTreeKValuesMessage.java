@@ -18,18 +18,24 @@ public class BTreeKValuesMessage implements HdfMessage {
     private int groupInternalNodeK;
     private int groupLeafNodeK;
 
-    @Override
-    public BTreeKValuesMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public BTreeKValuesMessage(int version, int indexedStorageInternalNodeK, int groupInternalNodeK, int groupLeafNodeK) {
+        this.version = version;
+        this.indexedStorageInternalNodeK = indexedStorageInternalNodeK;
+        this.groupInternalNodeK = groupInternalNodeK;
+        this.groupLeafNodeK = groupLeafNodeK;
+    }
+
+    public static BTreeKValuesMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Parse the message fields from the buffer
-        this.version = Byte.toUnsignedInt(buffer.get());
-        if (this.version != 0) {
+        int version = Byte.toUnsignedInt(buffer.get());
+        if (version != 0) {
             throw new IllegalArgumentException("Unsupported B-tree K Values Message version: " + version);
         }
-        this.indexedStorageInternalNodeK = Short.toUnsignedInt(buffer.getShort());
-        this.groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
-        this.groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
-        return this;
+        int indexedStorageInternalNodeK = Short.toUnsignedInt(buffer.getShort());
+        int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
+        int groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
+        return new BTreeKValuesMessage(version, indexedStorageInternalNodeK, groupInternalNodeK, groupLeafNodeK);
     }
 
     public int getVersion() {

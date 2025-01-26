@@ -18,7 +18,7 @@ public class HdfObjectHeaderV1 {
     private final long objectHeaderSize;
     private final List<HdfMessage> headerMessages;
 
-    private HdfObjectHeaderV1(
+    public HdfObjectHeaderV1(
             int version,
             int totalHeaderMessages,
             long objectReferenceCount,

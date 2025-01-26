@@ -10,13 +10,18 @@ public class ContiguousLayoutMessage implements HdfMessage {
     private HdfFixedPoint address;
     private HdfFixedPoint size;
 
-    @Override
-    public HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public ContiguousLayoutMessage(int version, HdfFixedPoint address, HdfFixedPoint size) {
+        this.version = version;
+        this.address = address;
+        this.size = size;
+    }
+
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        this.version = Byte.toUnsignedInt(buffer.get());
-        this.address = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-        this.size = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
-        return this;
+        int version = Byte.toUnsignedInt(buffer.get());
+        HdfFixedPoint address = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
+        HdfFixedPoint size = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
+        return new ContiguousLayoutMessage(version, address, size);
     }
 
     @Override

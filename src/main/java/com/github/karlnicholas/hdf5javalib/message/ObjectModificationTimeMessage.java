@@ -4,23 +4,38 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class ObjectModificationTimeMessage implements HdfMessage {
-    private int version;
-    private long secondsAfterEpoch;
+    private final int version;
+    private final long secondsAfterEpoch;
 
-    @Override
-    public HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    // Constructor to initialize all fields
+    public ObjectModificationTimeMessage(int version, long secondsAfterEpoch) {
+        this.version = version;
+        this.secondsAfterEpoch = secondsAfterEpoch;
+    }
+
+    /**
+     * Parses the header message and returns a constructed instance.
+     *
+     * @param flags      Flags associated with the message (not used here).
+     * @param data       Byte array containing the header message data.
+     * @param offsetSize Size of offsets in bytes (not used here).
+     * @param lengthSize Size of lengths in bytes (not used here).
+     * @return A fully constructed `ObjectModificationTimeMessage` instance.
+     */
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Parse version
-        this.version = Byte.toUnsignedInt(buffer.get());
+        int version = Byte.toUnsignedInt(buffer.get());
 
         // Skip reserved byte
         buffer.get();
 
         // Parse seconds after UNIX epoch
-        this.secondsAfterEpoch = Integer.toUnsignedLong(buffer.getInt());
+        long secondsAfterEpoch = Integer.toUnsignedLong(buffer.getInt());
 
-        return this;
+        // Return a constructed instance of ObjectModificationTimeMessage
+        return new ObjectModificationTimeMessage(version, secondsAfterEpoch);
     }
 
     public int getVersion() {

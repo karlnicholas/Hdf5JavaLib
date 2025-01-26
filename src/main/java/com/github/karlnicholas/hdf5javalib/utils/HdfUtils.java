@@ -51,30 +51,19 @@ public class HdfUtils {
     }
 
     public static HdfMessage createMessageInstance(int type, byte flags, byte[] data, int offsetSize, int lengthSize) {
-        switch (type) {
-            case 0:
-                return new NullMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 1:
-                return new DataSpaceMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 3:
-                return new DataTypeMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 5:
-                return new FillValueMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 8:
-                return new DataLayoutMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 12:
-                return new AttributeMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 18:
-                return new ObjectModificationTimeMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 16:
-                return new ContinuationMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 17:
-                return new SymbolTableMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 19:
-                return new BTreeKValuesMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            default:
-                throw new IllegalArgumentException("Unknown message type: " + type);
-        }
+        return switch (type) {
+            case 0 -> NullMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 1 -> DataSpaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 3 -> DataTypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 5 -> FillValueMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 8 -> DataLayoutMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 12 -> AttributeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 18 -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 16 -> ContinuationMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 17 -> SymbolTableMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 19 -> BTreeKValuesMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            default -> throw new IllegalArgumentException("Unknown message type: " + type);
+        };
     }
 
     // TODO: fix recursion

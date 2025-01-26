@@ -9,13 +9,17 @@ public class ContinuationMessage implements HdfMessage {
     private HdfFixedPoint continuationOffset; // Offset of the continuation block
     private HdfFixedPoint continuationSize;   // Size of the continuation block
 
-    @Override
-    public ContinuationMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public ContinuationMessage(final HdfFixedPoint continuationOffset, final HdfFixedPoint continuationSize) {
+        this.continuationOffset = continuationOffset;
+        this.continuationSize = continuationSize;
+    }
+
+    public static ContinuationMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Parse the continuation offset and size
-        this.continuationOffset = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-        this.continuationSize = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
-        return this;
+        HdfFixedPoint continuationOffset = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
+        HdfFixedPoint continuationSize = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
+        return new ContinuationMessage(continuationOffset, continuationSize);
     }
 
     public HdfFixedPoint getContinuationOffset() {

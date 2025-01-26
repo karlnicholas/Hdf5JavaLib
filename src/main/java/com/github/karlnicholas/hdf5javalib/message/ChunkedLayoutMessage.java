@@ -12,17 +12,23 @@ public class ChunkedLayoutMessage implements HdfMessage {
     private long[] chunkSizes;
     private HdfFixedPoint address;
 
-    @Override
-    public HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public ChunkedLayoutMessage(int version, int rank, long[] chunkSizes, HdfFixedPoint address) {
+        this.version = version;
+        this.rank = rank;
+        this.chunkSizes = chunkSizes;
+        this.address = address;
+    }
+
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        this.version = Byte.toUnsignedInt(buffer.get());
-        this.rank = Byte.toUnsignedInt(buffer.get());
-        this.chunkSizes = new long[rank];
+        int version = Byte.toUnsignedInt(buffer.get());
+        int rank = Byte.toUnsignedInt(buffer.get());
+        long[] chunkSizes = new long[rank];
         for (int i = 0; i < rank; i++) {
-            this.chunkSizes[i] = Integer.toUnsignedLong(buffer.getInt());
+            chunkSizes[i] = Integer.toUnsignedLong(buffer.getInt());
         }
-        this.address = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-        return this;
+        HdfFixedPoint address = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
+        return new ChunkedLayoutMessage(version, rank, chunkSizes, address);
     }
 
     @Override
