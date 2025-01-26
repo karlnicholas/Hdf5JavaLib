@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib;
 
-import com.github.karlnicholas.hdf5javalib.message.HdfSymbolTableMessage;
+import com.github.karlnicholas.hdf5javalib.message.SymbolTableMessage;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -13,14 +13,14 @@ public class HdfObjectHeaderV1 {
     private final int totalHeaderMessages;
     private final long objectReferenceCount;
     private final long objectHeaderSize;
-    private final List<HdfHeaderMessage> headerMessages;
+    private final List<HdfObjectHeader> headerMessages;
 
     private HdfObjectHeaderV1(
             int version,
             int totalHeaderMessages,
             long objectReferenceCount,
             long objectHeaderSize,
-            List<HdfHeaderMessage> headerMessages
+            List<HdfObjectHeader> headerMessages
     ) {
         this.version = version;
         this.totalHeaderMessages = totalHeaderMessages;
@@ -62,7 +62,7 @@ public class HdfObjectHeaderV1 {
         }
 
         // Parse header messages
-        List<HdfHeaderMessage> headerMessages = new ArrayList<>();
+        List<HdfObjectHeader> headerMessages = new ArrayList<>();
         long bytesRemaining = objectHeaderSize;
         for (int i = 0; i < totalHeaderMessages; i++) {
             if (bytesRemaining <= 0) {
@@ -70,7 +70,7 @@ public class HdfObjectHeaderV1 {
             }
 
             // Read and parse a header message
-            HdfHeaderMessage message = HdfHeaderMessage.fromFileChannel(fileChannel, offsetSize, lengthSize);
+            HdfObjectHeader message = HdfObjectHeader.fromFileChannel(fileChannel, offsetSize, lengthSize);
             headerMessages.add(message);
 
             // Adjust bytesRemaining and align to 8-byte boundary
@@ -87,8 +87,8 @@ public class HdfObjectHeaderV1 {
         return new HdfObjectHeaderV1(version, totalHeaderMessages, objectReferenceCount, objectHeaderSize, headerMessages);
     }
 
-    public HdfSymbolTableMessage getHdfSymbolTableMessage() {
-        return (HdfSymbolTableMessage)headerMessages.get(0).getHdfMessage();
+    public SymbolTableMessage getHdfSymbolTableMessage() {
+        return (SymbolTableMessage)headerMessages.get(0).getHdfMessage();
     }
 
     public int getVersion() {
@@ -107,7 +107,7 @@ public class HdfObjectHeaderV1 {
         return objectHeaderSize;
     }
 
-    public List<HdfHeaderMessage> getHeaderMessages() {
+    public List<HdfObjectHeader> getHeaderMessages() {
         return headerMessages;
     }
 

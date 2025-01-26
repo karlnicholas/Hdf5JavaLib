@@ -40,7 +40,7 @@ public class HdfDataObjectHeader {
             case 16: // Continuation message
                 return new ContinuationMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 17:
-                return new HdfSymbolTableMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
+                return new SymbolTableMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 19: // Continuation message
                 return new BTreeKValuesMessage().parseHeaderMessage(flags, data, offsetSize, lengthSize);
             default:

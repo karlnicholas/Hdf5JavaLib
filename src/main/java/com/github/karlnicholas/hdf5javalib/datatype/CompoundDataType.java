@@ -183,4 +183,88 @@ public class CompoundDataType {
                     '}';
         }
     }
+
+    public static class FixedPointMember {
+        private final long size;
+        private final boolean bigEndian;
+        private final boolean loPad;
+        private final boolean hiPad;
+        private final boolean signed;
+        private final int bitOffset;
+        private final int bitPrecision;
+
+        public FixedPointMember(long size, boolean bigEndian, boolean loPad, boolean hiPad, boolean signed, int bitOffset, int bitPrecision) {
+            this.size = size;
+            this.bigEndian = bigEndian;
+            this.loPad = loPad;
+            this.hiPad = hiPad;
+            this.signed = signed;
+            this.bitOffset = bitOffset;
+            this.bitPrecision = bitPrecision;
+        }
+
+        @Override
+        public String toString() {
+            return "FixedPointMember{" +
+                    "size=" + size +
+                    ", bigEndian=" + bigEndian +
+                    ", loPad=" + loPad +
+                    ", hiPad=" + hiPad +
+                    ", signed=" + signed +
+                    ", bitOffset=" + bitOffset +
+                    ", bitPrecision=" + bitPrecision +
+                    '}';
+        }
+    }
+
+    public static class StringMember {
+        private final long size;
+        private final int paddingType;
+        private final String paddingDescription;
+        private final int charSet;
+        private final String charSetDescription;
+
+        public StringMember(long size, int paddingType, String paddingDescription, int charSet, String charSetDescription) {
+            this.size = size;
+            this.paddingType = paddingType;
+            this.paddingDescription = paddingDescription;
+            this.charSet = charSet;
+            this.charSetDescription = charSetDescription;
+        }
+
+        @Override
+        public String toString() {
+            return "StringMember{" +
+                    "size=" + size +
+                    ", paddingType=" + paddingType +
+                    ", paddingDescription='" + paddingDescription + '\'' +
+                    ", charSet=" + charSet +
+                    ", charSetDescription='" + charSetDescription + '\'' +
+                    '}';
+        }
+    }
+
+    public static class FloatingPointMember {
+        private final long size;
+        private final int exponentBits;
+        private final int mantissaBits;
+        private final boolean bigEndian;
+
+        public FloatingPointMember(long size, int exponentBits, int mantissaBits, boolean bigEndian) {
+            this.size = size;
+            this.exponentBits = exponentBits;
+            this.mantissaBits = mantissaBits;
+            this.bigEndian = bigEndian;
+        }
+
+        @Override
+        public String toString() {
+            return "FloatingPointMember{" +
+                    "size=" + size +
+                    ", exponentBits=" + exponentBits +
+                    ", mantissaBits=" + mantissaBits +
+                    ", bigEndian=" + bigEndian +
+                    '}';
+        }
+    }
 }

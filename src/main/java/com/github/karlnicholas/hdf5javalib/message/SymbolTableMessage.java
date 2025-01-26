@@ -5,22 +5,18 @@ import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class HdfSymbolTableMessage implements HdfMessage {
+public class SymbolTableMessage implements HdfMessage {
     private HdfFixedPoint bTreeAddress;
     private HdfFixedPoint localHeapAddress;
 
     /**
-     * Parses a Symbol Table Message from a ByteBuffer.
      *
-     * @param buffer     The ByteBuffer containing the Symbol Table Message data.
-     * @param offsetSize The size of offsets specified in the superblock (in bytes).
-     * @return A parsed HdfSymbolTableMessage instance.
+     * @param flags flags
+     * @param data data
+     * @param offsetSize offsetSize
+     * @param lengthSize lengthSize
+     * @return {@link HdfMessage}
      */
-//    public static HdfSymbolTableMessage fromByteBuffer(ByteBuffer buffer, int offsetSize) {
-//        HdfFixedPoint bTreeAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-//        HdfFixedPoint localHeapAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-//        return new HdfSymbolTableMessage(bTreeAddress, localHeapAddress);
-//    }
     @Override
     public HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
@@ -40,7 +36,7 @@ public class HdfSymbolTableMessage implements HdfMessage {
 
     @Override
     public String toString() {
-        return "HdfSymbolTableMessage{" +
+        return "SymbolTableMessage{" +
                 "bTreeAddress=" + bTreeAddress.getBigIntegerValue() +
                 ", localHeapAddress=" + localHeapAddress.getBigIntegerValue() +
                 '}';

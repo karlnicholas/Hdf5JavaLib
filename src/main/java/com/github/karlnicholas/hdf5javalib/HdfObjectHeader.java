@@ -1,20 +1,20 @@
 package com.github.karlnicholas.hdf5javalib;
 
 import com.github.karlnicholas.hdf5javalib.message.HdfMessage;
-import com.github.karlnicholas.hdf5javalib.message.HdfSymbolTableMessage;
+import com.github.karlnicholas.hdf5javalib.message.SymbolTableMessage;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 
-public class HdfHeaderMessage {
+public class HdfObjectHeader {
     private final int type;
     private final int size;
     private final int flags;
     private final HdfMessage hdfMessage;
 
-    public HdfHeaderMessage(int type, int size, int flags, HdfMessage hdfMessage) {
+    public HdfObjectHeader(int type, int size, int flags, HdfMessage hdfMessage) {
         this.type = type;
         this.size = size;
         this.flags = flags;
@@ -22,14 +22,14 @@ public class HdfHeaderMessage {
     }
 
     /**
-     * Parses an HdfHeaderMessage from a FileChannel.
+     * Parses an HdfObjectHeader from a FileChannel.
      *
      * @param fileChannel The FileChannel positioned at the start of the Header Message.
      * @param offsetSize  The size of offsets specified in the superblock (in bytes).
-     * @return A parsed HdfHeaderMessage instance.
+     * @return A parsed HdfObjectHeader instance.
      * @throws IOException If an I/O error occurs while reading from the FileChannel.
      */
-    public static HdfHeaderMessage fromFileChannel(FileChannel fileChannel, int offsetSize, int lengthSize) throws IOException {
+    public static HdfObjectHeader fromFileChannel(FileChannel fileChannel, int offsetSize, int lengthSize) throws IOException {
         // Read the first 10 bytes (type, size, flags, reserved)
         ByteBuffer headerBuffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(headerBuffer);
@@ -50,10 +50,10 @@ public class HdfHeaderMessage {
         HdfMessage parsedMessage = null;
         if (type == 0x0011) { // Symbol Table Message
             // Wrap the data bytes in a new ByteBuffer with little-endian order
-            parsedMessage = new HdfSymbolTableMessage().parseHeaderMessage((byte)0, dataBuffer.array(), offsetSize, lengthSize);
+            parsedMessage = new SymbolTableMessage().parseHeaderMessage((byte)0, dataBuffer.array(), offsetSize, lengthSize);
         }
 
-        return new HdfHeaderMessage(type, size, flags, parsedMessage);
+        return new HdfObjectHeader(type, size, flags, parsedMessage);
     }
 
     public int getType() {
@@ -75,7 +75,7 @@ public class HdfHeaderMessage {
     @Override
     public String toString() {
         String parsedMessageString = (hdfMessage != null) ? hdfMessage.toString() : "Message Type Unknown";
-        return "HdfHeaderMessage{" +
+        return "HdfObjectHeader{" +
                 "type=" + type +
                 ", size=" + size +
                 ", flags=" + flagsToString() +
