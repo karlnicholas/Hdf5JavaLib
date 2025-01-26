@@ -12,6 +12,7 @@ public class HdfFixedPoint {
     private final int size;
     private final boolean signed;
     private final boolean littleEndian;
+    private final boolean undefined;
 
     // Constructor for BigInteger
     public HdfFixedPoint(BigInteger value, boolean littleEndian) {
@@ -19,6 +20,26 @@ public class HdfFixedPoint {
         this.signed = value.signum() < 0;
         this.littleEndian = littleEndian;
         this.bytes = toSizedByteArray(value, this.size, littleEndian);
+        this.undefined = false;
+    }
+
+    public HdfFixedPoint(boolean undefined, byte[] bytes, int size) {
+        validateSize(size);
+        this.bytes = Arrays.copyOf(bytes, bytes.length);
+        this.size = size;
+        this.undefined = undefined;
+        this.signed = false;
+        this.littleEndian = false;
+    }
+
+    // Private constructor for internal usage
+    private HdfFixedPoint(byte[] bytes, int size, boolean signed, boolean littleEndian) {
+        validateSize(size);
+        this.bytes = Arrays.copyOf(bytes, bytes.length);
+        this.size = size;
+        this.signed = signed;
+        this.littleEndian = littleEndian;
+        this.undefined = false;
     }
 
     // Constructor for FileChannel
@@ -61,19 +82,29 @@ public class HdfFixedPoint {
 
     // Factory method for undefined values
     public static HdfFixedPoint undefined(int size) {
-        validateSize(size);
         byte[] undefinedBytes = new byte[size];
         Arrays.fill(undefinedBytes, (byte) 0xFF);
-        return new HdfFixedPoint(undefinedBytes, size, false, true);
+        return new HdfFixedPoint(true, undefinedBytes, size);
     }
 
-    // Private constructor for internal usage
-    private HdfFixedPoint(byte[] bytes, int size, boolean signed, boolean littleEndian) {
-        validateSize(size);
-        this.bytes = Arrays.copyOf(bytes, bytes.length);
-        this.size = size;
-        this.signed = signed;
-        this.littleEndian = littleEndian;
+    // Factory method for undefined values
+    public static HdfFixedPoint undefined(ByteBuffer buffer, int size) {
+        byte[] undefinedBytes = new byte[size];
+        buffer.get(undefinedBytes);
+        return new HdfFixedPoint(true, undefinedBytes, size);
+    }
+
+    public static boolean checkUndefined(ByteBuffer buffer, int sizeOfOffsets) {
+        buffer.mark();
+        byte[] undefinedBytes = new byte[sizeOfOffsets];
+        buffer.get(undefinedBytes);
+        buffer.reset();
+        for (int i = 0; i < undefinedBytes.length; i++) {
+            if (undefinedBytes[i] != (byte) 0xFF) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // Determine size based on bit length
@@ -111,15 +142,7 @@ public class HdfFixedPoint {
 
     // Check if the value is undefined
     public boolean isUndefined() {
-        if ( signed == true ) {
-            return false;
-        }
-        for (byte b : bytes) {
-            if ((b & 0xFF) != 0xFF) {
-                return false;
-            }
-        }
-        return true;
+        return undefined;
     }
 
     // Get HDF5 data type

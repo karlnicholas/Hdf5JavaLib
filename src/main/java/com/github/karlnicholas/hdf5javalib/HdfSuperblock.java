@@ -108,9 +108,9 @@ public class HdfSuperblock {
 
         // Parse addresses using HdfFixedPoint
         HdfFixedPoint baseAddress = HdfFixedPoint.readFromByteBuffer(buffer, sizeOfOffsets, false);
-        HdfFixedPoint freeSpaceAddress = HdfFixedPoint.readFromByteBuffer(buffer, sizeOfOffsets, false);
-        HdfFixedPoint endOfFileAddress = HdfFixedPoint.readFromByteBuffer(buffer, sizeOfOffsets, false);
-        HdfFixedPoint driverInformationAddress = HdfFixedPoint.readFromByteBuffer(buffer, sizeOfOffsets, false);
+        HdfFixedPoint freeSpaceAddress = HdfFixedPoint.checkUndefined(buffer, sizeOfOffsets) ? HdfFixedPoint.undefined(buffer, sizeOfOffsets) : HdfFixedPoint.readFromByteBuffer(buffer, sizeOfOffsets, false);
+        HdfFixedPoint endOfFileAddress = HdfFixedPoint.checkUndefined(buffer, sizeOfOffsets) ? HdfFixedPoint.undefined(buffer, sizeOfOffsets) : HdfFixedPoint.readFromByteBuffer(buffer, sizeOfOffsets, false);
+        HdfFixedPoint driverInformationAddress = HdfFixedPoint.checkUndefined(buffer, sizeOfOffsets) ? HdfFixedPoint.undefined(buffer, sizeOfOffsets) : HdfFixedPoint.readFromByteBuffer(buffer, sizeOfOffsets, false);
 
         return new HdfSuperblock(
                 version,

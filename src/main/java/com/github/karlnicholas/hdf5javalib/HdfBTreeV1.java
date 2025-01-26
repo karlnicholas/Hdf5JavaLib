@@ -62,8 +62,8 @@ public class HdfBTreeV1 {
         int entriesUsed = Short.toUnsignedInt(buffer.getShort());
 
         // Read sibling addresses
-        HdfFixedPoint leftSiblingAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-        HdfFixedPoint rightSiblingAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
+        HdfFixedPoint leftSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
+        HdfFixedPoint rightSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
 
         // Allocate buffer for keys and child pointers
         int keyPointerBufferSize = (entriesUsed * (lengthSize + offsetSize)) + lengthSize;

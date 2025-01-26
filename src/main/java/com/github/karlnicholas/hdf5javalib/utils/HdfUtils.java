@@ -1,6 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.utils;
 
 import com.github.karlnicholas.hdf5javalib.*;
+import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 import com.github.karlnicholas.hdf5javalib.message.*;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.List;
 
 public class HdfUtils {
@@ -87,6 +89,7 @@ public class HdfUtils {
         // Parse the continuation block messages
         parseDataObjectHeaderMessages(fileChannel, continuationSize, offsetSize, lengthSize, headerMessages);
     }
+
     public static BtreeV1GroupNode parseBTreeAndLocalHeap(HdfBTreeV1 bTreeNode, HdfLocalHeapContents localHeap) {
         if (bTreeNode.getNodeType() != 0 || bTreeNode.getNodeLevel() != 0) {
             throw new UnsupportedOperationException("Only nodeType=0 and nodeLevel=0 are supported.");
@@ -112,6 +115,31 @@ public class HdfUtils {
             }
         }
         return new BtreeV1GroupNode(objectName, childAddress);
+    }
+
+    public static void printData(FileChannel fileChannel, CompoundDataType compoundDataType, long dataAddress, long dimension ) throws IOException {
+        Object[] data = new Object[17];
+        fileChannel.position(dataAddress);
+        for ( int i=0; i <dimension; ++i) {
+            ByteBuffer dataBuffer = ByteBuffer.allocate(compoundDataType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
+            fileChannel.read(dataBuffer);
+            dataBuffer.flip();
+            for ( int column = 0; column < compoundDataType.getNumberOfMembers(); ++column ) {
+                CompoundDataType.Member member = compoundDataType.getMembers().get(column);
+                dataBuffer.position(member.getOffset());
+                if (member.getType() instanceof CompoundDataType.StringMember) {
+                    data[column] = ((CompoundDataType.StringMember) member.getType()).getInstance(dataBuffer);
+                } else if (member.getType() instanceof CompoundDataType.FixedPointMember) {
+                    data[column] = ((CompoundDataType.FixedPointMember) member.getType()).getInstance(dataBuffer);
+                } else if (member.getType() instanceof CompoundDataType.FloatingPointMember) {
+                    data[column] = ((CompoundDataType.FloatingPointMember) member.getType()).getInstance(dataBuffer);
+                } else {
+                    throw new UnsupportedOperationException("Member type " + member.getType() + " not yet implemented.");
+                }
+            }
+            System.out.println(Arrays.toString(data));
+        }
+
     }
 
 }
