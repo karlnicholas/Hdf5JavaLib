@@ -13,6 +13,13 @@ public class CompoundDataType {
     private final int size;
     private List<Member> members;     // Member definitions
 
+    // New application-level constructor
+    public CompoundDataType(int numberOfMembers, int size, List<Member> members) {
+        this.numberOfMembers = numberOfMembers;
+        this.size = size;
+        this.members = new ArrayList<>(members); // Deep copy to avoid external modification
+    }
+
     public CompoundDataType(DataTypeMessage dataTypeMessage, byte[] data) {
         this.numberOfMembers = extractNumberOfMembersFromBitSet(dataTypeMessage.getClassBitField());
         this.size = dataTypeMessage.getSize().getBigIntegerValue().intValue();

@@ -23,7 +23,7 @@ public class App {
             try(FileInputStream fis = new FileInputStream(new File(filePath))) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
+//                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
 //                trySpliterator(channel, reader);
             }
         } catch (IOException e) {

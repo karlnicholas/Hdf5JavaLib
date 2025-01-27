@@ -80,8 +80,10 @@ public class DataSpaceMessage implements HdfMessage {
         return "DataSpaceMessage{" +
                 "version=" + version +
                 ", dimensionality=" + dimensionality +
+                ", flags=" + flags +
                 ", dimensions=" + Arrays.toString(dimensions) +
                 ", maxDimensions=" + (hasMaxDimensions ? Arrays.toString(maxDimensions) : "Not Present") +
+                ", hasMaxDimensions=" + hasMaxDimensions +
                 '}';
     }
 

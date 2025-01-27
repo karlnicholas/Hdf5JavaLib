@@ -1,12 +1,12 @@
 package com.github.karlnicholas.hdf5javalib;
 
+import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.message.HdfMessage;
-import com.github.karlnicholas.hdf5javalib.message.SymbolTableMessage;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
+import com.github.karlnicholas.hdf5javalib.message.*;
 
 import java.math.BigInteger;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class HdfConstruction {
     // level 0
@@ -25,7 +25,12 @@ public class HdfConstruction {
 
     public void buildHfd() {
         buildSuperblock();
-        buildRooTSymbolTableEntry();
+        buildRootSymbolTableEntry();
+        buildObjectHeader();
+        buildBTree();
+        buildLocalHeap();
+        buildLocalHeapContents();
+        buildDataObjectHeaderPrefix();
     }
 
     private void buildSuperblock() {
@@ -53,7 +58,7 @@ public class HdfConstruction {
         );
     }
 
-    private void buildRooTSymbolTableEntry() {
+    private void buildRootSymbolTableEntry() {
         // Create specific HdfFixedPoint instances for the required addresses
         HdfFixedPoint linkNameOffset = new HdfFixedPoint(BigInteger.ZERO, true); // Link name offset = 0
         HdfFixedPoint objectHeaderAddress = new HdfFixedPoint(BigInteger.valueOf(96), true); // Object header address = 96
@@ -79,13 +84,199 @@ public class HdfConstruction {
         SymbolTableMessage symbolTableMessage = new SymbolTableMessage(bTreeAddress, localHeapAddress);
 
         // Create the HdfObjectHeaderV1 instance
-        HdfObjectHeaderV1 objectHeader = new HdfObjectHeaderV1(
+        objectHeader = new HdfObjectHeaderV1(
                 1, // Version
                 1, // Total header messages
                 1, // Object reference count
                 24, // Object header size
                 Collections.singletonList(symbolTableMessage) // List of header messages
         );
-
     }
+
+    private void buildBTree() {
+        // Define the fixed values for the HdfBTreeV1 instance
+        String signature = "TREE";
+        int nodeType = 0;
+        int nodeLevel = 0;
+        int entriesUsed = 1;
+
+        // Create undefined HdfFixedPoint values for sibling addresses
+        HdfFixedPoint leftSiblingAddress = HdfFixedPoint.undefined(8);
+        HdfFixedPoint rightSiblingAddress = HdfFixedPoint.undefined(8);
+
+        // Create the childPointers and keys
+        List<HdfFixedPoint> childPointers = Collections.singletonList(new HdfFixedPoint(BigInteger.valueOf(1880), true));
+        List<HdfFixedPoint> keys = new ArrayList<>();
+        keys.add(new HdfFixedPoint(BigInteger.valueOf(0), true)); // First key
+        keys.add(new HdfFixedPoint(BigInteger.valueOf(8), true)); // Final key
+
+        // Construct the HdfBTreeV1 instance
+        bTree = new HdfBTreeV1(
+                signature,
+                nodeType,
+                nodeLevel,
+                entriesUsed,
+                leftSiblingAddress,
+                rightSiblingAddress,
+                childPointers,
+                keys
+        );
+    }
+
+    private void buildLocalHeap() {
+        // Define the fixed values for the HdfLocalHeap instance
+        String signature = "HEAP";
+        int version = 0;
+
+        // Create the HdfFixedPoint values
+        HdfFixedPoint dataSegmentSize = new HdfFixedPoint(BigInteger.valueOf(88), true); // Little-endian
+        HdfFixedPoint freeListOffset = new HdfFixedPoint(BigInteger.valueOf(16), true); // Little-endian
+        HdfFixedPoint dataSegmentAddress = new HdfFixedPoint(BigInteger.valueOf(712), true); // Little-endian
+
+        // Construct the HdfLocalHeap instance
+        localHeap = new HdfLocalHeap(
+                signature,
+                version,
+                dataSegmentSize,
+                freeListOffset,
+                dataSegmentAddress
+        );
+    }
+
+    private void buildLocalHeapContents() {
+        // Define the heap data size
+        int heapDataSize = 88;
+
+        // Initialize the heapData array
+        byte[] heapData = new byte[heapDataSize];
+        Arrays.fill(heapData, (byte) 0); // Set all bytes to 0
+
+        // Set bytes 8-16 to the required values
+        heapData[8] = 68;  // 'D'
+        heapData[9] = 101; // 'e'
+        heapData[10] = 109; // 'm'
+        heapData[11] = 97; // 'a'
+        heapData[12] = 110; // 'n'
+        heapData[13] = 100; // 'd'
+        heapData[14] = 0;  // null terminator
+        heapData[15] = 0;  // additional null byte
+
+        // Create the HdfLocalHeapContents instance using the updated constructor
+        localHeapContents = new HdfLocalHeapContents(heapData);
+    }
+//        members.add(new CompoundMember("Id", 0, new FixedPointMember(8, false, false, false, 0, 64)));
+//        members.add(new CompoundMember("origCountry", 8, new StringMember(2, 0, "Null Terminate", 0, "ASCII")));
+//        members.add(new CompoundMember("origSlic", 10, new StringMember(5, 0, "Null Terminate", 0, "ASCII")));
+//        members.add(new CompoundMember("origSort", 15, new FixedPointMember(1, false, false, false, 0, 8)));
+//        members.add(new CompoundMember("destCountry", 16, new StringMember(2, 0, "Null Terminate", 0, "ASCII")));
+//        members.add(new CompoundMember("destSlic", 18, new StringMember(5, 0, "Null Terminate", 0, "ASCII")));
+//        members.add(new CompoundMember("destIbi", 23, new FixedPointMember(1, false, false, false, 0, 8)));
+//        members.add(new CompoundMember("destPostalCode", 40, new StringMember(9, 0, "Null Terminate", 0, "ASCII")));
+//        members.add(new CompoundMember("shipper", 24, new StringMember(10, 0, "Null Terminate", 0, "ASCII")));
+//        members.add(new CompoundMember("service", 49, new FixedPointMember(1, false, false, false, 0, 8)));
+//        members.add(new CompoundMember("packageType", 50, new FixedPointMember(1, false, false, false, 0, 8)));
+//        members.add(new CompoundMember("accessorials", 51, new FixedPointMember(1, false, false, false, 0, 8)));
+//        members.add(new CompoundMember("pieces", 52, new FixedPointMember(2, false, false, false, 0, 16)));
+//        members.add(new CompoundMember("weight", 34, new FixedPointMember(2, false, false, false, 0, 16)));
+//        members.add(new CompoundMember("cube", 36, new FixedPointMember(4, false, false, false, 0, 32)));
+//        members.add(new CompoundMember("committedTnt", 54, new FixedPointMember(1, false, false, false, 0, 8)));
+//        members.add(new CompoundMember("committedDate", 55, new FixedPointMember(1, false, false, false, 0, 8)));
+
+    public void buildDataObjectHeaderPrefix() {
+        // ContinuationMessage
+        ContinuationMessage continuationMessage = new ContinuationMessage(
+                new HdfFixedPoint(BigInteger.valueOf(100208), false),
+                new HdfFixedPoint(BigInteger.valueOf(112), false));
+
+        // NullMessage
+        NullMessage nullMessage = new NullMessage();
+
+        // DataTypeMessage with CompoundDataType
+        List<CompoundDataType.Member> members = List.of(
+                new CompoundDataType.Member("Id", 0, 0, 0, new int[4],
+                        new CompoundDataType.FixedPointMember(8, false, false, false, false, 0, 64)),
+                new CompoundDataType.Member("origCountry", 8, 0, 0, new int[4],
+                        new CompoundDataType.StringMember(2, 0, "Null Terminate", 0, "ASCII")),
+                new CompoundDataType.Member("origSlic", 10, 0, 0, new int[4],
+                        new CompoundDataType.StringMember(5, 0, "Null Terminate", 0, "ASCII")),
+                new CompoundDataType.Member("origSort", 15, 0, 0, new int[4],
+                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8)),
+                new CompoundDataType.Member("destCountry", 16, 0, 0, new int[4],
+                        new CompoundDataType.StringMember(2, 0, "Null Terminate", 0, "ASCII")),
+                new CompoundDataType.Member("destSlic", 18, 0, 0, new int[4],
+                        new CompoundDataType.StringMember(5, 0, "Null Terminate", 0, "ASCII")),
+                new CompoundDataType.Member("destIbi", 23, 0, 0, new int[4],
+                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8)),
+                new CompoundDataType.Member("destPostalCode", 40, 0, 0, new int[4],
+                        new CompoundDataType.StringMember(9, 0, "Null Terminate", 0, "ASCII")),
+                new CompoundDataType.Member("shipper", 24, 0, 0, new int[4],
+                        new CompoundDataType.StringMember(10, 0, "Null Terminate", 0, "ASCII")),
+                new CompoundDataType.Member("service", 49, 0, 0, new int[4],
+                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8)),
+                new CompoundDataType.Member("packageType", 50, 0, 0, new int[4],
+                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8)),
+                new CompoundDataType.Member("accessorials", 51, 0, 0, new int[4],
+                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8)),
+                new CompoundDataType.Member("pieces", 52, 0, 0, new int[4],
+                        new CompoundDataType.FixedPointMember(2, false, false, false, false, 0, 16)),
+                new CompoundDataType.Member("weight", 34, 0, 0, new int[4],
+                        new CompoundDataType.FixedPointMember(2, false, false, false, false, 0, 16)),
+                new CompoundDataType.Member("cube", 36, 0, 0, new int[4],
+                        new CompoundDataType.FixedPointMember(4, false, false, false, false, 0, 32)),
+                new CompoundDataType.Member("committedTnt", 54, 0, 0, new int[4],
+                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8)),
+                new CompoundDataType.Member("committedDate", 55, 0, 0, new int[4],
+                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8))
+        );
+        CompoundDataType compoundDataType = new CompoundDataType(17, 56, members);
+        DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new long[]{17}), new HdfFixedPoint(BigInteger.valueOf(56), false), null );
+
+        // FillValueMessage
+        FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 2, 1, null, null);
+
+        // DataLayoutMessage
+        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(
+                3, 1,
+                new HdfFixedPoint(BigInteger.valueOf(2208), false),
+                new HdfFixedPoint[]{new HdfFixedPoint(BigInteger.valueOf(98000), false)},
+                0,
+                null,
+                null
+        );
+
+        // ObjectModificationTimeMessage
+        ObjectModificationTimeMessage objectModificationTimeMessage = new ObjectModificationTimeMessage(1, 1241645056);
+        new HdfFixedPoint(BigInteger.valueOf(1750), true);
+        // DataSpaceMessage
+        DataSpaceMessage dataSpaceMessage = new DataSpaceMessage(
+                1,
+                1,
+                1,
+                new HdfFixedPoint[]{new HdfFixedPoint(BigInteger.valueOf(1750), false)},
+                new HdfFixedPoint[]{new HdfFixedPoint(BigInteger.valueOf(1750), false)},
+                true
+        );
+
+        // AttributeMessage
+        AttributeMessage attributeMessage = new AttributeMessage(
+                1, 18, 8, 8, new HdfString("GIT root revision", false),
+                "Revision: , URL:"
+        );
+
+        // Combine all messages
+        List<HdfMessage> dataObjectHeaderMessages = Arrays.asList(
+                continuationMessage,
+                nullMessage,
+                dataTypeMessage,
+                fillValueMessage,
+                dataLayoutMessage,
+                objectModificationTimeMessage,
+                dataSpaceMessage,
+                attributeMessage
+        );
+
+        // Construct and return the instance
+        dataObjectHeaderPrefix = new HdfDataObjectHeaderPrefixV1(1, 8, 1, 1064, dataObjectHeaderMessages);
+    }
+
 }

@@ -23,8 +23,6 @@ public class HdfReader {
     private HdfLocalHeapContents localHeapContents;
     // level 2A1
     private HdfDataObjectHeaderPrefixV1 dataObjectHeaderPrefix;
-    // llevel 2AA
-    private List<HdfMessage> dataObjectHeaderMessages;
     // parsed Datatype
     private CompoundDataType compoundDataType;
     private long dataAddress = 0;
@@ -75,19 +73,7 @@ public class HdfReader {
         dataObjectHeaderPrefix = HdfDataObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
         System.out.println(dataObjectHeaderPrefix);
 
-        // Parse header messages
-        dataObjectHeaderMessages = new ArrayList<>();
-        parseDataObjectHeaderMessages(fileChannel, (int)dataObjectHeaderPrefix.getObjectHeaderSize(), offsetSize, lengthSize, dataObjectHeaderMessages);
-        for ( HdfMessage hdfMesage: dataObjectHeaderMessages) {
-            if (hdfMesage instanceof ContinuationMessage) {
-                parseContinuationMessage(fileChannel, (ContinuationMessage)hdfMesage, offsetSize, lengthSize, dataObjectHeaderMessages);
-                break;
-            }
-        }
-        dataObjectHeaderMessages.forEach(hm->System.out.println("\t" + hm));
-        System.out.println("}");
-
-        for (HdfMessage message : dataObjectHeaderMessages) {
+        for (HdfMessage message : dataObjectHeaderPrefix.getDataObjectHeaderMessages()) {
             if (message instanceof DataTypeMessage dataTypeMessage) {
                 // Check if the datatype is Compound
                 if (dataTypeMessage.getDataTypeClass() == 6) {

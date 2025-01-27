@@ -1,26 +1,34 @@
 package com.github.karlnicholas.hdf5javalib;
 
-import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
-import com.github.karlnicholas.hdf5javalib.message.DataTypeMessage;
+import com.github.karlnicholas.hdf5javalib.message.ContinuationMessage;
+import com.github.karlnicholas.hdf5javalib.message.HdfMessage;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.parseContinuationMessage;
+import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.parseDataObjectHeaderMessages;
 
 public class HdfDataObjectHeaderPrefixV1 {
     private final int version;                // 1 byte
     private final int totalHeaderMessages;    // 2 bytes
     private final long objectReferenceCount;  // 4 bytes
     private final long objectHeaderSize;      // 4 bytes
+    // level 2A1A
+    private final List<HdfMessage> dataObjectHeaderMessages;
+
 
     // Constructor for application-defined values
-    public HdfDataObjectHeaderPrefixV1(int version, int totalHeaderMessages, long objectReferenceCount, long objectHeaderSize) {
+    public HdfDataObjectHeaderPrefixV1(int version, int totalHeaderMessages, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> dataObjectHeaderMessages) {
         this.version = version;
         this.totalHeaderMessages = totalHeaderMessages;
         this.objectReferenceCount = objectReferenceCount;
         this.objectHeaderSize = objectHeaderSize;
+        this.dataObjectHeaderMessages = dataObjectHeaderMessages;
     }
 
     // Factory method to read from a FileChannel
@@ -52,9 +60,17 @@ public class HdfDataObjectHeaderPrefixV1 {
         if (reservedInt != 0) {
             throw new IllegalArgumentException("Reserved integer in Data Object Header Prefix is not zero.");
         }
+        List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>();
+        parseDataObjectHeaderMessages(fileChannel, (int)objectHeaderSize, offsetSize, lengthSize, dataObjectHeaderMessages);
+        for ( HdfMessage hdfMesage: dataObjectHeaderMessages) {
+            if (hdfMesage instanceof ContinuationMessage) {
+                parseContinuationMessage(fileChannel, (ContinuationMessage)hdfMesage, offsetSize, lengthSize, dataObjectHeaderMessages);
+                break;
+            }
+        }
 
         // Create the instance
-        HdfDataObjectHeaderPrefixV1 prefix = new HdfDataObjectHeaderPrefixV1(version, totalHeaderMessages, objectReferenceCount, objectHeaderSize);
+        HdfDataObjectHeaderPrefixV1 prefix = new HdfDataObjectHeaderPrefixV1(version, totalHeaderMessages, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages);
         return prefix;
     }
 
@@ -82,6 +98,14 @@ public class HdfDataObjectHeaderPrefixV1 {
                 .append(" Total Header Messages: ").append(totalHeaderMessages)
                 .append(" Object Reference Count: ").append(objectReferenceCount)
                 .append(" Object Header Size: ").append(objectHeaderSize);
+                // Parse header messages
+        dataObjectHeaderMessages.forEach(hm->builder.append("\t" + hm));
+        builder.append("}");
+
         return builder.toString();
+    }
+
+    public List<HdfMessage> getDataObjectHeaderMessages() {
+        return dataObjectHeaderMessages;
     }
 }
