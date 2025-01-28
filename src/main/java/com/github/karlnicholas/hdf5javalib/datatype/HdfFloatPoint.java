@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-public class HdfFloatPoint {
+public class HdfFloatPoint implements HdfDataType {
     private final byte[] bytes;
     private final int size;
     private final boolean littleEndian;

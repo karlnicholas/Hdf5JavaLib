@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.datatype;
 
-import com.github.karlnicholas.hdf5javalib.message.*;
+import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-public class CompoundDataType {
+@Getter
+public class CompoundDataType implements HdfDataType {
     private final int numberOfMembers; // Number of members in the compound datatype
     private final int size;
     private List<Member> members;     // Member definitions
@@ -20,9 +21,9 @@ public class CompoundDataType {
         this.members = new ArrayList<>(members); // Deep copy to avoid external modification
     }
 
-    public CompoundDataType(DataTypeMessage dataTypeMessage, byte[] data) {
-        this.numberOfMembers = extractNumberOfMembersFromBitSet(dataTypeMessage.getClassBitField());
-        this.size = dataTypeMessage.getSize().getBigIntegerValue().intValue();
+    public CompoundDataType(BitSet classBitField, int size, byte[] data) {
+        this.numberOfMembers = extractNumberOfMembersFromBitSet(classBitField);
+        this.size = size;
         ByteBuffer cdtcBuffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         readFromByteBuffer(cdtcBuffer);
     }
@@ -37,17 +38,9 @@ public class CompoundDataType {
         return value;
     }
 
-    public int getSize() {
-        return size;
-    }
-
-    public List<Member> getMembers() {
-        return members;
-    }
-
     private void readFromByteBuffer(ByteBuffer buffer) {
         this.members = new ArrayList<>();
-        buffer.position(8);
+//        buffer.position(8);
         for (int i = 0; i < numberOfMembers; i++) {
             String name = readNullTerminatedString(buffer);
 
@@ -87,7 +80,7 @@ public class CompoundDataType {
 
     private Object parseMemberDataType(ByteBuffer buffer) {
         byte classAndVersion = buffer.get();
-        int version = (classAndVersion >> 4) & 0x0F;
+//        int version = (classAndVersion >> 4) & 0x0F;
         int dataTypeClass = classAndVersion & 0x0F;
 
         byte[] classBits = new byte[3];
@@ -99,14 +92,14 @@ public class CompoundDataType {
         long size = Integer.toUnsignedLong(buffer.getInt());
 
         return switch (dataTypeClass) {
-            case 0 -> parseFixedPoint(buffer, size, version, classBitField);
-            case 1 -> parseFloatingPoint(buffer, size, version, classBitField);
-            case 3 -> parseString(buffer, size, version, classBitField);
+            case 0 -> parseFixedPoint(buffer, size, classBitField);
+            case 1 -> parseFloatingPoint(buffer, size, classBitField);
+            case 3 -> parseString(size, classBitField);
             default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
         };
     }
 
-    private FixedPointMember parseFixedPoint(ByteBuffer buffer, long size, int version, BitSet classBitField) {
+    private FixedPointMember parseFixedPoint(ByteBuffer buffer, long size, BitSet classBitField) {
         boolean bigEndian = classBitField.get(0);
         boolean loPad = classBitField.get(1);
         boolean hiPad = classBitField.get(2);
@@ -118,14 +111,14 @@ public class CompoundDataType {
         return new FixedPointMember(size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision);
     }
 
-    private FloatingPointMember parseFloatingPoint(ByteBuffer buffer, long size, int version, BitSet classBitField) {
+    private FloatingPointMember parseFloatingPoint(ByteBuffer buffer, long size, BitSet classBitField) {
         boolean bigEndian = classBitField.get(0);
         int exponentBits = buffer.getInt();
         int mantissaBits = buffer.getInt();
         return new FloatingPointMember(size, exponentBits, mantissaBits, bigEndian);
     }
 
-    private StringMember parseString(ByteBuffer buffer, long size, int version, BitSet classBitField) {
+    private StringMember parseString(long size, BitSet classBitField) {
         int paddingType = extractBits(classBitField, 0, 3);
         int charSet = extractBits(classBitField, 4, 7);
 
@@ -169,16 +162,15 @@ public class CompoundDataType {
         return builder.toString();
     }
 
-    public int getNumberOfMembers() {
-        return numberOfMembers;
-    }
-
     public static class Member {
+        @Getter
         private final String name;
+        @Getter
         private final int offset;
         private final int dimensionality;
         private final int dimensionPermutation;
         private final int[] dimensionSizes;
+        @Getter
         private final Object type;
 
         public Member(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, Object type) {
@@ -202,15 +194,6 @@ public class CompoundDataType {
                     '}';
         }
 
-        public Object getType() {
-            return type;
-        }
-        public int getOffset() {
-            return offset;
-        }
-        public String getName() {
-            return name;
-        }
     }
 
     public static class FixedPointMember {
@@ -284,6 +267,7 @@ public class CompoundDataType {
     }
 
     public static class FloatingPointMember {
+        @Getter
         private final long size;
         private final int exponentBits;
         private final int mantissaBits;
@@ -296,12 +280,8 @@ public class CompoundDataType {
             this.bigEndian = bigEndian;
         }
 
-        public Object getInstance(ByteBuffer dataBuffer) {
+        public Object getInstance() {
             return new Object();
-        }
-
-        public long getSize() {
-            return size;
         }
 
         @Override

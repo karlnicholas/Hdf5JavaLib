@@ -99,7 +99,11 @@ public class HdfDataObjectHeaderPrefixV1 {
                 .append(" Object Reference Count: ").append(objectReferenceCount)
                 .append(" Object Header Size: ").append(objectHeaderSize);
                 // Parse header messages
-        dataObjectHeaderMessages.forEach(hm->builder.append("\t" + hm));
+//        dataObjectHeaderMessages.forEach(hm->builder.append("\r\n\t" + hm));
+        for( HdfMessage message: dataObjectHeaderMessages) {
+            String ms = message.toString();
+            builder.append("\r\n\t" + ms);
+        }
         builder.append("}");
 
         return builder.toString();

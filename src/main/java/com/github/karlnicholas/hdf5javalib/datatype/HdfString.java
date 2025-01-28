@@ -3,7 +3,7 @@ package com.github.karlnicholas.hdf5javalib.datatype;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-public class HdfString {
+public class HdfString implements HdfDataType {
     private final byte[] bytes;
     private final int length;
     private final boolean nullTerminated;

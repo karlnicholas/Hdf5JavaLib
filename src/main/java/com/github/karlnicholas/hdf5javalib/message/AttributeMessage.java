@@ -4,6 +4,7 @@ import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.createMessageInstance;
 
@@ -56,14 +57,15 @@ public class AttributeMessage implements HdfMessage {
         HdfMessage hdfDataObjectHeaderDs = createMessageInstance(1, (byte) 0, dsBytes, offsetSize, lengthSize);
         DataSpaceMessage ds = (DataSpaceMessage) hdfDataObjectHeaderDs;
 
+
         Object value = null;
 
         if ( dt.getDataTypeClass() == 3 ) {
             byte[] dataBytes = new byte[dt.getSize().getBigIntegerValue().intValue()];
             buffer.get(dataBytes);
-            value = new HdfString(dataBytes, false, false);
+            dt.addDataType(dataBytes);
+            value = dt.getHdfDataType();
         }
-
         return new AttributeMessage(version, nameSize, datatypeSize, dataspaceSize, name, value);
     }
 
@@ -75,7 +77,7 @@ public class AttributeMessage implements HdfMessage {
                 ", datatypeSize=" + datatypeSize +
                 ", dataspaceSize=" + dataspaceSize +
                 ", name='" + name + '\'' +
-                ", value=" + value +
+                ", value='" + value + '\'' +
                 '}';
     }
 }

@@ -1,7 +1,5 @@
 package com.github.karlnicholas.hdf5javalib;
 
-import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
-import com.github.karlnicholas.hdf5javalib.utils.HdfDataSource;
 import lombok.*;
 
 import java.math.BigInteger;
@@ -26,5 +24,4 @@ public class VolumeData {
     private BigInteger cube;
     private BigInteger committedTnt;
     private BigInteger committedDate;
-
 }

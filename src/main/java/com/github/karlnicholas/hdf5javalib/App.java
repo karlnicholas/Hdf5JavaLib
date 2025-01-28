@@ -25,6 +25,7 @@ public class App {
                 reader.readFile(channel);
 //                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
 //                trySpliterator(channel, reader);
+                new HdfConstruction().buildHfd();
             }
         } catch (IOException e) {
             e.printStackTrace();

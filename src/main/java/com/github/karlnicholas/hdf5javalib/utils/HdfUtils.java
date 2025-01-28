@@ -54,7 +54,12 @@ public class HdfUtils {
         return switch (type) {
             case 0 -> NullMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 1 -> DataSpaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 3 -> DataTypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 3 -> {
+                DataTypeMessage dataTypeMessage = (DataTypeMessage)DataTypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+                System.out.println(data.length);
+                dataTypeMessage.addDataType(Arrays.copyOfRange(data, 8, data.length));
+                yield dataTypeMessage;
+            }
             case 5 -> FillValueMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 8 -> DataLayoutMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 12 -> AttributeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
@@ -121,7 +126,7 @@ public class HdfUtils {
                 } else if (member.getType() instanceof CompoundDataType.FixedPointMember) {
                     data[column] = ((CompoundDataType.FixedPointMember) member.getType()).getInstance(dataBuffer);
                 } else if (member.getType() instanceof CompoundDataType.FloatingPointMember) {
-                    data[column] = ((CompoundDataType.FloatingPointMember) member.getType()).getInstance(dataBuffer);
+                    data[column] = ((CompoundDataType.FloatingPointMember) member.getType()).getInstance();
                 } else {
                     throw new UnsupportedOperationException("Member type " + member.getType() + " not yet implemented.");
                 }

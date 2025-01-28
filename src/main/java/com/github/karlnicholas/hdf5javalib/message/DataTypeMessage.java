@@ -1,26 +1,30 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
+import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
+import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.BitSet;
 
+@Getter
 public class DataTypeMessage implements HdfMessage {
     private final int version;                 // Version of the datatype message
     private final int dataTypeClass;           // Datatype class
     private final BitSet classBitField;        // Class Bit Field (24 bits)
     private final HdfFixedPoint size;          // Size of the datatype element
-    private final byte[] data;                 // Remaining raw data
+    private HdfDataType hdfDataType;                 // Remaining raw data
 
     // Constructor to initialize all fields
-    public DataTypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size, byte[] data) {
+    public DataTypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size) {
         this.version = version;
         this.dataTypeClass = dataTypeClass;
         this.classBitField = classBitField;
         this.size = size;
-        this.data = data;
     }
 
     /**
@@ -49,12 +53,26 @@ public class DataTypeMessage implements HdfMessage {
 
         // Parse Size (unsigned 4 bytes)
         HdfFixedPoint size = HdfFixedPoint.readFromByteBuffer(buffer, 4, false);
-
-        // Extract remaining raw data
-        byte[] remainingData = Arrays.copyOfRange(data, buffer.position(), buffer.limit());
-
         // Return a constructed instance of DataTypeMessage
-        return new DataTypeMessage(version, dataTypeClass, classBitField, size, remainingData);
+        return new DataTypeMessage(version, dataTypeClass, classBitField, size);
+    }
+
+    public void addDataType(byte[] remainingData) {
+//        // Extract remaining raw data
+//        byte[] remainingData = Arrays.copyOfRange(data, buffer.position(), buffer.limit());
+
+        if ( dataTypeClass == 6) {
+            hdfDataType = new CompoundDataType(classBitField, size.getBigIntegerValue().intValue(), remainingData);
+        } else if ( dataTypeClass == 3) {
+            // Return a constructed instance of DataTypeMessage
+            hdfDataType = new HdfString(remainingData, false, false);
+        } else {
+            throw new IllegalStateException("Unsupported data type class: " + dataTypeClass);
+        }
+    }
+
+    public void setDataType(HdfDataType hdfDataType) {
+        this.hdfDataType = hdfDataType;
     }
 
     @Override
@@ -64,27 +82,27 @@ public class DataTypeMessage implements HdfMessage {
         sb.append(", dataTypeClass=").append(dataTypeClass).append(" (").append(dataTypeClassToString(dataTypeClass)).append(")");
         sb.append(", classBitField=").append(bitSetToString(classBitField, 24));
         sb.append(", size=").append(size.getBigIntegerValue());
-        sb.append(", data.length=").append(data.length);
+        sb.append(", hdfDataType=").append(hdfDataType);
         sb.append('}');
         return sb.toString();
     }
 
     // Helper method to convert the dataTypeClass to a human-readable string
     private String dataTypeClassToString(int dataTypeClass) {
-        switch (dataTypeClass) {
-            case 0: return "Fixed-Point";
-            case 1: return "Floating-Point";
-            case 2: return "Time";
-            case 3: return "String";
-            case 4: return "Bit Field";
-            case 5: return "Opaque";
-            case 6: return "Compound";
-            case 7: return "Reference";
-            case 8: return "Enumerated";
-            case 9: return "Variable-Length";
-            case 10: return "Array";
-            default: return "Unknown";
-        }
+        return switch (dataTypeClass) {
+            case 0 -> "Fixed-Point";
+            case 1 -> "Floating-Point";
+            case 2 -> "Time";
+            case 3 -> "String";
+            case 4 -> "Bit Field";
+            case 5 -> "Opaque";
+            case 6 -> "Compound";
+            case 7 -> "Reference";
+            case 8 -> "Enumerated";
+            case 9 -> "Variable-Length";
+            case 10 -> "Array";
+            default -> "Unknown";
+        };
     }
 
     // Helper method to convert a BitSet to a binary string
@@ -94,26 +112,5 @@ public class DataTypeMessage implements HdfMessage {
             bits.append(bitSet.get(i) ? "1" : "0");
         }
         return bits.toString();
-    }
-
-    // Getters for all fields
-    public int getVersion() {
-        return version;
-    }
-
-    public int getDataTypeClass() {
-        return dataTypeClass;
-    }
-
-    public BitSet getClassBitField() {
-        return classBitField;
-    }
-
-    public HdfFixedPoint getSize() {
-        return size;
-    }
-
-    public byte[] getData() {
-        return data;
     }
 }

@@ -20,8 +20,6 @@ public class HdfConstruction {
     private HdfLocalHeapContents localHeapContents;
     // level 2A1
     private HdfDataObjectHeaderPrefixV1 dataObjectHeaderPrefix;
-    // llevel 2AA
-    private List<HdfMessage> dataObjectHeaderMessages;
 
     public void buildHfd() {
         buildSuperblock();
@@ -31,6 +29,16 @@ public class HdfConstruction {
         buildLocalHeap();
         buildLocalHeapContents();
         buildDataObjectHeaderPrefix();
+
+        System.out.println("Building HFD");
+        System.out.println("Superblock: " + superblock);
+        System.out.println("Root symbol table entry: " + rootGroupSymbolTableEntry);
+        System.out.println("Object header: " + objectHeader);
+        System.out.println("BTree: " + bTree);
+        System.out.println("Local heap: " + localHeap);
+        System.out.println("Local heap contents: " + localHeapContents);
+        System.out.println("DataObject header: " + dataObjectHeaderPrefix);
+
     }
 
     private void buildSuperblock() {
@@ -42,7 +50,7 @@ public class HdfConstruction {
         HdfFixedPoint endOfFileAddress = new HdfFixedPoint(BigInteger.valueOf(100320), true); // EOF address = 100320, little-endian
 
         // Construct the HdfSuperblock instance
-        HdfSuperblock superblock = new HdfSuperblock(
+        superblock = new HdfSuperblock(
                 0,                          // version
                 0,                          // freeSpaceVersion
                 0,                          // rootGroupVersion
@@ -164,23 +172,6 @@ public class HdfConstruction {
         // Create the HdfLocalHeapContents instance using the updated constructor
         localHeapContents = new HdfLocalHeapContents(heapData);
     }
-//        members.add(new CompoundMember("Id", 0, new FixedPointMember(8, false, false, false, 0, 64)));
-//        members.add(new CompoundMember("origCountry", 8, new StringMember(2, 0, "Null Terminate", 0, "ASCII")));
-//        members.add(new CompoundMember("origSlic", 10, new StringMember(5, 0, "Null Terminate", 0, "ASCII")));
-//        members.add(new CompoundMember("origSort", 15, new FixedPointMember(1, false, false, false, 0, 8)));
-//        members.add(new CompoundMember("destCountry", 16, new StringMember(2, 0, "Null Terminate", 0, "ASCII")));
-//        members.add(new CompoundMember("destSlic", 18, new StringMember(5, 0, "Null Terminate", 0, "ASCII")));
-//        members.add(new CompoundMember("destIbi", 23, new FixedPointMember(1, false, false, false, 0, 8)));
-//        members.add(new CompoundMember("destPostalCode", 40, new StringMember(9, 0, "Null Terminate", 0, "ASCII")));
-//        members.add(new CompoundMember("shipper", 24, new StringMember(10, 0, "Null Terminate", 0, "ASCII")));
-//        members.add(new CompoundMember("service", 49, new FixedPointMember(1, false, false, false, 0, 8)));
-//        members.add(new CompoundMember("packageType", 50, new FixedPointMember(1, false, false, false, 0, 8)));
-//        members.add(new CompoundMember("accessorials", 51, new FixedPointMember(1, false, false, false, 0, 8)));
-//        members.add(new CompoundMember("pieces", 52, new FixedPointMember(2, false, false, false, 0, 16)));
-//        members.add(new CompoundMember("weight", 34, new FixedPointMember(2, false, false, false, 0, 16)));
-//        members.add(new CompoundMember("cube", 36, new FixedPointMember(4, false, false, false, 0, 32)));
-//        members.add(new CompoundMember("committedTnt", 54, new FixedPointMember(1, false, false, false, 0, 8)));
-//        members.add(new CompoundMember("committedDate", 55, new FixedPointMember(1, false, false, false, 0, 8)));
 
     public void buildDataObjectHeaderPrefix() {
         // ContinuationMessage
@@ -229,7 +220,8 @@ public class HdfConstruction {
                         new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8))
         );
         CompoundDataType compoundDataType = new CompoundDataType(17, 56, members);
-        DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new long[]{17}), new HdfFixedPoint(BigInteger.valueOf(56), false), null );
+        DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new long[]{17}), new HdfFixedPoint(BigInteger.valueOf(56), false) );
+        dataTypeMessage.setDataType(compoundDataType);
 
         // FillValueMessage
         FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 2, 1, null, null);

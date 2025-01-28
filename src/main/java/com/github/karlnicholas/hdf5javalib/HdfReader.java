@@ -6,8 +6,6 @@ import com.github.karlnicholas.hdf5javalib.utils.BtreeV1GroupNode;
 
 import java.io.*;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.*;
 
@@ -77,7 +75,7 @@ public class HdfReader {
             if (message instanceof DataTypeMessage dataTypeMessage) {
                 // Check if the datatype is Compound
                 if (dataTypeMessage.getDataTypeClass() == 6) {
-                    compoundDataType = new CompoundDataType(dataTypeMessage, dataTypeMessage.getData());
+                    compoundDataType = (CompoundDataType) dataTypeMessage.getHdfDataType();
                 } else {
                     // For other datatype classes, parsing logic will be added later
                     throw new UnsupportedOperationException("Datatype class " + dataTypeMessage.getDataTypeClass() + " not yet implemented.");

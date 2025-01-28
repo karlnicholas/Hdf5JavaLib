@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
-public class HdfFixedPoint {
+public class HdfFixedPoint implements HdfDataType {
     private final byte[] bytes;
     private final int size;
     private final boolean signed;
