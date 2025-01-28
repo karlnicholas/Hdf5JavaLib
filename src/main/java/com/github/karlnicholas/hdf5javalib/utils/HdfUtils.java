@@ -56,7 +56,6 @@ public class HdfUtils {
             case 1 -> DataSpaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 3 -> {
                 DataTypeMessage dataTypeMessage = (DataTypeMessage)DataTypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-                System.out.println(data.length);
                 dataTypeMessage.addDataType(Arrays.copyOfRange(data, 8, data.length));
                 yield dataTypeMessage;
             }
