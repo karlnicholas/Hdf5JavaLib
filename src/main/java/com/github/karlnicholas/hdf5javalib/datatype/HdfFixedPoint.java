@@ -15,6 +15,10 @@ public class HdfFixedPoint implements HdfDataType {
     private final boolean undefined;
 
     // Constructor for BigInteger
+    public HdfFixedPoint(BigInteger value) {
+        this(value, true);
+    }
+
     public HdfFixedPoint(BigInteger value, boolean littleEndian) {
         this.size = determineSize(value);
         this.signed = value.signum() < 0;
@@ -40,6 +44,15 @@ public class HdfFixedPoint implements HdfDataType {
         this.signed = signed;
         this.littleEndian = littleEndian;
         this.undefined = false;
+    }
+
+    /**
+     * Construct 64 bit precision from value
+     * @param value of instance
+     * @return instance
+     */
+    public static HdfFixedPoint of(long value) {
+        return new HdfFixedPoint(new BigInteger(1, ByteBuffer.allocate(8).putLong(value).array()), true);
     }
 
     // Constructor for FileChannel
