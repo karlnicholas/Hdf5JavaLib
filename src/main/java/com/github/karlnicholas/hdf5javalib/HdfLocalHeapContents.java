@@ -23,16 +23,14 @@ public class HdfLocalHeapContents {
     /**
      * @param fileChannel fileChannel
      * @param dataSize size
-     * @param dataSegmentAddress address
      * @return HdfLocalHeapContents
      * @throws IOException
      */
-    public static HdfLocalHeapContents readFromFileChannel(FileChannel fileChannel, int dataSize, long dataSegmentAddress) throws IOException {
+    public static HdfLocalHeapContents readFromFileChannel(FileChannel fileChannel, int dataSize) throws IOException {
         // Allocate buffer and read heap data from the file channel
         byte[] heapData = new byte[dataSize];
         ByteBuffer buffer = ByteBuffer.wrap(heapData);
 
-        fileChannel.position(dataSegmentAddress);
         fileChannel.read(buffer);
 
         return new HdfLocalHeapContents(heapData);

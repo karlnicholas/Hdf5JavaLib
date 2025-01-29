@@ -83,33 +83,6 @@ public class HdfUtils {
         parseDataObjectHeaderMessages(fileChannel, continuationSize, offsetSize, lengthSize, headerMessages);
     }
 
-    public static BtreeV1GroupNode parseBTreeAndLocalHeap(HdfBTreeV1 bTreeNode, HdfLocalHeapContents localHeap) {
-        if (bTreeNode.getNodeType() != 0 || bTreeNode.getNodeLevel() != 0) {
-            throw new UnsupportedOperationException("Only nodeType=0 and nodeLevel=0 are supported.");
-        }
-
-        List<HdfFixedPoint> keys = bTreeNode.getKeys();
-        List<HdfFixedPoint> children = bTreeNode.getChildPointers();
-
-        // Validate that the number of keys and children match the B-tree structure
-        if (keys.size() != children.size() + 1) {
-            throw new IllegalStateException("Invalid B-tree structure: keys and children count mismatch.");
-        }
-
-        HdfString objectName = null;
-        HdfFixedPoint childAddress = null;
-        // Parse each key and corresponding child
-        for (int i = 0; i < keys.size(); i++) {
-            HdfFixedPoint keyOffset = keys.get(i);
-            objectName = localHeap.parseStringAtOffset(keyOffset);
-
-            if (i < children.size()) {
-                childAddress = children.get(i);
-            }
-        }
-        return new BtreeV1GroupNode(objectName, childAddress);
-    }
-
     public static void printData(FileChannel fileChannel, CompoundDataType compoundDataType, long dataAddress, long dimension ) throws IOException {
         Object[] data = new Object[17];
         fileChannel.position(dataAddress);

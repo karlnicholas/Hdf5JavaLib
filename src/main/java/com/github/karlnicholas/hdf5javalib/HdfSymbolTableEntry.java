@@ -2,11 +2,13 @@ package com.github.karlnicholas.hdf5javalib;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.utils.HdfUtils;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+@Getter
 public class HdfSymbolTableEntry {
     private final HdfFixedPoint linkNameOffset;
     private final HdfFixedPoint objectHeaderAddress;
@@ -70,26 +72,6 @@ public class HdfSymbolTableEntry {
         }
 
         return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress, cacheType, bTreeAddress, localHeapAddress);
-    }
-
-    public HdfFixedPoint getLinkNameOffset() {
-        return linkNameOffset;
-    }
-
-    public HdfFixedPoint getObjectHeaderAddress() {
-        return objectHeaderAddress;
-    }
-
-    public int getCacheType() {
-        return cacheType;
-    }
-
-    public HdfFixedPoint getBTreeAddress() {
-        return bTreeAddress;
-    }
-
-    public HdfFixedPoint getLocalHeapAddress() {
-        return localHeapAddress;
     }
 
     @Override

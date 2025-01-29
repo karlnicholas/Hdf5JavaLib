@@ -1,13 +1,18 @@
 package com.github.karlnicholas.hdf5javalib;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
+import com.github.karlnicholas.hdf5javalib.utils.BtreeV1GroupNode;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+@Getter
 public class HdfBTreeV1 {
     private final String signature;
     private final int nodeType;
@@ -17,6 +22,8 @@ public class HdfBTreeV1 {
     private final HdfFixedPoint rightSiblingAddress;
     private final List<HdfFixedPoint> childPointers;
     private final List<HdfFixedPoint> keys;
+    // set later
+    private List<BtreeV1GroupNode> groupNodes;
 
     public HdfBTreeV1(
             String signature,
@@ -26,7 +33,8 @@ public class HdfBTreeV1 {
             HdfFixedPoint leftSiblingAddress,
             HdfFixedPoint rightSiblingAddress,
             List<HdfFixedPoint> childPointers,
-            List<HdfFixedPoint> keys
+            List<HdfFixedPoint> keys,
+            List<BtreeV1GroupNode> groupNodes
     ) {
         this.signature = signature;
         this.nodeType = nodeType;
@@ -36,12 +44,12 @@ public class HdfBTreeV1 {
         this.rightSiblingAddress = rightSiblingAddress;
         this.childPointers = childPointers;
         this.keys = keys;
+        this.groupNodes = groupNodes;
     }
 
-    public static HdfBTreeV1 readFromFileChannel(FileChannel fileChannel, long position, int offsetSize, int lengthSize) throws IOException {
+    public static HdfBTreeV1 readFromFileChannel(FileChannel fileChannel, int offsetSize, int lengthSize) throws IOException {
         // Prepare a buffer for the initial read
         ByteBuffer buffer = ByteBuffer.allocate(24).order(java.nio.ByteOrder.LITTLE_ENDIAN);
-        fileChannel.position(position);
         fileChannel.read(buffer);
         buffer.flip();
         // Read and verify the signature
@@ -91,28 +99,33 @@ public class HdfBTreeV1 {
                 leftSiblingAddress,
                 rightSiblingAddress,
                 childPointers,
-                keys
+                keys,
+                null
         );
     }
 
-    public int getNodeType() {
-        return nodeType;
-    }
+    public void parseBTreeAndLocalHeap(HdfLocalHeapContents localHeap) {
+        if (nodeType != 0 || nodeLevel != 0) {
+            throw new UnsupportedOperationException("Only nodeType=0 and nodeLevel=0 are supported.");
+        }
 
-    public int getNodeLevel() {
-        return nodeLevel;
-    }
+        // Validate that the number of keys and children match the B-tree structure
+        if (keys.size() != childPointers.size() + 1) {
+            throw new IllegalStateException("Invalid B-tree structure: keys and children count mismatch.");
+        }
 
-    public int getEntriesUsed() {
-        return entriesUsed;
-    }
+        HdfString objectName = null;
+        HdfFixedPoint childAddress = null;
+        // Parse each key and corresponding child
+        for (int i = 0; i < keys.size(); i++) {
+            HdfFixedPoint keyOffset = keys.get(i);
+            objectName = localHeap.parseStringAtOffset(keyOffset);
 
-    public List<HdfFixedPoint> getChildPointers() {
-        return childPointers;
-    }
-
-    public List<HdfFixedPoint> getKeys() {
-        return keys;
+            if (i < childPointers.size()) {
+                childAddress = childPointers.get(i);
+            }
+        }
+        this.groupNodes = Collections.singletonList(new BtreeV1GroupNode(objectName, childAddress));
     }
 
     @Override
@@ -126,6 +139,7 @@ public class HdfBTreeV1 {
                 ", rightSiblingAddress=" + rightSiblingAddress +
                 ", childPointers=" + childPointers +
                 ", keys=" + keys +
+                ", groupNodes=" + (groupNodes==null?"NULL":groupNodes) +
                 '}';
     }
 }

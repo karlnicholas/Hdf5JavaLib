@@ -1,5 +1,7 @@
 package com.github.karlnicholas.hdf5javalib;
 
+import lombok.Getter;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -8,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class HdfSymbolTableNode {
     private final String signature; // Should be "SNOD"
     private final int version;
@@ -52,22 +55,6 @@ public class HdfSymbolTableNode {
             symbolTableEntries.add(HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize));
         }
         return new HdfSymbolTableNode(signature, version, numberOfSymbols, symbolTableEntries);
-    }
-
-    public String getSignature() {
-        return signature;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public int getNumberOfSymbols() {
-        return numberOfSymbols;
-    }
-
-    public List<HdfSymbolTableEntry> getSymbolTableEntries() {
-        return symbolTableEntries;
     }
 
     @Override

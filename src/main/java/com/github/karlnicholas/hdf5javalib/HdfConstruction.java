@@ -4,6 +4,7 @@ import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 import com.github.karlnicholas.hdf5javalib.message.*;
+import com.github.karlnicholas.hdf5javalib.utils.BtreeV1GroupNode;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -118,7 +119,11 @@ public class HdfConstruction {
         keys.add(new HdfFixedPoint(BigInteger.valueOf(0), true)); // First key
         keys.add(new HdfFixedPoint(BigInteger.valueOf(8), true)); // Final key
 
-        // Construct the HdfBTreeV1 instance
+        // Create a list of BtreeV1GroupNode objects
+        List<BtreeV1GroupNode> groupNodes = new ArrayList<>();
+        groupNodes.add(new BtreeV1GroupNode(new HdfString("Demand", false), new HdfFixedPoint(BigInteger.valueOf(1880), true)));
+
+        // Construct the HdfBTreeV1 instance with group nodes
         bTree = new HdfBTreeV1(
                 signature,
                 nodeType,
@@ -127,9 +132,11 @@ public class HdfConstruction {
                 leftSiblingAddress,
                 rightSiblingAddress,
                 childPointers,
-                keys
+                keys,
+                groupNodes
         );
     }
+
 
     private void buildLocalHeap() {
         // Define the fixed values for the HdfLocalHeap instance
