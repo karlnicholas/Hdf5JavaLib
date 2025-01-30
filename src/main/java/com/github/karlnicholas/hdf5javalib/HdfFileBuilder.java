@@ -5,6 +5,7 @@ import com.github.karlnicholas.hdf5javalib.message.*;
 import com.github.karlnicholas.hdf5javalib.utils.*;
 
 import java.lang.reflect.Array;
+import java.time.Instant;
 import java.util.*;
 
 public class HdfFileBuilder {
@@ -56,9 +57,13 @@ public class HdfFileBuilder {
     }
 
     /** Adds a dataset to the HDF5 file */
-    public HdfFileBuilder addDataset(String name, long objectHeaderAddress, List<CompoundDataType.Member> members, Object data) {
+    public HdfFileBuilder addDataset(String name, long objectHeaderAddress, List<CompoundDataType.Member> members, long[] dimensions, long[] dimensionSizes) {
         HdfFixedPoint objHeaderAddr = HdfFixedPoint.of(objectHeaderAddress);
         HdfDataObjectHeaderPrefixV1 dataObject = new HdfDataObjectHeaderPrefixV1(1, 8, 1, 1064, new ArrayList<>());
+
+        // Continuation and Null Messages
+        dataObject.getDataObjectHeaderMessages().add(new ContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
+        dataObject.getDataObjectHeaderMessages().add(new NullMessage());
 
         // Define Compound DataType correctly
         CompoundDataType compoundType = new CompoundDataType(members.size(), 56, members);
@@ -66,14 +71,25 @@ public class HdfFileBuilder {
         dataTypeMessage.setDataType(compoundType);
         dataObject.getDataObjectHeaderMessages().add(dataTypeMessage);
 
-        // Add DataSpaceMessage (Handles dataset dimensionality)
-        HdfFixedPoint[] dimensions = {HdfFixedPoint.of(Array.getLength(data))};
-        DataSpaceMessage dataSpaceMessage = new DataSpaceMessage(1, 1, 1, dimensions, dimensions, true);
-        dataObject.getDataObjectHeaderMessages().add(dataSpaceMessage);
+        // Add FillValue message
+        dataObject.getDataObjectHeaderMessages().add(new FillValueMessage(2, 2, 2, 1, HdfFixedPoint.of(0), new byte[0]));
 
         // Add DataLayoutMessage (Storage format)
-        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1, HdfFixedPoint.of(2208), dimensions, 0, null, HdfFixedPoint.undefined(8));
+        HdfFixedPoint[] hdfDimensionSizes = Arrays.stream(dimensionSizes).mapToObj(HdfFixedPoint::of).toArray(HdfFixedPoint[]::new);
+        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(1, 1, HdfFixedPoint.of(2208), hdfDimensionSizes, 0, null, HdfFixedPoint.undefined(8));
         dataObject.getDataObjectHeaderMessages().add(dataLayoutMessage);
+
+        // add ObjectModification Time message
+        dataObject.getDataObjectHeaderMessages().add(new ObjectModificationTimeMessage(1, Instant.now().getEpochSecond()));
+
+        // Add DataSpaceMessage (Handles dataset dimensionality)
+        HdfFixedPoint[] hdfDimensions = Arrays.stream(dimensions).mapToObj(HdfFixedPoint::of).toArray(HdfFixedPoint[]::new);
+        DataSpaceMessage dataSpaceMessage = new DataSpaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
+        dataObject.getDataObjectHeaderMessages().add(dataSpaceMessage);
+
+        String attributeName = "GIT root revision";
+        String attributeValue = "Revision: , URL: ";
+        dataObject.getDataObjectHeaderMessages().add(new AttributeMessage(1, name.length(), 8, 8, new HdfString(attributeName, false), attributeValue));
 
         // Store the dataset
         // TODO: Convert `data` into HDF5 binary format for actual writing
@@ -106,7 +122,7 @@ public class HdfFileBuilder {
     public HdfFileBuilder addSymbolTableNode(long objectHeaderAddress) {
         List<HdfSymbolTableEntry> entries = Collections.singletonList(
                 new HdfSymbolTableEntry(HdfFixedPoint.of(8), HdfFixedPoint.of(objectHeaderAddress),
-                        0, HdfFixedPoint.undefined(8), HdfFixedPoint.undefined(8)));
+                        0,null, null));
         HdfSymbolTableNode node = new HdfSymbolTableNode("SNOD", 1, 1, entries);
         symbolTableNodes.add(node);
         return this;
