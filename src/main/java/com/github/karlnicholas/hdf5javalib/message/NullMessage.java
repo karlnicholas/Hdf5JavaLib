@@ -1,5 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
+import java.nio.ByteBuffer;
+
 public class NullMessage implements HdfMessage {
 
     public static HdfMessage parseHeaderMessage(byte flag, byte[] data, int offsetSize, int lengthSize) {
@@ -10,5 +12,10 @@ public class NullMessage implements HdfMessage {
     @Override
     public String toString() {
         return "NullMessage{}";
+    }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+
     }
 }

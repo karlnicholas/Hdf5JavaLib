@@ -37,4 +37,9 @@ public class ContinuationMessage implements HdfMessage {
                 ", continuationSize=" + continuationSize +
                 '}';
     }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+
+    }
 }

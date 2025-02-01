@@ -80,4 +80,9 @@ public class AttributeMessage implements HdfMessage {
                 ", value='" + value + '\'' +
                 '}';
     }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+
+    }
 }

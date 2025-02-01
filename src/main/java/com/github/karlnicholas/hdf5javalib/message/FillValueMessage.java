@@ -103,4 +103,9 @@ public class FillValueMessage implements HdfMessage {
     public byte[] getFillValue() {
         return fillValue;
     }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+
+    }
 }

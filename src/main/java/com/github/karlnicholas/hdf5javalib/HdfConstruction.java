@@ -13,14 +13,14 @@ public class HdfConstruction {
     // level 0
     private HdfSuperblock superblock;
     private HdfSymbolTableEntry rootGroupSymbolTableEntry;
-    private HdfObjectHeaderV1 objectHeader;
+    private HdfObjectHeaderPrefixV1 objectHeaderPrefix;
     // level 1A
     private HdfBTreeV1 bTree;
     // level 1D
     private HdfLocalHeap localHeap;
     private HdfLocalHeapContents localHeapContents;
     // level 2A1
-    private HdfDataObjectHeaderPrefixV1 dataObjectHeaderPrefix;
+    private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
 
     public void buildHfd() {
         buildSuperblock();
@@ -34,7 +34,7 @@ public class HdfConstruction {
         System.out.println("Building HFD");
         System.out.println("Superblock: " + superblock);
         System.out.println("Root symbol table entry: " + rootGroupSymbolTableEntry);
-        System.out.println("Object header: " + objectHeader);
+        System.out.println("Object header: " + objectHeaderPrefix);
         System.out.println("BTree: " + bTree);
         System.out.println("Local heap: " + localHeap);
         System.out.println("Local heap contents: " + localHeapContents);
@@ -93,7 +93,7 @@ public class HdfConstruction {
         SymbolTableMessage symbolTableMessage = new SymbolTableMessage(bTreeAddress, localHeapAddress);
 
         // Create the HdfObjectHeaderV1 instance
-        objectHeader = new HdfObjectHeaderV1(
+        objectHeaderPrefix = new HdfObjectHeaderPrefixV1(
                 1, // Version
                 1, // Total header messages
                 1, // Object reference count
@@ -275,7 +275,7 @@ public class HdfConstruction {
         );
 
         // Construct and return the instance
-        dataObjectHeaderPrefix = new HdfDataObjectHeaderPrefixV1(1, 8, 1, 1064, dataObjectHeaderMessages);
+        dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, 8, 1, 1064, dataObjectHeaderMessages);
     }
 
 }

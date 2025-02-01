@@ -113,4 +113,9 @@ public class DataTypeMessage implements HdfMessage {
         }
         return bits.toString();
     }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+
+    }
 }

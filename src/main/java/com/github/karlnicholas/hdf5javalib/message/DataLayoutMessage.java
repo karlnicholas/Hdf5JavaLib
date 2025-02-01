@@ -135,4 +135,9 @@ public class DataLayoutMessage implements HdfMessage {
     public HdfFixedPoint getDatasetElementSize() {
         return datasetElementSize;
     }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+
+    }
 }

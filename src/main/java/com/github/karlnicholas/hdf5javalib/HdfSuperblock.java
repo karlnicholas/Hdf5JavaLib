@@ -1,12 +1,15 @@
 package com.github.karlnicholas.hdf5javalib;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.util.Arrays;
 
+@Getter
 public class HdfSuperblock {
     private static final byte[] FILE_SIGNATURE = new byte[]{(byte) 0x89, 0x48, 0x44, 0x46, 0x0d, 0x0a, 0x1a, 0x0a};
 
@@ -128,20 +131,54 @@ public class HdfSuperblock {
         );
     }
 
-    public int getSizeOfOffsets() {
-        return sizeOfOffsets;
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        buffer.order(ByteOrder.LITTLE_ENDIAN); // Ensure little-endian ordering
+
+        // Step 1: Write the HDF5 file signature (8 bytes)
+        buffer.put(new byte[]{(byte) 0x89, 0x48, 0x44, 0x46, 0x0D, 0x0A, 0x1A, 0x0A});
+
+        // Step 2: Superblock metadata (8 bytes)
+        buffer.put((byte) version);              // Superblock version (1 byte)
+        buffer.put((byte) freeSpaceVersion);     // Free space storage version (1 byte)
+        buffer.put((byte) rootGroupVersion);     // Root group symbol table entry version (1 byte)
+        buffer.put((byte) 0);                    // Reserved (must be 0) (1 byte)
+        buffer.put((byte) sharedHeaderVersion);  // Shared object header format version (1 byte)
+        buffer.put((byte) sizeOfOffsets);        // Size of offsets (1 byte)
+        buffer.put((byte) sizeOfLengths);        // Size of lengths (1 byte)
+        buffer.put((byte) 0);                    // Reserved (must be 0) (1 byte)
+
+        // Step 3: B-tree settings & consistency flags
+        buffer.putShort((short) groupLeafNodeK);      // B-tree group leaf node K (2 bytes)
+        buffer.putShort((short) groupInternalNodeK);  // B-tree group internal node K (2 bytes)
+        buffer.putInt(0);                             // File consistency flags (must be 0) (4 bytes)
+
+        // Step 4: Address fields (sizeOfOffsets bytes each) in little-endian
+        writeFixedPointToBuffer(buffer, baseAddress, sizeOfOffsets);         // Base Address
+        writeFixedPointToBuffer(buffer, freeSpaceAddress, sizeOfOffsets);    // Free space address
+        writeFixedPointToBuffer(buffer, endOfFileAddress, sizeOfOffsets);    // End-of-file address
+        writeFixedPointToBuffer(buffer, driverInformationAddress, sizeOfOffsets); // Driver info block address
     }
 
-    public int getSizeOfLengths() {
-        return sizeOfLengths;
-    }
+    /**
+     * Writes an HdfFixedPoint value to the ByteBuffer in little-endian format.
+     * If undefined, fills with 0xFF.
+     */
+    private void writeFixedPointToBuffer(ByteBuffer buffer, HdfFixedPoint value, int size) {
+        byte[] bytesToWrite = new byte[size];
 
-    public HdfFixedPoint getBaseAddress() {
-        return baseAddress;
-    }
+        if (value.isUndefined()) {
+            Arrays.fill(bytesToWrite, (byte) 0xFF); // Fill with 0xFF if undefined
+        } else {
+            byte[] valueBytes = value.getBigIntegerValue().toByteArray();
+            int copySize = Math.min(valueBytes.length, size);
 
-    public int getVersion() {
-        return version;
+            // Store in little-endian format by reversing the order
+            for (int i = 0; i < copySize; i++) {
+                bytesToWrite[i] = valueBytes[copySize - 1 - i];
+            }
+        }
+
+        buffer.put(bytesToWrite); // Write the little-endian address to the buffer
     }
 
     @Override

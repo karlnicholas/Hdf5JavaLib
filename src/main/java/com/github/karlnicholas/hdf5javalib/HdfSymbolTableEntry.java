@@ -7,6 +7,7 @@ import lombok.Getter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Arrays;
 
 @Getter
 public class HdfSymbolTableEntry {
@@ -72,6 +73,51 @@ public class HdfSymbolTableEntry {
         }
 
         return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress, cacheType, bTreeAddress, localHeapAddress);
+    }
+
+    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+        // Write Link Name Offset (sizeOfOffsets bytes, little-endian)
+        writeFixedPointToBuffer(buffer, linkNameOffset, offsetSize);
+
+        // Write Object Header Address (sizeOfOffsets bytes, little-endian)
+        writeFixedPointToBuffer(buffer, objectHeaderAddress, offsetSize);
+
+        // Write Cache Type (4 bytes, little-endian)
+        buffer.putInt(cacheType);
+
+        // Write Reserved Field (4 bytes, must be 0)
+        buffer.putInt(0);
+
+        // If cacheType == 1, write B-tree Address and Local Heap Address
+        if (cacheType == 1) {
+            writeFixedPointToBuffer(buffer, bTreeAddress, offsetSize);
+            writeFixedPointToBuffer(buffer, localHeapAddress, offsetSize);
+        } else {
+            // If cacheType != 1, write 16 bytes of reserved "scratch-pad" space
+            buffer.put(new byte[16]);
+        }
+    }
+
+    /**
+     * Writes an `HdfFixedPoint` value to the `ByteBuffer` in **little-endian format**.
+     * If the value is undefined, it writes `0xFF` for all bytes.
+     */
+    private void writeFixedPointToBuffer(ByteBuffer buffer, HdfFixedPoint value, int size) {
+        byte[] bytesToWrite = new byte[size];
+
+        if (value.isUndefined()) {
+            Arrays.fill(bytesToWrite, (byte) 0xFF); // Undefined value → fill with 0xFF
+        } else {
+            byte[] valueBytes = value.getBigIntegerValue().toByteArray();
+            int copySize = Math.min(valueBytes.length, size);
+
+            // Store in **little-endian format** by reversing byte order
+            for (int i = 0; i < copySize; i++) {
+                bytesToWrite[i] = valueBytes[copySize - 1 - i];
+            }
+        }
+
+        buffer.put(bytesToWrite);
     }
 
     @Override

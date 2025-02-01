@@ -1,5 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.datatype;
 
+import lombok.Getter;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -7,6 +9,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
+@Getter
 public class HdfFixedPoint implements HdfDataType {
     private final byte[] bytes;
     private final int size;
@@ -151,11 +154,6 @@ public class HdfFixedPoint implements HdfDataType {
             reverseBytesInPlace(result);
         }
         return result;
-    }
-
-    // Check if the value is undefined
-    public boolean isUndefined() {
-        return undefined;
     }
 
     // Get HDF5 data type

@@ -1,7 +1,7 @@
 package com.github.karlnicholas.hdf5javalib;
 
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
-import com.github.karlnicholas.hdf5javalib.message.*;
+import com.github.karlnicholas.hdf5javalib.message.SymbolTableMessage;
 import lombok.Getter;
 
 import java.io.*;
@@ -12,14 +12,14 @@ public class HdfReader {
     // level 0
     private HdfSuperblock superblock;
     private HdfSymbolTableEntry rootGroupSymbolTableEntry;
-    private HdfObjectHeaderV1 objectHeader;
+    private HdfObjectHeaderPrefixV1 objectHeaderPrefix;
     // level 1A
     private HdfBTreeV1 bTree;
     // level 1D
     private HdfLocalHeap localHeap;
     private HdfLocalHeapContents localHeapContents;
     // level 2A1
-    private HdfDataObjectHeaderPrefixV1 dataObjectHeaderPrefix;
+    private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
     // parsed Datatype
     private CompoundDataType compoundDataType;
     private long dataAddress = 0;
@@ -43,11 +43,13 @@ public class HdfReader {
         long objectHeaderAddress =rootGroupSymbolTableEntry.getObjectHeaderAddress().getBigIntegerValue().longValue();
         // Parse the object header from the file using the superblock information
         System.out.print(objectHeaderAddress + " = ");
-        objectHeader = HdfObjectHeaderV1.readFromFileChannel(fileChannel, objectHeaderAddress, offsetSize, lengthSize);
-        System.out.println(objectHeader);
+        fileChannel.position(objectHeaderAddress);
+        objectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
+        System.out.println(objectHeaderPrefix);
 
         // Parse the local heap using the file channel
-        long localHeapAddress = objectHeader.getHdfSymbolTableMessage().getLocalHeapAddress().getBigIntegerValue().longValue();
+        long localHeapAddress = objectHeaderPrefix.findHdfSymbolTableMessage(SymbolTableMessage.class)
+                .orElseThrow().getLocalHeapAddress().getBigIntegerValue().longValue();
         System.out.print(localHeapAddress + " = ");
         localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, localHeapAddress, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
         System.out.println(localHeap);
@@ -61,7 +63,8 @@ public class HdfReader {
 
 
         if ( superblock.getVersion() == 0 ) {
-            long bTreeAddress = objectHeader.getHdfSymbolTableMessage().getBTreeAddress().getBigIntegerValue().longValue();
+            long bTreeAddress = objectHeaderPrefix.findHdfSymbolTableMessage(SymbolTableMessage.class)
+                    .orElseThrow().getBTreeAddress().getBigIntegerValue().longValue();
             fileChannel.position(bTreeAddress);
             System.out.print(bTreeAddress + " = ");
             bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
@@ -76,7 +79,7 @@ public class HdfReader {
         // Parse the Data Object Header Prefix next in line
         fileChannel.position(hdfSymbolTableNode.getSymbolTableEntries().get(0).getObjectHeaderAddress().getBigIntegerValue().longValue());
         System.out.print(fileChannel.position() + " = ");
-        dataObjectHeaderPrefix = HdfDataObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
+        dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
         System.out.println(dataObjectHeaderPrefix);
 
 //        for (HdfMessage message : dataObjectHeaderPrefix.getDataObjectHeaderMessages()) {

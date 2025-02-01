@@ -53,4 +53,9 @@ public class ObjectModificationTimeMessage implements HdfMessage {
                 ", secondsAfterEpoch=" + secondsAfterEpoch +
                 '}';
     }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+
+    }
 }

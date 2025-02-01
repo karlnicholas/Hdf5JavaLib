@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Spliterator;
 
@@ -52,7 +51,9 @@ public class App {
         HdfFileBuilder builder = new HdfFileBuilder();
 
 // Define a root group
-        builder.addGroup("root", 96);
+        builder.rootGroup(96);
+
+        builder.objectHeader();
 
         int[] dimensionSizes=new int[] {0, 0, 0, 0};
 // Define a dataset with correct CompoundDataType members

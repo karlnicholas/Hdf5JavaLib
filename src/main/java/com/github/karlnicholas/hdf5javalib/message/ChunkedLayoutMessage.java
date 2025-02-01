@@ -40,4 +40,9 @@ public class ChunkedLayoutMessage implements HdfMessage {
                 ", address=" + (address != null ? address.getBigIntegerValue() : "null") +
                 '}';
     }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+
+    }
 }

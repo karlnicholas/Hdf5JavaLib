@@ -32,4 +32,9 @@ public class ContiguousLayoutMessage implements HdfMessage {
                 ", size=" + (size != null ? size.getBigIntegerValue() : "null") +
                 '}';
     }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+
+    }
 }

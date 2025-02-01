@@ -63,4 +63,9 @@ public class BTreeKValuesMessage implements HdfMessage {
                 ", groupLeafNodeK=" + groupLeafNodeK +
                 '}';
     }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+
+    }
 }

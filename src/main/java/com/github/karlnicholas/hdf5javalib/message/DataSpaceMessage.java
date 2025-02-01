@@ -111,4 +111,9 @@ public class DataSpaceMessage implements HdfMessage {
     public boolean hasMaxDimensions() {
         return hasMaxDimensions;
     }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+
+    }
 }
