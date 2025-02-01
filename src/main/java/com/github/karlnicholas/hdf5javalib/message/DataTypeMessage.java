@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 @Getter
-public class DataTypeMessage implements HdfMessage {
+public class DataTypeMessage extends HdfMessage {
     private final int version;                 // Version of the datatype message
     private final int dataTypeClass;           // Datatype class
     private final BitSet classBitField;        // Class Bit Field (24 bits)
@@ -21,6 +21,7 @@ public class DataTypeMessage implements HdfMessage {
 
     // Constructor to initialize all fields
     public DataTypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size) {
+        super(3, ()->8,(byte)0);
         this.version = version;
         this.dataTypeClass = dataTypeClass;
         this.classBitField = classBitField;

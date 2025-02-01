@@ -91,6 +91,11 @@ public class HdfString implements HdfDataType {
         return getValue();
     }
 
+    @Override
+    public int getSizeMessageData() {
+        return bytes.length;
+    }
+
 //    @Override
 //    public String toString() {
 //        return "HdfString{" +

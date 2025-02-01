@@ -216,4 +216,9 @@ public class HdfFixedPoint implements HdfDataType {
     public String toString() {
         return isUndefined() ? "\"Value undefined\"" : getBigIntegerValue().toString();
     }
+
+    @Override
+    public int getSizeMessageData() {
+        return size;
+    }
 }

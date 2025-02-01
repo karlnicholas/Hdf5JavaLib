@@ -1,14 +1,18 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
+import lombok.Getter;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class ObjectModificationTimeMessage implements HdfMessage {
+@Getter
+public class ObjectModificationTimeMessage extends HdfMessage {
     private final int version;
     private final long secondsAfterEpoch;
 
     // Constructor to initialize all fields
     public ObjectModificationTimeMessage(int version, long secondsAfterEpoch) {
+        super(18, ()->4, (byte)0);
         this.version = version;
         this.secondsAfterEpoch = secondsAfterEpoch;
     }
@@ -36,14 +40,6 @@ public class ObjectModificationTimeMessage implements HdfMessage {
 
         // Return a constructed instance of ObjectModificationTimeMessage
         return new ObjectModificationTimeMessage(version, secondsAfterEpoch);
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public long getSecondsAfterEpoch() {
-        return secondsAfterEpoch;
     }
 
     @Override

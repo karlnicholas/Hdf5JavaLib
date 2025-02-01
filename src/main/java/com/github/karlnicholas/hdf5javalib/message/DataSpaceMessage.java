@@ -1,12 +1,14 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-public class DataSpaceMessage implements HdfMessage {
+@Getter
+public class DataSpaceMessage extends HdfMessage {
     private final int version; // Version of the dataspace message
     private final int dimensionality; // Number of dimensions (rank)
     private final int flags;
@@ -23,6 +25,18 @@ public class DataSpaceMessage implements HdfMessage {
             HdfFixedPoint[] maxDimensions,
             boolean hasMaxDimensions
     ) {
+        super(1, ()->{
+            int size = 8;
+            for (HdfFixedPoint dimension : dimensions) {
+                size += dimension.getSizeMessageData();
+            }
+            if ( maxDimensions != null ) {
+                for (HdfFixedPoint maxDimension : maxDimensions) {
+                    size += maxDimension.getSizeMessageData();
+                }
+            }
+            return size;
+        }, hasMaxDimensions?(byte)1:(byte)0);
         this.version = version;
         this.dimensionality = dimensionality;
         this.flags = flags;
@@ -85,31 +99,6 @@ public class DataSpaceMessage implements HdfMessage {
                 ", maxDimensions=" + (hasMaxDimensions ? Arrays.toString(maxDimensions) : "Not Present") +
                 ", hasMaxDimensions=" + hasMaxDimensions +
                 '}';
-    }
-
-    // Getters for all fields
-    public int getVersion() {
-        return version;
-    }
-
-    public int getDimensionality() {
-        return dimensionality;
-    }
-
-    public int getFlags() {
-        return flags;
-    }
-
-    public HdfFixedPoint[] getDimensions() {
-        return dimensions;
-    }
-
-    public HdfFixedPoint[] getMaxDimensions() {
-        return maxDimensions;
-    }
-
-    public boolean hasMaxDimensions() {
-        return hasMaxDimensions;
     }
 
     @Override

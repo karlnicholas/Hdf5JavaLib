@@ -65,8 +65,8 @@ public class HdfReader {
         if ( superblock.getVersion() == 0 ) {
             long bTreeAddress = objectHeaderPrefix.findHdfSymbolTableMessage(SymbolTableMessage.class)
                     .orElseThrow().getBTreeAddress().getBigIntegerValue().longValue();
-            fileChannel.position(bTreeAddress);
             System.out.print(bTreeAddress + " = ");
+            fileChannel.position(bTreeAddress);
             bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
             bTree.parseBTreeAndLocalHeap(localHeapContents);
             System.out.println(bTree);

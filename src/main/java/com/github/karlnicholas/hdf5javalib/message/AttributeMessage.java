@@ -1,22 +1,23 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
+import com.github.karlnicholas.hdf5javalib.datatype.HdfDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.createMessageInstance;
 
-public class AttributeMessage implements HdfMessage {
+public class AttributeMessage extends HdfMessage {
     private int version;
     private int nameSize;
     private int datatypeSize;
     private int dataspaceSize;
     private HdfString name;
-    private Object value;
+    private HdfDataType value;
 
-    public AttributeMessage(int version, int nameSize, int datatypeSize, int dataspaceSize, HdfString name, Object value) {
+    public AttributeMessage(int version, int nameSize, int datatypeSize, int dataspaceSize, HdfString name, HdfDataType value) {
+        super(12, ()->1+1+2+2+2+nameSize+(((((nameSize + 1) / 8) + 1) * 8) - nameSize)+datatypeSize+dataspaceSize+value.getSizeMessageData(), (byte)0);
         this.version = version;
         this.nameSize = nameSize;
         this.datatypeSize = datatypeSize;
@@ -58,10 +59,11 @@ public class AttributeMessage implements HdfMessage {
         DataSpaceMessage ds = (DataSpaceMessage) hdfDataObjectHeaderDs;
 
 
-        Object value = null;
+        HdfDataType value = null;
 
         if ( dt.getDataTypeClass() == 3 ) {
-            byte[] dataBytes = new byte[dt.getSize().getBigIntegerValue().intValue()];
+            int dtDataSize = dt.getSize().getBigIntegerValue().intValue();
+            byte[] dataBytes = new byte[dtDataSize];
             buffer.get(dataBytes);
             dt.addDataType(dataBytes);
             value = dt.getHdfDataType();

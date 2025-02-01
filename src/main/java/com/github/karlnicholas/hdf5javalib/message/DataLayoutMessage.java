@@ -1,12 +1,14 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-public class DataLayoutMessage implements HdfMessage {
+@Getter
+public class DataLayoutMessage extends HdfMessage {
     private final int version;
     private final int layoutClass;
     private final HdfFixedPoint dataAddress;
@@ -25,6 +27,15 @@ public class DataLayoutMessage implements HdfMessage {
             byte[] compactData,
             HdfFixedPoint datasetElementSize
     ) {
+        super(8, ()->{
+            int size = 1+1+dataAddress.getSizeMessageData();
+            for (HdfFixedPoint dimensionSize : dimensionSizes) {
+                size += dimensionSize.getSizeMessageData();
+            }
+            size += 2;
+            size += datasetElementSize == null ? 0: datasetElementSize.getSizeMessageData();
+            return size;
+        }, (byte)0);
         this.version = version;
         this.layoutClass = layoutClass;
         this.dataAddress = dataAddress;
@@ -105,35 +116,6 @@ public class DataLayoutMessage implements HdfMessage {
                 ", compactData=" + (layoutClass == 0 ? Arrays.toString(compactData) : "N/A") +
                 ", datasetElementSize=" + (layoutClass == 2 ? datasetElementSize : "N/A") +
                 '}';
-    }
-
-    // Getters for all fields
-    public int getVersion() {
-        return version;
-    }
-
-    public int getLayoutClass() {
-        return layoutClass;
-    }
-
-    public HdfFixedPoint getDataAddress() {
-        return dataAddress;
-    }
-
-    public HdfFixedPoint[] getDimensionSizes() {
-        return dimensionSizes;
-    }
-
-    public int getCompactDataSize() {
-        return compactDataSize;
-    }
-
-    public byte[] getCompactData() {
-        return compactData;
-    }
-
-    public HdfFixedPoint getDatasetElementSize() {
-        return datasetElementSize;
     }
 
     @Override

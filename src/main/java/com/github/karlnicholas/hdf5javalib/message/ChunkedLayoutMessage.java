@@ -6,13 +6,14 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-public class ChunkedLayoutMessage implements HdfMessage {
+public class ChunkedLayoutMessage extends HdfMessage {
     private int version;
     private int rank;
     private long[] chunkSizes;
     private HdfFixedPoint address;
 
     public ChunkedLayoutMessage(int version, int rank, long[] chunkSizes, HdfFixedPoint address) {
+        super(-1, ()->1+2+2+2, (byte)0);
         this.version = version;
         this.rank = rank;
         this.chunkSizes = chunkSizes;

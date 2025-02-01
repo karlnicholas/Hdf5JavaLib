@@ -1,11 +1,13 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class FillValueMessage implements HdfMessage {
+@Getter
+public class FillValueMessage extends HdfMessage {
     private final int version;              // 1 byte
     private final int spaceAllocationTime;  // 1 byte
     private final int fillValueWriteTime;   // 1 byte
@@ -22,6 +24,7 @@ public class FillValueMessage implements HdfMessage {
             HdfFixedPoint size,
             byte[] fillValue
     ) {
+        super(5, ()->8+size.getSizeMessageData()+size.getBigIntegerValue().intValue(), (byte)0);
         this.version = version;
         this.spaceAllocationTime = spaceAllocationTime;
         this.fillValueWriteTime = fillValueWriteTime;
@@ -77,31 +80,6 @@ public class FillValueMessage implements HdfMessage {
                 ", size=" + (size != null ? size.getBigIntegerValue() : "undefined") +
                 ", fillValue=" + (fillValue != null ? fillValue.length + " bytes" : "undefined") +
                 '}';
-    }
-
-    // Getters for all fields
-    public int getVersion() {
-        return version;
-    }
-
-    public int getSpaceAllocationTime() {
-        return spaceAllocationTime;
-    }
-
-    public int getFillValueWriteTime() {
-        return fillValueWriteTime;
-    }
-
-    public int getFillValueDefined() {
-        return fillValueDefined;
-    }
-
-    public HdfFixedPoint getSize() {
-        return size;
-    }
-
-    public byte[] getFillValue() {
-        return fillValue;
     }
 
     @Override

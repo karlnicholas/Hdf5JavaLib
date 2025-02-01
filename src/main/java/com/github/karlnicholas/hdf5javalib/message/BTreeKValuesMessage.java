@@ -12,13 +12,14 @@ import java.nio.ByteOrder;
  * Description: Retrieves non-default ‘K’ values for internal and leaf nodes
  * of a group or indexed storage v1 B-trees. This message is only found in the superblock extension.
  */
-public class BTreeKValuesMessage implements HdfMessage {
+public class BTreeKValuesMessage extends HdfMessage {
     private int version;
     private int indexedStorageInternalNodeK;
     private int groupInternalNodeK;
     private int groupLeafNodeK;
 
     public BTreeKValuesMessage(int version, int indexedStorageInternalNodeK, int groupInternalNodeK, int groupLeafNodeK) {
+        super(19, ()->1+2+2+2, (byte)0);
         this.version = version;
         this.indexedStorageInternalNodeK = indexedStorageInternalNodeK;
         this.groupInternalNodeK = groupInternalNodeK;

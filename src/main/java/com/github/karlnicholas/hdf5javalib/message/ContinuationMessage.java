@@ -5,11 +5,12 @@ import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class ContinuationMessage implements HdfMessage {
+public class ContinuationMessage extends HdfMessage {
     private HdfFixedPoint continuationOffset; // Offset of the continuation block
     private HdfFixedPoint continuationSize;   // Size of the continuation block
 
     public ContinuationMessage(final HdfFixedPoint continuationOffset, final HdfFixedPoint continuationSize) {
+        super(16, ()->continuationOffset.getSizeMessageData() + continuationSize.getSizeMessageData(), (byte)0);
         this.continuationOffset = continuationOffset;
         this.continuationSize = continuationSize;
     }

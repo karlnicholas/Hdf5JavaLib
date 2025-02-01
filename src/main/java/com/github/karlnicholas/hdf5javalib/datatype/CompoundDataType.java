@@ -162,6 +162,11 @@ public class CompoundDataType implements HdfDataType {
         return builder.toString();
     }
 
+    @Override
+    public int getSizeMessageData() {
+        return size;
+    }
+
     public static class Member {
         @Getter
         private final String name;

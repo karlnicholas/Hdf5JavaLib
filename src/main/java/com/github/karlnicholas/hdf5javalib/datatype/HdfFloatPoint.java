@@ -104,4 +104,9 @@ public class HdfFloatPoint implements HdfDataType {
                     getDoubleValue(), size, littleEndian, Arrays.toString(bytes));
         }
     }
+
+    @Override
+    public int getSizeMessageData() {
+        return bytes.length;
+    }
 }

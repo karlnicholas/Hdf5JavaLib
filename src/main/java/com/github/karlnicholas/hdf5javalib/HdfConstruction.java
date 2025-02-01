@@ -259,7 +259,7 @@ public class HdfConstruction {
         // AttributeMessage
         AttributeMessage attributeMessage = new AttributeMessage(
                 1, 18, 8, 8, new HdfString("GIT root revision", false),
-                "Revision: , URL:"
+                new HdfString("Revision: , URL:", false)
         );
 
         // Combine all messages

@@ -8,12 +8,13 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 @Getter
-public class SymbolTableMessage implements HdfMessage {
+public class SymbolTableMessage extends HdfMessage {
     private final HdfFixedPoint bTreeAddress;
     private final HdfFixedPoint localHeapAddress;
 
     // Constructor to create SymbolTableMessage directly with values
     public SymbolTableMessage(HdfFixedPoint bTreeAddress, HdfFixedPoint localHeapAddress) {
+        super(17, ()->bTreeAddress.getSizeMessageData() + localHeapAddress.getSizeMessageData(), (byte)0);
         this.bTreeAddress = bTreeAddress;
         this.localHeapAddress = localHeapAddress;
     }

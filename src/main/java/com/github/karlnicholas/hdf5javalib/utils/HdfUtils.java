@@ -62,9 +62,9 @@ public class HdfUtils {
             case 5 -> FillValueMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 8 -> DataLayoutMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 12 -> AttributeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 18 -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 16 -> ContinuationMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 17 -> SymbolTableMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 18 -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 19 -> BTreeKValuesMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             default -> throw new IllegalArgumentException("Unknown message type: " + type);
         };

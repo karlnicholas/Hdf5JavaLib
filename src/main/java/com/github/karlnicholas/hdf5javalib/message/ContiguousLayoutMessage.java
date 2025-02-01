@@ -5,12 +5,13 @@ import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class ContiguousLayoutMessage implements HdfMessage {
+public class ContiguousLayoutMessage extends HdfMessage {
     private int version;
     private HdfFixedPoint address;
     private HdfFixedPoint size;
 
     public ContiguousLayoutMessage(int version, HdfFixedPoint address, HdfFixedPoint size) {
+        super(-1, ()->1+8+8, (byte)0);
         this.version = version;
         this.address = address;
         this.size = size;

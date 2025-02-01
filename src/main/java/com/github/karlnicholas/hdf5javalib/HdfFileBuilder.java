@@ -107,7 +107,7 @@ public class HdfFileBuilder {
 
         String attributeName = "GIT root revision";
         String attributeValue = "Revision: , URL: ";
-        dataObject.getHeaderMessages().add(new AttributeMessage(1, name.length(), 8, 8, new HdfString(attributeName, false), attributeValue));
+        dataObject.getHeaderMessages().add(new AttributeMessage(1, name.length(), 8, 8, new HdfString(attributeName, false), new HdfString(attributeValue, false)));
 
         // Store the dataset
         // TODO: Convert `data` into HDF5 binary format for actual writing
