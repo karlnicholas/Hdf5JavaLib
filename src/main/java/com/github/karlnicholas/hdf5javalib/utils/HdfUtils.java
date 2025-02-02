@@ -27,7 +27,7 @@ public class HdfUtils {
     }
 
     // Parse header messages
-    public static void parseDataObjectHeaderMessages(FileChannel fileChannel, int objectHeaderSize, int offsetSize, int lengthSize, List<HdfMessage> headerMessages) throws IOException {
+    public static void parseDataObjectHeaderMessages(FileChannel fileChannel, short objectHeaderSize, short offsetSize, short lengthSize, List<HdfMessage> headerMessages) throws IOException {
         ByteBuffer buffer  = ByteBuffer.allocate(objectHeaderSize).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();
@@ -50,7 +50,7 @@ public class HdfUtils {
         }
     }
 
-    public static HdfMessage createMessageInstance(int type, byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public static HdfMessage createMessageInstance(int type, byte flags, byte[] data, short offsetSize, short lengthSize) {
         return switch (type) {
             case 0 -> NullMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 1 -> DataSpaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
@@ -71,10 +71,10 @@ public class HdfUtils {
     }
 
     // TODO: fix recursion
-    public static void parseContinuationMessage(FileChannel fileChannel, ContinuationMessage continuationMessage, int offsetSize, int lengthSize, List<HdfMessage> headerMessages) throws IOException {
+    public static void parseContinuationMessage(FileChannel fileChannel, ContinuationMessage continuationMessage, short offsetSize, short lengthSize, List<HdfMessage> headerMessages) throws IOException {
 
         long continuationOffset = continuationMessage.getContinuationOffset().getBigIntegerValue().longValue();
-        int continuationSize = continuationMessage.getContinuationSize().getBigIntegerValue().intValue();
+        short continuationSize = continuationMessage.getContinuationSize().getBigIntegerValue().shortValueExact();
 
         // Move to the continuation block offset
         fileChannel.position(continuationOffset);

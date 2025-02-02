@@ -44,7 +44,7 @@ public class HdfConstruction {
 
     private void buildSuperblock() {
         // Create "undefined" HdfFixedPoint instances
-        HdfFixedPoint undefinedAddress = HdfFixedPoint.undefined(8); // Size of offsets = 8
+        HdfFixedPoint undefinedAddress = HdfFixedPoint.undefined((short) 8); // Size of offsets = 8
 
         // Create specific HdfFixedPoint instances for defined values
         HdfFixedPoint baseAddress = new HdfFixedPoint(BigInteger.ZERO, true); // Base address = 0, little-endian
@@ -56,8 +56,8 @@ public class HdfConstruction {
                 0,                          // freeSpaceVersion
                 0,                          // rootGroupVersion
                 0,                          // sharedHeaderVersion
-                8,                          // sizeOfOffsets
-                8,                          // sizeOfLengths
+                (short)8,                          // sizeOfOffsets
+                (short)8,                          // sizeOfLengths
                 4,                          // groupLeafNodeK
                 16,                         // groupInternalNodeK
                 baseAddress,                // baseAddress
@@ -110,8 +110,8 @@ public class HdfConstruction {
         int entriesUsed = 1;
 
         // Create undefined HdfFixedPoint values for sibling addresses
-        HdfFixedPoint leftSiblingAddress = HdfFixedPoint.undefined(8);
-        HdfFixedPoint rightSiblingAddress = HdfFixedPoint.undefined(8);
+        HdfFixedPoint leftSiblingAddress = HdfFixedPoint.undefined((short)8);
+        HdfFixedPoint rightSiblingAddress = HdfFixedPoint.undefined((short)8);
 
         // Create the childPointers and keys
         List<HdfFixedPoint> childPointers = Collections.singletonList(new HdfFixedPoint(BigInteger.valueOf(1880), true));
@@ -192,39 +192,39 @@ public class HdfConstruction {
         // DataTypeMessage with CompoundDataType
         List<CompoundDataType.Member> members = List.of(
                 new CompoundDataType.Member("Id", 0, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember(8, false, false, false, false, 0, 64)),
+                        new CompoundDataType.FixedPointMember((short)8, false, false, false, false, 0, 64)),
                 new CompoundDataType.Member("origCountry", 8, 0, 0, new int[4],
-                        new CompoundDataType.StringMember(2, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)2, 0, "Null Terminate", 0, "ASCII")),
                 new CompoundDataType.Member("origSlic", 10, 0, 0, new int[4],
-                        new CompoundDataType.StringMember(5, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)5, 0, "Null Terminate", 0, "ASCII")),
                 new CompoundDataType.Member("origSort", 15, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
                 new CompoundDataType.Member("destCountry", 16, 0, 0, new int[4],
-                        new CompoundDataType.StringMember(2, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)2, 0, "Null Terminate", 0, "ASCII")),
                 new CompoundDataType.Member("destSlic", 18, 0, 0, new int[4],
-                        new CompoundDataType.StringMember(5, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)5, 0, "Null Terminate", 0, "ASCII")),
                 new CompoundDataType.Member("destIbi", 23, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
                 new CompoundDataType.Member("destPostalCode", 40, 0, 0, new int[4],
-                        new CompoundDataType.StringMember(9, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)9, 0, "Null Terminate", 0, "ASCII")),
                 new CompoundDataType.Member("shipper", 24, 0, 0, new int[4],
-                        new CompoundDataType.StringMember(10, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)10, 0, "Null Terminate", 0, "ASCII")),
                 new CompoundDataType.Member("service", 49, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
                 new CompoundDataType.Member("packageType", 50, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
                 new CompoundDataType.Member("accessorials", 51, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
                 new CompoundDataType.Member("pieces", 52, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember(2, false, false, false, false, 0, 16)),
+                        new CompoundDataType.FixedPointMember((short)2, false, false, false, false, 0, 16)),
                 new CompoundDataType.Member("weight", 34, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember(2, false, false, false, false, 0, 16)),
+                        new CompoundDataType.FixedPointMember((short)2, false, false, false, false, 0, 16)),
                 new CompoundDataType.Member("cube", 36, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember(4, false, false, false, false, 0, 32)),
+                        new CompoundDataType.FixedPointMember((short)4, false, false, false, false, 0, 32)),
                 new CompoundDataType.Member("committedTnt", 54, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
                 new CompoundDataType.Member("committedDate", 55, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember(1, false, false, false, false, 0, 8))
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8))
         );
         CompoundDataType compoundDataType = new CompoundDataType(17, 56, members);
         DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new long[]{17}), new HdfFixedPoint(BigInteger.valueOf(56), false) );

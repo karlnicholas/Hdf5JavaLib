@@ -12,7 +12,7 @@ public class ObjectModificationTimeMessage extends HdfMessage {
 
     // Constructor to initialize all fields
     public ObjectModificationTimeMessage(int version, long secondsAfterEpoch) {
-        super(18, ()->4, (byte)0);
+        super((short) 18, ()-> (short) 4, (byte)0);
         this.version = version;
         this.secondsAfterEpoch = secondsAfterEpoch;
     }

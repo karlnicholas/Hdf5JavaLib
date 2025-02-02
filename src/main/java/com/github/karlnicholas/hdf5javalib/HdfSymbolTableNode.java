@@ -24,7 +24,7 @@ public class HdfSymbolTableNode {
         this.symbolTableEntries = symbolTableEntries;
     }
 
-    public static HdfSymbolTableNode readFromFileChannel(FileChannel fileChannel, int offsetSize) throws IOException {
+    public static HdfSymbolTableNode readFromFileChannel(FileChannel fileChannel, short offsetSize) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();

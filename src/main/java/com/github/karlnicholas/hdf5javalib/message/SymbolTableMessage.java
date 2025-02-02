@@ -14,12 +14,12 @@ public class SymbolTableMessage extends HdfMessage {
 
     // Constructor to create SymbolTableMessage directly with values
     public SymbolTableMessage(HdfFixedPoint bTreeAddress, HdfFixedPoint localHeapAddress) {
-        super(17, ()->bTreeAddress.getSizeMessageData() + localHeapAddress.getSizeMessageData(), (byte)0);
+        super((short) 17, ()-> (short) (bTreeAddress.getSizeMessageData() + localHeapAddress.getSizeMessageData()), (byte)0);
         this.bTreeAddress = bTreeAddress;
         this.localHeapAddress = localHeapAddress;
     }
 
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         HdfFixedPoint bTreeAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
         HdfFixedPoint localHeapAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
@@ -28,6 +28,7 @@ public class SymbolTableMessage extends HdfMessage {
 
     @Override
     public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+        writeMessageData(buffer);
         // Write B-tree address (sizeOfOffsets bytes, little-endian)
         writeFixedPointToBuffer(buffer, bTreeAddress, offsetSize);
 

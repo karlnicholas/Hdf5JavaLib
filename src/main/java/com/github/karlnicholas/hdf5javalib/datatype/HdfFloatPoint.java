@@ -106,7 +106,7 @@ public class HdfFloatPoint implements HdfDataType {
     }
 
     @Override
-    public int getSizeMessageData() {
-        return bytes.length;
+    public short getSizeMessageData() {
+        return (short) bytes.length;
     }
 }

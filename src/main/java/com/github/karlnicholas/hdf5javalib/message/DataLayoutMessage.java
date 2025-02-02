@@ -27,8 +27,8 @@ public class DataLayoutMessage extends HdfMessage {
             byte[] compactData,
             HdfFixedPoint datasetElementSize
     ) {
-        super(8, ()->{
-            int size = 1+1+dataAddress.getSizeMessageData();
+        super((short) 8, ()->{
+            short size = (short) (1+1+dataAddress.getSizeMessageData());
             for (HdfFixedPoint dimensionSize : dimensionSizes) {
                 size += dimensionSize.getSizeMessageData();
             }
@@ -54,7 +54,7 @@ public class DataLayoutMessage extends HdfMessage {
      * @param lengthSize Size of lengths in bytes (not used here).
      * @return A fully constructed `DataLayoutMessage` instance.
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Read version (1 byte)
@@ -94,7 +94,7 @@ public class DataLayoutMessage extends HdfMessage {
                 for (int i = 0; i < numDimensions; i++) {
                     dimensionSizes[i] = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false); // Dimension sizes
                 }
-                datasetElementSize = HdfFixedPoint.readFromByteBuffer(buffer, 4, false); // Dataset element size (4 bytes)
+                datasetElementSize = HdfFixedPoint.readFromByteBuffer(buffer, (short)4, false); // Dataset element size (4 bytes)
                 break;
 
             default:

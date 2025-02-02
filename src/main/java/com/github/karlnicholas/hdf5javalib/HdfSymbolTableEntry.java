@@ -31,7 +31,7 @@ public class HdfSymbolTableEntry {
         this.localHeapAddress = localHeapAddress;
     }
 
-    public static HdfSymbolTableEntry fromFileChannel(FileChannel fileChannel, int offsetSize) throws IOException {
+    public static HdfSymbolTableEntry fromFileChannel(FileChannel fileChannel, short offsetSize) throws IOException {
         // Read the fixed-point values for linkNameOffset and objectHeaderAddress
         HdfFixedPoint linkNameOffset = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, false);
         HdfFixedPoint objectHeaderAddress = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, false);
@@ -53,7 +53,7 @@ public class HdfSymbolTableEntry {
         return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress, cacheType, bTreeAddress, localHeapAddress);
     }
 
-    public static HdfSymbolTableEntry fromByteBuffer(ByteBuffer buffer, int offsetSize) {
+    public static HdfSymbolTableEntry fromByteBuffer(ByteBuffer buffer, short offsetSize) {
         // Read the fixed-point values for linkNameOffset and objectHeaderAddress
         HdfFixedPoint linkNameOffset = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
         HdfFixedPoint objectHeaderAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);

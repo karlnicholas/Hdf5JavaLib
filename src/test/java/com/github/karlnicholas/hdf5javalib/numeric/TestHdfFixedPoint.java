@@ -13,42 +13,42 @@ public class TestHdfFixedPoint {
     @Test
     public void testSigned32BitBigEndian() {
         ByteBuffer buffer = ByteBuffer.allocate(4).putInt(65536).flip();
-        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, 4, true);
+        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, (short)4, true);
         assertEquals(new BigInteger("65536"), fixedPoint.getBigIntegerValue());
     }
 
     @Test
     public void testSigned32BitLittleEndian() {
         ByteBuffer buffer = ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putInt(65536).flip();
-        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, 4, true);
+        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, (short)4, true);
         assertEquals(new BigInteger("65536"), fixedPoint.getBigIntegerValue());
     }
 
     @Test
     public void testNegativeSigned32BitLittleEndian() {
         ByteBuffer buffer = ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putInt(-1).flip();
-        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, 4, true);
+        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, (short)4, true);
         assertEquals(new BigInteger("-1"), fixedPoint.getBigIntegerValue());
     }
 
     @Test
     public void testUnsigned32BitBigEndian() {
         ByteBuffer buffer = ByteBuffer.allocate(4).putInt(0xFFFEFFFF).flip();
-        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, 4, false);
+        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, (short)4, false);
         assertEquals(new BigInteger("4294901759"), fixedPoint.getBigIntegerValue());
     }
 
     @Test
     public void testUnsigned32BitLittleEndian() {
         ByteBuffer buffer = ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putInt(0xFFFEFFFF).flip();
-        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, 4, false);
+        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, (short)4, false);
         assertEquals(new BigInteger("4294901759"), fixedPoint.getBigIntegerValue());
     }
 
     @Test
     public void testGetHdfBytesBigEndian() {
         ByteBuffer buffer = ByteBuffer.allocate(4).putInt(0xFFFEFFFF).flip();
-        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, 4, false);
+        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, (short)4, false);
         byte[] hdfBytes = fixedPoint.getHdfBytes(false); // Request big-endian bytes
         assertArrayEquals(new byte[]{(byte) 0xFF, (byte) 0xFE, (byte) 0xFF, (byte) 0xFF}, hdfBytes);
     }
@@ -56,7 +56,7 @@ public class TestHdfFixedPoint {
     @Test
     public void testGetHdfBytesLittleEndian() {
         ByteBuffer buffer = ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putInt(0xFFFEFFFF).flip();
-        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, 4, false);
+        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, (short)4, false);
         byte[] hdfBytes = fixedPoint.getHdfBytes(true); // Request little-endian bytes
         assertArrayEquals(new byte[]{(byte) 0xFF, (byte) 0xFF, (byte) 0xFE, (byte) 0xFF}, hdfBytes);
     }
@@ -64,7 +64,7 @@ public class TestHdfFixedPoint {
     @Test
     public void testGetHdfBytesSwitchToBigEndian() {
         ByteBuffer buffer = ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putInt(0xFFFEFFFF).flip();
-        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, 4, false);
+        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(buffer, (short)4, false);
         byte[] hdfBytes = fixedPoint.getHdfBytes(false); // Request big-endian bytes
         assertArrayEquals(new byte[]{(byte) 0xFF, (byte) 0xFE, (byte) 0xFF, (byte) 0xFF}, hdfBytes);
     }

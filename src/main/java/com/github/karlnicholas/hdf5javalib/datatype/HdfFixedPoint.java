@@ -12,7 +12,7 @@ import java.util.Arrays;
 @Getter
 public class HdfFixedPoint implements HdfDataType {
     private final byte[] bytes;
-    private final int size;
+    private final short size;
     private final boolean signed;
     private final boolean littleEndian;
     private final boolean undefined;
@@ -30,7 +30,7 @@ public class HdfFixedPoint implements HdfDataType {
         this.undefined = false;
     }
 
-    public HdfFixedPoint(boolean undefined, byte[] bytes, int size) {
+    public HdfFixedPoint(boolean undefined, byte[] bytes, short size) {
         validateSize(size);
         this.bytes = Arrays.copyOf(bytes, bytes.length);
         this.size = size;
@@ -40,7 +40,7 @@ public class HdfFixedPoint implements HdfDataType {
     }
 
     // Private constructor for internal usage
-    private HdfFixedPoint(byte[] bytes, int size, boolean signed, boolean littleEndian) {
+    private HdfFixedPoint(byte[] bytes, short size, boolean signed, boolean littleEndian) {
         validateSize(size);
         this.bytes = Arrays.copyOf(bytes, bytes.length);
         this.size = size;
@@ -59,11 +59,11 @@ public class HdfFixedPoint implements HdfDataType {
     }
 
     // Constructor for FileChannel
-    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, int size, boolean signed) throws IOException {
+    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, short size, boolean signed) throws IOException {
         return readFromFileChannel(fileChannel, size, signed, true); // Default to little-endian
     }
 
-    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, int size, boolean signed, boolean littleEndian) throws IOException {
+    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, short size, boolean signed, boolean littleEndian) throws IOException {
         validateSize(size);
         byte[] bytes = new byte[size];
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
@@ -78,11 +78,11 @@ public class HdfFixedPoint implements HdfDataType {
     }
 
     // Constructor for ByteBuffer
-    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, int size, boolean signed) {
+    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, short size, boolean signed) {
         return readFromByteBuffer(buffer, size, signed, true); // Default to little-endian
     }
 
-    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, int size, boolean signed, boolean littleEndian) {
+    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, short size, boolean signed, boolean littleEndian) {
         validateSize(size);
         byte[] bytes = new byte[size];
         buffer.get(bytes);
@@ -97,14 +97,14 @@ public class HdfFixedPoint implements HdfDataType {
     }
 
     // Factory method for undefined values
-    public static HdfFixedPoint undefined(int size) {
+    public static HdfFixedPoint undefined(short size) {
         byte[] undefinedBytes = new byte[size];
         Arrays.fill(undefinedBytes, (byte) 0xFF);
         return new HdfFixedPoint(true, undefinedBytes, size);
     }
 
     // Factory method for undefined values
-    public static HdfFixedPoint undefined(ByteBuffer buffer, int size) {
+    public static HdfFixedPoint undefined(ByteBuffer buffer, short size) {
         byte[] undefinedBytes = new byte[size];
         buffer.get(undefinedBytes);
         return new HdfFixedPoint(true, undefinedBytes, size);
@@ -124,7 +124,7 @@ public class HdfFixedPoint implements HdfDataType {
     }
 
     // Determine size based on bit length
-    private int determineSize(BigInteger value) {
+    private short determineSize(BigInteger value) {
         int bitLength = value.bitLength();
         if (bitLength <= 8) return 1;
         if (bitLength <= 16) return 2;
@@ -218,7 +218,7 @@ public class HdfFixedPoint implements HdfDataType {
     }
 
     @Override
-    public int getSizeMessageData() {
+    public short getSizeMessageData() {
         return size;
     }
 }

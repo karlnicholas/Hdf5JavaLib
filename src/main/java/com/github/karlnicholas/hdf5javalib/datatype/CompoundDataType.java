@@ -28,8 +28,8 @@ public class CompoundDataType implements HdfDataType {
         readFromByteBuffer(cdtcBuffer);
     }
 
-    private int extractNumberOfMembersFromBitSet(BitSet classBitField) {
-        int value = 0;
+    private short extractNumberOfMembersFromBitSet(BitSet classBitField) {
+        short value = 0;
         for (int i = 0; i < classBitField.length(); i++) {
             if (classBitField.get(i)) {
                 value |= (1 << i);
@@ -58,7 +58,7 @@ public class CompoundDataType implements HdfDataType {
                 dimensionSizes[j] = buffer.getInt();
             }
 
-            Object type = parseMemberDataType(buffer);
+            CompoundTypeMember type = parseMemberDataType(buffer);
 
             members.add(new Member(name, offset, dimensionality, dimensionPermutation, dimensionSizes, type));
         }
@@ -78,7 +78,7 @@ public class CompoundDataType implements HdfDataType {
         buffer.position(buffer.position() + padding);
     }
 
-    private Object parseMemberDataType(ByteBuffer buffer) {
+    private CompoundTypeMember parseMemberDataType(ByteBuffer buffer) {
         byte classAndVersion = buffer.get();
 //        int version = (classAndVersion >> 4) & 0x0F;
         int dataTypeClass = classAndVersion & 0x0F;
@@ -89,7 +89,7 @@ public class CompoundDataType implements HdfDataType {
                 ((long) classBits[2] & 0xFF) << 16 | ((long) classBits[1] & 0xFF) << 8 | ((long) classBits[0] & 0xFF)
         });
 
-        long size = Integer.toUnsignedLong(buffer.getInt());
+        short size = (short) Integer.toUnsignedLong(buffer.getInt());
 
         return switch (dataTypeClass) {
             case 0 -> parseFixedPoint(buffer, size, classBitField);
@@ -99,7 +99,7 @@ public class CompoundDataType implements HdfDataType {
         };
     }
 
-    private FixedPointMember parseFixedPoint(ByteBuffer buffer, long size, BitSet classBitField) {
+    private FixedPointMember parseFixedPoint(ByteBuffer buffer, short size, BitSet classBitField) {
         boolean bigEndian = classBitField.get(0);
         boolean loPad = classBitField.get(1);
         boolean hiPad = classBitField.get(2);
@@ -111,14 +111,14 @@ public class CompoundDataType implements HdfDataType {
         return new FixedPointMember(size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision);
     }
 
-    private FloatingPointMember parseFloatingPoint(ByteBuffer buffer, long size, BitSet classBitField) {
+    private FloatingPointMember parseFloatingPoint(ByteBuffer buffer, short size, BitSet classBitField) {
         boolean bigEndian = classBitField.get(0);
         int exponentBits = buffer.getInt();
         int mantissaBits = buffer.getInt();
         return new FloatingPointMember(size, exponentBits, mantissaBits, bigEndian);
     }
 
-    private StringMember parseString(long size, BitSet classBitField) {
+    private StringMember parseString(short size, BitSet classBitField) {
         int paddingType = extractBits(classBitField, 0, 3);
         int charSet = extractBits(classBitField, 4, 7);
 
@@ -163,10 +163,17 @@ public class CompoundDataType implements HdfDataType {
     }
 
     @Override
-    public int getSizeMessageData() {
+    public short getSizeMessageData() {
+        short size = 0;
+        for(Member member: members) {
+            size += member.getType().getSizeMessageData();
+        }
         return size;
     }
 
+    public static interface CompoundTypeMember {
+        short getSizeMessageData();
+    }
     public static class Member {
         @Getter
         private final String name;
@@ -176,9 +183,9 @@ public class CompoundDataType implements HdfDataType {
         private final int dimensionPermutation;
         private final int[] dimensionSizes;
         @Getter
-        private final Object type;
+        private final CompoundTypeMember type;
 
-        public Member(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, Object type) {
+        public Member(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, CompoundTypeMember type) {
             this.name = name;
             this.offset = offset;
             this.dimensionality = dimensionality;
@@ -201,8 +208,8 @@ public class CompoundDataType implements HdfDataType {
 
     }
 
-    public static class FixedPointMember {
-        private final long size;
+    public static class FixedPointMember implements  CompoundTypeMember {
+        private final short size;
         private final boolean bigEndian;
         private final boolean loPad;
         private final boolean hiPad;
@@ -210,7 +217,7 @@ public class CompoundDataType implements HdfDataType {
         private final int bitOffset;
         private final int bitPrecision;
 
-        public FixedPointMember(long size, boolean bigEndian, boolean loPad, boolean hiPad, boolean signed, int bitOffset, int bitPrecision) {
+        public FixedPointMember(short size, boolean bigEndian, boolean loPad, boolean hiPad, boolean signed, int bitOffset, int bitPrecision) {
             this.size = size;
             this.bigEndian = bigEndian;
             this.loPad = loPad;
@@ -234,18 +241,23 @@ public class CompoundDataType implements HdfDataType {
         }
 
         public HdfFixedPoint getInstance(ByteBuffer dataBuffer) {
-            return HdfFixedPoint.readFromByteBuffer(dataBuffer, (int)size, signed);
+            return HdfFixedPoint.readFromByteBuffer(dataBuffer, size, signed);
+        }
+
+        @Override
+        public short getSizeMessageData() {
+            return size;
         }
     }
 
-    public static class StringMember {
-        private final long size;
+    public static class StringMember implements CompoundTypeMember {
+        private final short size;
         private final int paddingType;
         private final String paddingDescription;
         private final int charSet;
         private final String charSetDescription;
 
-        public StringMember(long size, int paddingType, String paddingDescription, int charSet, String charSetDescription) {
+        public StringMember(short size, int paddingType, String paddingDescription, int charSet, String charSetDescription) {
             this.size = size;
             this.paddingType = paddingType;
             this.paddingDescription = paddingDescription;
@@ -269,16 +281,21 @@ public class CompoundDataType implements HdfDataType {
                     ", charSetDescription='" + charSetDescription + '\'' +
                     '}';
         }
+
+        @Override
+        public short getSizeMessageData() {
+            return size;
+        }
     }
 
-    public static class FloatingPointMember {
+    public static class FloatingPointMember implements CompoundTypeMember {
         @Getter
-        private final long size;
+        private final short size;
         private final int exponentBits;
         private final int mantissaBits;
         private final boolean bigEndian;
 
-        public FloatingPointMember(long size, int exponentBits, int mantissaBits, boolean bigEndian) {
+        public FloatingPointMember(short size, int exponentBits, int mantissaBits, boolean bigEndian) {
             this.size = size;
             this.exponentBits = exponentBits;
             this.mantissaBits = mantissaBits;
@@ -297,6 +314,11 @@ public class CompoundDataType implements HdfDataType {
                     ", mantissaBits=" + mantissaBits +
                     ", bigEndian=" + bigEndian +
                     '}';
+        }
+
+        @Override
+        public short getSizeMessageData() {
+            return size;
         }
     }
 }

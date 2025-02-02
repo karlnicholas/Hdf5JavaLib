@@ -22,11 +22,11 @@ public class HdfFileBuilder {
     private final Map<String, Long> objectNameToAddressMap;
 
     public HdfFileBuilder() {
-        this.superblock = new HdfSuperblock(0, 0, 0, 0, 8, 8, 4, 16,
+        this.superblock = new HdfSuperblock(0, 0, 0, 0, (short)8, (short)8, 4, 16,
                 HdfFixedPoint.of(0),
-                HdfFixedPoint.undefined(8),
+                HdfFixedPoint.undefined((short)8),
                 HdfFixedPoint.of(100320),
-                HdfFixedPoint.undefined(8));
+                HdfFixedPoint.undefined((short)8));
 
         this.symbolTableEntries = new ArrayList<>();
         this.localHeap = new HdfLocalHeap("HEAP", 0,
@@ -94,7 +94,7 @@ public class HdfFileBuilder {
 
         // Add DataLayoutMessage (Storage format)
         HdfFixedPoint[] hdfDimensionSizes = Arrays.stream(dimensionSizes).mapToObj(HdfFixedPoint::of).toArray(HdfFixedPoint[]::new);
-        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(1, 1, HdfFixedPoint.of(2208), hdfDimensionSizes, 0, null, HdfFixedPoint.undefined(8));
+        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(1, 1, HdfFixedPoint.of(2208), hdfDimensionSizes, 0, null, HdfFixedPoint.undefined((short)8));
         dataObject.getHeaderMessages().add(dataLayoutMessage);
 
         // add ObjectModification Time message
@@ -129,8 +129,8 @@ public class HdfFileBuilder {
                 new BtreeV1GroupNode(new HdfString(objectName, false), HdfFixedPoint.of(address)));
 
         HdfBTreeV1 bTree = new HdfBTreeV1("TREE", 0, 0, 1,
-                HdfFixedPoint.undefined(8),
-                HdfFixedPoint.undefined(8),
+                HdfFixedPoint.undefined((short)8),
+                HdfFixedPoint.undefined((short)8),
                 childPointers, keys, groupNodes);
         bTrees.add(bTree);
         return this;

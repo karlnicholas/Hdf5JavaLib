@@ -47,7 +47,7 @@ public class HdfBTreeV1 {
         this.groupNodes = groupNodes;
     }
 
-    public static HdfBTreeV1 readFromFileChannel(FileChannel fileChannel, int offsetSize, int lengthSize) throws IOException {
+    public static HdfBTreeV1 readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize) throws IOException {
         // Prepare a buffer for the initial read
         ByteBuffer buffer = ByteBuffer.allocate(24).order(java.nio.ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);

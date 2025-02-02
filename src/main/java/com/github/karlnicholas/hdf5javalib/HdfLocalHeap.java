@@ -21,7 +21,7 @@ public class HdfLocalHeap {
         this.dataSegmentAddress = dataSegmentAddress;
     }
 
-    public static HdfLocalHeap readFromFileChannel(FileChannel fileChannel, long position, int offsetSize, int lengthSize) throws IOException {
+    public static HdfLocalHeap readFromFileChannel(FileChannel fileChannel, long position, short offsetSize, short lengthSize) throws IOException {
         // Allocate buffer for the local heap header
         ByteBuffer buffer = ByteBuffer.allocate(32); // Initial size for header parsing
         buffer.order(java.nio.ByteOrder.LITTLE_ENDIAN);

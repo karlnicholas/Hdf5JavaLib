@@ -24,7 +24,7 @@ public class FillValueMessage extends HdfMessage {
             HdfFixedPoint size,
             byte[] fillValue
     ) {
-        super(5, ()->8+size.getSizeMessageData()+size.getBigIntegerValue().intValue(), (byte)0);
+        super((short)5, ()-> (short) (8+size.getSizeMessageData()+size.getBigIntegerValue().intValue()), (byte)0);
         this.version = version;
         this.spaceAllocationTime = spaceAllocationTime;
         this.fillValueWriteTime = fillValueWriteTime;
@@ -58,7 +58,7 @@ public class FillValueMessage extends HdfMessage {
         // Handle Version 2+ behavior and fillValueDefined flag
         if (version >= 2 && fillValueDefined == 1) {
             // Parse Size (unsigned 4 bytes, using HdfFixedPoint)
-            size = HdfFixedPoint.readFromByteBuffer(buffer, 4, false);
+            size = HdfFixedPoint.readFromByteBuffer(buffer, (short) 4, false);
 
             // Parse Fill Value
             int sizeValue = size.getBigIntegerValue().intValue();

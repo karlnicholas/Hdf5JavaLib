@@ -11,13 +11,13 @@ public class ContiguousLayoutMessage extends HdfMessage {
     private HdfFixedPoint size;
 
     public ContiguousLayoutMessage(int version, HdfFixedPoint address, HdfFixedPoint size) {
-        super(-1, ()->1+8+8, (byte)0);
+        super((short)-1, ()-> (short) (1+8+8), (byte)0);
         this.version = version;
         this.address = address;
         this.size = size;
     }
 
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         int version = Byte.toUnsignedInt(buffer.get());
         HdfFixedPoint address = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);

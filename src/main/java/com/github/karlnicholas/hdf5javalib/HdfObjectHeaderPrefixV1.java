@@ -36,7 +36,7 @@ public class HdfObjectHeaderPrefixV1 {
     }
 
     // Factory method to read from a FileChannel
-    public static HdfObjectHeaderPrefixV1 readFromFileChannel(FileChannel fileChannel, int offsetSize, int lengthSize) throws IOException {
+    public static HdfObjectHeaderPrefixV1 readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
         fileChannel.read(buffer);
         buffer.flip();
@@ -57,7 +57,7 @@ public class HdfObjectHeaderPrefixV1 {
         long objectReferenceCount = Integer.toUnsignedLong(buffer.getInt());
 
         // Object Header Size (4 bytes, little-endian)
-        long objectHeaderSize = Integer.toUnsignedLong(buffer.getInt());
+        short objectHeaderSize = (short) buffer.getInt();
 
         // Reserved (4 bytes, should be zero)
         int reservedInt = buffer.getInt();
@@ -65,7 +65,7 @@ public class HdfObjectHeaderPrefixV1 {
             throw new IllegalArgumentException("Reserved integer in Data Object Header Prefix is not zero.");
         }
         List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>();
-        parseDataObjectHeaderMessages(fileChannel, (int)objectHeaderSize, offsetSize, lengthSize, dataObjectHeaderMessages);
+        parseDataObjectHeaderMessages(fileChannel, objectHeaderSize, offsetSize, lengthSize, dataObjectHeaderMessages);
         for ( HdfMessage hdfMesage: dataObjectHeaderMessages) {
             if (hdfMesage instanceof ContinuationMessage) {
                 parseContinuationMessage(fileChannel, (ContinuationMessage)hdfMesage, offsetSize, lengthSize, dataObjectHeaderMessages);

@@ -21,7 +21,7 @@ public class DataTypeMessage extends HdfMessage {
 
     // Constructor to initialize all fields
     public DataTypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size) {
-        super(3, ()->8,(byte)0);
+        super((short)3, ()-> (short) 8,(byte)0);
         this.version = version;
         this.dataTypeClass = dataTypeClass;
         this.classBitField = classBitField;
@@ -53,7 +53,7 @@ public class DataTypeMessage extends HdfMessage {
         });
 
         // Parse Size (unsigned 4 bytes)
-        HdfFixedPoint size = HdfFixedPoint.readFromByteBuffer(buffer, 4, false);
+        HdfFixedPoint size = HdfFixedPoint.readFromByteBuffer(buffer, (short) 4, false);
         // Return a constructed instance of DataTypeMessage
         return new DataTypeMessage(version, dataTypeClass, classBitField, size);
     }

@@ -17,8 +17,8 @@ public class HdfSuperblock {
     private final int freeSpaceVersion;
     private final int rootGroupVersion;
     private final int sharedHeaderVersion;
-    private final int sizeOfOffsets;
-    private final int sizeOfLengths;
+    private final short sizeOfOffsets;
+    private final short sizeOfLengths;
     private final int groupLeafNodeK;
     private final int groupInternalNodeK;
 
@@ -32,8 +32,8 @@ public class HdfSuperblock {
             int freeSpaceVersion,
             int rootGroupVersion,
             int sharedHeaderVersion,
-            int sizeOfOffsets,
-            int sizeOfLengths,
+            short sizeOfOffsets,
+            short sizeOfLengths,
             int groupLeafNodeK,
             int groupInternalNodeK,
             HdfFixedPoint baseAddress,
@@ -101,8 +101,8 @@ public class HdfSuperblock {
         int rootGroupVersion = Byte.toUnsignedInt(buffer.get());
         buffer.get(); // Skip reserved
         int sharedHeaderVersion = Byte.toUnsignedInt(buffer.get());
-        int sizeOfOffsets = Byte.toUnsignedInt(buffer.get());
-        int sizeOfLengths = Byte.toUnsignedInt(buffer.get());
+        short sizeOfOffsets = (short) Byte.toUnsignedInt(buffer.get());
+        short sizeOfLengths = (short) Byte.toUnsignedInt(buffer.get());
         buffer.get(); // Skip reserved
 
         int groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());

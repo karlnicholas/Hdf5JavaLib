@@ -36,8 +36,8 @@ public class HdfReader {
         rootGroupSymbolTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, superblock.getSizeOfOffsets());
         System.out.println(rootGroupSymbolTableEntry);
 
-        int offsetSize = superblock.getSizeOfOffsets();
-        int lengthSize = superblock.getSizeOfLengths();
+        short offsetSize = superblock.getSizeOfOffsets();
+        short lengthSize = superblock.getSizeOfLengths();
 
         // Get the object header address from the superblock
         long objectHeaderAddress =rootGroupSymbolTableEntry.getObjectHeaderAddress().getBigIntegerValue().longValue();

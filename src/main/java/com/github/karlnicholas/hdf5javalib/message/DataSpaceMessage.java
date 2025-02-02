@@ -25,8 +25,8 @@ public class DataSpaceMessage extends HdfMessage {
             HdfFixedPoint[] maxDimensions,
             boolean hasMaxDimensions
     ) {
-        super(1, ()->{
-            int size = 8;
+        super((short)1, ()->{
+            short size = 8;
             for (HdfFixedPoint dimension : dimensions) {
                 size += dimension.getSizeMessageData();
             }
@@ -54,7 +54,7 @@ public class DataSpaceMessage extends HdfMessage {
      * @param lengthSize Size of lengths in bytes.
      * @return A fully constructed `DataSpaceMessage` instance.
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Read the version (1 byte)

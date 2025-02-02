@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 public class NullMessage extends HdfMessage {
 
     public NullMessage() {
-        super(0, ()->0, (byte)0);
+        super((short)0, ()-> (short) 0, (byte)0);
     }
 
     public static HdfMessage parseHeaderMessage(byte flag, byte[] data, int offsetSize, int lengthSize) {

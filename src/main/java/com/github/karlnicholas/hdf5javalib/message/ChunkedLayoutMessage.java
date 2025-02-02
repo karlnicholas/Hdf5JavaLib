@@ -13,14 +13,14 @@ public class ChunkedLayoutMessage extends HdfMessage {
     private HdfFixedPoint address;
 
     public ChunkedLayoutMessage(int version, int rank, long[] chunkSizes, HdfFixedPoint address) {
-        super(-1, ()->1+2+2+2, (byte)0);
+        super((short)-1, ()-> (short) (1+2+2+2), (byte)0);
         this.version = version;
         this.rank = rank;
         this.chunkSizes = chunkSizes;
         this.address = address;
     }
 
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         int version = Byte.toUnsignedInt(buffer.get());
         int rank = Byte.toUnsignedInt(buffer.get());
