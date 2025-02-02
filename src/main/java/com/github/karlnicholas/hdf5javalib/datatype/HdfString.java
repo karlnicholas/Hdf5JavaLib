@@ -1,5 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.datatype;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -94,6 +95,11 @@ public class HdfString implements HdfDataType {
     @Override
     public short getSizeMessageData() {
         return (short)bytes.length;
+    }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        // TODO: IMPLEMENT
     }
 
 //    @Override

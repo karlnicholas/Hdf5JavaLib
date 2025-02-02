@@ -85,5 +85,17 @@ public class FillValueMessage extends HdfMessage {
     @Override
     public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
+        // Parse the first 4 bytes
+        buffer.put((byte) version);
+        buffer.put((byte) spaceAllocationTime);
+        buffer.put((byte) fillValueWriteTime);
+        buffer.put((byte) fillValueDefined);
+
+        // Handle Version 2+ behavior and fillValueDefined flag
+        if (version >= 2 && fillValueDefined == 1) {
+            // Parse Size (unsigned 4 bytes, using HdfFixedPoint)
+            buffer.putInt(size.getBigIntegerValue().intValue());
+            buffer.put(fillValue);
+        }
     }
 }

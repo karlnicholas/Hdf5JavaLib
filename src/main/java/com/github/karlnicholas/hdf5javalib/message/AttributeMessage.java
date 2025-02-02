@@ -12,19 +12,23 @@ import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.createMessageIn
 
 @Getter
 public class AttributeMessage extends HdfMessage {
-    private int version;
-    private int nameSize;
-    private int datatypeSize;
-    private int dataspaceSize;
-    private HdfString name;
-    private HdfDataType value;
+    private final int version;
+    private final int nameSize;
+    private final int datatypeSize;
+    private final int dataspaceSize;
+    private final HdfMessage dataTypeMessage;
+    private final HdfMessage dataSpaceMessage;
+    private final HdfString name;
+    private final HdfDataType value;
 
-    public AttributeMessage(int version, int nameSize, int datatypeSize, int dataspaceSize, HdfString name, HdfDataType value) {
+    public AttributeMessage(int version, int nameSize, int datatypeSize, int dataspaceSize, HdfMessage dataTypeMessage, HdfMessage dataSpaceMessage, HdfString name, HdfDataType value) {
         super((short)12, ()-> (short) (1+1+2+2+2+nameSize+(((((nameSize + 1) / 8) + 1) * 8) - nameSize)+datatypeSize+dataspaceSize+value.getSizeMessageData()), (byte)0);
         this.version = version;
         this.nameSize = nameSize;
         this.datatypeSize = datatypeSize;
         this.dataspaceSize = dataspaceSize;
+        this.dataTypeMessage = dataTypeMessage;
+        this.dataSpaceMessage = dataSpaceMessage;
         this.name = name;
         this.value = value;
     }
@@ -32,7 +36,7 @@ public class AttributeMessage extends HdfMessage {
     public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Read the version (1 byte)
-        int version = Byte.toUnsignedInt(buffer.get());;
+        int version = Byte.toUnsignedInt(buffer.get());
 
         // Skip the reserved byte (1 byte, should be zero)
         buffer.get();
@@ -72,7 +76,7 @@ public class AttributeMessage extends HdfMessage {
 //            dt.addDataType(dataBytes);
 //            value = dt.getHdfDataType();
 //        }
-        return new AttributeMessage(version, nameSize, datatypeSize, dataspaceSize, name, dt.getHdfDataType());
+        return new AttributeMessage(version, nameSize, datatypeSize, dataspaceSize, dt, ds, name, dt.getHdfDataType());
     }
 
     @Override
@@ -90,6 +94,29 @@ public class AttributeMessage extends HdfMessage {
     @Override
     public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
+        buffer.put((byte) version);
+
+        // Skip the reserved byte (1 byte, should be zero)
+        buffer.put((byte) 0);
+
+        // Read the sizes of name, datatype, and dataspace (2 bytes each)
+        buffer.putShort((short) nameSize);
+        buffer.putShort((short) datatypeSize);
+        buffer.putShort((short) dataspaceSize);
+
+        // Read the name (variable size)
+        buffer.put(name.getHdfBytes());
+        buffer.put((byte) 0);
+
+        // padding bytes
+        buffer.put(new byte[((((nameSize + 1) / 8) + 1) * 8) - nameSize]);
+
+        dataTypeMessage.writeToByteBuffer(buffer);
+
+        dataSpaceMessage.writeToByteBuffer(buffer);
+
+        value.writeToByteBuffer(buffer);
+
 
     }
 }

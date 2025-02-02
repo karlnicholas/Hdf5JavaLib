@@ -22,6 +22,9 @@ import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.printData;
  */
 public class App {
     public static void main(String[] args) {
+        new App().run();
+    }
+    private void run() {
         try {
             HdfReader reader = new HdfReader();
             String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
@@ -37,7 +40,7 @@ public class App {
             e.printStackTrace();
         }
     }
-    public static void trySpliterator(FileChannel fileChannel, HdfReader reader) {
+    public void trySpliterator(FileChannel fileChannel, HdfReader reader) {
 
         HdfDataSource<VolumeData> hdfDataSource = new HdfDataSource(reader.getCompoundDataType(), VolumeData.class);
 
@@ -50,7 +53,7 @@ public class App {
 
     }
 
-    public static void tryHdfFileBuilder() {
+    public void tryHdfFileBuilder() {
         HdfFileBuilder builder = new HdfFileBuilder();
 
         builder.superblock(4, 16, 0, 100320);
@@ -83,40 +86,41 @@ public class App {
         // DataTypeMessage with CompoundDataType
         List<CompoundDataType.Member> members = List.of(
                 new CompoundDataType.Member("Id", 0, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)8, false, false, false, false, 0, 64)),
+                        new CompoundDataType.FixedPointMember((short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("Id"))),
                 new CompoundDataType.Member("origCountry", 8, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)2, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origCountry"))),
                 new CompoundDataType.Member("origSlic", 10, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)5, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origSlic"))),
                 new CompoundDataType.Member("origSort", 15, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("origSort"))),
                 new CompoundDataType.Member("destCountry", 16, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)2, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destCountry"))),
                 new CompoundDataType.Member("destSlic", 18, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)5, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destSlic"))),
                 new CompoundDataType.Member("destIbi", 23, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("destIbi"))),
                 new CompoundDataType.Member("destPostalCode", 40, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)9, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)9, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destPostalCode"))),
                 new CompoundDataType.Member("shipper", 24, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)10, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)10, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("shipper"))),
                 new CompoundDataType.Member("service", 49, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("service"))),
                 new CompoundDataType.Member("packageType", 50, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("packageType"))),
                 new CompoundDataType.Member("accessorials", 51, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("accessorials"))),
                 new CompoundDataType.Member("pieces", 52, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)2, false, false, false, false, 0, 16)),
+                        new CompoundDataType.FixedPointMember((short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("pieces"))),
                 new CompoundDataType.Member("weight", 34, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)2, false, false, false, false, 0, 16)),
+                        new CompoundDataType.FixedPointMember((short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("weight"))),
                 new CompoundDataType.Member("cube", 36, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)4, false, false, false, false, 0, 32)),
+                        new CompoundDataType.FixedPointMember((short)4, false, false, false, false, (short)0, (short)32, computeFixedMessageDataSize("cube"))),
                 new CompoundDataType.Member("committedTnt", 54, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedTnt"))),
                 new CompoundDataType.Member("committedDate", 55, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8))
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedDate")))
         );
+
 
         List<HdfMessage> headerMessages = new ArrayList<>();
         headerMessages.add(new ContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
@@ -147,7 +151,9 @@ public class App {
 
         String attributeName = "GIT root revision";
         String attributeValue = "Revision: , URL: ";
-        headerMessages.add(new AttributeMessage(1, attributeName.length(), 8, 8, new HdfString(attributeName, false), new HdfString(attributeValue, false)));
+        DataTypeMessage dt = new DataTypeMessage(1, 3, BitSet.valueOf(new byte[0]), HdfFixedPoint.of(attributeName.length()+1), new HdfString(attributeName, false));
+        DataSpaceMessage ds = new DataSpaceMessage(1, 1, 1, new HdfFixedPoint[] {HdfFixedPoint.of(1)}, null, false);
+        headerMessages.add(new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), new HdfString(attributeValue, false)));
 
         // new long[]{1750}, new long[]{98000}
         builder.addDataset(headerMessages);
@@ -161,5 +167,16 @@ public class App {
         // Write to an HDF5 file
         builder.writeToFile("output.hdf5");
 
+    }
+
+    private short computeFixedMessageDataSize(String name) {
+        int nameSize =name.length();
+        int padding = ((((nameSize + 1) / 8) + 1) * 8) - nameSize;
+        return (short) (nameSize + padding + 52);
+    }
+    private short computeStringMessageDataSize(String name) {
+        int nameSize =name.length();
+        int padding = ((((nameSize + 1) / 8) + 1) * 8) - nameSize;
+        return (short) (nameSize + padding + 46);
     }
 }

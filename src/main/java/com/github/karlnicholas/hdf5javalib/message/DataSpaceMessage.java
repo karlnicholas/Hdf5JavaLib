@@ -7,6 +7,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
+import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
+
 @Getter
 public class DataSpaceMessage extends HdfMessage {
     private final int version; // Version of the dataspace message
@@ -104,5 +106,29 @@ public class DataSpaceMessage extends HdfMessage {
     @Override
     public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
+        // Read the version (1 byte)
+        buffer.put((byte) version);
+
+        // Read the rank (1 byte)
+        buffer.put((byte) dimensionality);
+
+        // Read flags (1 byte)
+        buffer.put((byte) flags);
+
+        // Skip reserved bytes (5 bytes)
+        buffer.put(new byte[5]);
+
+        // Read dimensions
+        for (HdfFixedPoint dimension: dimensions) {
+            writeFixedPointToBuffer(buffer, dimension);
+        }
+
+        // Check for maximum dimensions and write if present
+        HdfFixedPoint[] maxDimensions = null;
+        if (maxDimensions != null) {
+            for (HdfFixedPoint maxDimension: maxDimensions) {
+                writeFixedPointToBuffer(buffer, maxDimension);
+            }
+        }
     }
 }

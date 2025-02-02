@@ -7,6 +7,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
+import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
+
 @Getter
 public class DataLayoutMessage extends HdfMessage {
     private final int version;
@@ -121,5 +123,34 @@ public class DataLayoutMessage extends HdfMessage {
     @Override
     public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
+        // Read version (1 byte)
+        buffer.put((byte) version);
+        // Read layout class (1 byte)
+        buffer.put((byte) layoutClass);
+
+        switch (layoutClass) {
+            case 0: // Compact Storage
+                buffer.putShort((short) compactDataSize); // Compact data size (2 bytes)
+                buffer.put(compactData); // Read compact data
+                break;
+
+            case 1: // Contiguous Storage
+                writeFixedPointToBuffer(buffer, dataAddress);
+                writeFixedPointToBuffer(buffer, dimensionSizes[0]);
+                break;
+
+            case 2: // Chunked Storage
+                writeFixedPointToBuffer(buffer, dataAddress);
+                buffer.get(dimensionSizes.length); // Number of dimensions (1 byte)
+                for (HdfFixedPoint dimenstionSize: dimensionSizes) {
+                    writeFixedPointToBuffer(buffer, dimenstionSize);
+                }
+                writeFixedPointToBuffer(buffer, datasetElementSize);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unsupported layout class: " + layoutClass);
+        }
+
     }
 }

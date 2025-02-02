@@ -218,4 +218,9 @@ public class HdfFixedPoint implements HdfDataType {
     public short getSizeMessageData() {
         return size;
     }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        // TODO: IMPLEMENT
+    }
 }

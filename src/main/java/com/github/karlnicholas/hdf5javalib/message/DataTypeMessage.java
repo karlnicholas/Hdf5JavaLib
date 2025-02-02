@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.function.Supplier;
 
+import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
+
 @Getter
 public class DataTypeMessage extends HdfMessage {
     private final int version;                 // Version of the datatype message
@@ -22,7 +24,7 @@ public class DataTypeMessage extends HdfMessage {
 
     // Constructor to initialize all fields
     public DataTypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size, HdfDataType hdfDataType) {
-        super((short)3, ()-> (short) 8,(byte)0);
+        super((short)3, ()-> (short) (8 + hdfDataType.getSizeMessageData()),(byte)0);
         this.version = version;
         this.dataTypeClass = dataTypeClass;
         this.classBitField = classBitField;
@@ -131,5 +133,12 @@ public class DataTypeMessage extends HdfMessage {
     @Override
     public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
+        byte classAndVersion = (byte)(version << 4 + dataTypeClass);
+        buffer.put(classAndVersion);
+        // Parse Class Bit Field (24 bits)
+        byte[] classBits = classBitField.toByteArray();
+        buffer.put(classBits);
+        writeFixedPointToBuffer(buffer, size);
+        hdfDataType.writeToByteBuffer(buffer);
     }
 }

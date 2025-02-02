@@ -53,5 +53,10 @@ public class ObjectModificationTimeMessage extends HdfMessage {
     @Override
     public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
+        buffer.put((byte) version);
+        // Skip reserved byte
+        buffer.put((byte) 0);
+        // Parse seconds after UNIX epoch
+        buffer.putInt((int) secondsAfterEpoch);
     }
 }

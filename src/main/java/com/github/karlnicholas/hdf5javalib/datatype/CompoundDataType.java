@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -42,6 +43,7 @@ public class CompoundDataType implements HdfDataType {
         this.members = new ArrayList<>();
 //        buffer.position(8);
         for (int i = 0; i < numberOfMembers; i++) {
+            buffer.mark();
             String name = readNullTerminatedString(buffer);
 
             // Align to 8-byte boundary
@@ -62,6 +64,25 @@ public class CompoundDataType implements HdfDataType {
 
             members.add(new Member(name, offset, dimensionality, dimensionPermutation, dimensionSizes, type));
         }
+    }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        for (Member member: members) {
+            buffer.put(member.getName().getBytes(StandardCharsets.US_ASCII));
+            buffer.put((byte)0);
+            buffer.put(new byte[(8 - (member.getName().length()+1 % 8)) % 8]);
+            buffer.putInt(member.getOffset());
+            buffer.put((byte)member.dimensionality);
+            buffer.put(new byte[3]);
+            buffer.putInt(member.dimensionPermutation);
+            buffer.put(new byte[4]);
+            for( int ds: member.dimensionSizes) {
+                buffer.putInt(ds);
+            }
+            member.type.writeToByteBuffer(buffer);
+        }
+
     }
 
     private String readNullTerminatedString(ByteBuffer buffer) {
@@ -105,10 +126,15 @@ public class CompoundDataType implements HdfDataType {
         boolean hiPad = classBitField.get(2);
         boolean signed = classBitField.get(3);
 
-        int bitOffset = Short.toUnsignedInt(buffer.getShort());
-        int bitPrecision = Short.toUnsignedInt(buffer.getShort());
+        short bitOffset = buffer.getShort();
+        short bitPrecision = buffer.getShort();
 
-        return new FixedPointMember(size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision);
+        int currentPosition = buffer.position();
+        buffer.reset();
+        short messageDataSize = (short)(currentPosition - buffer.position());
+        buffer.position(currentPosition);
+
+        return new FixedPointMember(size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision, messageDataSize);
     }
 
     private FloatingPointMember parseFloatingPoint(ByteBuffer buffer, short size, BitSet classBitField) {
@@ -135,7 +161,7 @@ public class CompoundDataType implements HdfDataType {
             default -> "Reserved";
         };
 
-        return new StringMember(size, paddingType, paddingDescription, charSet, charSetDescription);
+        return new StringMember(size, paddingType, paddingDescription, charSet, charSetDescription, size);
     }
 
     private int extractBits(BitSet bitSet, int start, int end) {
@@ -171,8 +197,10 @@ public class CompoundDataType implements HdfDataType {
         return size;
     }
 
-    public static interface CompoundTypeMember {
+    public interface CompoundTypeMember {
         short getSizeMessageData();
+
+        void writeToByteBuffer(ByteBuffer buffer);
     }
     public static class Member {
         @Getter
@@ -214,10 +242,11 @@ public class CompoundDataType implements HdfDataType {
         private final boolean loPad;
         private final boolean hiPad;
         private final boolean signed;
-        private final int bitOffset;
-        private final int bitPrecision;
+        private final short bitOffset;
+        private final short bitPrecision;
+        private final short sizeMessageData;
 
-        public FixedPointMember(short size, boolean bigEndian, boolean loPad, boolean hiPad, boolean signed, int bitOffset, int bitPrecision) {
+        public FixedPointMember(short size, boolean bigEndian, boolean loPad, boolean hiPad, boolean signed, short bitOffset, short bitPrecision, short sizeMessageData) {
             this.size = size;
             this.bigEndian = bigEndian;
             this.loPad = loPad;
@@ -225,6 +254,7 @@ public class CompoundDataType implements HdfDataType {
             this.signed = signed;
             this.bitOffset = bitOffset;
             this.bitPrecision = bitPrecision;
+            this.sizeMessageData = sizeMessageData;
         }
 
         @Override
@@ -246,7 +276,13 @@ public class CompoundDataType implements HdfDataType {
 
         @Override
         public short getSizeMessageData() {
-            return size;
+            return sizeMessageData;
+        }
+
+        @Override
+        public void writeToByteBuffer(ByteBuffer buffer) {
+            buffer.putShort(bitOffset);
+            buffer.putShort(bitPrecision);
         }
     }
 
@@ -256,13 +292,15 @@ public class CompoundDataType implements HdfDataType {
         private final String paddingDescription;
         private final int charSet;
         private final String charSetDescription;
+        private final short sizeMessageData;
 
-        public StringMember(short size, int paddingType, String paddingDescription, int charSet, String charSetDescription) {
+        public StringMember(short size, int paddingType, String paddingDescription, int charSet, String charSetDescription, short sizeMessageData) {
             this.size = size;
             this.paddingType = paddingType;
             this.paddingDescription = paddingDescription;
             this.charSet = charSet;
             this.charSetDescription = charSetDescription;
+            this.sizeMessageData = sizeMessageData;
         }
 
         public HdfString getInstance(ByteBuffer dataBuffer) {
@@ -284,7 +322,10 @@ public class CompoundDataType implements HdfDataType {
 
         @Override
         public short getSizeMessageData() {
-            return size;
+            return sizeMessageData;
+        }
+        @Override
+        public void writeToByteBuffer(ByteBuffer buffer) {
         }
     }
 
@@ -319,6 +360,9 @@ public class CompoundDataType implements HdfDataType {
         @Override
         public short getSizeMessageData() {
             return size;
+        }
+        @Override
+        public void writeToByteBuffer(ByteBuffer buffer) {
         }
     }
 }

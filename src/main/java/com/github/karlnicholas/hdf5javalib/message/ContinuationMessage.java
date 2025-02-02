@@ -5,6 +5,8 @@ import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
+
 public class ContinuationMessage extends HdfMessage {
     private HdfFixedPoint continuationOffset; // Offset of the continuation block
     private HdfFixedPoint continuationSize;   // Size of the continuation block
@@ -42,6 +44,10 @@ public class ContinuationMessage extends HdfMessage {
     @Override
     public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
+        // Write B-tree address (sizeOfOffsets bytes, little-endian)
+        writeFixedPointToBuffer(buffer, continuationOffset);
 
+        // Write Local Heap address (sizeOfOffsets bytes, little-endian)
+        writeFixedPointToBuffer(buffer, continuationSize);
     }
 }

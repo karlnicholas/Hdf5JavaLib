@@ -192,40 +192,41 @@ public class HdfConstruction {
         // DataTypeMessage with CompoundDataType
         List<CompoundDataType.Member> members = List.of(
                 new CompoundDataType.Member("Id", 0, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)8, false, false, false, false, 0, 64)),
+                        new CompoundDataType.FixedPointMember((short)8, false, false, false, false, (short)0, (short)64, (short) ("Id".length()+9))),
                 new CompoundDataType.Member("origCountry", 8, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)2, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)2, 0, "Null Terminate", 0, "ASCII", (short) ("origCountry".length()+9))),
                 new CompoundDataType.Member("origSlic", 10, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)5, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)5, 0, "Null Terminate", 0, "ASCII", (short) ("origSlic".length()+9))),
                 new CompoundDataType.Member("origSort", 15, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, (short) ("origSort".length()+9))),
                 new CompoundDataType.Member("destCountry", 16, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)2, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)2, 0, "Null Terminate", 0, "ASCII", (short) ("destCountry".length()+9))),
                 new CompoundDataType.Member("destSlic", 18, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)5, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)5, 0, "Null Terminate", 0, "ASCII", (short) ("destSlic".length()+9))),
                 new CompoundDataType.Member("destIbi", 23, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, (short) ("destIbi".length()+9))),
                 new CompoundDataType.Member("destPostalCode", 40, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)9, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)9, 0, "Null Terminate", 0, "ASCII", (short) ("destPostalCode".length()+9))),
                 new CompoundDataType.Member("shipper", 24, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)10, 0, "Null Terminate", 0, "ASCII")),
+                        new CompoundDataType.StringMember((short)10, 0, "Null Terminate", 0, "ASCII", (short) ("shipper".length()+9))),
                 new CompoundDataType.Member("service", 49, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, (short) ("service".length()+9))),
                 new CompoundDataType.Member("packageType", 50, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, (short) ("packageType".length()+9))),
                 new CompoundDataType.Member("accessorials", 51, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, (short) ("accessorials".length()+9))),
                 new CompoundDataType.Member("pieces", 52, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)2, false, false, false, false, 0, 16)),
+                        new CompoundDataType.FixedPointMember((short)2, false, false, false, false, (short)0, (short)16, (short) ("pieces".length()+9))),
                 new CompoundDataType.Member("weight", 34, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)2, false, false, false, false, 0, 16)),
+                        new CompoundDataType.FixedPointMember((short)2, false, false, false, false, (short)0, (short)16, (short) ("weight".length()+9))),
                 new CompoundDataType.Member("cube", 36, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)4, false, false, false, false, 0, 32)),
+                        new CompoundDataType.FixedPointMember((short)4, false, false, false, false, (short)0, (short)32, (short) ("cube".length()+9))),
                 new CompoundDataType.Member("committedTnt", 54, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8)),
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, (short) ("committedTnt".length()+9))),
                 new CompoundDataType.Member("committedDate", 55, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8))
+                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, (short) ("committedDate".length()+9)))
         );
+
         CompoundDataType compoundDataType = new CompoundDataType(17, 56, members);
         DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new long[]{17}), new HdfFixedPoint(BigInteger.valueOf(56), false), compoundDataType );
 //        dataTypeMessage.setDataType(compoundDataType);
@@ -256,11 +257,12 @@ public class HdfConstruction {
                 true
         );
 
+        String attributeName = "GIT root revision";
+        String attributeValue = "Revision: , URL: ";
+        DataTypeMessage dt = new DataTypeMessage(1, 3, BitSet.valueOf(new byte[0]), HdfFixedPoint.of(attributeName.length()+1), new HdfString(attributeName, false));
+        DataSpaceMessage ds = new DataSpaceMessage(1, 1, 1, new HdfFixedPoint[] {HdfFixedPoint.of(1)}, null, false);
+        AttributeMessage attributeMessage = new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), new HdfString(attributeValue, false));
         // AttributeMessage
-        AttributeMessage attributeMessage = new AttributeMessage(
-                1, 18, 8, 8, new HdfString("GIT root revision", false),
-                new HdfString("Revision: , URL:", false)
-        );
 
         // Combine all messages
         List<HdfMessage> dataObjectHeaderMessages = Arrays.asList(

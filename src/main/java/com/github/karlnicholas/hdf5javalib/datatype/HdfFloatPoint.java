@@ -109,4 +109,9 @@ public class HdfFloatPoint implements HdfDataType {
     public short getSizeMessageData() {
         return (short) bytes.length;
     }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        // TODO: IMPLEMENT
+    }
 }
