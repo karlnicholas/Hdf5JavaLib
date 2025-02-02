@@ -2,12 +2,14 @@ package com.github.karlnicholas.hdf5javalib.message;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
+import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.createMessageInstance;
 
+@Getter
 public class AttributeMessage extends HdfMessage {
     private int version;
     private int nameSize;
@@ -85,6 +87,7 @@ public class AttributeMessage extends HdfMessage {
 
     @Override
     public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+        writeMessageData(buffer);
 
     }
 }

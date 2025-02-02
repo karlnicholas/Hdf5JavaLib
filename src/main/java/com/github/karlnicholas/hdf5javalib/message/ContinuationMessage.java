@@ -41,6 +41,7 @@ public class ContinuationMessage extends HdfMessage {
 
     @Override
     public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+        writeMessageData(buffer);
 
     }
 }

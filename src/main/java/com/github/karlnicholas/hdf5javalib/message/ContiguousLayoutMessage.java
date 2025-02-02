@@ -36,6 +36,7 @@ public class ContiguousLayoutMessage extends HdfMessage {
 
     @Override
     public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+        writeMessageData(buffer);
 
     }
 }

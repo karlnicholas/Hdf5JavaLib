@@ -117,6 +117,7 @@ public class DataTypeMessage extends HdfMessage {
 
     @Override
     public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+        writeMessageData(buffer);
 
     }
 }

@@ -1,5 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
+import lombok.Getter;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -12,6 +14,7 @@ import java.nio.ByteOrder;
  * Description: Retrieves non-default ‘K’ values for internal and leaf nodes
  * of a group or indexed storage v1 B-trees. This message is only found in the superblock extension.
  */
+@Getter
 public class BTreeKValuesMessage extends HdfMessage {
     private int version;
     private int indexedStorageInternalNodeK;
@@ -39,22 +42,6 @@ public class BTreeKValuesMessage extends HdfMessage {
         return new BTreeKValuesMessage(version, indexedStorageInternalNodeK, groupInternalNodeK, groupLeafNodeK);
     }
 
-    public int getVersion() {
-        return version;
-    }
-
-    public int getIndexedStorageInternalNodeK() {
-        return indexedStorageInternalNodeK;
-    }
-
-    public int getGroupInternalNodeK() {
-        return groupInternalNodeK;
-    }
-
-    public int getGroupLeafNodeK() {
-        return groupLeafNodeK;
-    }
-
     @Override
     public String toString() {
         return "BTreeKValuesMessage{" +
@@ -67,6 +54,7 @@ public class BTreeKValuesMessage extends HdfMessage {
 
     @Override
     public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+        writeMessageData(buffer);
 
     }
 }
