@@ -9,6 +9,8 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
+import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
+
 @Getter
 public class HdfSuperblock {
     private static final byte[] FILE_SIGNATURE = new byte[]{(byte) 0x89, 0x48, 0x44, 0x46, 0x0d, 0x0a, 0x1a, 0x0a};
@@ -153,32 +155,10 @@ public class HdfSuperblock {
         buffer.putInt(0);                             // File consistency flags (must be 0) (4 bytes)
 
         // Step 4: Address fields (sizeOfOffsets bytes each) in little-endian
-        writeFixedPointToBuffer(buffer, baseAddress, sizeOfOffsets);         // Base Address
-        writeFixedPointToBuffer(buffer, freeSpaceAddress, sizeOfOffsets);    // Free space address
-        writeFixedPointToBuffer(buffer, endOfFileAddress, sizeOfOffsets);    // End-of-file address
-        writeFixedPointToBuffer(buffer, driverInformationAddress, sizeOfOffsets); // Driver info block address
-    }
-
-    /**
-     * Writes an HdfFixedPoint value to the ByteBuffer in little-endian format.
-     * If undefined, fills with 0xFF.
-     */
-    private void writeFixedPointToBuffer(ByteBuffer buffer, HdfFixedPoint value, int size) {
-        byte[] bytesToWrite = new byte[size];
-
-        if (value.isUndefined()) {
-            Arrays.fill(bytesToWrite, (byte) 0xFF); // Fill with 0xFF if undefined
-        } else {
-            byte[] valueBytes = value.getBigIntegerValue().toByteArray();
-            int copySize = Math.min(valueBytes.length, size);
-
-            // Store in little-endian format by reversing the order
-            for (int i = 0; i < copySize; i++) {
-                bytesToWrite[i] = valueBytes[copySize - 1 - i];
-            }
-        }
-
-        buffer.put(bytesToWrite); // Write the little-endian address to the buffer
+        writeFixedPointToBuffer(buffer, baseAddress);         // Base Address
+        writeFixedPointToBuffer(buffer, freeSpaceAddress);    // Free space address
+        writeFixedPointToBuffer(buffer, endOfFileAddress);    // End-of-file address
+        writeFixedPointToBuffer(buffer, driverInformationAddress); // Driver info block address
     }
 
     @Override

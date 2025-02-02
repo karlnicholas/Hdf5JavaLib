@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
+
 @Getter
 public class HdfBTreeV1 {
     private final String signature;
@@ -102,6 +104,36 @@ public class HdfBTreeV1 {
                 keys,
                 null
         );
+    }
+
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        // Step 1: Write the "TREE" signature (4 bytes)
+        buffer.put(signature.getBytes());
+
+        // Step 2: Write Node Type (1 byte)
+        buffer.put((byte) nodeType);
+
+        // Step 3: Write Node Level (1 byte)
+        buffer.put((byte) nodeLevel);
+
+        // Step 4: Write Entries Used (2 bytes, little-endian)
+        buffer.putShort((short) entriesUsed);
+
+        // Step 5: Write Left Sibling Address (offsetSize bytes, little-endian)
+        writeFixedPointToBuffer(buffer, leftSiblingAddress);
+
+        // Step 6: Write Right Sibling Address (offsetSize bytes, little-endian)
+        writeFixedPointToBuffer(buffer, rightSiblingAddress);
+
+        // Step 7: Write Child Pointers (each offsetSize bytes, little-endian)
+        for (HdfFixedPoint childPointer : childPointers) {
+            writeFixedPointToBuffer(buffer, childPointer);
+        }
+
+        // Step 8: Write Keys (each offsetSize bytes, little-endian)
+        for (HdfFixedPoint key : keys) {
+            writeFixedPointToBuffer(buffer, key);
+        }
     }
 
     public void parseBTreeAndLocalHeap(HdfLocalHeapContents localHeap) {

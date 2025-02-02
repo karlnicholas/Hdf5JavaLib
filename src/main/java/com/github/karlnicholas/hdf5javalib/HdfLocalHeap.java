@@ -1,11 +1,17 @@
 package com.github.karlnicholas.hdf5javalib;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.utils.HdfUtils;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Arrays;
 
+import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
+
+@Getter
 public class HdfLocalHeap {
     private final String signature;
     private final int version;
@@ -77,23 +83,24 @@ public class HdfLocalHeap {
                 '}';
     }
 
-    public String getSignature() {
-        return signature;
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        // Step 1: Write the "HEAP" signature (4 bytes)
+        buffer.put(signature.getBytes());
+
+        // Step 2: Write the version (1 byte)
+        buffer.put((byte) version);
+
+        // Step 3: Write reserved bytes (3 bytes, must be 0)
+        buffer.put(new byte[3]);
+
+        // Step 4: Write Data Segment Size (lengthSize bytes, little-endian)
+        writeFixedPointToBuffer(buffer, dataSegmentSize);
+
+        // Step 5: Write Free List Offset (lengthSize bytes, little-endian)
+        writeFixedPointToBuffer(buffer, freeListOffset);
+
+        // Step 6: Write Data Segment Address (offsetSize bytes, little-endian)
+        writeFixedPointToBuffer(buffer, dataSegmentAddress);
     }
 
-    public int getVersion() {
-        return version;
-    }
-
-    public HdfFixedPoint getDataSegmentSize() {
-        return dataSegmentSize;
-    }
-
-    public HdfFixedPoint getFreeListOffset() {
-        return freeListOffset;
-    }
-
-    public HdfFixedPoint getDataSegmentAddress() {
-        return dataSegmentAddress;
-    }
 }

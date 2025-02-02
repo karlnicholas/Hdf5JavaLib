@@ -7,6 +7,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
+import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
+
 @Getter
 public class SymbolTableMessage extends HdfMessage {
     private final HdfFixedPoint bTreeAddress;
@@ -30,32 +32,10 @@ public class SymbolTableMessage extends HdfMessage {
     public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
         writeMessageData(buffer);
         // Write B-tree address (sizeOfOffsets bytes, little-endian)
-        writeFixedPointToBuffer(buffer, bTreeAddress, offsetSize);
+        writeFixedPointToBuffer(buffer, bTreeAddress);
 
         // Write Local Heap address (sizeOfOffsets bytes, little-endian)
-        writeFixedPointToBuffer(buffer, localHeapAddress, offsetSize);
-    }
-
-    /**
-     * Writes an `HdfFixedPoint` value to the `ByteBuffer` in **little-endian format**.
-     * If undefined, fills with 0xFF.
-     */
-    private void writeFixedPointToBuffer(ByteBuffer buffer, HdfFixedPoint value, int size) {
-        byte[] bytesToWrite = new byte[size];
-
-        if (value.isUndefined()) {
-            Arrays.fill(bytesToWrite, (byte) 0xFF); // Undefined value → fill with 0xFF
-        } else {
-            byte[] valueBytes = value.getBigIntegerValue().toByteArray();
-            int copySize = Math.min(valueBytes.length, size);
-
-            // Store in **little-endian format** by reversing byte order
-            for (int i = 0; i < copySize; i++) {
-                bytesToWrite[i] = valueBytes[copySize - 1 - i];
-            }
-        }
-
-        buffer.put(bytesToWrite);
+        writeFixedPointToBuffer(buffer, localHeapAddress);
     }
 
     @Override

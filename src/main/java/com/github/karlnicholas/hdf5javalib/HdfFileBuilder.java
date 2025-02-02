@@ -13,10 +13,10 @@ import java.util.*;
 public class HdfFileBuilder {
     private final HdfSuperblock superblock;
     private HdfSymbolTableEntry rootGroupEntry;
-    private final List<HdfSymbolTableEntry> symbolTableEntries;
+//    private final List<HdfSymbolTableEntry> symbolTableEntries;
     private HdfObjectHeaderPrefixV1 objectHeaderPrefix;
     private final HdfLocalHeap localHeap;
-    private final List<HdfBTreeV1> bTrees;
+    private HdfBTreeV1 bTree;
     private final List<HdfSymbolTableNode> symbolTableNodes;
     private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
     private final Map<String, Long> objectNameToAddressMap;
@@ -28,12 +28,11 @@ public class HdfFileBuilder {
                 HdfFixedPoint.of(100320),
                 HdfFixedPoint.undefined((short)8));
 
-        this.symbolTableEntries = new ArrayList<>();
+//        this.symbolTableEntries = new ArrayList<>();
         this.localHeap = new HdfLocalHeap("HEAP", 0,
                 HdfFixedPoint.of(88),
                 HdfFixedPoint.of(16),
                 HdfFixedPoint.of(712));
-        this.bTrees = new ArrayList<>();
         this.symbolTableNodes = new ArrayList<>();
         this.objectNameToAddressMap = new HashMap<>();
     }
@@ -132,7 +131,7 @@ public class HdfFileBuilder {
                 HdfFixedPoint.undefined((short)8),
                 HdfFixedPoint.undefined((short)8),
                 childPointers, keys, groupNodes);
-        bTrees.add(bTree);
+        this.bTree = bTree;
         return this;
     }
 
@@ -165,21 +164,62 @@ public class HdfFileBuilder {
         ByteBuffer buffer = ByteBuffer.allocate((int) dataStart);
         buffer.order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
 
+        System.out.println(superblock);
         // Write the superblock at position 0
         buffer.position(0);
         superblock.writeToByteBuffer(buffer);
 
+        System.out.println(rootGroupEntry);
         // Write the root group symbol table entry immediately after the superblock
         rootGroupEntry.writeToByteBuffer(buffer, superblock.getSizeOfOffsets());
 
-        // Step 3: Write Object Header at position found in rootGroupEntry
+        System.out.println(objectHeaderPrefix);
+        // Write Object Header at position found in rootGroupEntry
         long objectHeaderAddress = rootGroupEntry.getObjectHeaderAddress().getBigIntegerValue().longValue();
         objectHeaderPrefix.writeToByteBuffer(buffer, objectHeaderAddress, superblock.getSizeOfOffsets());
 
-        System.out.println(superblock);
-        symbolTableEntries.forEach(System.out::println);
-        System.out.println(objectHeaderPrefix);
-        bTrees.forEach(System.out::println);
+        long localHeapPosition = -1;
+        long bTreePosition = -1;
+
+        // Try getting the Local Heap Address from the Root Symbol Table Entry
+        if (rootGroupEntry.getLocalHeapAddress() != null && !rootGroupEntry.getLocalHeapAddress().isUndefined()) {
+            localHeapPosition = rootGroupEntry.getLocalHeapAddress().getBigIntegerValue().longValue();
+        }
+
+        // If not found or invalid, fallback to Object Header's SymbolTableMessage
+        Optional<SymbolTableMessage> symbolTableMessageOpt = objectHeaderPrefix.findHdfSymbolTableMessage(SymbolTableMessage.class);
+        if (symbolTableMessageOpt.isPresent()) {
+            SymbolTableMessage symbolTableMessage = symbolTableMessageOpt.get();
+
+            // Retrieve Local Heap Address if still not found
+            if (localHeapPosition == -1 && symbolTableMessage.getLocalHeapAddress() != null && !symbolTableMessage.getLocalHeapAddress().isUndefined()) {
+                localHeapPosition = symbolTableMessage.getLocalHeapAddress().getBigIntegerValue().longValue();
+            }
+
+            // Retrieve B-Tree Address
+            if (symbolTableMessage.getBTreeAddress() != null && !symbolTableMessage.getBTreeAddress().isUndefined()) {
+                bTreePosition = symbolTableMessage.getBTreeAddress().getBigIntegerValue().longValue();
+            }
+        }
+
+        // Validate B-Tree Position and write it
+        if (bTreePosition != -1) {
+            buffer.position((int) bTreePosition); // Move to the correct position
+            bTree.writeToByteBuffer(buffer);
+        } else {
+            throw new IllegalStateException("No valid B-Tree position found.");
+        }
+
+        // Validate Local Heap Position and write it
+        if (localHeapPosition != -1) {
+            buffer.position((int) localHeapPosition); // Move to the correct position
+            localHeap.writeToByteBuffer(buffer);
+        } else {
+            throw new IllegalStateException("No valid Local Heap position found.");
+        }
+
+//     11   symbolTableEntries.forEach(System.out::println);
+        System.out.println(bTree);
         symbolTableNodes.forEach(System.out::println);
         System.out.println(dataObjectHeaderPrefix);
 
