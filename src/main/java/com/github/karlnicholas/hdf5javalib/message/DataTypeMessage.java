@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.function.Supplier;
 
 @Getter
 public class DataTypeMessage extends HdfMessage {
@@ -17,15 +18,16 @@ public class DataTypeMessage extends HdfMessage {
     private final int dataTypeClass;           // Datatype class
     private final BitSet classBitField;        // Class Bit Field (24 bits)
     private final HdfFixedPoint size;          // Size of the datatype element
-    private HdfDataType hdfDataType;                 // Remaining raw data
+    private final HdfDataType hdfDataType;                 // Remaining raw data
 
     // Constructor to initialize all fields
-    public DataTypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size) {
+    public DataTypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size, HdfDataType hdfDataType) {
         super((short)3, ()-> (short) 8,(byte)0);
         this.version = version;
         this.dataTypeClass = dataTypeClass;
         this.classBitField = classBitField;
         this.size = size;
+        this.hdfDataType = hdfDataType;
     }
 
     /**
@@ -37,7 +39,7 @@ public class DataTypeMessage extends HdfMessage {
      * @param lengthSize Size of lengths in bytes (not used here).
      * @return A fully constructed `DataTypeMessage` instance.
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize, byte[] dataTypeData) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Parse Version and Datatype Class (packed into a single byte)
@@ -55,26 +57,37 @@ public class DataTypeMessage extends HdfMessage {
         // Parse Size (unsigned 4 bytes)
         HdfFixedPoint size = HdfFixedPoint.readFromByteBuffer(buffer, (short) 4, false);
         // Return a constructed instance of DataTypeMessage
-        return new DataTypeMessage(version, dataTypeClass, classBitField, size);
-    }
-
-    public void addDataType(byte[] remainingData) {
-//        // Extract remaining raw data
-//        byte[] remainingData = Arrays.copyOfRange(data, buffer.position(), buffer.limit());
-
+        HdfDataType hdfDataType;
         if ( dataTypeClass == 6) {
-            hdfDataType = new CompoundDataType(classBitField, size.getBigIntegerValue().intValue(), remainingData);
+            hdfDataType = new CompoundDataType(classBitField, size.getBigIntegerValue().intValue(), dataTypeData);
         } else if ( dataTypeClass == 3) {
+//            byte[] dataBytes = new byte[size];
+//            buffer.get(dataBytes);
+//            dt.addDataType(dataBytes);
+//            value = dt.getHdfDataType();
             // Return a constructed instance of DataTypeMessage
-            hdfDataType = new HdfString(remainingData, false, false);
+            hdfDataType = new HdfString(dataTypeData, false, false);
         } else {
             throw new IllegalStateException("Unsupported data type class: " + dataTypeClass);
         }
+
+        return new DataTypeMessage(version, dataTypeClass, classBitField, size, hdfDataType);
     }
 
-    public void setDataType(HdfDataType hdfDataType) {
-        this.hdfDataType = hdfDataType;
-    }
+//    public void addDataType(byte[] remainingData) {
+//        if ( dataTypeClass == 6) {
+//            hdfDataType = new CompoundDataType(classBitField, size.getBigIntegerValue().intValue(), remainingData);
+//        } else if ( dataTypeClass == 3) {
+//            // Return a constructed instance of DataTypeMessage
+//            hdfDataType = new HdfString(remainingData, false, false);
+//        } else {
+//            throw new IllegalStateException("Unsupported data type class: " + dataTypeClass);
+//        }
+//    }
+
+//    public void setDataType(HdfDataType hdfDataType) {
+//        this.hdfDataType = hdfDataType;
+//    }
 
     @Override
     public String toString() {
@@ -116,8 +129,7 @@ public class DataTypeMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+    public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
-
     }
 }

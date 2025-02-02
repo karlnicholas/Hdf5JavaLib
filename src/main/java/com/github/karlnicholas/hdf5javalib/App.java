@@ -1,6 +1,9 @@
 package com.github.karlnicholas.hdf5javalib;
 
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
+import com.github.karlnicholas.hdf5javalib.message.*;
 import com.github.karlnicholas.hdf5javalib.utils.HdfDataSource;
 import com.github.karlnicholas.hdf5javalib.utils.HdfSpliterator;
 
@@ -8,8 +11,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.util.List;
-import java.util.Spliterator;
+import java.time.Instant;
+import java.util.*;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.printData;
 
@@ -50,12 +53,32 @@ public class App {
     public static void tryHdfFileBuilder() {
         HdfFileBuilder builder = new HdfFileBuilder();
 
-// Define a root group
+        builder.superblock(4, 16, 0, 100320);
+
+        // Define a root group
         builder.rootGroup(96);
 
         builder.objectHeader();
 
-        int[] dimensionSizes=new int[] {0, 0, 0, 0};
+            // Define the heap data size
+            int dataSegmentSize = 88;
+
+            // Initialize the heapData array
+            byte[] heapData = new byte[dataSegmentSize];
+            Arrays.fill(heapData, (byte) 0); // Set all bytes to 0
+
+            // Set bytes 8-16 to the required values
+            heapData[8] = 68;  // 'D'
+            heapData[9] = 101; // 'e'
+            heapData[10] = 109; // 'm'
+            heapData[11] = 97; // 'a'
+            heapData[12] = 110; // 'n'
+            heapData[13] = 100; // 'd'
+            heapData[14] = 0;  // null terminator
+            heapData[15] = 0;  // additional null byte
+
+        builder.localHeap(dataSegmentSize, 16, 712, heapData);
+
 // Define a dataset with correct CompoundDataType members
         // DataTypeMessage with CompoundDataType
         List<CompoundDataType.Member> members = List.of(
@@ -94,15 +117,48 @@ public class App {
                 new CompoundDataType.Member("committedDate", 55, 0, 0, new int[4],
                         new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8))
         );
-        builder.addDataset("shipmentData", 800, members, new long[]{1750}, new long[]{98000});
 
-// Define a B-Tree for group indexing
+        List<HdfMessage> headerMessages = new ArrayList<>();
+        headerMessages.add(new ContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
+        headerMessages.add(new NullMessage());
+
+        // Define Compound DataType correctly
+        CompoundDataType compoundType = new CompoundDataType(members.size(), 56, members);
+        DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new long[]{0b10001}), HdfFixedPoint.of(56), compoundType);
+//        dataTypeMessage.setDataType(compoundType);
+        headerMessages.add(dataTypeMessage);
+
+        // Add FillValue message
+        headerMessages.add(new FillValueMessage(2, 2, 2, 1, HdfFixedPoint.of(0), new byte[0]));
+
+        // Add DataLayoutMessage (Storage format)
+        int[] dimensionSizes=new int[] {0, 0, 0, 0};
+        HdfFixedPoint[] hdfDimensionSizes = Arrays.stream(dimensionSizes).mapToObj(HdfFixedPoint::of).toArray(HdfFixedPoint[]::new);
+        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(1, 1, HdfFixedPoint.of(2208), hdfDimensionSizes, 0, null, HdfFixedPoint.undefined((short)8));
+        headerMessages.add(dataLayoutMessage);
+
+        // add ObjectModification Time message
+        headerMessages.add(new ObjectModificationTimeMessage(1, Instant.now().getEpochSecond()));
+
+        // Add DataSpaceMessage (Handles dataset dimensionality)
+        HdfFixedPoint[] hdfDimensions = Arrays.stream(new long[]{1750}).mapToObj(HdfFixedPoint::of).toArray(HdfFixedPoint[]::new);
+        DataSpaceMessage dataSpaceMessage = new DataSpaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
+        headerMessages.add(dataSpaceMessage);
+
+        String attributeName = "GIT root revision";
+        String attributeValue = "Revision: , URL: ";
+        headerMessages.add(new AttributeMessage(1, attributeName.length(), 8, 8, new HdfString(attributeName, false), new HdfString(attributeValue, false)));
+
+        // new long[]{1750}, new long[]{98000}
+        builder.addDataset(headerMessages);
+
+        // Define a B-Tree for group indexing
         builder.addBTree(1880, "Demand");
 
-// Define a Symbol Table Node
+        // Define a Symbol Table Node
         builder.addSymbolTableNode(800);
 
-// Write to an HDF5 file
+        // Write to an HDF5 file
         builder.writeToFile("output.hdf5");
 
     }

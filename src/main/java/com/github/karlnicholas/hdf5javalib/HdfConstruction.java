@@ -227,8 +227,8 @@ public class HdfConstruction {
                         new CompoundDataType.FixedPointMember((short)1, false, false, false, false, 0, 8))
         );
         CompoundDataType compoundDataType = new CompoundDataType(17, 56, members);
-        DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new long[]{17}), new HdfFixedPoint(BigInteger.valueOf(56), false) );
-        dataTypeMessage.setDataType(compoundDataType);
+        DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new long[]{17}), new HdfFixedPoint(BigInteger.valueOf(56), false), compoundDataType );
+//        dataTypeMessage.setDataType(compoundDataType);
 
         // FillValueMessage
         FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 2, 1, null, null);

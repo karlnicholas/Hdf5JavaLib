@@ -60,29 +60,9 @@ public class HdfLocalHeapContents {
         return result;
     }
 
-    /**
-     * Parses the next 64-bit fixed-point value from the heap data.
-     *
-     * @return The next fixed-point value, or null if no more data is available.
-     */
-//    public HdfFixedPoint parseNextFixedPoint() {
-//        int fixedPointSize = 8; // Fixed-point size in bytes for 64-bit values
-//        if (currentIndex + fixedPointSize > heapData.length) {
-//            return null; // Not enough data remaining
-//        }
-//
-//        // Create a fixed-point object from the current position
-//        HdfFixedPoint fixedPoint = HdfFixedPoint.readFromByteBuffer(
-//                ByteBuffer.wrap(heapData, currentIndex, fixedPointSize).order(java.nio.ByteOrder.LITTLE_ENDIAN),
-//                fixedPointSize * 8,
-//                false
-//        );
-//
-//        // Advance the index by the size of the fixed-point value
-//        currentIndex += fixedPointSize;
-//
-//        return fixedPoint;
-//    }
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        buffer.put(heapData);
+    }
 
     /**
      * Provides a simple string representation of the heap contents.

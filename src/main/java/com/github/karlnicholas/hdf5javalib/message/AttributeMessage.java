@@ -6,6 +6,7 @@ import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.createMessageInstance;
 
@@ -52,25 +53,26 @@ public class AttributeMessage extends HdfMessage {
 
         byte[] dtBytes = new byte[datatypeSize];
         buffer.get(dtBytes);
-        HdfMessage hdfDataObjectHeaderDt = createMessageInstance(3, (byte) 0, dtBytes, offsetSize, lengthSize);
-        DataTypeMessage dt = (DataTypeMessage) hdfDataObjectHeaderDt;
 
         byte[] dsBytes = new byte[dataspaceSize];
         buffer.get(dsBytes);
-        HdfMessage hdfDataObjectHeaderDs = createMessageInstance(1, (byte) 0, dsBytes, offsetSize, lengthSize);
+
+        HdfMessage hdfDataObjectHeaderDt = createMessageInstance(3, (byte) 0, dtBytes, offsetSize, lengthSize, ()-> Arrays.copyOfRange( data, buffer.position(), data.length));
+        DataTypeMessage dt = (DataTypeMessage) hdfDataObjectHeaderDt;
+        HdfMessage hdfDataObjectHeaderDs = createMessageInstance(1, (byte) 0, dsBytes, offsetSize, lengthSize, null);
         DataSpaceMessage ds = (DataSpaceMessage) hdfDataObjectHeaderDs;
 
 
-        HdfDataType value = null;
-
-        if ( dt.getDataTypeClass() == 3 ) {
-            int dtDataSize = dt.getSize().getBigIntegerValue().intValue();
-            byte[] dataBytes = new byte[dtDataSize];
-            buffer.get(dataBytes);
-            dt.addDataType(dataBytes);
-            value = dt.getHdfDataType();
-        }
-        return new AttributeMessage(version, nameSize, datatypeSize, dataspaceSize, name, value);
+//        HdfDataType value = null;
+//
+//        if ( dt.getDataTypeClass() == 3 ) {
+//            int dtDataSize = dt.getSize().getBigIntegerValue().intValue();
+//            byte[] dataBytes = new byte[dtDataSize];
+//            buffer.get(dataBytes);
+//            dt.addDataType(dataBytes);
+//            value = dt.getHdfDataType();
+//        }
+        return new AttributeMessage(version, nameSize, datatypeSize, dataspaceSize, name, dt.getHdfDataType());
     }
 
     @Override
@@ -86,7 +88,7 @@ public class AttributeMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+    public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
 
     }

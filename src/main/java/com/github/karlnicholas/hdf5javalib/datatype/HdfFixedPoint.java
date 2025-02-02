@@ -55,7 +55,8 @@ public class HdfFixedPoint implements HdfDataType {
      * @return instance
      */
     public static HdfFixedPoint of(long value) {
-        return new HdfFixedPoint(new BigInteger(1, ByteBuffer.allocate(8).putLong(value).array()), true);
+        byte[] bArray = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(value).array();
+        return new HdfFixedPoint(bArray, (short)8, false, true);
     }
 
     // Constructor for FileChannel
@@ -125,12 +126,8 @@ public class HdfFixedPoint implements HdfDataType {
 
     // Determine size based on bit length
     private short determineSize(BigInteger value) {
-        int bitLength = value.bitLength();
-        if (bitLength <= 8) return 1;
-        if (bitLength <= 16) return 2;
-        if (bitLength <= 32) return 4;
-        if (bitLength <= 64) return 8;
-        throw new IllegalArgumentException("BigInteger value exceeds 64 bits");
+        byte[] bArray = value.toByteArray();
+        return (short) bArray.length;
     }
 
     // Validate size

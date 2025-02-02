@@ -79,9 +79,7 @@ public class HdfObjectHeaderPrefixV1 {
         return prefix;
     }
 
-    public void writeToByteBuffer(ByteBuffer buffer, long position, int offsetSize) {
-        buffer.position((int) position); // Move buffer to correct position
-
+    public void writeToByteBuffer(ByteBuffer buffer) {
         // Write version (1 byte)
         buffer.put((byte) version);
 
@@ -102,7 +100,7 @@ public class HdfObjectHeaderPrefixV1 {
 
         // Write the first message if it's a SymbolTableMessage
         for( HdfMessage hdfMesage: headerMessages) {
-            hdfMesage.writeToByteBuffer(buffer, offsetSize);
+            hdfMesage.writeToByteBuffer(buffer);
         }
     }
 

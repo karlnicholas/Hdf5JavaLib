@@ -20,7 +20,7 @@ public class NullMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
+    public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
     }
 }

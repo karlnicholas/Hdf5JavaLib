@@ -125,14 +125,18 @@ public class HdfBTreeV1 {
         // Step 6: Write Right Sibling Address (offsetSize bytes, little-endian)
         writeFixedPointToBuffer(buffer, rightSiblingAddress);
 
-        // Step 7: Write Child Pointers (each offsetSize bytes, little-endian)
-        for (HdfFixedPoint childPointer : childPointers) {
-            writeFixedPointToBuffer(buffer, childPointer);
-        }
 
-        // Step 8: Write Keys (each offsetSize bytes, little-endian)
-        for (HdfFixedPoint key : keys) {
-            writeFixedPointToBuffer(buffer, key);
+        if (nodeType == 0) {
+            writeFixedPointToBuffer(buffer, HdfFixedPoint.of(0));
+            writeFixedPointToBuffer(buffer, childPointers.get(0));
+
+            // Interleave Keys and Child Pointers
+            for (int i = 0; i < entriesUsed; i++) {
+                writeFixedPointToBuffer(buffer, keys.get(i+1)); // Write Key[i]
+                if ( i + 1 < entriesUsed) {
+                    writeFixedPointToBuffer(buffer, childPointers.get(i)); // Write Child[i]
+                }
+            }
         }
     }
 

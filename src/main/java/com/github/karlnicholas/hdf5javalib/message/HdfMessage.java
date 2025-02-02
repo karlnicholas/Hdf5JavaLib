@@ -1,7 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.nio.ByteBuffer;
 import java.util.function.Supplier;
@@ -27,5 +26,5 @@ public abstract class HdfMessage {
         buffer.put((byte) 0);
     }
 
-    public abstract void writeToByteBuffer(ByteBuffer buffer, int offsetSize);
+    public abstract void writeToByteBuffer(ByteBuffer buffer);
 }

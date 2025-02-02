@@ -12,6 +12,7 @@ import java.nio.channels.FileChannel;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class HdfUtils {
     public static int readIntFromFileChannel(FileChannel fileChannel) throws IOException {
@@ -45,20 +46,21 @@ public class HdfUtils {
             buffer.get(messageData);
 
             // Add the message to the list
-            headerMessages.add(createMessageInstance(type, flags, messageData, offsetSize, lengthSize));
+            headerMessages.add(createMessageInstance(type, flags, messageData, offsetSize, lengthSize, ()->Arrays.copyOfRange(messageData, 8, messageData.length)));
 
         }
     }
 
-    public static HdfMessage createMessageInstance(int type, byte flags, byte[] data, short offsetSize, short lengthSize) {
+    public static HdfMessage createMessageInstance(int type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData) {
         return switch (type) {
             case 0 -> NullMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 1 -> DataSpaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 3 -> {
-                DataTypeMessage dataTypeMessage = (DataTypeMessage)DataTypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-                dataTypeMessage.addDataType(Arrays.copyOfRange(data, 8, data.length));
-                yield dataTypeMessage;
-            }
+            case 3 -> DataTypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, getDataTypeData.get());
+//            {
+//                DataTypeMessage dataTypeMessage = (DataTypeMessage)DataTypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+//                dataTypeMessage.addDataType(Arrays.copyOfRange(data, 8, data.length));
+//                yield dataTypeMessage;
+//            }
             case 5 -> FillValueMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 8 -> DataLayoutMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 12 -> AttributeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
