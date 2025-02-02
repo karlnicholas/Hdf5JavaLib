@@ -71,7 +71,12 @@ public class CompoundDataType implements HdfDataType {
         for (Member member: members) {
             buffer.put(member.getName().getBytes(StandardCharsets.US_ASCII));
             buffer.put((byte)0);
-            buffer.put(new byte[(8 - (member.getName().length()+1 % 8)) % 8]);
+            int i1 = member.getName().length()+1;
+            int i2 = i1 % 8;
+            int i3 = 8 - i2;
+            int i4 = i3 % 8;
+            int paddingSize = (8 -  ((member.getName().length()+1)% 8)) % 8;
+            buffer.put(new byte[i4]);
             buffer.putInt(member.getOffset());
             buffer.put((byte)member.dimensionality);
             buffer.put(new byte[3]);

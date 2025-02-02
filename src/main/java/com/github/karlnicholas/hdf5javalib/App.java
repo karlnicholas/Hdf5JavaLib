@@ -85,8 +85,8 @@ public class App {
 // Define a dataset with correct CompoundDataType members
         // DataTypeMessage with CompoundDataType
         List<CompoundDataType.Member> members = List.of(
-                new CompoundDataType.Member("Id", 0, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("Id"))),
+                new CompoundDataType.Member("shipmentId", 0, 0, 0, new int[4],
+                        new CompoundDataType.FixedPointMember((short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"))),
                 new CompoundDataType.Member("origCountry", 8, 0, 0, new int[4],
                         new CompoundDataType.StringMember((short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origCountry"))),
                 new CompoundDataType.Member("origSlic", 10, 0, 0, new int[4],
