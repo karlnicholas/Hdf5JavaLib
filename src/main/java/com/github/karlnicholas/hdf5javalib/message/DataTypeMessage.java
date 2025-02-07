@@ -24,7 +24,7 @@ public class DataTypeMessage extends HdfMessage {
 
     // Constructor to initialize all fields
     public DataTypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size, HdfDataType hdfDataType) {
-        super((short)3, ()-> (short) (8 + hdfDataType.getSizeMessageData()),(byte)0);
+        super((short)3, ()-> (short) (8 + hdfDataType.getSizeMessageData()),(byte)1);
         this.version = version;
         this.dataTypeClass = dataTypeClass;
         this.classBitField = classBitField;
@@ -133,11 +133,16 @@ public class DataTypeMessage extends HdfMessage {
     @Override
     public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
-        byte classAndVersion = (byte)(version << 4 + dataTypeClass);
+        byte classAndVersion = (byte) ((version << 4) + dataTypeClass);
         buffer.put(classAndVersion);
         // Parse Class Bit Field (24 bits)
-        byte[] classBits = classBitField.toByteArray();
-        buffer.put(classBits);
+        byte[] bytes = classBitField.toByteArray();
+        byte[] result = new byte[3];
+        // Fill with 0s to ensure exactly 3 bytes
+        Arrays.fill(result, (byte) 0);
+        // Copy bytes in little-endian order
+        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
+        buffer.put(result);
         writeFixedPointToBuffer(buffer, size);
         hdfDataType.writeToByteBuffer(buffer);
     }

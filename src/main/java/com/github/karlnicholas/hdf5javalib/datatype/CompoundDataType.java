@@ -86,6 +86,7 @@ public class CompoundDataType implements HdfDataType {
                 buffer.putInt(ds);
             }
             member.type.writeToByteBuffer(buffer);
+
         }
 
     }
@@ -139,7 +140,7 @@ public class CompoundDataType implements HdfDataType {
         short messageDataSize = (short)(currentPosition - buffer.position());
         buffer.position(currentPosition);
 
-        return new FixedPointMember(size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision, messageDataSize);
+        return new FixedPointMember(size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision, messageDataSize, classBitField);
     }
 
     private FloatingPointMember parseFloatingPoint(ByteBuffer buffer, short size, BitSet classBitField) {
@@ -242,6 +243,7 @@ public class CompoundDataType implements HdfDataType {
     }
 
     public static class FixedPointMember implements  CompoundTypeMember {
+        private final BitSet classBitField;
         private final short size;
         private final boolean bigEndian;
         private final boolean loPad;
@@ -251,7 +253,7 @@ public class CompoundDataType implements HdfDataType {
         private final short bitPrecision;
         private final short sizeMessageData;
 
-        public FixedPointMember(short size, boolean bigEndian, boolean loPad, boolean hiPad, boolean signed, short bitOffset, short bitPrecision, short sizeMessageData) {
+        public FixedPointMember(short size, boolean bigEndian, boolean loPad, boolean hiPad, boolean signed, short bitOffset, short bitPrecision, short sizeMessageData, BitSet classBitField) {
             this.size = size;
             this.bigEndian = bigEndian;
             this.loPad = loPad;
@@ -260,6 +262,7 @@ public class CompoundDataType implements HdfDataType {
             this.bitOffset = bitOffset;
             this.bitPrecision = bitPrecision;
             this.sizeMessageData = sizeMessageData;
+            this.classBitField = classBitField;
         }
 
         @Override
@@ -286,6 +289,12 @@ public class CompoundDataType implements HdfDataType {
 
         @Override
         public void writeToByteBuffer(ByteBuffer buffer) {
+            // class and version
+            buffer.put((byte)0b10000);
+            byte[] classBits = new byte[3];
+            buffer.put(classBits);
+            buffer.putInt(size);
+
             buffer.putShort(bitOffset);
             buffer.putShort(bitPrecision);
         }
@@ -331,6 +340,10 @@ public class CompoundDataType implements HdfDataType {
         }
         @Override
         public void writeToByteBuffer(ByteBuffer buffer) {
+            buffer.put((byte)3);
+            byte[] classBits = new byte[3];
+            buffer.put(classBits);
+            buffer.putInt(size);
         }
     }
 
@@ -368,6 +381,8 @@ public class CompoundDataType implements HdfDataType {
         }
         @Override
         public void writeToByteBuffer(ByteBuffer buffer) {
+            buffer.putInt(exponentBits);
+            buffer.putInt(mantissaBits);
         }
     }
 }
