@@ -35,6 +35,7 @@ public class HdfUtils {
 
 
         while (buffer.hasRemaining()) {
+System.out.println(buffer.position());
             // Header Message Type (2 bytes, little-endian)
             int type = Short.toUnsignedInt(buffer.getShort());
             int size = Short.toUnsignedInt(buffer.getShort());
@@ -49,6 +50,7 @@ public class HdfUtils {
             headerMessages.add(createMessageInstance(type, flags, messageData, offsetSize, lengthSize, ()->Arrays.copyOfRange(messageData, 8, messageData.length)));
 
         }
+        System.out.println(buffer.position());
     }
 
     public static HdfMessage createMessageInstance(int type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData) {
@@ -131,5 +133,4 @@ public class HdfUtils {
 
         buffer.put(bytesToWrite);
     }
-
 }

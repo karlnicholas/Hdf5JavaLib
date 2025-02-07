@@ -14,8 +14,6 @@ import java.nio.channels.FileChannel;
 import java.time.Instant;
 import java.util.*;
 
-import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.printData;
-
 /**
  * Hello world!
  *
@@ -86,39 +84,39 @@ public class App {
         // DataTypeMessage with CompoundDataType
         List<CompoundDataType.Member> members = List.of(
                 new CompoundDataType.Member("shipmentId", 0, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"), new BitSet())),
+                        new CompoundDataType.FixedPointMember((byte) 1, (short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"), new BitSet())),
                 new CompoundDataType.Member("origCountry", 8, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origCountry"))),
+                        new CompoundDataType.StringMember((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origCountry"))),
                 new CompoundDataType.Member("origSlic", 10, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origSlic"))),
+                        new CompoundDataType.StringMember((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origSlic"))),
                 new CompoundDataType.Member("origSort", 15, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("origSort"), new BitSet())),
+                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("origSort"), new BitSet())),
                 new CompoundDataType.Member("destCountry", 16, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destCountry"))),
+                        new CompoundDataType.StringMember((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destCountry"))),
                 new CompoundDataType.Member("destSlic", 18, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destSlic"))),
+                        new CompoundDataType.StringMember((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destSlic"))),
                 new CompoundDataType.Member("destIbi", 23, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("destIbi"), new BitSet())),
+                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("destIbi"), new BitSet())),
                 new CompoundDataType.Member("destPostalCode", 40, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)9, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destPostalCode"))),
+                        new CompoundDataType.StringMember((byte) 1, (short)9, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destPostalCode"))),
                 new CompoundDataType.Member("shipper", 24, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((short)10, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("shipper"))),
+                        new CompoundDataType.StringMember((byte) 1, (short)10, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("shipper"))),
                 new CompoundDataType.Member("service", 49, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("service"), new BitSet())),
+                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("service"), new BitSet())),
                 new CompoundDataType.Member("packageType", 50, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("packageType"), new BitSet())),
+                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("packageType"), new BitSet())),
                 new CompoundDataType.Member("accessorials", 51, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("accessorials"), new BitSet())),
+                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("accessorials"), new BitSet())),
                 new CompoundDataType.Member("pieces", 52, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("pieces"), new BitSet())),
+                        new CompoundDataType.FixedPointMember((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("pieces"), new BitSet())),
                 new CompoundDataType.Member("weight", 34, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("weight"), new BitSet())),
+                        new CompoundDataType.FixedPointMember((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("weight"), new BitSet())),
                 new CompoundDataType.Member("cube", 36, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)4, false, false, false, false, (short)0, (short)32, computeFixedMessageDataSize("cube"), new BitSet())),
+                        new CompoundDataType.FixedPointMember((byte) 1, (short)4, false, false, false, false, (short)0, (short)32, computeFixedMessageDataSize("cube"), new BitSet())),
                 new CompoundDataType.Member("committedTnt", 54, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedTnt"), new BitSet())),
+                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedTnt"), new BitSet())),
                 new CompoundDataType.Member("committedDate", 55, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedDate"), new BitSet()))
+                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedDate"), new BitSet()))
         );
 
 
@@ -168,15 +166,15 @@ public class App {
         builder.writeToFile("output.hdf5");
 
     }
-
-    private short computeFixedMessageDataSize(String name) {
+    public short computeFixedMessageDataSize(String name) {
         int nameSize =name.length();
         int padding = ((((nameSize + 1) / 8) + 1) * 8) - nameSize;
         return (short) (nameSize + padding + 52);
     }
-    private short computeStringMessageDataSize(String name) {
+    public short computeStringMessageDataSize(String name) {
         int nameSize =name.length();
         int padding = ((((nameSize + 1) / 8) + 1) * 8) - nameSize;
         return (short) (nameSize + padding + 46);
     }
+
 }
