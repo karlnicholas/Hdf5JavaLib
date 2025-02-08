@@ -23,20 +23,20 @@ public class App {
         new App().run();
     }
     private void run() {
-        try {
-            HdfReader reader = new HdfReader();
-            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
-            try(FileInputStream fis = new FileInputStream(new File(filePath))) {
-                FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
-//                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
-//                trySpliterator(channel, reader);
-//                new HdfConstruction().buildHfd();
-                tryHdfFileBuilder();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            HdfReader reader = new HdfReader();
+//            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
+//            try(FileInputStream fis = new FileInputStream(new File(filePath))) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+////                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
+////                trySpliterator(channel, reader);
+////                new HdfConstruction().buildHfd();
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        tryHdfFileBuilder();
     }
     public void trySpliterator(FileChannel fileChannel, HdfReader reader) {
 
@@ -169,12 +169,12 @@ public class App {
     public short computeFixedMessageDataSize(String name) {
         int nameSize =name.length();
         int padding = ((((nameSize + 1) / 8) + 1) * 8) - nameSize;
-        return (short) (nameSize + padding + 52);
+        return (short) (nameSize + padding + 48);
     }
     public short computeStringMessageDataSize(String name) {
         int nameSize =name.length();
         int padding = ((((nameSize + 1) / 8) + 1) * 8) - nameSize;
-        return (short) (nameSize + padding + 46);
+        return (short) (nameSize + padding + 44);
     }
 
 }

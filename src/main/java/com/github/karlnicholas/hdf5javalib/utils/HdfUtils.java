@@ -35,7 +35,6 @@ public class HdfUtils {
 
 
         while (buffer.hasRemaining()) {
-System.out.println(buffer.position());
             // Header Message Type (2 bytes, little-endian)
             int type = Short.toUnsignedInt(buffer.getShort());
             int size = Short.toUnsignedInt(buffer.getShort());

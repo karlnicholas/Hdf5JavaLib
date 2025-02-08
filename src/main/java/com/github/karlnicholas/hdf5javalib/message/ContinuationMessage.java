@@ -12,7 +12,7 @@ public class ContinuationMessage extends HdfMessage {
     private HdfFixedPoint continuationSize;   // Size of the continuation block
 
     public ContinuationMessage(final HdfFixedPoint continuationOffset, final HdfFixedPoint continuationSize) {
-        super((short)16, ()-> (short) (continuationOffset.getSizeMessageData() + continuationSize.getSizeMessageData()), (byte)0);
+        super((short)16, ()-> (short) (8+16), (byte)0);
         this.continuationOffset = continuationOffset;
         this.continuationSize = continuationSize;
     }
