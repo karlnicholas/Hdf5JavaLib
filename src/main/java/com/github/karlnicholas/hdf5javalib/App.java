@@ -23,19 +23,19 @@ public class App {
         new App().run();
     }
     private void run() {
-//        try {
-//            HdfReader reader = new HdfReader();
-//            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
-//            try(FileInputStream fis = new FileInputStream(new File(filePath))) {
-//                FileChannel channel = fis.getChannel();
-//                reader.readFile(channel);
-////                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
-////                trySpliterator(channel, reader);
-////                new HdfConstruction().buildHfd();
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            HdfReader reader = new HdfReader();
+            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
+            try(FileInputStream fis = new FileInputStream(new File(filePath))) {
+                FileChannel channel = fis.getChannel();
+                reader.readFile(channel);
+//                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
+//                trySpliterator(channel, reader);
+//                new HdfConstruction().buildHfd();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         tryHdfFileBuilder();
     }
     public void trySpliterator(FileChannel fileChannel, HdfReader reader) {
@@ -134,9 +134,8 @@ public class App {
         headerMessages.add(new FillValueMessage(2, 2, 2, 1, HdfFixedPoint.of(0), new byte[0]));
 
         // Add DataLayoutMessage (Storage format)
-        int[] dimensionSizes=new int[] {0, 0, 0, 0};
-        HdfFixedPoint[] hdfDimensionSizes = Arrays.stream(dimensionSizes).mapToObj(HdfFixedPoint::of).toArray(HdfFixedPoint[]::new);
-        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(1, 1, HdfFixedPoint.of(2208), hdfDimensionSizes, 0, null, HdfFixedPoint.undefined((short)8));
+        HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(98000)};
+        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1, HdfFixedPoint.of(2208), hdfDimensionSizes, 0, null, HdfFixedPoint.undefined((short)8));
         headerMessages.add(dataLayoutMessage);
 
         // add ObjectModification Time message

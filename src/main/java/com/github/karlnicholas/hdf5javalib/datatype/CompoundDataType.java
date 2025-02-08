@@ -289,7 +289,8 @@ public class CompoundDataType implements HdfDataType {
         @Override
         public void writeToByteBuffer(ByteBuffer buffer) {
             // class and version
-            buffer.put((byte)(0b0 | version));
+            // class and version
+            buffer.put((byte)(version << 4 | 0b0));
             byte[] classBits = new byte[3];
             buffer.put(classBits);
             buffer.putInt(size);

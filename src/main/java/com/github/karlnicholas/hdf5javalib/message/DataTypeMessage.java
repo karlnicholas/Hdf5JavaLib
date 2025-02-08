@@ -145,9 +145,5 @@ public class DataTypeMessage extends HdfMessage {
         buffer.put(result);
         writeFixedPointToBuffer(buffer, size);
         hdfDataType.writeToByteBuffer(buffer);
-        // set position 8 byte boundary
-        int position = buffer.position();
-        position = ((position / 8) + 1) * 8;
-        buffer.position(position);
     }
 }

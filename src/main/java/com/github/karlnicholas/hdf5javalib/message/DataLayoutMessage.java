@@ -30,12 +30,21 @@ public class DataLayoutMessage extends HdfMessage {
             HdfFixedPoint datasetElementSize
     ) {
         super((short) 8, ()->{
-            short size = (short) (1+1+dataAddress.getSizeMessageData());
-            for (HdfFixedPoint dimensionSize : dimensionSizes) {
-                size += dimensionSize.getSizeMessageData();
+            short size = (short) 8;
+            switch (layoutClass) {
+                case 0: // Compact Storage
+                    break;
+
+                case 1: // Contiguous Storage
+                    size += 16;
+                    break;
+
+                case 2: // Chunked Storage
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Unsupported layout class: " + layoutClass);
             }
-            size += 2;
-            size += datasetElementSize == null ? 0: datasetElementSize.getSizeMessageData();
             return size;
         }, (byte)0);
         this.version = version;
