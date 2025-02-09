@@ -60,7 +60,7 @@ public class CompoundDataType implements HdfDataType {
                 dimensionSizes[j] = buffer.getInt();
             }
 
-            CompoundTypeMember type = parseMemberDataType(buffer);
+            CompoundTypeMember type = parseMemberDataType(buffer, name);
 
             members.add(new Member(name, offset, dimensionality, dimensionPermutation, dimensionSizes, type));
         }
@@ -101,7 +101,7 @@ public class CompoundDataType implements HdfDataType {
         buffer.position(buffer.position() + padding);
     }
 
-    private CompoundTypeMember parseMemberDataType(ByteBuffer buffer) {
+    private CompoundTypeMember parseMemberDataType(ByteBuffer buffer, String name) {
         byte classAndVersion = buffer.get();
         byte version = (byte) ((classAndVersion >> 4) & 0x0F);
         int dataTypeClass = classAndVersion & 0x0F;
@@ -115,14 +115,14 @@ public class CompoundDataType implements HdfDataType {
         short size = (short) Integer.toUnsignedLong(buffer.getInt());
 
         return switch (dataTypeClass) {
-            case 0 -> parseFixedPoint(buffer, version, size, classBitField);
-            case 1 -> parseFloatingPoint(buffer, version, size, classBitField);
-            case 3 -> parseString(version, size, classBitField);
+            case 0 -> parseFixedPoint(buffer, version, size, classBitField, name);
+            case 1 -> parseFloatingPoint(buffer, version, size, classBitField, name);
+            case 3 -> parseString(version, size, classBitField, name);
             default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
         };
     }
 
-    private FixedPointMember parseFixedPoint(ByteBuffer buffer, byte version, short size, BitSet classBitField) {
+    private FixedPointMember parseFixedPoint(ByteBuffer buffer, byte version, short size, BitSet classBitField, String name) {
         boolean bigEndian = classBitField.get(0);
         boolean loPad = classBitField.get(1);
         boolean hiPad = classBitField.get(2);
@@ -131,22 +131,20 @@ public class CompoundDataType implements HdfDataType {
         short bitOffset = buffer.getShort();
         short bitPrecision = buffer.getShort();
 
-        int currentPosition = buffer.position();
-        buffer.reset();
-        short messageDataSize = (short)(currentPosition - buffer.position());
-        buffer.position(currentPosition);
+        int padding = (8 -  ((name.length()+1)% 8)) % 8;
+        short messageDataSize = (short) (name.length()+1 + padding + 44);
 
         return new FixedPointMember(version, size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision, messageDataSize, classBitField);
     }
 
-    private FloatingPointMember parseFloatingPoint(ByteBuffer buffer, byte version, short size, BitSet classBitField) {
+    private FloatingPointMember parseFloatingPoint(ByteBuffer buffer, byte version, short size, BitSet classBitField, String name) {
         boolean bigEndian = classBitField.get(0);
         int exponentBits = buffer.getInt();
         int mantissaBits = buffer.getInt();
         return new FloatingPointMember(version, size, exponentBits, mantissaBits, bigEndian);
     }
 
-    private StringMember parseString(byte version, short size, BitSet classBitField) {
+    private StringMember parseString(byte version, short size, BitSet classBitField, String name) {
         int paddingType = extractBits(classBitField, 0, 3);
         int charSet = extractBits(classBitField, 4, 7);
 
@@ -163,7 +161,10 @@ public class CompoundDataType implements HdfDataType {
             default -> "Reserved";
         };
 
-        return new StringMember(version, size, paddingType, paddingDescription, charSet, charSetDescription, size);
+        int padding = (8 -  ((name.length()+1)% 8)) % 8;
+        short messageDataSize = (short) (name.length()+1 + padding + 40);
+
+        return new StringMember(version, size, paddingType, paddingDescription, charSet, charSetDescription, messageDataSize);
     }
 
     private int extractBits(BitSet bitSet, int start, int end) {

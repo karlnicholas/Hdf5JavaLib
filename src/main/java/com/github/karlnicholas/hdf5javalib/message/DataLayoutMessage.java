@@ -30,7 +30,7 @@ public class DataLayoutMessage extends HdfMessage {
             HdfFixedPoint datasetElementSize
     ) {
         super((short) 8, ()->{
-            short size = (short) 8;
+            short size = (short) 8+8;
             switch (layoutClass) {
                 case 0: // Compact Storage
                     break;

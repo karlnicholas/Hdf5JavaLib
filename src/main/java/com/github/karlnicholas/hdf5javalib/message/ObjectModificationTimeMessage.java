@@ -32,8 +32,8 @@ public class ObjectModificationTimeMessage extends HdfMessage {
         // Parse version
         int version = Byte.toUnsignedInt(buffer.get());
 
-        // Skip reserved byte
-        buffer.get();
+        // Skip reserved bytes
+        buffer.position(buffer.position() + 3);
 
         // Parse seconds after UNIX epoch
         long secondsAfterEpoch = Integer.toUnsignedLong(buffer.getInt());
@@ -54,8 +54,8 @@ public class ObjectModificationTimeMessage extends HdfMessage {
     public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
         buffer.put((byte) version);
-        // Skip reserved byte
-        buffer.put((byte) 0);
+        // Skip reserved bytes
+        buffer.position(buffer.position() + 3);
         // Parse seconds after UNIX epoch
         buffer.putInt((int) secondsAfterEpoch);
     }

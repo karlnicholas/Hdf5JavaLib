@@ -23,6 +23,26 @@ public class HdfFileBuilder {
 //    private final Map<String, Long> objectNameToAddressMap;
 
 
+
+    /**
+     * Basic Allocation Type	Description
+     * H5FD_MEM_SUPER	File space allocated for Superblock.
+     * H5FD_MEM_BTREE	File space allocated for B-tree.
+     * H5FD_MEM_DRAW	File space allocated for raw data.
+     * H5FD_MEM_GHEAP	File space allocated for Global Heap.
+     * H5FD_MEM_LHEAP	File space allocated for Local Heap.
+     * H5FD_MEM_OHDR	File space allocated for Object Header.
+     *
+     */
+
+
+    /**
+     *
+     * @param groupLeafNodeK
+     * @param groupInternalNodeK
+     * @param baseAddress
+     * @param endOfFileAddress
+     */
     public void superblock(
             int groupLeafNodeK,
             int groupInternalNodeK,

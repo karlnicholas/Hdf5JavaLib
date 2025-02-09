@@ -1,7 +1,7 @@
 package com.github.karlnicholas.hdf5javalib;
 
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
-import com.github.karlnicholas.hdf5javalib.message.SymbolTableMessage;
+import com.github.karlnicholas.hdf5javalib.message.*;
 import lombok.Getter;
 
 import java.io.*;
@@ -82,7 +82,7 @@ public class HdfReader {
         dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
         System.out.println(dataObjectHeaderPrefix);
 
-//        for (HdfMessage message : dataObjectHeaderPrefix.getDataObjectHeaderMessages()) {
+//        for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
 //            if (message instanceof DataTypeMessage dataTypeMessage) {
 //                // Check if the datatype is Compound
 //                if (dataTypeMessage.getDataTypeClass() == 6) {

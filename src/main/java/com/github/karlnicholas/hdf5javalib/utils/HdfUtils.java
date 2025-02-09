@@ -49,7 +49,6 @@ public class HdfUtils {
             headerMessages.add(createMessageInstance(type, flags, messageData, offsetSize, lengthSize, ()->Arrays.copyOfRange(messageData, 8, messageData.length)));
 
         }
-        System.out.println(buffer.position());
     }
 
     public static HdfMessage createMessageInstance(int type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData) {

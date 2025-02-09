@@ -38,6 +38,58 @@ public class App {
         }
         tryHdfFileBuilder();
     }
+
+    public void tryAllocator() {
+        Hdf5Allocator allocator = new Hdf5Allocator(0);
+
+        // Allocate Superblock
+        long superblockOffset = allocator.allocate(56, 8);
+        System.out.printf("Superblock at: %d\n", superblockOffset);
+
+        // Allocate Symbol Table Entry
+        long symbolTableEntryOffset = allocator.allocate(40, 8);
+        System.out.printf("Symbol Table Entry at: %d\n", symbolTableEntryOffset);
+
+        // Allocate Root Object Header
+        int numMessages = 10;  // Example: Assume 10 metadata messages
+        int messageSize = 40;  // Example: Each message is ~40 bytes
+
+        long rootObjectHeaderSize = calculateObjectHeaderSize(numMessages, messageSize);
+        long rootObjectHeaderOffset = allocator.allocate(rootObjectHeaderSize, 8);
+
+        System.out.printf("Root Object Header at: %d, Size: %d\n", rootObjectHeaderOffset, rootObjectHeaderSize);
+
+        // Allocate Local Heap
+        long localHeapOffset = allocator.allocate(32, 8);
+        System.out.printf("Local Heap at: %d\n", localHeapOffset);
+
+        // Allocate Local Heap Contents
+        long localHeapContentsOffset = allocator.allocate(88, 8);
+        System.out.printf("Local Heap Contents at: %d\n", localHeapContentsOffset);
+
+        // Allocate Dataset Object Header
+        long datasetObjectHeaderOffset = allocator.allocate(1080, 8);
+        System.out.printf("Dataset Object Header at: %d\n", datasetObjectHeaderOffset);
+
+        // Allocate B-Trees
+        long btreeOffset = allocator.allocate(328, 8);
+        System.out.printf("B-Tree Structures at: %d\n", btreeOffset);
+
+        // Align Dataset Storage to 2208
+        long datasetStorageOffset = allocator.allocate(0, 2048); // Align to 2208 manually
+        System.out.printf("Dataset Storage starts at: %d\n", datasetStorageOffset);
+
+    }
+    public long calculateObjectHeaderSize(int numMessages, int messageSize) {
+        int headerSize = 16;  // Base header size (depends on HDF5 version)
+        int totalSize = headerSize + (numMessages * messageSize);
+        return alignTo8(totalSize);
+    }
+
+    private long alignTo8(long size) {
+        return (size + 7) & ~7; // Aligns to the next multiple of 8
+    }
+
     public void trySpliterator(FileChannel fileChannel, HdfReader reader) {
 
         HdfDataSource<VolumeData> hdfDataSource = new HdfDataSource(reader.getCompoundDataType(), VolumeData.class);
@@ -165,15 +217,15 @@ public class App {
         builder.writeToFile("output.hdf5");
 
     }
+
     public short computeFixedMessageDataSize(String name) {
-        int nameSize =name.length();
-        int padding = ((((nameSize + 1) / 8) + 1) * 8) - nameSize;
-        return (short) (nameSize + padding + 48);
+        int padding = (8 -  ((name.length()+1)% 8)) % 8;
+        return (short) (name.length()+1 + padding + 44);
     }
+
     public short computeStringMessageDataSize(String name) {
-        int nameSize =name.length();
-        int padding = ((((nameSize + 1) / 8) + 1) * 8) - nameSize;
-        return (short) (nameSize + padding + 44);
+        int padding = (8 -  ((name.length()+1)% 8)) % 8;
+        return (short) (name.length()+1 + padding + 40);
     }
 
 }

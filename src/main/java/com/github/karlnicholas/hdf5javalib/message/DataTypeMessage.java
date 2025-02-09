@@ -24,7 +24,12 @@ public class DataTypeMessage extends HdfMessage {
 
     // Constructor to initialize all fields
     public DataTypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size, HdfDataType hdfDataType) {
-        super((short)3, ()-> (short) (8 + 8 + hdfDataType.getSizeMessageData()),(byte)1);
+        super((short)3, ()-> {
+            short sizeMessageData = 8;
+            sizeMessageData += hdfDataType.getSizeMessageData();
+            // to 8 byte boundary
+            return (short) ((sizeMessageData + 7) & ~7);
+        },(byte)1);
         this.version = version;
         this.dataTypeClass = dataTypeClass;
         this.classBitField = classBitField;
