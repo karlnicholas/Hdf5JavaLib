@@ -140,7 +140,7 @@ public class HdfBTreeV1 {
         }
     }
 
-    public void parseBTreeAndLocalHeap(HdfLocalHeapContents localHeap) {
+    public void parseBTreeAndLocalHeap(HdfLocalHeapContents localHeapContents) {
         if (nodeType != 0 || nodeLevel != 0) {
             throw new UnsupportedOperationException("Only nodeType=0 and nodeLevel=0 are supported.");
         }
@@ -155,7 +155,7 @@ public class HdfBTreeV1 {
         // Parse each key and corresponding child
         for (int i = 0; i < keys.size(); i++) {
             HdfFixedPoint keyOffset = keys.get(i);
-            objectName = localHeap.parseStringAtOffset(keyOffset);
+            objectName = localHeapContents.parseStringAtOffset(keyOffset);
 
             if (i < childPointers.size()) {
                 childAddress = childPointers.get(i);

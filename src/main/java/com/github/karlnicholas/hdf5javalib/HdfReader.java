@@ -27,14 +27,19 @@ public class HdfReader {
     private long dimension = 0;
 
     public void readFile(FileChannel fileChannel) throws IOException {
+        long fPosSave = fileChannel.position();
         System.out.print(fileChannel.position() + " = ");
         // Parse the superblock at the beginning of the file
         superblock = HdfSuperblock.readFromFileChannel(fileChannel);
         System.out.println(superblock);
+        System.out.println("superblock = " + (fileChannel.position() - fPosSave));
+        fPosSave = fileChannel.position();
         // Parse root group symbol table entry from the current position
         System.out.print(fileChannel.position() + " = ");
         rootGroupSymbolTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, superblock.getSizeOfOffsets());
         System.out.println(rootGroupSymbolTableEntry);
+        System.out.println("rootGroupSymbolTableEntry = " + (fileChannel.position() - fPosSave));
+        fPosSave = fileChannel.position();
 
         short offsetSize = superblock.getSizeOfOffsets();
         short lengthSize = superblock.getSizeOfLengths();
@@ -46,13 +51,20 @@ public class HdfReader {
         fileChannel.position(objectHeaderAddress);
         objectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
         System.out.println(objectHeaderPrefix);
+        System.out.println("objectHeaderPrefix = " + (fileChannel.position() - fPosSave));
 
         // Parse the local heap using the file channel
         long localHeapAddress = objectHeaderPrefix.findHdfSymbolTableMessage(SymbolTableMessage.class)
                 .orElseThrow().getLocalHeapAddress().getBigIntegerValue().longValue();
         System.out.print(localHeapAddress + " = ");
-        localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, localHeapAddress, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
+        // Read data from file channel starting at the specified position
+        fileChannel.position(localHeapAddress);
+        fPosSave = fileChannel.position();
+
+        localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
         System.out.println(localHeap);
+        System.out.println("localHeap = " + (fileChannel.position() - fPosSave));
+        fPosSave = fileChannel.position();
 
         int dataSize = localHeap.getDataSegmentSize().getBigIntegerValue().intValue();
         long dataSegmentAddress = localHeap.getDataSegmentAddress().getBigIntegerValue().longValue();
@@ -60,6 +72,8 @@ public class HdfReader {
         System.out.print(dataSegmentAddress + " = ");
         this.localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, dataSize);
         System.out.println(localHeapContents);
+        System.out.println("localHeapContents = " + (fileChannel.position() - fPosSave));
+        fPosSave = fileChannel.position();
 
 
         if ( superblock.getVersion() == 0 ) {
