@@ -82,23 +82,23 @@ public class HdfReader {
         dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
         System.out.println(dataObjectHeaderPrefix);
 
-//        for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
-//            if (message instanceof DataTypeMessage dataTypeMessage) {
-//                // Check if the datatype is Compound
-//                if (dataTypeMessage.getDataTypeClass() == 6) {
-//                    compoundDataType = (CompoundDataType) dataTypeMessage.getHdfDataType();
-//                } else {
-//                    // For other datatype classes, parsing logic will be added later
-//                    throw new UnsupportedOperationException("Datatype class " + dataTypeMessage.getDataTypeClass() + " not yet implemented.");
-//                }
-//            } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
-//                dataAddress = dataLayoutMessage.getDataAddress().getBigIntegerValue().longValue();
-//                dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getBigIntegerValue().longValue();
-//            } else if (message instanceof DataSpaceMessage dataSpaceMessage) {
-//                dimension = dataSpaceMessage.getDimensions()[0].getBigIntegerValue().longValue();
-//            }
-//        }
-//
+        for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
+            if (message instanceof DataTypeMessage dataTypeMessage) {
+                // Check if the datatype is Compound
+                if (dataTypeMessage.getDataTypeClass() == 6) {
+                    compoundDataType = (CompoundDataType) dataTypeMessage.getHdfDataType();
+                } else {
+                    // For other datatype classes, parsing logic will be added later
+                    throw new UnsupportedOperationException("Datatype class " + dataTypeMessage.getDataTypeClass() + " not yet implemented.");
+                }
+            } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
+                dataAddress = dataLayoutMessage.getDataAddress().getBigIntegerValue().longValue();
+                dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getBigIntegerValue().longValue();
+            } else if (message instanceof DataSpaceMessage dataSpaceMessage) {
+                dimension = dataSpaceMessage.getDimensions()[0].getBigIntegerValue().longValue();
+            }
+        }
+
 //        System.out.println("DataType{" + compoundDataType + "\r\n}");
 
         System.out.println("Parsing complete. NEXT: " + fileChannel.position());

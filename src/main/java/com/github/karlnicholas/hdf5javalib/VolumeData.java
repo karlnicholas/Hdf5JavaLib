@@ -7,7 +7,7 @@ import java.math.BigInteger;
 @Getter
 @ToString
 public class VolumeData {
-    private BigInteger Id;
+    private BigInteger shipmentId;
     private String origCountry;
     private String origSlic;
     private BigInteger origSort;

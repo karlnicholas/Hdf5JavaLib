@@ -10,9 +10,14 @@ import com.github.karlnicholas.hdf5javalib.utils.HdfSpliterator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.channels.FileChannel;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Hello world!
@@ -25,18 +30,19 @@ public class App {
     private void run() {
         try {
             HdfReader reader = new HdfReader();
-            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
+            String filePath = App.class.getResource("/test.h5").getFile();
+//            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
             try(FileInputStream fis = new FileInputStream(new File(filePath))) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
 //                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
-//                trySpliterator(channel, reader);
+                trySpliterator(channel, reader);
 //                new HdfConstruction().buildHfd();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        tryHdfFileBuilder();
+        tryAllocator();
     }
 
     public void tryAllocator() {
@@ -51,13 +57,8 @@ public class App {
         System.out.printf("Symbol Table Entry at: %d\n", symbolTableEntryOffset);
 
         // Allocate Root Object Header
-        int numMessages = 10;  // Example: Assume 10 metadata messages
-        int messageSize = 40;  // Example: Each message is ~40 bytes
-
-        long rootObjectHeaderSize = calculateObjectHeaderSize(numMessages, messageSize);
-        long rootObjectHeaderOffset = allocator.allocate(rootObjectHeaderSize, 8);
-
-        System.out.printf("Root Object Header at: %d, Size: %d\n", rootObjectHeaderOffset, rootObjectHeaderSize);
+        long rootObjectHeaderOffset = allocator.allocate(584, 8);
+        System.out.printf("Root Object Header at: %d\n", rootObjectHeaderOffset);
 
         // Allocate Local Heap
         long localHeapOffset = allocator.allocate(32, 8);
@@ -80,15 +81,6 @@ public class App {
         System.out.printf("Dataset Storage starts at: %d\n", datasetStorageOffset);
 
     }
-    public long calculateObjectHeaderSize(int numMessages, int messageSize) {
-        int headerSize = 16;  // Base header size (depends on HDF5 version)
-        int totalSize = headerSize + (numMessages * messageSize);
-        return alignTo8(totalSize);
-    }
-
-    private long alignTo8(long size) {
-        return (size + 7) & ~7; // Aligns to the next multiple of 8
-    }
 
     public void trySpliterator(FileChannel fileChannel, HdfReader reader) {
 
@@ -96,10 +88,13 @@ public class App {
 
         Spliterator<VolumeData> spliterator = new HdfSpliterator(fileChannel, reader.getDataAddress(), reader.getCompoundDataType().getSize(), reader.getDimension(), hdfDataSource);
 
-        spliterator.forEachRemaining(buffer -> {
-            // Process each ByteBuffer (record) here
-            System.out.println("Record: " + buffer);
-        });
+        System.out.println("count = " + StreamSupport.stream(spliterator, false).map(VolumeData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
+
+
+//        spliterator.forEachRemaining(buffer -> {
+//            // Process each ByteBuffer (record) here
+//            System.out.println("Record: " + buffer);
+//        });
 
     }
 
@@ -113,26 +108,26 @@ public class App {
 
         builder.objectHeader();
 
-            // Define the heap data size
-            int dataSegmentSize = 88;
+        // Define the heap data size
+        int dataSegmentSize = 88;
 
-            // Initialize the heapData array
-            byte[] heapData = new byte[dataSegmentSize];
-            Arrays.fill(heapData, (byte) 0); // Set all bytes to 0
+        // Initialize the heapData array
+        byte[] heapData = new byte[dataSegmentSize];
+        Arrays.fill(heapData, (byte) 0); // Set all bytes to 0
 
-            // Set bytes 8-16 to the required values
-            heapData[8] = 68;  // 'D'
-            heapData[9] = 101; // 'e'
-            heapData[10] = 109; // 'm'
-            heapData[11] = 97; // 'a'
-            heapData[12] = 110; // 'n'
-            heapData[13] = 100; // 'd'
-            heapData[14] = 0;  // null terminator
-            heapData[15] = 0;  // additional null byte
+        // Set bytes 8-16 to the required values
+        heapData[8] = 68;  // 'D'
+        heapData[9] = 101; // 'e'
+        heapData[10] = 109; // 'm'
+        heapData[11] = 97; // 'a'
+        heapData[12] = 110; // 'n'
+        heapData[13] = 100; // 'd'
+        heapData[14] = 0;  // null terminator
+        heapData[15] = 0;  // additional null byte
 
         builder.localHeap(dataSegmentSize, 16, 712, heapData);
 
-// Define a dataset with correct CompoundDataType members
+        // Define a dataset with correct CompoundDataType members
         // DataTypeMessage with CompoundDataType
         List<CompoundDataType.Member> members = List.of(
                 new CompoundDataType.Member("shipmentId", 0, 0, 0, new int[4],
