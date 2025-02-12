@@ -77,8 +77,8 @@ public class HdfDataSource<T> {
                     // Convert string to bytes and write to buffer
                     ByteBuffer stringBuffer = ByteBuffer.allocate(stringMember.getSize());
                     if (value != null) {
-                        new HdfString(strValue.getBytes(StandardCharsets.US_ASCII))
-                                .writeValueToByteBuffer(stringBuffer);
+                        HdfString s = new HdfString(strValue.getBytes(StandardCharsets.US_ASCII), false, false);
+                        s.writeValueToByteBuffer(stringBuffer);
                     }
                     buffer.put(stringBuffer.array());
                 } else if (value instanceof BigInteger bigIntValue && member.getType() instanceof CompoundDataType.FixedPointMember fixedPointMember) {

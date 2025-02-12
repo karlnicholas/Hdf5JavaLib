@@ -33,7 +33,7 @@ public class CompoundDataType implements HdfDataType {
         short value = 0;
         for (int i = 0; i < classBitField.length(); i++) {
             if (classBitField.get(i)) {
-                value |= (1 << i);
+                value |= (short) (1 << i);
             }
         }
         return value;
@@ -297,7 +297,7 @@ public class CompoundDataType implements HdfDataType {
         public void writeToByteBuffer(ByteBuffer buffer) {
             // class and version
             // class and version
-            buffer.put((byte)(version << 4 | 0b0));
+            buffer.put((byte)(version << 4));
             byte[] classBits = new byte[3];
             buffer.put(classBits);
             buffer.putInt(size);

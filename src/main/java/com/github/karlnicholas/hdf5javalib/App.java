@@ -7,14 +7,15 @@ import com.github.karlnicholas.hdf5javalib.message.*;
 import com.github.karlnicholas.hdf5javalib.utils.HdfDataSource;
 import com.github.karlnicholas.hdf5javalib.utils.HdfSpliterator;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -29,9 +30,9 @@ public class App {
     private void run() {
         try {
             HdfReader reader = new HdfReader();
-            String filePath = App.class.getResource("/test.h5").getFile();
+            String filePath = Objects.requireNonNull(App.class.getResource("/test.h5")).getFile();
 //            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
-            try(FileInputStream fis = new FileInputStream(new File(filePath))) {
+            try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
 //                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
@@ -41,14 +42,14 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        tryHdfFileBuilder();
+        tryHdfApi();
     }
 
     public void tryHdfApi() {
         final String FILE_NAME = "test.h5";
+        final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "Demand";
         final String ATTRIBUTE_NAME = "GIT root revision";
-        StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
         final int NUM_RECORDS = 1750;
 
         try {
@@ -105,7 +106,7 @@ public class App {
 
             // ✅ Create dataset
 //            DataSet dataset = file.createDataSet(DATASET_NAME, compoundType, space);
-            HdfDataSet dataset = file.createDataSet(DATASET_NAME, compoundType, hdfDimensions);
+            HdfDataSet<VolumeData> dataset = file.createDataSet(DATASET_NAME, compoundType, hdfDimensions);
 
 
             // ✅ ADD ATTRIBUTE: "GIT root revision"
@@ -116,46 +117,38 @@ public class App {
             attribute.write(attr_type, attributeValue);
             attribute.close();
 
-//            H5std_string attribute_value = "Revision: , URL: ";
-//            StrType attr_type(PredType::C_S1, attribute_value.size());
-//            DataSpace attr_space(H5S_SCALAR);
-//            Attribute attribute = dataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
-//            attribute.write(attr_type, attribute_value);
-//            attribute.close();
-
-            // ✅ Allocate a vector of `Shipment` structs
-            List<VolumeData> shipments = new ArrayList<>(NUM_RECORDS);
-
-            // ✅ Fill the struct array
-            for (int i = 0; i < NUM_RECORDS; i++) {
-                shipments.add(
-                    VolumeData.builder()
-                            .shipmentId(BigInteger.valueOf(i+1000))
-                            .origCountry("US")
-                            .origSlic("1234")
-                            .origSort(BigInteger.valueOf(4))
-                            .destCountry("US")
-                            .destSlic("4321")
-                            .destIbi(BigInteger.ZERO)
-                            .destPostalCode("94211")
-                            .shipper("DexEf")
-                            .packageType(BigInteger.ONE)
-                            .accessorials(BigInteger.ZERO)
-                            .pieces(BigInteger.valueOf(10))
-                            .pieces(BigInteger.valueOf(50))
-                            .cube(BigInteger.valueOf(1200))
-                            .committedTnt(BigInteger.ZERO)
-                            .committedDate(BigInteger.ZERO)
-                            .build()
-                );
-            }
-
+            AtomicInteger countHolder = new AtomicInteger(0);
+            HdfDataSource<VolumeData> volumeDataHdfDataSource = new HdfDataSource<>(compoundType, VolumeData.class);
+            ByteBuffer volumeBuffer = ByteBuffer.allocate(compoundType.getSize());
             // ✅ Write to dataset
-            dataset.write(shipments, compoundType, VolumeData.class);
+            dataset.write(() -> {
+                int count = countHolder.getAndIncrement();
+                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
+                VolumeData instance = VolumeData.builder()
+                        .shipmentId(BigInteger.valueOf(count + 1000))
+                        .origCountry("US")
+                        .origSlic("1234")
+                        .origSort(BigInteger.valueOf(4))
+                        .destCountry("US")
+                        .destSlic("4321")
+                        .destIbi(BigInteger.ZERO)
+                        .destPostalCode("94211")
+                        .shipper("DexEf")
+                        .packageType(BigInteger.ONE)
+                        .accessorials(BigInteger.ZERO)
+                        .pieces(BigInteger.valueOf(10))
+                        .pieces(BigInteger.valueOf(50))
+                        .cube(BigInteger.valueOf(1200))
+                        .committedTnt(BigInteger.ZERO)
+                        .committedDate(BigInteger.ZERO)
+                        .build();
+                volumeBuffer.clear();
+                volumeDataHdfDataSource.writeToBuffer(instance, volumeBuffer);
+                volumeBuffer.flip();
+                return volumeBuffer;
+            });
 
-            // ✅ Close resources
-            dataset.close();
-            file.close();
+            // auto close
 
             System.out.println("HDF5 file created and written successfully!");
         } catch (Exception e) {
@@ -202,9 +195,9 @@ public class App {
 
     public void trySpliterator(FileChannel fileChannel, HdfReader reader) {
 
-        HdfDataSource<VolumeData> hdfDataSource = new HdfDataSource(reader.getCompoundDataType(), VolumeData.class);
+        HdfDataSource<VolumeData> hdfDataSource = new HdfDataSource<>(reader.getCompoundDataType(), VolumeData.class);
 
-        Spliterator<VolumeData> spliterator = new HdfSpliterator(fileChannel, reader.getDataAddress(), reader.getCompoundDataType().getSize(), reader.getDimension(), hdfDataSource);
+        Spliterator<VolumeData> spliterator = new HdfSpliterator<>(fileChannel, reader.getDataAddress(), reader.getCompoundDataType().getSize(), reader.getDimension(), hdfDataSource);
 
         System.out.println("count = " + StreamSupport.stream(spliterator, false).map(VolumeData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
 
@@ -216,7 +209,7 @@ public class App {
 
     }
 
-    public void tryHdfFileBuilder() {
+    public void tryHdfFileBuilder() throws IOException {
         HdfFileBuilder builder = new HdfFileBuilder();
 
         builder.superblock(4, 16, 0, 100320);
@@ -329,7 +322,7 @@ public class App {
         builder.addSymbolTableNode(800);
 
         // Write to an HDF5 file
-        builder.writeToFile("output.hdf5");
+        builder.writeToFile(null);
 
     }
 

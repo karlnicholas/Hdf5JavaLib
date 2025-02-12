@@ -4,23 +4,22 @@ import com.github.karlnicholas.hdf5javalib.datatype.*;
 import com.github.karlnicholas.hdf5javalib.message.*;
 import com.github.karlnicholas.hdf5javalib.utils.*;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.time.Instant;
+import java.nio.channels.FileChannel;
 import java.util.*;
 
 public class HdfFileBuilder {
     private HdfSuperblock superblock;
     private HdfSymbolTableEntry rootGroupEntry;
-//    private final List<HdfSymbolTableEntry> symbolTableEntries;
     private HdfObjectHeaderPrefixV1 objectHeaderPrefix;
     private HdfLocalHeap localHeap;
     private HdfLocalHeapContents localHeapContents;
     private HdfBTreeV1 bTree;
     private HdfSymbolTableNode symbolTableNode;
     private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
-//    private final Map<String, Long> objectNameToAddressMap;
 
 
 
@@ -36,13 +35,6 @@ public class HdfFileBuilder {
      */
 
 
-    /**
-     *
-     * @param groupLeafNodeK
-     * @param groupInternalNodeK
-     * @param baseAddress
-     * @param endOfFileAddress
-     */
     public void superblock(
             int groupLeafNodeK,
             int groupInternalNodeK,
@@ -108,11 +100,10 @@ public class HdfFileBuilder {
         List<BtreeV1GroupNode> groupNodes = Collections.singletonList(
                 new BtreeV1GroupNode(new HdfString(objectName, false), HdfFixedPoint.of(address)));
 
-        HdfBTreeV1 bTree = new HdfBTreeV1("TREE", 0, 0, 1,
+        this.bTree = new HdfBTreeV1("TREE", 0, 0, 1,
                 HdfFixedPoint.undefined((short)8),
                 HdfFixedPoint.undefined((short)8),
                 childPointers, keys, groupNodes);
-        this.bTree = bTree;
         return this;
     }
 
@@ -126,9 +117,8 @@ public class HdfFileBuilder {
     }
 
     /** Writes the HDF5 file */
-    public void writeToFile(String filePath) {
+    public void writeToFile(FileChannel fileChannel) throws IOException {
         // TODO: Implement actual serialization logic
-        System.out.println("Writing HDF5 file to " + filePath);
         System.out.println("Superblock: " + superblock);
         // Allocate a buffer of size 2208
         // Get the data address directly from the single dataObject
@@ -206,6 +196,8 @@ public class HdfFileBuilder {
         buffer.position(objectDataHeaderAddress);
         System.out.println(dataObjectHeaderPrefix);
         dataObjectHeaderPrefix.writeToByteBuffer(buffer);
+        buffer.flip();
+        fileChannel.write(buffer);
         dumpByteBuffer(buffer);
     }
 
@@ -224,28 +216,14 @@ public class HdfFileBuilder {
 
             // Print the first 8 bytes (hex values)
             for (int j = 0; j < 8; j++) {
-                if (i + j < limit) {
-                    byte b = buffer.get(i + j);
-                    sb.append(String.format("%02X ", b));
-                    ascii.append(isPrintable(b) ? (char) b : '.');
-                } else {
-                    sb.append("   "); // Padding for incomplete lines
-                    ascii.append(" ");
-                }
+                buildHexValues(buffer, limit, sb, i, ascii, j);
             }
 
             sb.append(" "); // Space separator
 
             // Print the second 8 bytes (hex values)
             for (int j = 8; j < bytesPerLine; j++) {
-                if (i + j < limit) {
-                    byte b = buffer.get(i + j);
-                    sb.append(String.format("%02X ", b));
-                    ascii.append(isPrintable(b) ? (char) b : '.');
-                } else {
-                    sb.append("   "); // Padding for incomplete lines
-                    ascii.append(" ");
-                }
+                buildHexValues(buffer, limit, sb, i, ascii, j);
             }
 
             // Append ASCII representation
@@ -255,12 +233,31 @@ public class HdfFileBuilder {
             sb.append("\n");
         }
 
-        System.out.print(sb.toString());
+        System.out.print(sb);
+    }
+
+    private static void buildHexValues(ByteBuffer buffer, int limit, StringBuilder sb, int i, StringBuilder ascii, int j) {
+        if (i + j < limit) {
+            byte b = buffer.get(i + j);
+            sb.append(String.format("%02X ", b));
+            ascii.append(isPrintable(b) ? (char) b : '.');
+        } else {
+            sb.append("   "); // Padding for incomplete lines
+            ascii.append(" ");
+        }
     }
 
     // Helper method to check if a byte is a printable ASCII character (excluding control chars)
     private static boolean isPrintable(byte b) {
-        return (b >= 32 && b <= 126) || (b >= 161 && b <= 255); // Includes extended ASCII
+        return (b >= 32 && b <= 126); // Includes extended ASCII
     }
 
+    public long dataAddress() {
+        return dataObjectHeaderPrefix
+                .findHdfSymbolTableMessage(DataLayoutMessage.class)
+                .orElseThrow()
+                .getDataAddress()
+                .getBigIntegerValue()
+                .longValue();
+    }
 }

@@ -6,31 +6,27 @@ import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 import com.github.karlnicholas.hdf5javalib.message.AttributeMessage;
 import com.github.karlnicholas.hdf5javalib.message.DataSpaceMessage;
 import com.github.karlnicholas.hdf5javalib.message.DataTypeMessage;
-import com.github.karlnicholas.hdf5javalib.utils.HdfDataSource;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
-import java.util.List;
+import java.util.function.Supplier;
 
-public class HdfDataSet {
+public class HdfDataSet<T> {
     private final H5File hdfFile;
+    private String datasetName;
+    private CompoundDataType compoundDataType;
+    private HdfFixedPoint[] hdfDimensions;
 
-    public HdfDataSet(H5File hdfFile) {
+    public HdfDataSet(H5File hdfFile, String datasetName, CompoundDataType compoundType, HdfFixedPoint[] hdfDimensions) {
         this.hdfFile = hdfFile;
+        this.datasetName = datasetName;
+        this.compoundDataType = compoundType;
+        this.hdfDimensions = hdfDimensions;
     }
 
-    public void write(List<VolumeData> shipments, CompoundDataType compoundType, Class clazz) {
-        HdfDataSource hdfDataSource = new HdfDataSource(compoundType, clazz);
-        ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize());
-        for (VolumeData shipment : shipments) {
-            hdfDataSource.writeToBuffer(shipment, buffer);
-            buffer.flip();
-            hdfFile.write(buffer);
-            buffer.rewind();
-        }
-    }
-
-    public void close() {
+    public void write(Supplier<ByteBuffer> bufferSupplier) throws IOException {
+        hdfFile.write(bufferSupplier, datasetName, compoundDataType, hdfDimensions);
     }
 
     public AttributeMessage createAttribute(String attributeName, HdfFixedPoint attrType, HdfFixedPoint[] attrSpace) {
