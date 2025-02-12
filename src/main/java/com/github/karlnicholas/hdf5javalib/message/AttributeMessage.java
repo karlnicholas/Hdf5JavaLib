@@ -1,6 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfDataType;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 import lombok.Getter;
 
@@ -115,8 +116,14 @@ public class AttributeMessage extends HdfMessage {
 
         dataSpaceMessage.writeToByteBuffer(buffer);
 
-        value.writeToByteBuffer(buffer);
+        value.writeDefinitionToByteBuffer(buffer);
 
 
+    }
+
+    public void write(HdfFixedPoint attrType, String attributeValue) {
+    }
+
+    public void close() {
     }
 }

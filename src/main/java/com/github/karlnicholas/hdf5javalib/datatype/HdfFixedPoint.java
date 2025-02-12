@@ -30,6 +30,14 @@ public class HdfFixedPoint implements HdfDataType {
         this.undefined = false;
     }
 
+    public HdfFixedPoint(BigInteger value, short size, boolean signed, boolean bigEndian) {
+        this.size = size;
+        this.signed = signed;
+        this.littleEndian = !bigEndian;
+        this.bytes = toSizedByteArray(value, this.size, littleEndian);
+        this.undefined = false;
+    }
+
     public HdfFixedPoint(boolean undefined, byte[] bytes, short size) {
         validateSize(size);
         this.bytes = Arrays.copyOf(bytes, bytes.length);
@@ -220,7 +228,12 @@ public class HdfFixedPoint implements HdfDataType {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer) {
-        // TODO: IMPLEMENT
+    public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
+
+    }
+
+    @Override
+    public void writeValueToByteBuffer(ByteBuffer buffer) {
+        buffer.put(bytes);
     }
 }

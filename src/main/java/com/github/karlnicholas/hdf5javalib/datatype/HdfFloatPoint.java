@@ -111,7 +111,12 @@ public class HdfFloatPoint implements HdfDataType {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer) {
-        // TODO: IMPLEMENT
+    public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
+
+    }
+
+    @Override
+    public void writeValueToByteBuffer(ByteBuffer buffer) {
+
     }
 }

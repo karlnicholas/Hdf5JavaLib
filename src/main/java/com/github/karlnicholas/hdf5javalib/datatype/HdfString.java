@@ -98,8 +98,14 @@ public class HdfString implements HdfDataType {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer) {
+    public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
         // TODO: IMPLEMENT
+    }
+
+    @Override
+    public void writeValueToByteBuffer(ByteBuffer buffer) {
+        buffer.put(bytes);
+        if ( nullTerminated ) {buffer.put((byte)0);}
     }
 
 //    @Override

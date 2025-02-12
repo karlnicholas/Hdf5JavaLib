@@ -6,6 +6,9 @@ import java.math.BigInteger;
 
 @Getter
 @ToString
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class VolumeData {
     private BigInteger shipmentId;
     private String origCountry;

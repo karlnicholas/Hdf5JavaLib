@@ -10,7 +10,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.function.Supplier;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
 
@@ -149,6 +148,6 @@ public class DataTypeMessage extends HdfMessage {
         System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
         buffer.put(result);
         writeFixedPointToBuffer(buffer, size);
-        hdfDataType.writeToByteBuffer(buffer);
+        hdfDataType.writeDefinitionToByteBuffer(buffer);
     }
 }

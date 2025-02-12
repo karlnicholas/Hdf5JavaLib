@@ -67,7 +67,7 @@ public class CompoundDataType implements HdfDataType {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer) {
+    public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
         for (Member member: members) {
             buffer.put(member.getName().getBytes(StandardCharsets.US_ASCII));
             buffer.put((byte)0);
@@ -84,7 +84,11 @@ public class CompoundDataType implements HdfDataType {
             member.type.writeToByteBuffer(buffer);
 
         }
+    }
 
+    @Override
+    public void writeValueToByteBuffer(ByteBuffer buffer) {
+        // Intentionally left blank
     }
 
     private String readNullTerminatedString(ByteBuffer buffer) {
@@ -202,6 +206,8 @@ public class CompoundDataType implements HdfDataType {
 
     public interface CompoundTypeMember {
         short getSizeMessageData();
+
+        short getSize();
 
         void writeToByteBuffer(ByteBuffer buffer);
     }
