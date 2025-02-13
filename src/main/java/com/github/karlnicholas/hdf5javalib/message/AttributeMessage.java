@@ -23,7 +23,7 @@ public class AttributeMessage extends HdfMessage {
     private final HdfDataType value;
 
     public AttributeMessage(int version, int nameSize, int datatypeSize, int dataspaceSize, HdfMessage dataTypeMessage, HdfMessage dataSpaceMessage, HdfString name, HdfDataType value) {
-        super((short)12, ()-> (short) (1+1+2+2+2+nameSize+(((((nameSize + 1) / 8) + 1) * 8) - nameSize)+datatypeSize+dataspaceSize+value.getSizeMessageData()), (byte)0);
+        super(MessageType.AttributeMessage, ()-> (short) (1+1+2+2+2+nameSize+(((((nameSize + 1) / 8) + 1) * 8) - nameSize)+datatypeSize+dataspaceSize+value.getSizeMessageData()), (byte)0);
         this.version = version;
         this.nameSize = nameSize;
         this.datatypeSize = datatypeSize;
@@ -63,9 +63,9 @@ public class AttributeMessage extends HdfMessage {
         buffer.get(dsBytes);
 
         HdfMessage hdfDataObjectHeaderDt = createMessageInstance(3, (byte) 0, dtBytes, offsetSize, lengthSize, ()-> Arrays.copyOfRange( data, buffer.position(), data.length));
-        DataTypeMessage dt = (DataTypeMessage) hdfDataObjectHeaderDt;
+        DatatypeMessage dt = (DatatypeMessage) hdfDataObjectHeaderDt;
         HdfMessage hdfDataObjectHeaderDs = createMessageInstance(1, (byte) 0, dsBytes, offsetSize, lengthSize, null);
-        DataSpaceMessage ds = (DataSpaceMessage) hdfDataObjectHeaderDs;
+        DataspaceMessage ds = (DataspaceMessage) hdfDataObjectHeaderDs;
 
 
 //        HdfDataType value = null;

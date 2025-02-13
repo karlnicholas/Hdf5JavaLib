@@ -14,7 +14,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.*;
 
-public class HdfFileBuilder {
+public class HdFileHeaderBuilder {
     private HdfSuperblock superblock;
     private HdfSymbolTableEntry rootGroupEntry;
     private HdfObjectHeaderPrefixV1 objectHeaderPrefix;
@@ -60,7 +60,7 @@ public class HdfFileBuilder {
     }
 
     /** Adds a group to the HDF5 file */
-    public HdfFileBuilder rootGroup(long objectHeaderAddress) {
+    public HdFileHeaderBuilder rootGroup(long objectHeaderAddress) {
         HdfFixedPoint objHeaderAddr = HdfFixedPoint.of(objectHeaderAddress);
 
         rootGroupEntry = new HdfSymbolTableEntry(HdfFixedPoint.of(0), objHeaderAddr, 1,
@@ -70,7 +70,7 @@ public class HdfFileBuilder {
     }
 
     /** Adds a group to the HDF5 file */
-    public HdfFileBuilder objectHeader() {
+    public HdFileHeaderBuilder objectHeader() {
         objectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, 1, 1, 24,
                 Collections.singletonList(new SymbolTableMessage(
                         HdfFixedPoint.of(136),
@@ -80,7 +80,7 @@ public class HdfFileBuilder {
     }
 
     /** Adds a dataset to the HDF5 file */
-    public HdfFileBuilder addDataset(List<HdfMessage> headerMessages) {
+    public HdFileHeaderBuilder addDataset(List<HdfMessage> headerMessages) {
         int totalHeaderMessages = headerMessages.size();
         int objectReferenceCount = 1;
         int objectHeaderSize = 0;
@@ -94,7 +94,7 @@ public class HdfFileBuilder {
     }
 
     /** Adds a B-Tree for Group Nodes */
-    public HdfFileBuilder addBTree(long address, String objectName) {
+    public HdFileHeaderBuilder addBTree(long address, String objectName) {
         List<HdfFixedPoint> childPointers = Collections.singletonList(HdfFixedPoint.of(address));
         List<HdfFixedPoint> keys = Arrays.asList(
                 HdfFixedPoint.of(0),
@@ -111,7 +111,7 @@ public class HdfFileBuilder {
     }
 
     /** Adds a symbol table node */
-    public HdfFileBuilder addSymbolTableNode(long objectHeaderAddress) {
+    public HdFileHeaderBuilder addSymbolTableNode(long objectHeaderAddress) {
         List<HdfSymbolTableEntry> entries = Collections.singletonList(
                 new HdfSymbolTableEntry(HdfFixedPoint.of(8), HdfFixedPoint.of(objectHeaderAddress),
                         0,null, null));

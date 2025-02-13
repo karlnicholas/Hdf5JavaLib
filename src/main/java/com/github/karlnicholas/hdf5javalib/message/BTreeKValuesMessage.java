@@ -22,7 +22,7 @@ public class BTreeKValuesMessage extends HdfMessage {
     private int groupLeafNodeK;
 
     public BTreeKValuesMessage(int version, int indexedStorageInternalNodeK, int groupInternalNodeK, int groupLeafNodeK) {
-        super((short)19, ()-> (short) (1+2+2+2), (byte)0);
+        super(MessageType.BtreeKValuesMessage, ()-> (short) (1+2+2+2), (byte)0);
         this.version = version;
         this.indexedStorageInternalNodeK = indexedStorageInternalNodeK;
         this.groupInternalNodeK = groupInternalNodeK;

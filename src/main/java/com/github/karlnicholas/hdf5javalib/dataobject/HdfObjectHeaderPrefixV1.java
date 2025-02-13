@@ -1,7 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.dataobject;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.message.ContinuationMessage;
+import com.github.karlnicholas.hdf5javalib.message.ObjectHeaderContinuationMessage;
 import com.github.karlnicholas.hdf5javalib.message.DataLayoutMessage;
 import com.github.karlnicholas.hdf5javalib.message.HdfMessage;
 import lombok.Getter;
@@ -67,8 +67,8 @@ public class HdfObjectHeaderPrefixV1 {
         List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>();
         parseDataObjectHeaderMessages(fileChannel, objectHeaderSize, offsetSize, lengthSize, dataObjectHeaderMessages);
         for ( HdfMessage hdfMesage: dataObjectHeaderMessages) {
-            if (hdfMesage instanceof ContinuationMessage) {
-                parseContinuationMessage(fileChannel, (ContinuationMessage)hdfMesage, offsetSize, lengthSize, dataObjectHeaderMessages);
+            if (hdfMesage instanceof ObjectHeaderContinuationMessage) {
+                parseContinuationMessage(fileChannel, (ObjectHeaderContinuationMessage)hdfMesage, offsetSize, lengthSize, dataObjectHeaderMessages);
                 break;
             }
         }

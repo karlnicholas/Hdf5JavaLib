@@ -7,22 +7,22 @@ import java.nio.ByteOrder;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
 
-public class ContinuationMessage extends HdfMessage {
+public class ObjectHeaderContinuationMessage extends HdfMessage {
     private HdfFixedPoint continuationOffset; // Offset of the continuation block
     private HdfFixedPoint continuationSize;   // Size of the continuation block
 
-    public ContinuationMessage(final HdfFixedPoint continuationOffset, final HdfFixedPoint continuationSize) {
-        super((short)16, ()-> (short) (8+16), (byte)0);
+    public ObjectHeaderContinuationMessage(final HdfFixedPoint continuationOffset, final HdfFixedPoint continuationSize) {
+        super(MessageType.ObjectHeaderContinuationMessage, ()-> (short) (8+16), (byte)0);
         this.continuationOffset = continuationOffset;
         this.continuationSize = continuationSize;
     }
 
-    public static ContinuationMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
+    public static ObjectHeaderContinuationMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Parse the continuation offset and size
         HdfFixedPoint continuationOffset = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
         HdfFixedPoint continuationSize = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
-        return new ContinuationMessage(continuationOffset, continuationSize);
+        return new ObjectHeaderContinuationMessage(continuationOffset, continuationSize);
     }
 
     public HdfFixedPoint getContinuationOffset() {
@@ -35,7 +35,7 @@ public class ContinuationMessage extends HdfMessage {
 
     @Override
     public String toString() {
-        return "ContinuationMessage{" +
+        return "ObjectHeaderContinuationMessage{" +
                 "continuationOffset=" + continuationOffset +
                 ", continuationSize=" + continuationSize +
                 '}';

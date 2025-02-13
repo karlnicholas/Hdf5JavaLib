@@ -57,7 +57,7 @@ public class App {
             // Create a new HDF5 file
             HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
 
-            // DataTypeMessage with CompoundDataType
+            // DatatypeMessage with CompoundDataType
             List<CompoundDataType.Member> shipment = List.of(
                     new CompoundDataType.Member("shipmentId", 0, 0, 0, new int[4],
                             new CompoundDataType.FixedPointMember((byte) 1, (short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"), new BitSet())),
@@ -97,11 +97,11 @@ public class App {
             short compoundSize = (short) shipment.stream().mapToInt(c->c.getType().getSize()).sum();
             // Define Compound DataType correctly
             CompoundDataType compoundType = new CompoundDataType(shipment.size(), compoundSize, shipment);
-//            DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), compoundType);
+//            DatatypeMessage dataTypeMessage = new DatatypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), compoundType);
 
             // ✅ Create data space
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
-//            DataSpaceMessage dataSpaceMessage = new DataSpaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
+//            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
 //            hsize_t dim[1] = { NUM_RECORDS };
 //            DataSpace space(1, dim);
 
@@ -209,7 +209,7 @@ public class App {
     }
 
     public void tryHdfFileBuilder() throws IOException {
-        HdfFileBuilder builder = new HdfFileBuilder();
+        HdFileHeaderBuilder builder = new HdFileHeaderBuilder();
 
         builder.superblock(4, 16, 0, 100320);
 
@@ -238,7 +238,7 @@ public class App {
         builder.localHeap(dataSegmentSize, 16, 712, heapData);
 
         // Define a dataset with correct CompoundDataType members
-        // DataTypeMessage with CompoundDataType
+        // DatatypeMessage with CompoundDataType
         List<CompoundDataType.Member> members = List.of(
                 new CompoundDataType.Member("shipmentId", 0, 0, 0, new int[4],
                         new CompoundDataType.FixedPointMember((byte) 1, (short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"), new BitSet())),
@@ -278,14 +278,14 @@ public class App {
 
 
         List<HdfMessage> headerMessages = new ArrayList<>();
-        headerMessages.add(new ContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
-        headerMessages.add(new NullMessage());
+        headerMessages.add(new ObjectHeaderContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
+        headerMessages.add(new NilMessage());
 
         // Define Compound DataType correctly
         short compoundSize = (short) members.stream().mapToInt(c->c.getType().getSize()).sum();
         // Define Compound DataType correctly
         CompoundDataType compoundType = new CompoundDataType(members.size(), compoundSize, members);
-        DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), compoundType);
+        DatatypeMessage dataTypeMessage = new DatatypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), compoundType);
 //        dataTypeMessage.setDataType(compoundType);
         headerMessages.add(dataTypeMessage);
 
@@ -300,15 +300,15 @@ public class App {
         // add ObjectModification Time message
         headerMessages.add(new ObjectModificationTimeMessage(1, Instant.now().getEpochSecond()));
 
-        // Add DataSpaceMessage (Handles dataset dimensionality)
+        // Add DataspaceMessage (Handles dataset dimensionality)
         HdfFixedPoint[] hdfDimensions = Arrays.stream(new long[]{1750}).mapToObj(HdfFixedPoint::of).toArray(HdfFixedPoint[]::new);
-        DataSpaceMessage dataSpaceMessage = new DataSpaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
+        DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
         headerMessages.add(dataSpaceMessage);
 
         String attributeName = "GIT root revision";
         String attributeValue = "Revision: , URL: ";
-        DataTypeMessage dt = new DataTypeMessage(1, 3, BitSet.valueOf(new byte[0]), HdfFixedPoint.of(attributeName.length()+1), new HdfString(attributeName, false));
-        DataSpaceMessage ds = new DataSpaceMessage(1, 1, 1, new HdfFixedPoint[] {HdfFixedPoint.of(1)}, null, false);
+        DatatypeMessage dt = new DatatypeMessage(1, 3, BitSet.valueOf(new byte[0]), HdfFixedPoint.of(attributeName.length()+1), new HdfString(attributeName, false));
+        DataspaceMessage ds = new DataspaceMessage(1, 1, 1, new HdfFixedPoint[] {HdfFixedPoint.of(1)}, null, false);
         headerMessages.add(new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), new HdfString(attributeValue, false)));
 
         // new long[]{1750}, new long[]{98000}

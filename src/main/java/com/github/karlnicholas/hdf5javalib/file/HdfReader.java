@@ -100,7 +100,7 @@ public class HdfReader {
         System.out.println(dataObjectHeaderPrefix);
 
         for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
-            if (message instanceof DataTypeMessage dataTypeMessage) {
+            if (message instanceof DatatypeMessage dataTypeMessage) {
                 // Check if the datatype is Compound
                 if (dataTypeMessage.getDataTypeClass() == 6) {
                     compoundDataType = (CompoundDataType) dataTypeMessage.getHdfDataType();
@@ -111,7 +111,7 @@ public class HdfReader {
             } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
                 dataAddress = dataLayoutMessage.getDataAddress().getBigIntegerValue().longValue();
                 dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getBigIntegerValue().longValue();
-            } else if (message instanceof DataSpaceMessage dataSpaceMessage) {
+            } else if (message instanceof DataspaceMessage dataSpaceMessage) {
                 dimension = dataSpaceMessage.getDimensions()[0].getBigIntegerValue().longValue();
             }
         }

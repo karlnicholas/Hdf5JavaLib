@@ -4,8 +4,8 @@ import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 import com.github.karlnicholas.hdf5javalib.message.AttributeMessage;
-import com.github.karlnicholas.hdf5javalib.message.DataSpaceMessage;
-import com.github.karlnicholas.hdf5javalib.message.DataTypeMessage;
+import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
+import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -36,8 +36,8 @@ public class HdfDataSet<T> {
     }
 
     public void createAttribute(String attributeName, HdfFixedPoint attrType, HdfFixedPoint[] attrSpace) {
-        DataTypeMessage dt = new DataTypeMessage(1, 3, BitSet.valueOf(new byte[0]), attrType, new HdfString(attributeName, false));
-        DataSpaceMessage ds = new DataSpaceMessage(1, 1, 1, attrSpace, null, false);
+        DatatypeMessage dt = new DatatypeMessage(1, 3, BitSet.valueOf(new byte[0]), attrType, new HdfString(attributeName, false));
+        DataspaceMessage ds = new DataspaceMessage(1, 1, 1, attrSpace, null, false);
         attributes.add(new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), new HdfString(attributeName, false)));
     }
 

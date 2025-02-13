@@ -22,13 +22,13 @@ import java.util.function.Supplier;
 public class HdfFile {
     private final String fileName;
     private final StandardOpenOption[] openOptions;
-    private final HdfFileBuilder builder;
+    private final HdFileHeaderBuilder builder;
 
 
     public HdfFile(String fileName, StandardOpenOption[] openOptions) {
         this.fileName = fileName;
         this.openOptions = openOptions;
-        builder = new HdfFileBuilder();
+        builder = new HdFileHeaderBuilder();
         builder.superblock(4, 16, 0, 100320);
         // Define a root group
         builder.rootGroup(96);
@@ -51,13 +51,13 @@ public class HdfFile {
         return new HdfDataSet<>(this, datasetName, compoundType, hdfDimensions);
     }
 
-    public HdfFileBuilder buildMetaData(FileChannel fileChannel, HdfDataSet<?> hdfDataSet) throws IOException {
+    public HdFileHeaderBuilder buildMetaData(FileChannel fileChannel, HdfDataSet<?> hdfDataSet) throws IOException {
 
         List<HdfMessage> headerMessages = new ArrayList<>();
-        headerMessages.add(new ContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
-        headerMessages.add(new NullMessage());
+        headerMessages.add(new ObjectHeaderContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
+        headerMessages.add(new NilMessage());
 
-        DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), hdfDataSet.getCompoundDataType());
+        DatatypeMessage dataTypeMessage = new DatatypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), hdfDataSet.getCompoundDataType());
 //        dataTypeMessage.setDataType(compoundType);
         headerMessages.add(dataTypeMessage);
 
@@ -72,9 +72,9 @@ public class HdfFile {
         // add ObjectModification Time message
         headerMessages.add(new ObjectModificationTimeMessage(1, Instant.now().getEpochSecond()));
 
-        // Add DataSpaceMessage (Handles dataset dimensionality)
+        // Add DataspaceMessage (Handles dataset dimensionality)
         HdfFixedPoint[] hdfDimensions = Arrays.stream(new long[]{1750}).mapToObj(HdfFixedPoint::of).toArray(HdfFixedPoint[]::new);
-        DataSpaceMessage dataSpaceMessage = new DataSpaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
+        DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
         headerMessages.add(dataSpaceMessage);
 
         headerMessages.addAll(hdfDataSet.getAttributes());
@@ -97,8 +97,8 @@ public class HdfFile {
 
     public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet<?> hdfDataSet) throws IOException {
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
-            HdfFileBuilder hdfFileBuilder = buildMetaData(fileChannel, hdfDataSet);
-            long dataAddress = hdfFileBuilder.dataAddress();
+            HdFileHeaderBuilder hdFileHeaderBuilder = buildMetaData(fileChannel, hdfDataSet);
+            long dataAddress = hdFileHeaderBuilder.dataAddress();
             fileChannel.position(dataAddress);
             ByteBuffer buffer;
             while ((buffer = bufferSupplier.get()).hasRemaining()) {

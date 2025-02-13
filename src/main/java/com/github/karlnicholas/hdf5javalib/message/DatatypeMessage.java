@@ -14,7 +14,7 @@ import java.util.BitSet;
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
 
 @Getter
-public class DataTypeMessage extends HdfMessage {
+public class DatatypeMessage extends HdfMessage {
     private final int version;                 // Version of the datatype message
     private final int dataTypeClass;           // Datatype class
     private final BitSet classBitField;        // Class Bit Field (24 bits)
@@ -22,8 +22,8 @@ public class DataTypeMessage extends HdfMessage {
     private final HdfDataType hdfDataType;                 // Remaining raw data
 
     // Constructor to initialize all fields
-    public DataTypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size, HdfDataType hdfDataType) {
-        super((short)3, ()-> {
+    public DatatypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size, HdfDataType hdfDataType) {
+        super(MessageType.DatatypeMessage, ()-> {
             short sizeMessageData = 8;
             sizeMessageData += hdfDataType.getSizeMessageData();
             // to 8 byte boundary
@@ -43,7 +43,7 @@ public class DataTypeMessage extends HdfMessage {
      * @param data       Byte array containing the header message data.
      * @param offsetSize Size of offsets in bytes (not used here).
      * @param lengthSize Size of lengths in bytes (not used here).
-     * @return A fully constructed `DataTypeMessage` instance.
+     * @return A fully constructed `DatatypeMessage` instance.
      */
     public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize, byte[] dataTypeData) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
@@ -62,7 +62,7 @@ public class DataTypeMessage extends HdfMessage {
 
         // Parse Size (unsigned 4 bytes)
         HdfFixedPoint size = HdfFixedPoint.readFromByteBuffer(buffer, (short) 4, false);
-        // Return a constructed instance of DataTypeMessage
+        // Return a constructed instance of DatatypeMessage
         HdfDataType hdfDataType;
         if ( dataTypeClass == 6) {
             hdfDataType = new CompoundDataType(classBitField, size.getBigIntegerValue().intValue(), dataTypeData);
@@ -71,20 +71,20 @@ public class DataTypeMessage extends HdfMessage {
 //            buffer.get(dataBytes);
 //            dt.addDataType(dataBytes);
 //            value = dt.getHdfDataType();
-            // Return a constructed instance of DataTypeMessage
+            // Return a constructed instance of DatatypeMessage
             hdfDataType = new HdfString(dataTypeData, false, false);
         } else {
             throw new IllegalStateException("Unsupported data type class: " + dataTypeClass);
         }
 
-        return new DataTypeMessage(version, dataTypeClass, classBitField, size, hdfDataType);
+        return new DatatypeMessage(version, dataTypeClass, classBitField, size, hdfDataType);
     }
 
 //    public void addDataType(byte[] remainingData) {
 //        if ( dataTypeClass == 6) {
 //            hdfDataType = new CompoundDataType(classBitField, size.getBigIntegerValue().intValue(), remainingData);
 //        } else if ( dataTypeClass == 3) {
-//            // Return a constructed instance of DataTypeMessage
+//            // Return a constructed instance of DatatypeMessage
 //            hdfDataType = new HdfString(remainingData, false, false);
 //        } else {
 //            throw new IllegalStateException("Unsupported data type class: " + dataTypeClass);
@@ -97,7 +97,7 @@ public class DataTypeMessage extends HdfMessage {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("DataTypeMessage{");
+        StringBuilder sb = new StringBuilder("DatatypeMessage{");
         sb.append("version=").append(version);
         sb.append(", dataTypeClass=").append(dataTypeClass).append(" (").append(dataTypeClassToString(dataTypeClass)).append(")");
         sb.append(", classBitField=").append(bitSetToString(classBitField, 24));

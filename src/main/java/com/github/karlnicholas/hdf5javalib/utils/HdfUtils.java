@@ -51,18 +51,18 @@ public class HdfUtils {
 
     public static HdfMessage createMessageInstance(int type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData) {
         return switch (type) {
-            case 0 -> NullMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 1 -> DataSpaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 3 -> DataTypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, getDataTypeData.get());
+            case 0 -> NilMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 1 -> DataspaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 3 -> DatatypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, getDataTypeData.get());
 //            {
-//                DataTypeMessage dataTypeMessage = (DataTypeMessage)DataTypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+//                DatatypeMessage dataTypeMessage = (DatatypeMessage)DatatypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
 //                dataTypeMessage.addDataType(Arrays.copyOfRange(data, 8, data.length));
 //                yield dataTypeMessage;
 //            }
             case 5 -> FillValueMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 8 -> DataLayoutMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 12 -> AttributeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 16 -> ContinuationMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case 16 -> ObjectHeaderContinuationMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 17 -> SymbolTableMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 18 -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case 19 -> BTreeKValuesMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
@@ -71,10 +71,10 @@ public class HdfUtils {
     }
 
     // TODO: fix recursion
-    public static void parseContinuationMessage(FileChannel fileChannel, ContinuationMessage continuationMessage, short offsetSize, short lengthSize, List<HdfMessage> headerMessages) throws IOException {
+    public static void parseContinuationMessage(FileChannel fileChannel, ObjectHeaderContinuationMessage objectHeaderContinuationMessage, short offsetSize, short lengthSize, List<HdfMessage> headerMessages) throws IOException {
 
-        long continuationOffset = continuationMessage.getContinuationOffset().getBigIntegerValue().longValue();
-        short continuationSize = continuationMessage.getContinuationSize().getBigIntegerValue().shortValueExact();
+        long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().getBigIntegerValue().longValue();
+        short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getBigIntegerValue().shortValueExact();
 
         // Move to the continuation block offset
         fileChannel.position(continuationOffset);

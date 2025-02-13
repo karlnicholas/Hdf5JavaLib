@@ -187,15 +187,15 @@ public class HdfConstruction {
     }
 
     public void buildDataObjectHeaderPrefix() {
-        // ContinuationMessage
-        ContinuationMessage continuationMessage = new ContinuationMessage(
+        // ObjectHeaderContinuationMessage
+        ObjectHeaderContinuationMessage objectHeaderContinuationMessage = new ObjectHeaderContinuationMessage(
                 new HdfFixedPoint(BigInteger.valueOf(100208), false),
                 new HdfFixedPoint(BigInteger.valueOf(112), false));
 
-        // NullMessage
-        NullMessage nullMessage = new NullMessage();
+        // NilMessage
+        NilMessage nilMessage = new NilMessage();
 
-        // DataTypeMessage with CompoundDataType
+        // DatatypeMessage with CompoundDataType
         List<CompoundDataType.Member> members = List.of(
                 new CompoundDataType.Member("Id", 0, 0, 0, new int[4],
                         new CompoundDataType.FixedPointMember((byte)1, (short)8, false, false, false, false, (short)0, (short)64, (short) ("shipmentId".length()+9), new BitSet())),
@@ -234,7 +234,7 @@ public class HdfConstruction {
         );
 
         CompoundDataType compoundDataType = new CompoundDataType(17, 56, members);
-        DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new long[]{17}), new HdfFixedPoint(BigInteger.valueOf(56), false), compoundDataType );
+        DatatypeMessage dataTypeMessage = new DatatypeMessage(1, 6, BitSet.valueOf(new long[]{17}), new HdfFixedPoint(BigInteger.valueOf(56), false), compoundDataType );
 //        dataTypeMessage.setDataType(compoundDataType);
 
         // FillValueMessage
@@ -253,8 +253,8 @@ public class HdfConstruction {
         // ObjectModificationTimeMessage
         ObjectModificationTimeMessage objectModificationTimeMessage = new ObjectModificationTimeMessage(1, 1241645056);
         new HdfFixedPoint(BigInteger.valueOf(1750), true);
-        // DataSpaceMessage
-        DataSpaceMessage dataSpaceMessage = new DataSpaceMessage(
+        // DataspaceMessage
+        DataspaceMessage dataSpaceMessage = new DataspaceMessage(
                 1,
                 1,
                 1,
@@ -265,15 +265,15 @@ public class HdfConstruction {
 
         String attributeName = "GIT root revision";
         String attributeValue = "Revision: , URL: ";
-        DataTypeMessage dt = new DataTypeMessage(1, 3, BitSet.valueOf(new byte[0]), HdfFixedPoint.of(attributeName.length()+1), new HdfString(attributeName, false));
-        DataSpaceMessage ds = new DataSpaceMessage(1, 1, 1, new HdfFixedPoint[] {HdfFixedPoint.of(1)}, null, false);
+        DatatypeMessage dt = new DatatypeMessage(1, 3, BitSet.valueOf(new byte[0]), HdfFixedPoint.of(attributeName.length()+1), new HdfString(attributeName, false));
+        DataspaceMessage ds = new DataspaceMessage(1, 1, 1, new HdfFixedPoint[] {HdfFixedPoint.of(1)}, null, false);
         AttributeMessage attributeMessage = new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), new HdfString(attributeValue, false));
         // AttributeMessage
 
         // Combine all messages
         List<HdfMessage> dataObjectHeaderMessages = Arrays.asList(
-                continuationMessage,
-                nullMessage,
+                objectHeaderContinuationMessage,
+                nilMessage,
                 dataTypeMessage,
                 fillValueMessage,
                 dataLayoutMessage,

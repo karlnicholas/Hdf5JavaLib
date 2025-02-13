@@ -29,7 +29,7 @@ public class DataLayoutMessage extends HdfMessage {
             byte[] compactData,
             HdfFixedPoint datasetElementSize
     ) {
-        super((short) 8, ()->{
+        super(MessageType.DataLayoutMessage, ()->{
             short size = (short) 8+8;
             switch (layoutClass) {
                 case 0: // Compact Storage
@@ -151,14 +151,81 @@ public class DataLayoutMessage extends HdfMessage {
             case 2: // Chunked Storage
                 writeFixedPointToBuffer(buffer, dataAddress);
                 buffer.get(dimensionSizes.length); // Number of dimensions (1 byte)
-                for (HdfFixedPoint dimenstionSize: dimensionSizes) {
-                    writeFixedPointToBuffer(buffer, dimenstionSize);
+                for (HdfFixedPoint dimensionSize: dimensionSizes) {
+                    writeFixedPointToBuffer(buffer, dimensionSize);
                 }
                 writeFixedPointToBuffer(buffer, datasetElementSize);
                 break;
 
             default:
                 throw new IllegalArgumentException("Unsupported layout class: " + layoutClass);
+        }
+
+    }
+
+    public static class ChunkedStorage {
+        private final int version;
+        private final int rank;
+        private final long[] chunkSizes;
+        private final HdfFixedPoint address;
+
+        public ChunkedStorage(int version, int rank, long[] chunkSizes, HdfFixedPoint address) {
+            this.version = version;
+            this.rank = rank;
+            this.chunkSizes = chunkSizes;
+            this.address = address;
+        }
+
+        public static ChunkedStorage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
+            ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+            int version = Byte.toUnsignedInt(buffer.get());
+            int rank = Byte.toUnsignedInt(buffer.get());
+            long[] chunkSizes = new long[rank];
+            for (int i = 0; i < rank; i++) {
+                chunkSizes[i] = Integer.toUnsignedLong(buffer.getInt());
+            }
+            HdfFixedPoint address = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
+            return new ChunkedStorage(version, rank, chunkSizes, address);
+        }
+
+        @Override
+        public String toString() {
+            return "ChunkedStorage{" +
+                    "version=" + version +
+                    ", rank=" + rank +
+                    ", chunkSizes=" + Arrays.toString(chunkSizes) +
+                    ", address=" + (address != null ? address.getBigIntegerValue() : "null") +
+                    '}';
+        }
+
+    }
+
+    public static class ContiguousStorage {
+        private final int version;
+        private final HdfFixedPoint address;
+        private final HdfFixedPoint size;
+
+        public ContiguousStorage(int version, HdfFixedPoint address, HdfFixedPoint size) {
+            this.version = version;
+            this.address = address;
+            this.size = size;
+        }
+
+        public static ContiguousStorage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
+            ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+            int version = Byte.toUnsignedInt(buffer.get());
+            HdfFixedPoint address = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
+            HdfFixedPoint size = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
+            return new ContiguousStorage(version, address, size);
+        }
+
+        @Override
+        public String toString() {
+            return "ContiguousStorage{" +
+                    "version=" + version +
+                    ", address=" + (address != null ? address.getBigIntegerValue() : "null") +
+                    ", size=" + (size != null ? size.getBigIntegerValue() : "null") +
+                    '}';
         }
 
     }

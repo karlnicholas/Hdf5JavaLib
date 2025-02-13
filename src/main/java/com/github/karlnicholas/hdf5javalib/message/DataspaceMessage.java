@@ -10,7 +10,7 @@ import java.util.Arrays;
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
 
 @Getter
-public class DataSpaceMessage extends HdfMessage {
+public class DataspaceMessage extends HdfMessage {
     private final int version; // Version of the dataspace message
     private final int dimensionality; // Number of dimensions (rank)
     private final int flags;
@@ -19,7 +19,7 @@ public class DataSpaceMessage extends HdfMessage {
     private final boolean hasMaxDimensions; // Indicates if max dimensions are included
 
     // Constructor to initialize all fields
-    public DataSpaceMessage(
+    public DataspaceMessage(
             int version,
             int dimensionality,
             int flags,
@@ -27,7 +27,7 @@ public class DataSpaceMessage extends HdfMessage {
             HdfFixedPoint[] maxDimensions,
             boolean hasMaxDimensions
     ) {
-        super((short)1, ()->{
+        super(MessageType.DataspaceMessage, ()->{
             short size = 8;
             for (HdfFixedPoint dimension : dimensions) {
                 size += dimension.getSizeMessageData();
@@ -54,7 +54,7 @@ public class DataSpaceMessage extends HdfMessage {
      * @param data       Byte array containing the header message data.
      * @param offsetSize Size of offsets in bytes.
      * @param lengthSize Size of lengths in bytes.
-     * @return A fully constructed `DataSpaceMessage` instance.
+     * @return A fully constructed `DataspaceMessage` instance.
      */
     public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
@@ -87,13 +87,13 @@ public class DataSpaceMessage extends HdfMessage {
             }
         }
 
-        // Return a constructed instance of DataSpaceMessage
-        return new DataSpaceMessage(version, dimensionality, parsedFlags, dimensions, maxDimensions, hasMaxDimensions);
+        // Return a constructed instance of DataspaceMessage
+        return new DataspaceMessage(version, dimensionality, parsedFlags, dimensions, maxDimensions, hasMaxDimensions);
     }
 
     @Override
     public String toString() {
-        return "DataSpaceMessage{" +
+        return "DataspaceMessage{" +
                 "version=" + version +
                 ", dimensionality=" + dimensionality +
                 ", flags=" + flags +
