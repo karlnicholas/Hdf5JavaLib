@@ -1,6 +1,9 @@
 package com.github.karlnicholas.hdf5javalib;
 
+import com.github.karlnicholas.hdf5javalib.dataobjects.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.datatype.*;
+import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
+import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
 import com.github.karlnicholas.hdf5javalib.message.*;
 import com.github.karlnicholas.hdf5javalib.utils.*;
 

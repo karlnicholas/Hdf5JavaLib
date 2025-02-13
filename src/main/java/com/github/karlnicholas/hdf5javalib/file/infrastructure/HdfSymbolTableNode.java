@@ -1,4 +1,4 @@
-package com.github.karlnicholas.hdf5javalib;
+package com.github.karlnicholas.hdf5javalib.file.infrastructure;
 
 import lombok.Getter;
 
