@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
-class HdfAllocator {
+public class HdfAllocator {
     private long currentOffset;
 
     public HdfAllocator(long startOffset) {

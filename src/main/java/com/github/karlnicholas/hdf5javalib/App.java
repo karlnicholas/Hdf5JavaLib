@@ -158,7 +158,7 @@ public class App {
     }
 
     public void tryAllocator() {
-        Hdf5Allocator allocator = new Hdf5Allocator(0);
+        HdfAllocator allocator = new HdfAllocator(0);
 
         // Allocate Superblock
         long superblockOffset = allocator.allocate(56, 8);
