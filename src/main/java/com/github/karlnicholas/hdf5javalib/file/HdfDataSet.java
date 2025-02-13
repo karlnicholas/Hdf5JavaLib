@@ -1,4 +1,4 @@
-package com.github.karlnicholas.hdf5javalib;
+package com.github.karlnicholas.hdf5javalib.file;
 
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
@@ -13,12 +13,12 @@ import java.util.BitSet;
 import java.util.function.Supplier;
 
 public class HdfDataSet<T> {
-    private final H5File hdfFile;
+    private final HdfFile hdfFile;
     private String datasetName;
     private CompoundDataType compoundDataType;
     private HdfFixedPoint[] hdfDimensions;
 
-    public HdfDataSet(H5File hdfFile, String datasetName, CompoundDataType compoundType, HdfFixedPoint[] hdfDimensions) {
+    public HdfDataSet(HdfFile hdfFile, String datasetName, CompoundDataType compoundType, HdfFixedPoint[] hdfDimensions) {
         this.hdfFile = hdfFile;
         this.datasetName = datasetName;
         this.compoundDataType = compoundType;

@@ -1,4 +1,4 @@
-package com.github.karlnicholas.hdf5javalib;
+package com.github.karlnicholas.hdf5javalib.file;
 
 import com.github.karlnicholas.hdf5javalib.dataobjects.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;

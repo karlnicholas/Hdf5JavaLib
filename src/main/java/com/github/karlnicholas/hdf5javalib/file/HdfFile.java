@@ -1,4 +1,4 @@
-package com.github.karlnicholas.hdf5javalib;
+package com.github.karlnicholas.hdf5javalib.file;
 
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
@@ -19,13 +19,13 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @Getter
-public class H5File {
+public class HdfFile {
     private final String fileName;
     private final StandardOpenOption[] openOptions;
     private final HdfFileBuilder builder;
 
 
-    public H5File(String fileName, StandardOpenOption[] openOptions) {
+    public HdfFile(String fileName, StandardOpenOption[] openOptions) {
         this.fileName = fileName;
         this.openOptions = openOptions;
         builder = new HdfFileBuilder();

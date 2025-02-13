@@ -3,6 +3,7 @@ package com.github.karlnicholas.hdf5javalib;
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
+import com.github.karlnicholas.hdf5javalib.file.*;
 import com.github.karlnicholas.hdf5javalib.message.*;
 import com.github.karlnicholas.hdf5javalib.utils.HdfDataSource;
 import com.github.karlnicholas.hdf5javalib.utils.HdfSpliterator;
@@ -54,7 +55,7 @@ public class App {
 
         try {
             // Create a new HDF5 file
-            H5File file = new H5File(FILE_NAME, FILE_OPTIONS);
+            HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
 
             // DataTypeMessage with CompoundDataType
             List<CompoundDataType.Member> shipment = List.of(
