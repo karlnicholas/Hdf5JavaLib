@@ -114,9 +114,7 @@ public class App {
             String attributeValue = "Revision: , URL: ";
             HdfFixedPoint attr_type = HdfFixedPoint.of(ATTRIBUTE_NAME.length()+1);
             HdfFixedPoint[] attr_space = new HdfFixedPoint[] {HdfFixedPoint.of(1)};
-            AttributeMessage attribute = dataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
-            attribute.write(attr_type, attributeValue);
-            attribute.close();
+            dataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
 
             AtomicInteger countHolder = new AtomicInteger(0);
             HdfDataSource<VolumeData> volumeDataHdfDataSource = new HdfDataSource<>(compoundType, VolumeData.class);

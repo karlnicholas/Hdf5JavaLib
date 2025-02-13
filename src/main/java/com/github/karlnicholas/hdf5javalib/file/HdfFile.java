@@ -51,13 +51,13 @@ public class HdfFile {
         return new HdfDataSet<>(this, datasetName, compoundType, hdfDimensions);
     }
 
-    public HdfFileBuilder buildMetaData(FileChannel fileChannel, String datasetName, CompoundDataType compoundDataType) throws IOException {
+    public HdfFileBuilder buildMetaData(FileChannel fileChannel, HdfDataSet<?> hdfDataSet) throws IOException {
 
         List<HdfMessage> headerMessages = new ArrayList<>();
         headerMessages.add(new ContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
         headerMessages.add(new NullMessage());
 
-        DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), compoundDataType);
+        DataTypeMessage dataTypeMessage = new DataTypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), hdfDataSet.getCompoundDataType());
 //        dataTypeMessage.setDataType(compoundType);
         headerMessages.add(dataTypeMessage);
 
@@ -77,11 +77,7 @@ public class HdfFile {
         DataSpaceMessage dataSpaceMessage = new DataSpaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
         headerMessages.add(dataSpaceMessage);
 
-//        String attributeName = "GIT root revision";
-//        String attributeValue = "Revision: , URL: ";
-//        DataTypeMessage dt = new DataTypeMessage(1, 3, BitSet.valueOf(new byte[0]), HdfFixedPoint.of(attributeName.length()+1), new HdfString(attributeName, false));
-//        DataSpaceMessage ds = new DataSpaceMessage(1, 1, 1, new HdfFixedPoint[] {HdfFixedPoint.of(1)}, null, false);
-//        headerMessages.add(new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), new HdfString(attributeValue, false)));
+        headerMessages.addAll(hdfDataSet.getAttributes());
 
         // new long[]{1750}, new long[]{98000}
         builder.addDataset(headerMessages);
@@ -99,9 +95,9 @@ public class HdfFile {
 
     }
 
-    public void write(Supplier<ByteBuffer> bufferSupplier, String datasetName, CompoundDataType compoundDataType, HdfFixedPoint[] hdfDimensions) throws IOException {
+    public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet<?> hdfDataSet) throws IOException {
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
-            HdfFileBuilder hdfFileBuilder = buildMetaData(fileChannel, datasetName, compoundDataType);
+            HdfFileBuilder hdfFileBuilder = buildMetaData(fileChannel, hdfDataSet);
             long dataAddress = hdfFileBuilder.dataAddress();
             fileChannel.position(dataAddress);
             ByteBuffer buffer;
