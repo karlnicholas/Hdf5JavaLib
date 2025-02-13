@@ -4,7 +4,6 @@ import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.message.ContinuationMessage;
 import com.github.karlnicholas.hdf5javalib.message.DataLayoutMessage;
 import com.github.karlnicholas.hdf5javalib.message.HdfMessage;
-import com.github.karlnicholas.hdf5javalib.message.SymbolTableMessage;
 import lombok.Getter;
 
 import java.io.IOException;

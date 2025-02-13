@@ -1,9 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.utils;
 
-import com.github.karlnicholas.hdf5javalib.*;
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 import com.github.karlnicholas.hdf5javalib.message.*;
 
 import java.io.IOException;

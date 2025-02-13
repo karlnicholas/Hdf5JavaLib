@@ -2,7 +2,6 @@ package com.github.karlnicholas.hdf5javalib;
 
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 import com.github.karlnicholas.hdf5javalib.message.*;
 import lombok.Getter;
 
@@ -23,26 +22,21 @@ import java.util.function.Supplier;
 public class H5File {
     private final String fileName;
     private final StandardOpenOption[] openOptions;
+    private final HdfFileBuilder builder;
+
 
     public H5File(String fileName, StandardOpenOption[] openOptions) {
         this.fileName = fileName;
         this.openOptions = openOptions;
+        builder = new HdfFileBuilder();
+        builder.superblock(4, 16, 0, 100320);
+        // Define a root group
+        builder.rootGroup(96);
+        builder.objectHeader();
+
     }
 
     public <T> HdfDataSet<T> createDataSet(String datasetName, CompoundDataType compoundType, HdfFixedPoint[] hdfDimensions) {
-        return new HdfDataSet<>(this, datasetName, compoundType, hdfDimensions);
-    }
-
-    public HdfFileBuilder buildMetaData(FileChannel fileChannel, String datasetName, CompoundDataType compoundDataType) throws IOException {
-        HdfFileBuilder builder = new HdfFileBuilder();
-
-        builder.superblock(4, 16, 0, 100320);
-
-        // Define a root group
-        builder.rootGroup(96);
-
-        builder.objectHeader();
-
         // Define the heap data size
         int dataSegmentSize = 88;
 
@@ -53,6 +47,11 @@ public class H5File {
 
         builder.localHeap(dataSegmentSize, 16, 712, heapData);
 
+
+        return new HdfDataSet<>(this, datasetName, compoundType, hdfDimensions);
+    }
+
+    public HdfFileBuilder buildMetaData(FileChannel fileChannel, String datasetName, CompoundDataType compoundDataType) throws IOException {
 
         List<HdfMessage> headerMessages = new ArrayList<>();
         headerMessages.add(new ContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
@@ -78,11 +77,11 @@ public class H5File {
         DataSpaceMessage dataSpaceMessage = new DataSpaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
         headerMessages.add(dataSpaceMessage);
 
-        String attributeName = "GIT root revision";
-        String attributeValue = "Revision: , URL: ";
-        DataTypeMessage dt = new DataTypeMessage(1, 3, BitSet.valueOf(new byte[0]), HdfFixedPoint.of(attributeName.length()+1), new HdfString(attributeName, false));
-        DataSpaceMessage ds = new DataSpaceMessage(1, 1, 1, new HdfFixedPoint[] {HdfFixedPoint.of(1)}, null, false);
-        headerMessages.add(new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), new HdfString(attributeValue, false)));
+//        String attributeName = "GIT root revision";
+//        String attributeValue = "Revision: , URL: ";
+//        DataTypeMessage dt = new DataTypeMessage(1, 3, BitSet.valueOf(new byte[0]), HdfFixedPoint.of(attributeName.length()+1), new HdfString(attributeName, false));
+//        DataSpaceMessage ds = new DataSpaceMessage(1, 1, 1, new HdfFixedPoint[] {HdfFixedPoint.of(1)}, null, false);
+//        headerMessages.add(new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), new HdfString(attributeValue, false)));
 
         // new long[]{1750}, new long[]{98000}
         builder.addDataset(headerMessages);
