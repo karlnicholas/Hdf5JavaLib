@@ -20,7 +20,7 @@ public class AttributeMessage extends HdfMessage {
     private final HdfMessage dataTypeMessage;
     private final HdfMessage dataSpaceMessage;
     private final HdfString name;
-    private final HdfDataType value;
+    private HdfDataType value;
 
     public AttributeMessage(int version, int nameSize, int datatypeSize, int dataspaceSize, HdfMessage dataTypeMessage, HdfMessage dataSpaceMessage, HdfString name, HdfDataType value) {
         super(MessageType.AttributeMessage, ()-> (short) (1+1+2+2+2+nameSize+(((((nameSize + 1) / 8) + 1) * 8) - nameSize)+datatypeSize+dataspaceSize+value.getSizeMessageData()), (byte)0);
@@ -62,22 +62,20 @@ public class AttributeMessage extends HdfMessage {
         byte[] dsBytes = new byte[dataspaceSize];
         buffer.get(dsBytes);
 
-        HdfMessage hdfDataObjectHeaderDt = createMessageInstance(3, (byte) 0, dtBytes, offsetSize, lengthSize, ()-> Arrays.copyOfRange( data, buffer.position(), data.length));
+        HdfMessage hdfDataObjectHeaderDt = createMessageInstance(MessageType.DatatypeMessage, (byte) 0, dtBytes, offsetSize, lengthSize, ()-> Arrays.copyOfRange( data, buffer.position(), data.length));
         DatatypeMessage dt = (DatatypeMessage) hdfDataObjectHeaderDt;
-        HdfMessage hdfDataObjectHeaderDs = createMessageInstance(1, (byte) 0, dsBytes, offsetSize, lengthSize, null);
+        HdfMessage hdfDataObjectHeaderDs = createMessageInstance(MessageType.DataspaceMessage, (byte) 0, dsBytes, offsetSize, lengthSize, null);
         DataspaceMessage ds = (DataspaceMessage) hdfDataObjectHeaderDs;
 
-
-//        HdfDataType value = null;
-//
-//        if ( dt.getDataTypeClass() == 3 ) {
-//            int dtDataSize = dt.getSize().getBigIntegerValue().intValue();
-//            byte[] dataBytes = new byte[dtDataSize];
-//            buffer.get(dataBytes);
-//            dt.addDataType(dataBytes);
-//            value = dt.getHdfDataType();
-//        }
-        return new AttributeMessage(version, nameSize, datatypeSize, dataspaceSize, dt, ds, name, dt.getHdfDataType());
+        HdfDataType value = null;
+        if ( dt.getDataTypeClass() == 3 ) {
+            int dtDataSize = dt.getSize().getBigIntegerValue().intValue();
+            byte[] dataBytes = new byte[dtDataSize];
+            buffer.get(dataBytes);
+            value = new HdfString(dataBytes, true, false);
+        }
+        AttributeMessage attributeMessage = new AttributeMessage(version, nameSize, datatypeSize, dataspaceSize, dt, ds, name, value);
+        return attributeMessage;
     }
 
     @Override
@@ -122,8 +120,6 @@ public class AttributeMessage extends HdfMessage {
     }
 
     public void write(HdfFixedPoint attrType, String attributeValue) {
-    }
-
-    public void close() {
+        value = new HdfString(attributeValue, false);
     }
 }

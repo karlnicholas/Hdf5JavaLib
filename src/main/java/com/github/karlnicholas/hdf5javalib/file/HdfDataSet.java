@@ -35,10 +35,12 @@ public class HdfDataSet<T> {
         hdfFile.write(bufferSupplier, this);
     }
 
-    public void createAttribute(String attributeName, HdfFixedPoint attrType, HdfFixedPoint[] attrSpace) {
+    public AttributeMessage createAttribute(String attributeName, HdfFixedPoint attrType, HdfFixedPoint[] attrSpace) {
         DatatypeMessage dt = new DatatypeMessage(1, 3, BitSet.valueOf(new byte[0]), attrType, new HdfString(attributeName, false));
         DataspaceMessage ds = new DataspaceMessage(1, 1, 1, attrSpace, null, false);
-        attributes.add(new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), new HdfString(attributeName, false)));
+        AttributeMessage attributeMessage = new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), null);
+        attributes.add(attributeMessage);
+        return attributeMessage;
     }
 
     public List<AttributeMessage> getAttributes() {

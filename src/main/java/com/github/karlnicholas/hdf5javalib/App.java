@@ -114,7 +114,8 @@ public class App {
             String attributeValue = "Revision: , URL: ";
             HdfFixedPoint attr_type = HdfFixedPoint.of(ATTRIBUTE_NAME.length()+1);
             HdfFixedPoint[] attr_space = new HdfFixedPoint[] {HdfFixedPoint.of(1)};
-            dataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
+            AttributeMessage attributeMessage = dataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
+            attributeMessage.write(attr_type, attributeValue);
 
             AtomicInteger countHolder = new AtomicInteger(0);
             HdfDataSource<VolumeData> volumeDataHdfDataSource = new HdfDataSource<>(compoundType, VolumeData.class);
@@ -309,7 +310,8 @@ public class App {
         String attributeValue = "Revision: , URL: ";
         DatatypeMessage dt = new DatatypeMessage(1, 3, BitSet.valueOf(new byte[0]), HdfFixedPoint.of(attributeName.length()+1), new HdfString(attributeName, false));
         DataspaceMessage ds = new DataspaceMessage(1, 1, 1, new HdfFixedPoint[] {HdfFixedPoint.of(1)}, null, false);
-        headerMessages.add(new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), new HdfString(attributeValue, false)));
+        AttributeMessage attributeMessage = new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), new HdfString(attributeValue, false));
+        headerMessages.add(attributeMessage);
 
         // new long[]{1750}, new long[]{98000}
         builder.addDataset(headerMessages);

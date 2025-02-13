@@ -34,7 +34,7 @@ public class HdfUtils {
 
         while (buffer.hasRemaining()) {
             // Header Message Type (2 bytes, little-endian)
-            int type = Short.toUnsignedInt(buffer.getShort());
+            MessageType type = MessageType.fromValue(buffer.getShort());
             int size = Short.toUnsignedInt(buffer.getShort());
             byte flags = buffer.get();
             buffer.position(buffer.position() + 3); // Skip 3 reserved bytes
@@ -49,23 +49,23 @@ public class HdfUtils {
         }
     }
 
-    public static HdfMessage createMessageInstance(int type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData) {
+    public static HdfMessage createMessageInstance(MessageType type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData) {
         return switch (type) {
-            case 0 -> NilMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 1 -> DataspaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 3 -> DatatypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, getDataTypeData.get());
+            case NilMessage -> NilMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case DataspaceMessage -> DataspaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case DatatypeMessage -> DatatypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, getDataTypeData.get());
 //            {
 //                DatatypeMessage dataTypeMessage = (DatatypeMessage)DatatypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
 //                dataTypeMessage.addDataType(Arrays.copyOfRange(data, 8, data.length));
 //                yield dataTypeMessage;
 //            }
-            case 5 -> FillValueMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 8 -> DataLayoutMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 12 -> AttributeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 16 -> ObjectHeaderContinuationMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 17 -> SymbolTableMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 18 -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case 19 -> BTreeKValuesMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case FillValueMessage -> FillValueMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case DataLayoutMessage -> DataLayoutMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case AttributeMessage -> AttributeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case ObjectHeaderContinuationMessage -> ObjectHeaderContinuationMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case SymbolTableMessage -> SymbolTableMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case ObjectModificationTimeMessage -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case BtreeKValuesMessage -> BTreeKValuesMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             default -> throw new IllegalArgumentException("Unknown message type: " + type);
         };
     }
