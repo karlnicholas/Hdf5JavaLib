@@ -1,4 +1,4 @@
-package com.github.karlnicholas.hdf5javalib.dataobject;
+package com.github.karlnicholas.hdf5javalib.file.dataobject;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.message.ObjectHeaderContinuationMessage;

@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
-import com.github.karlnicholas.hdf5javalib.dataobject.HdfObjectHeaderPrefixV1;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.datatype.*;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
@@ -13,22 +13,24 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.*;
 
+import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.dumpByteBuffer;
+
 @Getter
-public class HdFileHeaderBuilder {
-    // initial setup without Dataset
-    private HdfSuperblock superblock;
+public class HdfGroupManager {
     private HdfSymbolTableEntry rootGroupEntry;
     private HdfObjectHeaderPrefixV1 objectHeaderPrefix;
     private HdfLocalHeap localHeap;
     private HdfLocalHeapContents localHeapContents;
     private HdfBTreeV1 bTree;
-    private HdfSymbolTableNode symbolTableNode;
     // initial setup without Dataset
 
     // Dataset description, plus what?
     private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
+    private HdfSymbolTableNode symbolTableNode;
 
 
 
@@ -42,26 +44,25 @@ public class HdFileHeaderBuilder {
      * H5FD_MEM_OHDR	File space allocated for Object Header.
      *
      */
-
     public void initializeNewHdfFile() {
+        // Define a root group
+        rootGroup(96);
+        objectHeader();
+
+        // Define the heap data size, why 88 I don't know.
+        int dataSegmentSize = 88;
+        // Initialize the heapData array
+        byte[] heapData = new byte[dataSegmentSize];
+        Arrays.fill(heapData, (byte) 0); // Set all bytes to 0
+
+        localHeap(dataSegmentSize, 16, 712, heapData);
+
+        // Define a B-Tree for group indexing
+        addBTree();
 
     }
 
-
-    public void superblock(
-            int groupLeafNodeK,
-            int groupInternalNodeK,
-            long baseAddress,
-            long endOfFileAddress
-    ) {
-        this.superblock = new HdfSuperblock(0, 0, 0, 0, (short)8, (short)8, groupLeafNodeK, groupInternalNodeK,
-                HdfFixedPoint.of(baseAddress),
-                HdfFixedPoint.undefined((short)8),
-                HdfFixedPoint.of(endOfFileAddress),
-                HdfFixedPoint.undefined((short)8));
-    }
-
-    public void localHeap(long dataSegmentSize, long freeListOffset, long dataSegmentAddress, byte[] data) {
+    private void localHeap(long dataSegmentSize, long freeListOffset, long dataSegmentAddress, byte[] data) {
         this.localHeap = new HdfLocalHeap("HEAP", 0,
                 HdfFixedPoint.of(dataSegmentSize),
                 HdfFixedPoint.of(freeListOffset),
@@ -70,7 +71,7 @@ public class HdFileHeaderBuilder {
     }
 
     /** Adds a group to the HDF5 file */
-    public HdFileHeaderBuilder rootGroup(long objectHeaderAddress) {
+    private HdfGroupManager rootGroup(long objectHeaderAddress) {
         HdfFixedPoint objHeaderAddr = HdfFixedPoint.of(objectHeaderAddress);
 
         rootGroupEntry = new HdfSymbolTableEntry(HdfFixedPoint.of(0), objHeaderAddr, 1,
@@ -80,7 +81,7 @@ public class HdFileHeaderBuilder {
     }
 
     /** Adds a group to the HDF5 file */
-    public HdFileHeaderBuilder objectHeader() {
+    private HdfGroupManager objectHeader() {
         objectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, 1, 1, 24,
                 Collections.singletonList(new SymbolTableMessage(
                         HdfFixedPoint.of(136),
@@ -90,7 +91,7 @@ public class HdFileHeaderBuilder {
     }
 
     /** Adds a dataset to the HDF5 file */
-    public HdFileHeaderBuilder addDataset(List<HdfMessage> headerMessages) {
+    public HdfGroupManager addDataset(List<HdfMessage> headerMessages) {
         int totalHeaderMessages = headerMessages.size();
         int objectReferenceCount = 1;
         int objectHeaderSize = 0;
@@ -104,53 +105,41 @@ public class HdFileHeaderBuilder {
     }
 
     /** Adds a B-Tree for Group Nodes */
-    public HdFileHeaderBuilder addBTree(long address, String objectName) {
-        List<HdfFixedPoint> childPointers = Collections.singletonList(HdfFixedPoint.of(address));
+    private void setBTreeGroupNode(long symbolTableAddress, String objectName) {
+        List<HdfFixedPoint> childPointers = Collections.singletonList(HdfFixedPoint.of(symbolTableAddress));
         List<HdfFixedPoint> keys = Arrays.asList(
                 HdfFixedPoint.of(0),
                 HdfFixedPoint.of(8));
 
         List<BtreeV1GroupNode> groupNodes = Collections.singletonList(
-                new BtreeV1GroupNode(new HdfString(objectName, false), HdfFixedPoint.of(address)));
+                new BtreeV1GroupNode(new HdfString(objectName, false), HdfFixedPoint.of(symbolTableAddress)));
 
-        this.bTree = new HdfBTreeV1("TREE", 0, 0, 1,
-                HdfFixedPoint.undefined((short)8),
-                HdfFixedPoint.undefined((short)8),
-                childPointers, keys, groupNodes);
-        return this;
+        bTree.setChildPointers(childPointers);
+        bTree.setKeys(keys);
+        bTree.setGroupNodes(groupNodes);
+
     }
 
     /** Adds a B-Tree for Group Nodes */
-    public HdFileHeaderBuilder addBTree() {
-//        List<HdfFixedPoint> childPointers = Collections.singletonList(HdfFixedPoint.of(address));
-//        List<HdfFixedPoint> keys = Arrays.asList(
-//                HdfFixedPoint.of(0),
-//                HdfFixedPoint.of(8));
-//
-//        List<BtreeV1GroupNode> groupNodes = Collections.singletonList(
-//                new BtreeV1GroupNode(new HdfString(objectName, false), HdfFixedPoint.of(address)));
-
+    private HdfGroupManager addBTree() {
         this.bTree = new HdfBTreeV1("TREE", 0, 0, 1,
                 HdfFixedPoint.undefined((short)8),
                 HdfFixedPoint.undefined((short)8));
         return this;
     }
 
-    /** Adds a symbol table node */
-    public HdFileHeaderBuilder addSymbolTableNode(long objectHeaderAddress) {
-        List<HdfSymbolTableEntry> entries = Collections.singletonList(
-                new HdfSymbolTableEntry(HdfFixedPoint.of(8), HdfFixedPoint.of(objectHeaderAddress),
-                        0,null, null));
-        this.symbolTableNode = new HdfSymbolTableNode("SNOD", 1, 1, entries);
-        return this;
-    }
+//    /** Adds a symbol table node */
+//    private HdfGroupManager addSymbolTableNode(long objectHeaderAddress) {
+//        return this;
+//    }
 
     /** Writes the HDF5 file */
-    public void writeToFile(FileChannel fileChannel) throws IOException {
+    public <T> void writeToFile(FileChannel fileChannel, HdfDataSet<T> hdfDataSet) throws IOException {
         // TODO: Implement actual serialization logic
-        System.out.println("Superblock: " + superblock);
+//        System.out.println("Superblock: " + superblock);
         // Allocate a buffer of size 2208
         // Get the data address directly from the single dataObject
+        HdfSuperblock superblock = hdfDataSet.getHdfFile().getSuperblock();
         Optional<HdfFixedPoint> optionalDataAddress = dataObjectHeaderPrefix.getDataAddress();
 
         // Extract the data start location dynamically
@@ -163,7 +152,7 @@ public class HdFileHeaderBuilder {
         ByteBuffer buffer = ByteBuffer.allocate((int) dataStart);
         buffer.order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
 
-        System.out.println(superblock);
+//        System.out.println(superblock);
         // Write the superblock at position 0
         buffer.position(0);
         superblock.writeToByteBuffer(buffer);
@@ -226,67 +215,65 @@ public class HdFileHeaderBuilder {
         System.out.println(dataObjectHeaderPrefix);
         dataObjectHeaderPrefix.writeToByteBuffer(buffer);
         buffer.flip();
-        fileChannel.write(buffer);
         dumpByteBuffer(buffer);
+        fileChannel.write(buffer);
     }
 
-    public static void dumpByteBuffer(ByteBuffer buffer) {
-        int bytesPerLine = 16; // 16 bytes per row
-        int limit = buffer.limit();
-        buffer.rewind(); // Reset position to 0 before reading
-
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < limit; i += bytesPerLine) {
-            // Print the address (memory offset in hex)
-            sb.append(String.format("%08X:  ", i));
-
-            StringBuilder ascii = new StringBuilder();
-
-            // Print the first 8 bytes (hex values)
-            for (int j = 0; j < 8; j++) {
-                buildHexValues(buffer, limit, sb, i, ascii, j);
-            }
-
-            sb.append(" "); // Space separator
-
-            // Print the second 8 bytes (hex values)
-            for (int j = 8; j < bytesPerLine; j++) {
-                buildHexValues(buffer, limit, sb, i, ascii, j);
-            }
-
-            // Append ASCII representation
-            sb.append("  ").append(ascii);
-
-            // Newline for next row
-            sb.append("\n");
-        }
-
-        System.out.print(sb);
-    }
-
-    private static void buildHexValues(ByteBuffer buffer, int limit, StringBuilder sb, int i, StringBuilder ascii, int j) {
-        if (i + j < limit) {
-            byte b = buffer.get(i + j);
-            sb.append(String.format("%02X ", b));
-            ascii.append(isPrintable(b) ? (char) b : '.');
-        } else {
-            sb.append("   "); // Padding for incomplete lines
-            ascii.append(" ");
-        }
-    }
-
-    // Helper method to check if a byte is a printable ASCII character (excluding control chars)
-    private static boolean isPrintable(byte b) {
-        return (b >= 32 && b <= 126); // Includes extended ASCII
-    }
-
-    public long dataAddress() {
+    private long dataAddress() {
         return dataObjectHeaderPrefix
                 .findHdfSymbolTableMessage(DataLayoutMessage.class)
                 .orElseThrow()
                 .getDataAddress()
                 .getBigIntegerValue()
                 .longValue();
+    }
+
+    public <T> HdfDataSet<T> createDataSet(HdfFile hdfFile, String datasetName, CompoundDataType compoundType, HdfFixedPoint[] hdfDimensions) {
+        long objectHeaderAddress = 800;
+        long symbolTableAddress = 1880;
+        long datasetAddress = 2208;
+        // Define a Symbol Table Node
+        List<HdfSymbolTableEntry> entries = Collections.singletonList(
+                new HdfSymbolTableEntry(HdfFixedPoint.of(8), HdfFixedPoint.of(objectHeaderAddress),
+                        0,null, null));
+        symbolTableNode = new HdfSymbolTableNode("SNOD", 1, 1, entries);
+
+        setBTreeGroupNode(symbolTableAddress, datasetName);
+
+        return new HdfDataSet<>(hdfFile, datasetName, compoundType, hdfDimensions, HdfFixedPoint.of(datasetAddress));
+    }
+
+    public <T> void closeDataSet(HdfDataSet<T> hdfDataSet, long messageCount) {
+        // Initialize the localHeapContents heapData array
+        System.arraycopy(hdfDataSet.getDatasetName().getBytes(StandardCharsets.US_ASCII), 0, getLocalHeapContents().getHeapData(), 8, hdfDataSet.getDatasetName().length());
+        List<HdfMessage> headerMessages = new ArrayList<>();
+        headerMessages.add(new ObjectHeaderContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
+        headerMessages.add(new NilMessage());
+
+        DatatypeMessage dataTypeMessage = new DatatypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), hdfDataSet.getCompoundDataType());
+//        dataTypeMessage.setDataType(compoundType);
+        headerMessages.add(dataTypeMessage);
+
+        // Add FillValue message
+        headerMessages.add(new FillValueMessage(2, 2, 2, 1, HdfFixedPoint.of(0), new byte[0]));
+
+        // Add DataLayoutMessage (Storage format)
+        HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(messageCount)};
+        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1, HdfFixedPoint.of(2208), hdfDimensionSizes, 0, null, HdfFixedPoint.undefined((short)8));
+        headerMessages.add(dataLayoutMessage);
+
+        // add ObjectModification Time message
+        headerMessages.add(new ObjectModificationTimeMessage(1, Instant.now().getEpochSecond()));
+
+        // Add DataspaceMessage (Handles dataset dimensionality)
+//        HdfFixedPoint[] hdfDimensions = Arrays.stream(new long[]{1750}).mapToObj(HdfFixedPoint::of).toArray(HdfFixedPoint[]::new);
+        DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDataSet.getHdfDimensions(), hdfDataSet.getHdfDimensions(), true);
+        headerMessages.add(dataSpaceMessage);
+
+//        headerMessages.addAll(hdfDataSet.getAttributes());
+
+        // new long[]{1750}, new long[]{98000}
+        addDataset(headerMessages);
+
     }
 }

@@ -4,6 +4,7 @@ import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 import com.github.karlnicholas.hdf5javalib.utils.BtreeV1GroupNode;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -22,9 +23,11 @@ public class HdfBTreeV1 {
     private final int entriesUsed;
     private final HdfFixedPoint leftSiblingAddress;
     private final HdfFixedPoint rightSiblingAddress;
+    @Setter
     private List<HdfFixedPoint> childPointers;
+    @Setter
     private List<HdfFixedPoint> keys;
-    // set later
+    @Setter
     private List<BtreeV1GroupNode> groupNodes;
 
     public HdfBTreeV1(

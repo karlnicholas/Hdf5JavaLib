@@ -3,6 +3,7 @@ package com.github.karlnicholas.hdf5javalib.file;
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
+import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfSymbolTableNode;
 import com.github.karlnicholas.hdf5javalib.message.AttributeMessage;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
 import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
@@ -23,6 +24,13 @@ public class HdfDataSet<T> {
     private HdfFixedPoint[] hdfDimensions;
     private List<AttributeMessage> attributes;
     private HdfFixedPoint datasetAddress;
+
+    /*
+     * So, this is a group ?
+     * it has a name, "Demand" off the root group of "/"
+     * it has a datatype, "Compound" , with dimensions, attributes, and an address in the HdfFile
+     * It should have a localHeap and LocalHeap contents, perhaps.
+     */
 
     public HdfDataSet(HdfFile hdfFile, String datasetName, CompoundDataType compoundType, HdfFixedPoint[] hdfDimensions, HdfFixedPoint datasetAddress) {
         this.hdfFile = hdfFile;

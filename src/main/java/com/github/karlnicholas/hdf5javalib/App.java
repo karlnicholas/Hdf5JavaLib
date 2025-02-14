@@ -43,7 +43,7 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        tryHdfApi();
+//        tryHdfApi();
     }
 
     public void tryHdfApi() {
@@ -149,6 +149,7 @@ public class App {
             });
 
             dataset.close();
+            file.close();
 
             // auto close
 
@@ -211,123 +212,123 @@ public class App {
 
     }
 
-    public void tryHdfFileBuilder() throws IOException {
-        HdFileHeaderBuilder builder = new HdFileHeaderBuilder();
-
-        builder.superblock(4, 16, 0, 100320);
-
-        // Define a root group
-        builder.rootGroup(96);
-
-        builder.objectHeader();
-
-        // Define the heap data size
-        int dataSegmentSize = 88;
-
-        // Initialize the heapData array
-        byte[] heapData = new byte[dataSegmentSize];
-        Arrays.fill(heapData, (byte) 0); // Set all bytes to 0
-
-        // Set bytes 8-16 to the required values
-        heapData[8] = 68;  // 'D'
-        heapData[9] = 101; // 'e'
-        heapData[10] = 109; // 'm'
-        heapData[11] = 97; // 'a'
-        heapData[12] = 110; // 'n'
-        heapData[13] = 100; // 'd'
-        heapData[14] = 0;  // null terminator
-        heapData[15] = 0;  // additional null byte
-
-        builder.localHeap(dataSegmentSize, 16, 712, heapData);
-
-        // Define a dataset with correct CompoundDataType members
-        // DatatypeMessage with CompoundDataType
-        List<CompoundDataType.Member> members = List.of(
-                new CompoundDataType.Member("shipmentId", 0, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((byte) 1, (short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"), new BitSet())),
-                new CompoundDataType.Member("origCountry", 8, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origCountry"))),
-                new CompoundDataType.Member("origSlic", 10, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origSlic"))),
-                new CompoundDataType.Member("origSort", 15, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("origSort"), new BitSet())),
-                new CompoundDataType.Member("destCountry", 16, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destCountry"))),
-                new CompoundDataType.Member("destSlic", 18, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destSlic"))),
-                new CompoundDataType.Member("destIbi", 23, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("destIbi"), new BitSet())),
-                new CompoundDataType.Member("destPostalCode", 40, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((byte) 1, (short)9, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destPostalCode"))),
-                new CompoundDataType.Member("shipper", 24, 0, 0, new int[4],
-                        new CompoundDataType.StringMember((byte) 1, (short)10, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("shipper"))),
-                new CompoundDataType.Member("service", 49, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("service"), new BitSet())),
-                new CompoundDataType.Member("packageType", 50, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("packageType"), new BitSet())),
-                new CompoundDataType.Member("accessorials", 51, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("accessorials"), new BitSet())),
-                new CompoundDataType.Member("pieces", 52, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("pieces"), new BitSet())),
-                new CompoundDataType.Member("weight", 34, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("weight"), new BitSet())),
-                new CompoundDataType.Member("cube", 36, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((byte) 1, (short)4, false, false, false, false, (short)0, (short)32, computeFixedMessageDataSize("cube"), new BitSet())),
-                new CompoundDataType.Member("committedTnt", 54, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedTnt"), new BitSet())),
-                new CompoundDataType.Member("committedDate", 55, 0, 0, new int[4],
-                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedDate"), new BitSet()))
-        );
-
-
-        List<HdfMessage> headerMessages = new ArrayList<>();
-        headerMessages.add(new ObjectHeaderContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
-        headerMessages.add(new NilMessage());
-
-        // Define Compound DataType correctly
-        short compoundSize = (short) members.stream().mapToInt(c->c.getType().getSize()).sum();
-        // Define Compound DataType correctly
-        CompoundDataType compoundType = new CompoundDataType(members.size(), compoundSize, members);
-        DatatypeMessage dataTypeMessage = new DatatypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), compoundType);
-//        dataTypeMessage.setDataType(compoundType);
-        headerMessages.add(dataTypeMessage);
-
-        // Add FillValue message
-        headerMessages.add(new FillValueMessage(2, 2, 2, 1, HdfFixedPoint.of(0), new byte[0]));
-
-        // Add DataLayoutMessage (Storage format)
-        HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(98000)};
-        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1, HdfFixedPoint.of(2208), hdfDimensionSizes, 0, null, HdfFixedPoint.undefined((short)8));
-        headerMessages.add(dataLayoutMessage);
-
-        // add ObjectModification Time message
-        headerMessages.add(new ObjectModificationTimeMessage(1, Instant.now().getEpochSecond()));
-
-        // Add DataspaceMessage (Handles dataset dimensionality)
-        HdfFixedPoint[] hdfDimensions = Arrays.stream(new long[]{1750}).mapToObj(HdfFixedPoint::of).toArray(HdfFixedPoint[]::new);
-        DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
-        headerMessages.add(dataSpaceMessage);
-
-        String attributeName = "GIT root revision";
-        String attributeValue = "Revision: , URL: ";
-        DatatypeMessage dt = new DatatypeMessage(1, 3, BitSet.valueOf(new byte[0]), HdfFixedPoint.of(attributeName.length()+1), new HdfString(attributeName, false));
-        DataspaceMessage ds = new DataspaceMessage(1, 1, 1, new HdfFixedPoint[] {HdfFixedPoint.of(1)}, null, false);
-        AttributeMessage attributeMessage = new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), new HdfString(attributeValue, false));
-        headerMessages.add(attributeMessage);
-
-        // new long[]{1750}, new long[]{98000}
-        builder.addDataset(headerMessages);
-
-        // Define a B-Tree for group indexing
-        builder.addBTree(1880, "Demand");
-
-        // Define a Symbol Table Node
-        builder.addSymbolTableNode(800);
-
-        // Write to an HDF5 file
-        builder.writeToFile(null);
-
-    }
+//    public void tryHdfFileBuilder() throws IOException {
+//        HdfGroupManager builder = new HdfGroupManager();
+//
+//        builder.superblock(4, 16, 0, 100320);
+//
+//        // Define a root group
+//        builder.rootGroup(96);
+//
+//        builder.objectHeader();
+//
+//        // Define the heap data size
+//        int dataSegmentSize = 88;
+//
+//        // Initialize the heapData array
+//        byte[] heapData = new byte[dataSegmentSize];
+//        Arrays.fill(heapData, (byte) 0); // Set all bytes to 0
+//
+//        // Set bytes 8-16 to the required values
+//        heapData[8] = 68;  // 'D'
+//        heapData[9] = 101; // 'e'
+//        heapData[10] = 109; // 'm'
+//        heapData[11] = 97; // 'a'
+//        heapData[12] = 110; // 'n'
+//        heapData[13] = 100; // 'd'
+//        heapData[14] = 0;  // null terminator
+//        heapData[15] = 0;  // additional null byte
+//
+//        builder.localHeap(dataSegmentSize, 16, 712, heapData);
+//
+//        // Define a dataset with correct CompoundDataType members
+//        // DatatypeMessage with CompoundDataType
+//        List<CompoundDataType.Member> members = List.of(
+//                new CompoundDataType.Member("shipmentId", 0, 0, 0, new int[4],
+//                        new CompoundDataType.FixedPointMember((byte) 1, (short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"), new BitSet())),
+//                new CompoundDataType.Member("origCountry", 8, 0, 0, new int[4],
+//                        new CompoundDataType.StringMember((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origCountry"))),
+//                new CompoundDataType.Member("origSlic", 10, 0, 0, new int[4],
+//                        new CompoundDataType.StringMember((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origSlic"))),
+//                new CompoundDataType.Member("origSort", 15, 0, 0, new int[4],
+//                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("origSort"), new BitSet())),
+//                new CompoundDataType.Member("destCountry", 16, 0, 0, new int[4],
+//                        new CompoundDataType.StringMember((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destCountry"))),
+//                new CompoundDataType.Member("destSlic", 18, 0, 0, new int[4],
+//                        new CompoundDataType.StringMember((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destSlic"))),
+//                new CompoundDataType.Member("destIbi", 23, 0, 0, new int[4],
+//                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("destIbi"), new BitSet())),
+//                new CompoundDataType.Member("destPostalCode", 40, 0, 0, new int[4],
+//                        new CompoundDataType.StringMember((byte) 1, (short)9, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destPostalCode"))),
+//                new CompoundDataType.Member("shipper", 24, 0, 0, new int[4],
+//                        new CompoundDataType.StringMember((byte) 1, (short)10, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("shipper"))),
+//                new CompoundDataType.Member("service", 49, 0, 0, new int[4],
+//                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("service"), new BitSet())),
+//                new CompoundDataType.Member("packageType", 50, 0, 0, new int[4],
+//                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("packageType"), new BitSet())),
+//                new CompoundDataType.Member("accessorials", 51, 0, 0, new int[4],
+//                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("accessorials"), new BitSet())),
+//                new CompoundDataType.Member("pieces", 52, 0, 0, new int[4],
+//                        new CompoundDataType.FixedPointMember((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("pieces"), new BitSet())),
+//                new CompoundDataType.Member("weight", 34, 0, 0, new int[4],
+//                        new CompoundDataType.FixedPointMember((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("weight"), new BitSet())),
+//                new CompoundDataType.Member("cube", 36, 0, 0, new int[4],
+//                        new CompoundDataType.FixedPointMember((byte) 1, (short)4, false, false, false, false, (short)0, (short)32, computeFixedMessageDataSize("cube"), new BitSet())),
+//                new CompoundDataType.Member("committedTnt", 54, 0, 0, new int[4],
+//                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedTnt"), new BitSet())),
+//                new CompoundDataType.Member("committedDate", 55, 0, 0, new int[4],
+//                        new CompoundDataType.FixedPointMember((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedDate"), new BitSet()))
+//        );
+//
+//
+//        List<HdfMessage> headerMessages = new ArrayList<>();
+//        headerMessages.add(new ObjectHeaderContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
+//        headerMessages.add(new NilMessage());
+//
+//        // Define Compound DataType correctly
+//        short compoundSize = (short) members.stream().mapToInt(c->c.getType().getSize()).sum();
+//        // Define Compound DataType correctly
+//        CompoundDataType compoundType = new CompoundDataType(members.size(), compoundSize, members);
+//        DatatypeMessage dataTypeMessage = new DatatypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), compoundType);
+////        dataTypeMessage.setDataType(compoundType);
+//        headerMessages.add(dataTypeMessage);
+//
+//        // Add FillValue message
+//        headerMessages.add(new FillValueMessage(2, 2, 2, 1, HdfFixedPoint.of(0), new byte[0]));
+//
+//        // Add DataLayoutMessage (Storage format)
+//        HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(98000)};
+//        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1, HdfFixedPoint.of(2208), hdfDimensionSizes, 0, null, HdfFixedPoint.undefined((short)8));
+//        headerMessages.add(dataLayoutMessage);
+//
+//        // add ObjectModification Time message
+//        headerMessages.add(new ObjectModificationTimeMessage(1, Instant.now().getEpochSecond()));
+//
+//        // Add DataspaceMessage (Handles dataset dimensionality)
+//        HdfFixedPoint[] hdfDimensions = Arrays.stream(new long[]{1750}).mapToObj(HdfFixedPoint::of).toArray(HdfFixedPoint[]::new);
+//        DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
+//        headerMessages.add(dataSpaceMessage);
+//
+//        String attributeName = "GIT root revision";
+//        String attributeValue = "Revision: , URL: ";
+//        DatatypeMessage dt = new DatatypeMessage(1, 3, BitSet.valueOf(new byte[0]), HdfFixedPoint.of(attributeName.length()+1), new HdfString(attributeName, false));
+//        DataspaceMessage ds = new DataspaceMessage(1, 1, 1, new HdfFixedPoint[] {HdfFixedPoint.of(1)}, null, false);
+//        AttributeMessage attributeMessage = new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), new HdfString(attributeValue, false));
+//        headerMessages.add(attributeMessage);
+//
+//        // new long[]{1750}, new long[]{98000}
+//        builder.addDataset(headerMessages);
+//
+//        // Define a B-Tree for group indexing
+//        builder.addBTree(1880, "Demand");
+//
+//        // Define a Symbol Table Node
+//        builder.addSymbolTableNode(800);
+//
+//        // Write to an HDF5 file
+//        builder.writeToFile(null);
+//
+//    }
 
     public short computeFixedMessageDataSize(String name) {
         int padding = (8 -  ((name.length()+1)% 8)) % 8;
