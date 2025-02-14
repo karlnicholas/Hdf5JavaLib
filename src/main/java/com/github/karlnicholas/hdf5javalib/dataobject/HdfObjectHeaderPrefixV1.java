@@ -24,6 +24,7 @@ public class HdfObjectHeaderPrefixV1 {
     private final long objectReferenceCount;  // 4 bytes
     private final long objectHeaderSize;      // 4 bytes
     // level 2A1A
+    @Getter
     private final List<HdfMessage> headerMessages;
 
     // Constructor for application-defined values
@@ -66,16 +67,15 @@ public class HdfObjectHeaderPrefixV1 {
         }
         List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>();
         parseDataObjectHeaderMessages(fileChannel, objectHeaderSize, offsetSize, lengthSize, dataObjectHeaderMessages);
-        for ( HdfMessage hdfMesage: dataObjectHeaderMessages) {
-            if (hdfMesage instanceof ObjectHeaderContinuationMessage) {
-                parseContinuationMessage(fileChannel, (ObjectHeaderContinuationMessage)hdfMesage, offsetSize, lengthSize, dataObjectHeaderMessages);
+        for ( HdfMessage hdfMessage: dataObjectHeaderMessages) {
+            if (hdfMessage instanceof ObjectHeaderContinuationMessage) {
+                parseContinuationMessage(fileChannel, (ObjectHeaderContinuationMessage)hdfMessage, offsetSize, lengthSize, dataObjectHeaderMessages);
                 break;
             }
         }
 
         // Create the instance
-        HdfObjectHeaderPrefixV1 prefix = new HdfObjectHeaderPrefixV1(version, totalHeaderMessages, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages);
-        return prefix;
+        return new HdfObjectHeaderPrefixV1(version, totalHeaderMessages, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages);
     }
 
     public void writeToByteBuffer(ByteBuffer buffer) {
@@ -98,8 +98,8 @@ public class HdfObjectHeaderPrefixV1 {
         buffer.putInt(0);
 
         // Write the first message if it's a SymbolTableMessage
-        for( HdfMessage hdfMesage: headerMessages) {
-            hdfMesage.writeToByteBuffer(buffer);
+        for( HdfMessage hdfMessage: headerMessages) {
+            hdfMessage.writeToByteBuffer(buffer);
             // set position 8 byte boundary
             int position = buffer.position();
             buffer.position((position + 7) & ~7);
@@ -108,8 +108,7 @@ public class HdfObjectHeaderPrefixV1 {
 
     public Optional<HdfFixedPoint> getDataAddress() {
         for (HdfMessage message : headerMessages) {
-            if (message instanceof DataLayoutMessage) {
-                DataLayoutMessage layoutMessage = (DataLayoutMessage) message;
+            if (message instanceof DataLayoutMessage layoutMessage) {
                 return Optional.of(layoutMessage.getDataAddress());
             }
         }
@@ -128,24 +127,21 @@ public class HdfObjectHeaderPrefixV1 {
 //        dataObjectHeaderMessages.forEach(hm->builder.append("\r\n\t" + hm));
         for( HdfMessage message: headerMessages) {
             String ms = message.toString();
-            builder.append("\r\n\t" + ms);
+            builder.append("\r\n\t").append(ms);
         }
         builder.append("}");
 
         return builder.toString();
     }
 
-    public List<HdfMessage> getHeaderMessages() {
-        return headerMessages;
-    }
-
     public <T extends HdfMessage> Optional<T> findHdfSymbolTableMessage(Class<T> messageClass) {
-        for(HdfMessage message: headerMessages) {
+        for (HdfMessage message : headerMessages) {
             if (messageClass.isInstance(message)) {
-                return Optional.of((T) message);
+                return Optional.of(messageClass.cast(message)); // Avoids unchecked cast warning
             }
         }
         return Optional.empty();
     }
+
 
 }

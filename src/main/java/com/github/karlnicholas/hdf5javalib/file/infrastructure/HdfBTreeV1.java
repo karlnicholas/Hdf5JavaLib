@@ -22,8 +22,8 @@ public class HdfBTreeV1 {
     private final int entriesUsed;
     private final HdfFixedPoint leftSiblingAddress;
     private final HdfFixedPoint rightSiblingAddress;
-    private final List<HdfFixedPoint> childPointers;
-    private final List<HdfFixedPoint> keys;
+    private List<HdfFixedPoint> childPointers;
+    private List<HdfFixedPoint> keys;
     // set later
     private List<BtreeV1GroupNode> groupNodes;
 
@@ -47,6 +47,22 @@ public class HdfBTreeV1 {
         this.childPointers = childPointers;
         this.keys = keys;
         this.groupNodes = groupNodes;
+    }
+
+    public HdfBTreeV1(
+        String signature,
+        int nodeType,
+        int nodeLevel,
+        int entriesUsed,
+        HdfFixedPoint leftSiblingAddress,
+        HdfFixedPoint rightSiblingAddress
+    ) {
+        this.signature = signature;
+        this.nodeType = nodeType;
+        this.nodeLevel = nodeLevel;
+        this.entriesUsed = entriesUsed;
+        this.leftSiblingAddress = leftSiblingAddress;
+        this.rightSiblingAddress = rightSiblingAddress;
     }
 
     public static HdfBTreeV1 readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize) throws IOException {

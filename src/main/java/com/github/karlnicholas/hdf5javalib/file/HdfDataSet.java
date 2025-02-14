@@ -22,13 +22,15 @@ public class HdfDataSet<T> {
     private CompoundDataType compoundDataType;
     private HdfFixedPoint[] hdfDimensions;
     private List<AttributeMessage> attributes;
+    private HdfFixedPoint datasetAddress;
 
-    public HdfDataSet(HdfFile hdfFile, String datasetName, CompoundDataType compoundType, HdfFixedPoint[] hdfDimensions) {
+    public HdfDataSet(HdfFile hdfFile, String datasetName, CompoundDataType compoundType, HdfFixedPoint[] hdfDimensions, HdfFixedPoint datasetAddress) {
         this.hdfFile = hdfFile;
         this.datasetName = datasetName;
         this.compoundDataType = compoundType;
         this.hdfDimensions = hdfDimensions;
         this.attributes = new ArrayList<>();
+        this.datasetAddress = datasetAddress;
     }
 
     public void write(Supplier<ByteBuffer> bufferSupplier) throws IOException {
@@ -45,5 +47,9 @@ public class HdfDataSet<T> {
 
     public List<AttributeMessage> getAttributes() {
         return attributes;
+    }
+
+    public void close() throws IOException {
+        hdfFile.closeDataset(this);
     }
 }

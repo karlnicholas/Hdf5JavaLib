@@ -31,8 +31,8 @@ public class App {
     private void run() {
         try {
             HdfReader reader = new HdfReader();
-            String filePath = Objects.requireNonNull(App.class.getResource("/test.h5")).getFile();
-//            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
+//            String filePath = Objects.requireNonNull(App.class.getResource("/test.h5")).getFile();
+            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
@@ -147,6 +147,8 @@ public class App {
                 volumeBuffer.flip();
                 return volumeBuffer;
             });
+
+            dataset.close();
 
             // auto close
 

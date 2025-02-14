@@ -17,19 +17,19 @@ public class AttributeMessage extends HdfMessage {
     private final int nameSize;
     private final int datatypeSize;
     private final int dataspaceSize;
-    private final HdfMessage dataTypeMessage;
-    private final HdfMessage dataSpaceMessage;
+    private final HdfMessage datatypeMessage;
+    private final HdfMessage dataspaceMessage;
     private final HdfString name;
     private HdfDataType value;
 
-    public AttributeMessage(int version, int nameSize, int datatypeSize, int dataspaceSize, HdfMessage dataTypeMessage, HdfMessage dataSpaceMessage, HdfString name, HdfDataType value) {
+    public AttributeMessage(int version, int nameSize, int datatypeSize, int dataspaceSize, HdfMessage datatypeMessage, HdfMessage dataspaceMessage, HdfString name, HdfDataType value) {
         super(MessageType.AttributeMessage, ()-> (short) (1+1+2+2+2+nameSize+(((((nameSize + 1) / 8) + 1) * 8) - nameSize)+datatypeSize+dataspaceSize+value.getSizeMessageData()), (byte)0);
         this.version = version;
         this.nameSize = nameSize;
         this.datatypeSize = datatypeSize;
         this.dataspaceSize = dataspaceSize;
-        this.dataTypeMessage = dataTypeMessage;
-        this.dataSpaceMessage = dataSpaceMessage;
+        this.datatypeMessage = datatypeMessage;
+        this.dataspaceMessage = dataspaceMessage;
         this.name = name;
         this.value = value;
     }
@@ -72,7 +72,7 @@ public class AttributeMessage extends HdfMessage {
             int dtDataSize = dt.getSize().getBigIntegerValue().intValue();
             byte[] dataBytes = new byte[dtDataSize];
             buffer.get(dataBytes);
-            value = new HdfString(dataBytes, true, false);
+            value = new HdfString(dataBytes, false, false);
         }
         AttributeMessage attributeMessage = new AttributeMessage(version, nameSize, datatypeSize, dataspaceSize, dt, ds, name, value);
         return attributeMessage;
@@ -110,9 +110,9 @@ public class AttributeMessage extends HdfMessage {
         // padding bytes
         buffer.put(new byte[((((nameSize + 1) / 8) + 1) * 8) - nameSize]);
 
-        dataTypeMessage.writeToByteBuffer(buffer);
+        datatypeMessage.writeToByteBuffer(buffer);
 
-        dataSpaceMessage.writeToByteBuffer(buffer);
+        dataspaceMessage.writeToByteBuffer(buffer);
 
         value.writeDefinitionToByteBuffer(buffer);
 

@@ -64,6 +64,7 @@ public class HdfReader {
         fileChannel.position(localHeapAddress);
         fPosSave = fileChannel.position();
 
+// --------------------------------------
         localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
         System.out.println(localHeap);
         System.out.println("localHeap = " + (fileChannel.position() - fPosSave));
@@ -88,7 +89,6 @@ public class HdfReader {
             bTree.parseBTreeAndLocalHeap(localHeapContents);
             System.out.println(bTree);
         }
-
         fileChannel.position(bTree.getGroupNodes().get(0).getDataAddress().getBigIntegerValue().longValue());
         HdfSymbolTableNode hdfSymbolTableNode = HdfSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
         System.out.println(hdfSymbolTableNode);
@@ -96,6 +96,8 @@ public class HdfReader {
         // Parse the Data Object Header Prefix next in line
         fileChannel.position(hdfSymbolTableNode.getSymbolTableEntries().get(0).getObjectHeaderAddress().getBigIntegerValue().longValue());
         System.out.print(fileChannel.position() + " = ");
+// --------------------------------------
+
         dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
         System.out.println(dataObjectHeaderPrefix);
 

@@ -6,6 +6,7 @@ import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
 import com.github.karlnicholas.hdf5javalib.message.*;
 import com.github.karlnicholas.hdf5javalib.utils.*;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -14,7 +15,9 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.*;
 
+@Getter
 public class HdFileHeaderBuilder {
+    // initial setup without Dataset
     private HdfSuperblock superblock;
     private HdfSymbolTableEntry rootGroupEntry;
     private HdfObjectHeaderPrefixV1 objectHeaderPrefix;
@@ -22,6 +25,9 @@ public class HdFileHeaderBuilder {
     private HdfLocalHeapContents localHeapContents;
     private HdfBTreeV1 bTree;
     private HdfSymbolTableNode symbolTableNode;
+    // initial setup without Dataset
+
+    // Dataset description, plus what?
     private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
 
 
@@ -36,6 +42,10 @@ public class HdFileHeaderBuilder {
      * H5FD_MEM_OHDR	File space allocated for Object Header.
      *
      */
+
+    public void initializeNewHdfFile() {
+
+    }
 
 
     public void superblock(
@@ -107,6 +117,22 @@ public class HdFileHeaderBuilder {
                 HdfFixedPoint.undefined((short)8),
                 HdfFixedPoint.undefined((short)8),
                 childPointers, keys, groupNodes);
+        return this;
+    }
+
+    /** Adds a B-Tree for Group Nodes */
+    public HdFileHeaderBuilder addBTree() {
+//        List<HdfFixedPoint> childPointers = Collections.singletonList(HdfFixedPoint.of(address));
+//        List<HdfFixedPoint> keys = Arrays.asList(
+//                HdfFixedPoint.of(0),
+//                HdfFixedPoint.of(8));
+//
+//        List<BtreeV1GroupNode> groupNodes = Collections.singletonList(
+//                new BtreeV1GroupNode(new HdfString(objectName, false), HdfFixedPoint.of(address)));
+
+        this.bTree = new HdfBTreeV1("TREE", 0, 0, 1,
+                HdfFixedPoint.undefined((short)8),
+                HdfFixedPoint.undefined((short)8));
         return this;
     }
 
