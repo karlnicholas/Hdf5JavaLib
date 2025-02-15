@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.util.Arrays;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
 
@@ -28,7 +29,7 @@ public class HdfLocalHeap {
     }
 
     public HdfLocalHeap(HdfFixedPoint dataSegmentSize, HdfFixedPoint dataSegmentAddress) {
-        this("HEAP", 1, dataSegmentSize, HdfFixedPoint.of(0), dataSegmentAddress);
+        this("HEAP", 0, dataSegmentSize, HdfFixedPoint.of(0), dataSegmentAddress);
     }
 
     public void addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents) {
@@ -50,7 +51,13 @@ public class HdfLocalHeap {
         System.arraycopy(objectNameBytes, 0, heapData, freeListOffset, objectNameBytes.length);
 
         // ✅ Align freeListOffset to the next 8-byte boundary
-        int newFreeListOffset = (freeListOffset + objectNameBytes.length + 7) & ~7;
+        int newFreeListOffset;
+        if (objectNameBytes.length == 0 ) {
+            newFreeListOffset = freeListOffset + 8;
+        } else {
+            newFreeListOffset = (freeListOffset + objectNameBytes.length + 7) & ~7;
+        }
+        Arrays.fill(heapData, freeListOffset + objectNameBytes.length, newFreeListOffset, (byte) 0);
 
         // ✅ Calculate the remaining free space
         int remainingFreeSpace = freeBlockSize - (newFreeListOffset - freeListOffset);

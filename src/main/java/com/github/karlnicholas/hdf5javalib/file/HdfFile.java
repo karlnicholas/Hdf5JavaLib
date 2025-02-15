@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
@@ -63,10 +64,11 @@ public class HdfFile {
         int dataSegmentSize = 8 + 8*10; // allow for 10 simple entries, or whatever aligned to 8 bytes
         // Initialize the heapData array
         byte[] heapData = new byte[dataSegmentSize];
-        Arrays.fill(heapData, (byte) 0); // Set all bytes to 0
+        heapData[0] = (byte)0x1;
+        heapData[8] = (byte)dataSegmentSize;
 
         localHeap = new HdfLocalHeap(HdfFixedPoint.of(dataSegmentSize), HdfFixedPoint.of(712));
-        localHeapContents = new HdfLocalHeapContents(new byte[dataSegmentSize]);
+        localHeapContents = new HdfLocalHeapContents(heapData);
         localHeap.addToHeap(new HdfString(new byte[0], false, false), this.localHeapContents);
 
         // Define a B-Tree for group indexing
@@ -104,7 +106,12 @@ public class HdfFile {
     }
 
     public void close() throws IOException {
-        try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), StandardOpenOption.WRITE)) {
+        Path path = Path.of(fileName);
+        StandardOpenOption[] fileOptions = {StandardOpenOption.WRITE};
+        if ( !Files.exists(path) ) {
+            fileOptions =new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE};
+        }
+        try (FileChannel fileChannel = FileChannel.open(path, fileOptions)) {
             // TODO: Implement actual serialization logic
             //        System.out.println("Superblock: " + superblock);
             // Allocate a buffer of size 2208
@@ -182,6 +189,7 @@ public class HdfFile {
             } else {
                 throw new IllegalStateException("No valid Local Heap position found.");
             }
+            buffer.flip();
             fileChannel.position(0);
             fileChannel.write(buffer);
         }
