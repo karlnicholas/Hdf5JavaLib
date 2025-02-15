@@ -10,7 +10,7 @@ import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfLocalHeapConte
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
 import com.github.karlnicholas.hdf5javalib.message.*;
-import com.github.karlnicholas.hdf5javalib.utils.BtreeV1GroupNode;
+import com.github.karlnicholas.hdf5javalib.file.infrastructure.BtreeV1GroupNode;
 
 import java.math.BigInteger;
 import java.util.*;

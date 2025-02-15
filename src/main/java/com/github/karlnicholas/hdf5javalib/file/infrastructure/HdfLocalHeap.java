@@ -1,11 +1,13 @@
 package com.github.karlnicholas.hdf5javalib.file.infrastructure;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 import lombok.Getter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
 
@@ -14,7 +16,7 @@ public class HdfLocalHeap {
     private final String signature;
     private final int version;
     private final HdfFixedPoint dataSegmentSize;
-    private final HdfFixedPoint freeListOffset;
+    private HdfFixedPoint freeListOffset;
     private final HdfFixedPoint dataSegmentAddress;
 
     public HdfLocalHeap(String signature, int version, HdfFixedPoint dataSegmentSize, HdfFixedPoint freeListOffset, HdfFixedPoint dataSegmentAddress) {
@@ -23,6 +25,18 @@ public class HdfLocalHeap {
         this.dataSegmentSize = dataSegmentSize;
         this.freeListOffset = freeListOffset;
         this.dataSegmentAddress = dataSegmentAddress;
+    }
+
+    public HdfLocalHeap(String heap, int version, HdfFixedPoint dataSegmentSize, HdfFixedPoint dataSegmentAddress) {
+        this("HEAP", 1, dataSegmentSize, HdfFixedPoint.of(0), dataSegmentAddress);
+    }
+
+    public void addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents) {
+        byte[] objectNameBytes = objectName.getHdfBytes();
+        int freeListOffset = this.freeListOffset.getBigIntegerValue().intValue();
+        System.arraycopy(objectNameBytes, 0, localHeapContents.getHeapData(), freeListOffset, objectNameBytes.length);
+        freeListOffset = (freeListOffset + 7) & ~7;
+        this.freeListOffset = HdfFixedPoint.of(freeListOffset);
     }
 
     public static HdfLocalHeap readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize) throws IOException {
@@ -99,4 +113,8 @@ public class HdfLocalHeap {
         writeFixedPointToBuffer(buffer, dataSegmentAddress);
     }
 
+    public void nullStringAtPositionZero(HdfLocalHeapContents localHeapContents) {
+        System.arraycopy(new byte[8], 0, localHeapContents.getHeapData(), 0, 8);
+        freeListOffset = HdfFixedPoint.of(8);
+    }
 }

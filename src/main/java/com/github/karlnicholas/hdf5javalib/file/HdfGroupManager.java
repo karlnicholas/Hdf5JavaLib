@@ -5,7 +5,6 @@ import com.github.karlnicholas.hdf5javalib.datatype.*;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
 import com.github.karlnicholas.hdf5javalib.message.*;
-import com.github.karlnicholas.hdf5javalib.utils.*;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -50,24 +49,22 @@ public class HdfGroupManager {
         objectHeader();
 
         // Define the heap data size, why 88 I don't know.
-        int dataSegmentSize = 88;
+        int dataSegmentSize = 8 * 8*10; // allow for 10 simple entries, or whatever aligned to 8 bytes
         // Initialize the heapData array
         byte[] heapData = new byte[dataSegmentSize];
         Arrays.fill(heapData, (byte) 0); // Set all bytes to 0
 
-        localHeap(dataSegmentSize, 16, 712, heapData);
+        localHeap(dataSegmentSize, 712);
 
         // Define a B-Tree for group indexing
         addBTree();
 
     }
 
-    private void localHeap(long dataSegmentSize, long freeListOffset, long dataSegmentAddress, byte[] data) {
-        this.localHeap = new HdfLocalHeap("HEAP", 0,
-                HdfFixedPoint.of(dataSegmentSize),
-                HdfFixedPoint.of(freeListOffset),
-                HdfFixedPoint.of(dataSegmentAddress));
-        this.localHeapContents = new HdfLocalHeapContents(data);
+    private void localHeap(int dataSegmentSize, long dataSegmentAddress) {
+        this.localHeap = new HdfLocalHeap("HEAP", 0, HdfFixedPoint.of(dataSegmentSize), HdfFixedPoint.of(dataSegmentAddress));
+        this.localHeapContents = new HdfLocalHeapContents(new byte[dataSegmentSize]);
+        localHeap.nullStringAtPositionZero(this.localHeapContents);
     }
 
     /** Adds a group to the HDF5 file */

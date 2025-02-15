@@ -2,7 +2,6 @@ package com.github.karlnicholas.hdf5javalib.file.infrastructure;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
-import com.github.karlnicholas.hdf5javalib.utils.BtreeV1GroupNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,7 +19,7 @@ public class HdfBTreeV1 {
     private final String signature;
     private final int nodeType;
     private final int nodeLevel;
-    private final int entriesUsed;
+    private int entriesUsed;
     private final HdfFixedPoint leftSiblingAddress;
     private final HdfFixedPoint rightSiblingAddress;
     @Setter
@@ -66,6 +65,41 @@ public class HdfBTreeV1 {
         this.entriesUsed = entriesUsed;
         this.leftSiblingAddress = leftSiblingAddress;
         this.rightSiblingAddress = rightSiblingAddress;
+    }
+
+    public void insertGroup(HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents) {
+        // Ensure we are inserting into an empty B-tree
+        if (entriesUsed > 0) {
+            throw new IllegalStateException("B-tree is not empty. Use normal insert method.");
+        }
+
+        // ✅ Step 1: Store objectName in the heap & get its offset
+        localHeap.addToHeap(objectName, localHeapContents);
+        HdfFixedPoint localHeapOffset = localHeap.getFreeListOffset();
+
+        // ✅ Step 2: Create a new BtreeV1GroupNode
+        BtreeV1GroupNode newGroupNode = new BtreeV1GroupNode(objectName, objectAddress);
+
+        // ✅ Step 3: Initialize lists if empty
+        if (keys == null) keys = new ArrayList<>();
+        if (groupNodes == null) groupNodes = new ArrayList<>();
+        if (childPointers == null) childPointers = new ArrayList<>();
+
+        // ✅ Step 4: Set the first unused key to 0 (represents an empty string)
+        keys.add(HdfFixedPoint.of(0));
+
+        // ✅ Step 5: Insert the first real key (local heap offset)
+        keys.add(localHeapOffset);
+
+        // ✅ Step 6: Set up child pointers
+        // - child[0] is the objectAddress for the new group node.
+        childPointers.add(objectAddress); // Pointer to the actual object
+
+        // ✅ Step 7: Insert the group node
+        groupNodes.add(newGroupNode);
+
+        // ✅ Step 8: Update entriesUsed (we now have 1 real entry, not counting key[0])
+        entriesUsed = 1;
     }
 
     public static HdfBTreeV1 readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize) throws IOException {
