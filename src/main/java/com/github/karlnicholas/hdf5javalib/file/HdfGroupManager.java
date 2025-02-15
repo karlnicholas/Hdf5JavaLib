@@ -20,18 +20,18 @@ import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.dumpByteBuffer;
 
 @Getter
 public class HdfGroupManager {
-    private HdfSymbolTableEntry rootGroupEntry;
-    private HdfObjectHeaderPrefixV1 objectHeaderPrefix;
-    private HdfLocalHeap localHeap;
-    private HdfLocalHeapContents localHeapContents;
-    private HdfBTreeV1 bTree;
     // initial setup without Dataset
+    private final HdfFile hdfFile;
 
     // Dataset description, plus what?
+//    private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
+//    private List<HdfGroup> groups;
+    private HdfSymbolTableNode  symbolTableNode;
     private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
-    private HdfSymbolTableNode symbolTableNode;
 
-
+    public HdfGroupManager(HdfFile hdfFile) {
+        this.hdfFile = hdfFile;
+    }
 
     /**
      * Basic Allocation Type	Description
@@ -43,49 +43,6 @@ public class HdfGroupManager {
      * H5FD_MEM_OHDR	File space allocated for Object Header.
      *
      */
-    public void initializeNewHdfFile() {
-        // Define a root group
-        rootGroup(96);
-        objectHeader();
-
-        // Define the heap data size, why 88 I don't know.
-        int dataSegmentSize = 8 * 8*10; // allow for 10 simple entries, or whatever aligned to 8 bytes
-        // Initialize the heapData array
-        byte[] heapData = new byte[dataSegmentSize];
-        Arrays.fill(heapData, (byte) 0); // Set all bytes to 0
-
-        localHeap(dataSegmentSize, 712);
-
-        // Define a B-Tree for group indexing
-        addBTree();
-
-    }
-
-    private void localHeap(int dataSegmentSize, long dataSegmentAddress) {
-        this.localHeap = new HdfLocalHeap("HEAP", 0, HdfFixedPoint.of(dataSegmentSize), HdfFixedPoint.of(dataSegmentAddress));
-        this.localHeapContents = new HdfLocalHeapContents(new byte[dataSegmentSize]);
-        localHeap.nullStringAtPositionZero(this.localHeapContents);
-    }
-
-    /** Adds a group to the HDF5 file */
-    private HdfGroupManager rootGroup(long objectHeaderAddress) {
-        HdfFixedPoint objHeaderAddr = HdfFixedPoint.of(objectHeaderAddress);
-
-        rootGroupEntry = new HdfSymbolTableEntry(HdfFixedPoint.of(0), objHeaderAddr, 1,
-                HdfFixedPoint.of(136),
-                HdfFixedPoint.of(680));
-        return this;
-    }
-
-    /** Adds a group to the HDF5 file */
-    private HdfGroupManager objectHeader() {
-        objectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, 1, 1, 24,
-                Collections.singletonList(new SymbolTableMessage(
-                        HdfFixedPoint.of(136),
-                        HdfFixedPoint.of(680))));
-
-        return this;
-    }
 
     /** Adds a dataset to the HDF5 file */
     public HdfGroupManager addDataset(List<HdfMessage> headerMessages) {
@@ -102,7 +59,7 @@ public class HdfGroupManager {
     }
 
     /** Adds a B-Tree for Group Nodes */
-    private void setBTreeGroupNode(long symbolTableAddress, String objectName) {
+    private void setBTreeGroupNode(long symbolTableAddress, String objectName, long objectHeaderAddress) {
         List<HdfFixedPoint> childPointers = Collections.singletonList(HdfFixedPoint.of(symbolTableAddress));
         List<HdfFixedPoint> keys = Arrays.asList(
                 HdfFixedPoint.of(0),
@@ -111,20 +68,17 @@ public class HdfGroupManager {
         List<BtreeV1GroupNode> groupNodes = Collections.singletonList(
                 new BtreeV1GroupNode(new HdfString(objectName, false), HdfFixedPoint.of(symbolTableAddress)));
 
-        bTree.setChildPointers(childPointers);
-        bTree.setKeys(keys);
-        bTree.setGroupNodes(groupNodes);
+        // Define a Symbol Table Node
+        List<HdfSymbolTableEntry> entries = Collections.singletonList(
+                new HdfSymbolTableEntry(HdfFixedPoint.of(8), HdfFixedPoint.of(objectHeaderAddress),
+                        0,null, null));
+        HdfSymbolTableNode symbolTableNode = new HdfSymbolTableNode("SNOD", 1, 1, entries);
+
+        hdfFile.getBTree().setChildPointers(childPointers);
+        hdfFile.getBTree().setKeys(keys);
+        hdfFile.getBTree().setGroupNodes(groupNodes);
 
     }
-
-    /** Adds a B-Tree for Group Nodes */
-    private HdfGroupManager addBTree() {
-        this.bTree = new HdfBTreeV1("TREE", 0, 0, 1,
-                HdfFixedPoint.undefined((short)8),
-                HdfFixedPoint.undefined((short)8));
-        return this;
-    }
-
 //    /** Adds a symbol table node */
 //    private HdfGroupManager addSymbolTableNode(long objectHeaderAddress) {
 //        return this;
@@ -132,88 +86,14 @@ public class HdfGroupManager {
 
     /** Writes the HDF5 file */
     public <T> void writeToFile(FileChannel fileChannel, HdfDataSet<T> hdfDataSet) throws IOException {
-        // TODO: Implement actual serialization logic
-//        System.out.println("Superblock: " + superblock);
-        // Allocate a buffer of size 2208
-        // Get the data address directly from the single dataObject
-        HdfSuperblock superblock = hdfDataSet.getHdfFile().getSuperblock();
-        Optional<HdfFixedPoint> optionalDataAddress = dataObjectHeaderPrefix.getDataAddress();
 
-        // Extract the data start location dynamically
-        long dataStart = optionalDataAddress
-                .map(HdfFixedPoint::getBigIntegerValue)
-                .map(BigInteger::longValue)
-                .orElseThrow(() -> new IllegalStateException("No Data Layout Message found"));
-
-        // Allocate the buffer dynamically up to the data start location
-        ByteBuffer buffer = ByteBuffer.allocate((int) dataStart);
-        buffer.order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
-
-//        System.out.println(superblock);
-        // Write the superblock at position 0
-        buffer.position(0);
-        superblock.writeToByteBuffer(buffer);
-
-        System.out.println(rootGroupEntry);
-        // Write the root group symbol table entry immediately after the superblock
-        rootGroupEntry.writeToByteBuffer(buffer, superblock.getSizeOfOffsets());
-
-        System.out.println(objectHeaderPrefix);
-        // Write Object Header at position found in rootGroupEntry
-        int objectHeaderAddress = rootGroupEntry.getObjectHeaderAddress().getBigIntegerValue().intValue();
-        buffer.position(objectHeaderAddress);
-        objectHeaderPrefix.writeToByteBuffer(buffer);
-
-        long localHeapPosition = -1;
-        long bTreePosition = -1;
-
-        // Try getting the Local Heap Address from the Root Symbol Table Entry
-        if (rootGroupEntry.getLocalHeapAddress() != null && !rootGroupEntry.getLocalHeapAddress().isUndefined()) {
-            localHeapPosition = rootGroupEntry.getLocalHeapAddress().getBigIntegerValue().longValue();
-        }
-
-        // If not found or invalid, fallback to Object Header's SymbolTableMessage
-        Optional<SymbolTableMessage> symbolTableMessageOpt = objectHeaderPrefix.findHdfSymbolTableMessage(SymbolTableMessage.class);
-        if (symbolTableMessageOpt.isPresent()) {
-            SymbolTableMessage symbolTableMessage = symbolTableMessageOpt.get();
-
-            // Retrieve Local Heap Address if still not found
-            if (localHeapPosition == -1 && symbolTableMessage.getLocalHeapAddress() != null && !symbolTableMessage.getLocalHeapAddress().isUndefined()) {
-                localHeapPosition = symbolTableMessage.getLocalHeapAddress().getBigIntegerValue().longValue();
-            }
-
-            // Retrieve B-Tree Address
-            if (symbolTableMessage.getBTreeAddress() != null && !symbolTableMessage.getBTreeAddress().isUndefined()) {
-                bTreePosition = symbolTableMessage.getBTreeAddress().getBigIntegerValue().longValue();
-            }
-        }
-
-        // Validate B-Tree Position and write it
-        if (bTreePosition != -1) {
-            System.out.println(bTree);
-            buffer.position((int) bTreePosition); // Move to the correct position
-            bTree.writeToByteBuffer(buffer);
-        } else {
-            throw new IllegalStateException("No valid B-Tree position found.");
-        }
-
-        // Validate Local Heap Position and write it
-        if (localHeapPosition != -1) {
-            buffer.position((int) localHeapPosition); // Move to the correct position
-            localHeap.writeToByteBuffer(buffer);
-            buffer.position(localHeap.getDataSegmentAddress().getBigIntegerValue().intValue());
-            localHeapContents.writeToByteBuffer(buffer);
-        } else {
-            throw new IllegalStateException("No valid Local Heap position found.");
-        }
-
-        int objectDataHeaderAddress = symbolTableNode.getSymbolTableEntries().get(0).getObjectHeaderAddress().getBigIntegerValue().intValue();
-        buffer.position(objectDataHeaderAddress);
-        System.out.println(dataObjectHeaderPrefix);
-        dataObjectHeaderPrefix.writeToByteBuffer(buffer);
-        buffer.flip();
-        dumpByteBuffer(buffer);
-        fileChannel.write(buffer);
+//        int objectDataHeaderAddress = symbolTableNode.getSymbolTableEntries().get(0).getObjectHeaderAddress().getBigIntegerValue().intValue();
+//        buffer.position(objectDataHeaderAddress);
+//        System.out.println(dataObjectHeaderPrefix);
+//        dataObjectHeaderPrefix.writeToByteBuffer(buffer);
+//        buffer.flip();
+//        dumpByteBuffer(buffer);
+//        fileChannel.write(buffer);
     }
 
     private long dataAddress() {
@@ -229,20 +109,15 @@ public class HdfGroupManager {
         long objectHeaderAddress = 800;
         long symbolTableAddress = 1880;
         long datasetAddress = 2208;
-        // Define a Symbol Table Node
-        List<HdfSymbolTableEntry> entries = Collections.singletonList(
-                new HdfSymbolTableEntry(HdfFixedPoint.of(8), HdfFixedPoint.of(objectHeaderAddress),
-                        0,null, null));
-        symbolTableNode = new HdfSymbolTableNode("SNOD", 1, 1, entries);
 
-        setBTreeGroupNode(symbolTableAddress, datasetName);
+        setBTreeGroupNode(symbolTableAddress, datasetName, objectHeaderAddress);
 
         return new HdfDataSet<>(hdfFile, datasetName, compoundType, hdfDimensions, HdfFixedPoint.of(datasetAddress));
     }
 
     public <T> void closeDataSet(HdfDataSet<T> hdfDataSet, long messageCount) {
         // Initialize the localHeapContents heapData array
-        System.arraycopy(hdfDataSet.getDatasetName().getBytes(StandardCharsets.US_ASCII), 0, getLocalHeapContents().getHeapData(), 8, hdfDataSet.getDatasetName().length());
+        System.arraycopy(hdfDataSet.getDatasetName().getBytes(StandardCharsets.US_ASCII), 0, hdfFile.getLocalHeapContents().getHeapData(), 8, hdfDataSet.getDatasetName().length());
         List<HdfMessage> headerMessages = new ArrayList<>();
         headerMessages.add(new ObjectHeaderContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
         headerMessages.add(new NilMessage());

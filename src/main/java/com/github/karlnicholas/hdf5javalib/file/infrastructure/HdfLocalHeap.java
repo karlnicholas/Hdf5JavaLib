@@ -6,8 +6,8 @@ import lombok.Getter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
-import java.nio.charset.StandardCharsets;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
 
@@ -27,16 +27,41 @@ public class HdfLocalHeap {
         this.dataSegmentAddress = dataSegmentAddress;
     }
 
-    public HdfLocalHeap(String heap, int version, HdfFixedPoint dataSegmentSize, HdfFixedPoint dataSegmentAddress) {
+    public HdfLocalHeap(HdfFixedPoint dataSegmentSize, HdfFixedPoint dataSegmentAddress) {
         this("HEAP", 1, dataSegmentSize, HdfFixedPoint.of(0), dataSegmentAddress);
     }
 
     public void addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents) {
         byte[] objectNameBytes = objectName.getHdfBytes();
         int freeListOffset = this.freeListOffset.getBigIntegerValue().intValue();
-        System.arraycopy(objectNameBytes, 0, localHeapContents.getHeapData(), freeListOffset, objectNameBytes.length);
-        freeListOffset = (freeListOffset + 7) & ~7;
-        this.freeListOffset = HdfFixedPoint.of(freeListOffset);
+        byte[] heapData = localHeapContents.getHeapData();
+
+        // ✅ Extract free space size from the current freeListOffset location
+        int freeBlockSize = ByteBuffer.wrap(heapData, freeListOffset + 8, 8)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .getInt();
+
+        // ✅ Check if there is enough space for the new objectName
+        if (objectNameBytes.length > freeBlockSize) {
+            throw new IllegalStateException("Not enough space in the heap to add the objectName.");
+        }
+
+        // ✅ Copy the new objectName into the heap at the freeListOffset
+        System.arraycopy(objectNameBytes, 0, heapData, freeListOffset, objectNameBytes.length);
+
+        // ✅ Align freeListOffset to the next 8-byte boundary
+        int newFreeListOffset = (freeListOffset + objectNameBytes.length + 7) & ~7;
+
+        // ✅ Calculate the remaining free space
+        int remainingFreeSpace = freeBlockSize - (newFreeListOffset - freeListOffset);
+
+        // ✅ Store updated freeListOffset
+        this.freeListOffset = HdfFixedPoint.of(newFreeListOffset);
+
+        // ✅ Write new free block metadata at the **new** freeListOffset
+        ByteBuffer buffer = ByteBuffer.wrap(heapData).order(ByteOrder.LITTLE_ENDIAN);
+        buffer.putLong(newFreeListOffset, 1);  // Mark as last block
+        buffer.putLong(newFreeListOffset + 8, remainingFreeSpace);  // Updated free space size
     }
 
     public static HdfLocalHeap readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize) throws IOException {
@@ -113,8 +138,4 @@ public class HdfLocalHeap {
         writeFixedPointToBuffer(buffer, dataSegmentAddress);
     }
 
-    public void nullStringAtPositionZero(HdfLocalHeapContents localHeapContents) {
-        System.arraycopy(new byte[8], 0, localHeapContents.getHeapData(), 0, 8);
-        freeListOffset = HdfFixedPoint.of(8);
-    }
 }

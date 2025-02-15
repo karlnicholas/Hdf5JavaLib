@@ -179,15 +179,17 @@ public class HdfBTreeV1 {
         writeFixedPointToBuffer(buffer, rightSiblingAddress);
 
 
-        if (nodeType == 0) {
-            writeFixedPointToBuffer(buffer, HdfFixedPoint.of(0));
-            writeFixedPointToBuffer(buffer, childPointers.get(0));
+        if ( entriesUsed > 0 ) {
+            if (nodeType == 0) {
+                writeFixedPointToBuffer(buffer, HdfFixedPoint.of(0));
+                writeFixedPointToBuffer(buffer, childPointers.get(0));
 
-            // Interleave Keys and Child Pointers
-            for (int i = 0; i < entriesUsed; i++) {
-                writeFixedPointToBuffer(buffer, keys.get(i+1)); // Write Key[i]
-                if ( i + 1 < entriesUsed) {
-                    writeFixedPointToBuffer(buffer, childPointers.get(i)); // Write Child[i]
+                // Interleave Keys and Child Pointers
+                for (int i = 0; i < entriesUsed; i++) {
+                    writeFixedPointToBuffer(buffer, keys.get(i+1)); // Write Key[i]
+                    if ( i + 1 < entriesUsed) {
+                        writeFixedPointToBuffer(buffer, childPointers.get(i)); // Write Child[i]
+                    }
                 }
             }
         }
