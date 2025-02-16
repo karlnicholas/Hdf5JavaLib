@@ -39,7 +39,7 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        tryHdfApi();
+//        tryHdfApi();
     }
 
     public void tryHdfApi() {

@@ -58,27 +58,27 @@ public class HdfGroupManager {
         return this;
     }
 
-    /** Adds a B-Tree for Group Nodes */
-    private void setBTreeGroupNode(long symbolTableAddress, String objectName, long objectHeaderAddress) {
-        List<HdfFixedPoint> childPointers = Collections.singletonList(HdfFixedPoint.of(symbolTableAddress));
-        List<HdfFixedPoint> keys = Arrays.asList(
-                HdfFixedPoint.of(0),
-                HdfFixedPoint.of(8));
-
-        List<BtreeV1GroupNode> groupNodes = Collections.singletonList(
-                new BtreeV1GroupNode(new HdfString(objectName, false), HdfFixedPoint.of(symbolTableAddress)));
-
-        // Define a Symbol Table Node
-        List<HdfSymbolTableEntry> entries = Collections.singletonList(
-                new HdfSymbolTableEntry(HdfFixedPoint.of(8), HdfFixedPoint.of(objectHeaderAddress),
-                        0,null, null));
-        HdfSymbolTableNode symbolTableNode = new HdfSymbolTableNode("SNOD", 1, 1, entries);
-
-        hdfFile.getBTree().setChildPointers(childPointers);
-        hdfFile.getBTree().setKeys(keys);
-        hdfFile.getBTree().setGroupNodes(groupNodes);
-
-    }
+//    /** Adds a B-Tree for Group Nodes */
+//    private void setBTreeGroupNode(long symbolTableAddress, String objectName, long objectHeaderAddress) {
+//        List<HdfFixedPoint> childPointers = Collections.singletonList(HdfFixedPoint.of(symbolTableAddress));
+//        List<HdfFixedPoint> keys = Arrays.asList(
+//                HdfFixedPoint.of(0),
+//                HdfFixedPoint.of(8));
+//
+//        List<BtreeV1GroupNode> groupNodes = Collections.singletonList(
+//                new BtreeV1GroupNode(new HdfString(objectName, false), HdfFixedPoint.of(symbolTableAddress)));
+//
+//        // Define a Symbol Table Node
+//        List<HdfSymbolTableEntry> entries = Collections.singletonList(
+//                new HdfSymbolTableEntry(HdfFixedPoint.of(8), HdfFixedPoint.of(objectHeaderAddress),
+//                        0,null, null));
+//        HdfSymbolTableNode symbolTableNode = new HdfSymbolTableNode("SNOD", 1, 1, entries);
+//
+//        hdfFile.getBTree().setChildPointers(childPointers);
+//        hdfFile.getBTree().setKeys(keys);
+//        hdfFile.getBTree().setGroupNodes(groupNodes);
+//
+//    }
 //    /** Adds a symbol table node */
 //    private HdfGroupManager addSymbolTableNode(long objectHeaderAddress) {
 //        return this;
@@ -110,7 +110,7 @@ public class HdfGroupManager {
         long symbolTableAddress = 1880;
         long datasetAddress = 2208;
 
-        setBTreeGroupNode(symbolTableAddress, datasetName, objectHeaderAddress);
+//        setBTreeGroupNode(symbolTableAddress, datasetName, objectHeaderAddress);
 
         return new HdfDataSet<>(hdfFile, datasetName, compoundType, hdfDimensions, HdfFixedPoint.of(datasetAddress));
     }

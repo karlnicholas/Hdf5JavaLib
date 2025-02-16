@@ -77,8 +77,6 @@ public class HdfReader {
         this.localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, dataSize);
         System.out.println(localHeapContents);
         System.out.println("localHeapContents = " + (fileChannel.position() - fPosSave));
-        fPosSave = fileChannel.position();
-
 
         if ( superblock.getVersion() == 0 ) {
             long bTreeAddress = objectHeaderPrefix.findHdfSymbolTableMessage(SymbolTableMessage.class)
@@ -86,35 +84,37 @@ public class HdfReader {
             System.out.print(bTreeAddress + " = ");
             fileChannel.position(bTreeAddress);
             bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
-            bTree.parseBTreeAndLocalHeap(localHeapContents);
             System.out.println(bTree);
         }
-        fileChannel.position(bTree.getGroupNodes().get(0).getDataAddress().getBigIntegerValue().longValue());
-        HdfSymbolTableNode hdfSymbolTableNode = HdfSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
-        System.out.println(hdfSymbolTableNode);
+        if (bTree.getEntries().size() > 0) {
+            long snodAddress = bTree.getEntries().get(0).getChildPointer().getBigIntegerValue().longValue();
+            fileChannel.position(snodAddress);
+            HdfSymbolTableNode hdfSymbolTableNode = HdfSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
+            System.out.println(hdfSymbolTableNode);
 
-        // Parse the Data Object Header Prefix next in line
-        fileChannel.position(hdfSymbolTableNode.getSymbolTableEntries().get(0).getObjectHeaderAddress().getBigIntegerValue().longValue());
-        System.out.print(fileChannel.position() + " = ");
+            // Parse the Data Object Header Prefix next in line
+            fileChannel.position(hdfSymbolTableNode.getSymbolTableEntries().get(0).getObjectHeaderAddress().getBigIntegerValue().longValue());
+            System.out.print(fileChannel.position() + " = ");
 // --------------------------------------
 
-        dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
-        System.out.println(dataObjectHeaderPrefix);
+            dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
+            System.out.println(dataObjectHeaderPrefix);
 
-        for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
-            if (message instanceof DatatypeMessage dataTypeMessage) {
-                // Check if the datatype is Compound
-                if (dataTypeMessage.getDataTypeClass() == 6) {
-                    compoundDataType = (CompoundDataType) dataTypeMessage.getHdfDataType();
-                } else {
-                    // For other datatype classes, parsing logic will be added later
-                    throw new UnsupportedOperationException("Datatype class " + dataTypeMessage.getDataTypeClass() + " not yet implemented.");
+            for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
+                if (message instanceof DatatypeMessage dataTypeMessage) {
+                    // Check if the datatype is Compound
+                    if (dataTypeMessage.getDataTypeClass() == 6) {
+                        compoundDataType = (CompoundDataType) dataTypeMessage.getHdfDataType();
+                    } else {
+                        // For other datatype classes, parsing logic will be added later
+                        throw new UnsupportedOperationException("Datatype class " + dataTypeMessage.getDataTypeClass() + " not yet implemented.");
+                    }
+                } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
+                    dataAddress = dataLayoutMessage.getDataAddress().getBigIntegerValue().longValue();
+                    dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getBigIntegerValue().longValue();
+                } else if (message instanceof DataspaceMessage dataSpaceMessage) {
+                    dimension = dataSpaceMessage.getDimensions()[0].getBigIntegerValue().longValue();
                 }
-            } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
-                dataAddress = dataLayoutMessage.getDataAddress().getBigIntegerValue().longValue();
-                dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getBigIntegerValue().longValue();
-            } else if (message instanceof DataspaceMessage dataSpaceMessage) {
-                dimension = dataSpaceMessage.getDimensions()[0].getBigIntegerValue().longValue();
             }
         }
 

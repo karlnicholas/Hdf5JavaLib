@@ -3,13 +3,11 @@ package com.github.karlnicholas.hdf5javalib.file.infrastructure;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
@@ -22,12 +20,8 @@ public class HdfBTreeV1 {
     private int entriesUsed;
     private final HdfFixedPoint leftSiblingAddress;
     private final HdfFixedPoint rightSiblingAddress;
-    @Setter
-    private List<HdfFixedPoint> childPointers;
-    @Setter
-    private List<HdfFixedPoint> keys;
-    @Setter
-    private List<BtreeV1GroupNode> groupNodes;
+    private final HdfFixedPoint keyZero; // Key 0 (predefined)
+    private final List<BTreeEntry> entries;
 
     public HdfBTreeV1(
             String signature,
@@ -36,9 +30,8 @@ public class HdfBTreeV1 {
             int entriesUsed,
             HdfFixedPoint leftSiblingAddress,
             HdfFixedPoint rightSiblingAddress,
-            List<HdfFixedPoint> childPointers,
-            List<HdfFixedPoint> keys,
-            List<BtreeV1GroupNode> groupNodes
+            HdfFixedPoint keyZero,
+            List<BTreeEntry> entries
     ) {
         this.signature = signature;
         this.nodeType = nodeType;
@@ -46,9 +39,8 @@ public class HdfBTreeV1 {
         this.entriesUsed = entriesUsed;
         this.leftSiblingAddress = leftSiblingAddress;
         this.rightSiblingAddress = rightSiblingAddress;
-        this.childPointers = childPointers;
-        this.keys = keys;
-        this.groupNodes = groupNodes;
+        this.keyZero = keyZero;
+        this.entries = entries;
     }
 
     public HdfBTreeV1(
@@ -65,41 +57,26 @@ public class HdfBTreeV1 {
         this.entriesUsed = entriesUsed;
         this.leftSiblingAddress = leftSiblingAddress;
         this.rightSiblingAddress = rightSiblingAddress;
+        this.keyZero = HdfFixedPoint.of(0);
+        this.entries = new ArrayList<>();
     }
 
-    public void insertGroup(HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents) {
-        // Ensure we are inserting into an empty B-tree
-        if (entriesUsed > 0) {
-            throw new IllegalStateException("B-tree is not empty. Use normal insert method.");
+    public void addGroup(HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents) {
+        // Ensure we do not exceed the max number of entries (groupLeafNodeK = 4)
+        if (entriesUsed >= 4) {
+            throw new IllegalStateException("Cannot add more than 4 groups to this B-tree node.");
         }
 
-        // ✅ Step 1: Store objectName in the heap & get its offset
+        // Store objectName in the heap & get its offset
         localHeap.addToHeap(objectName, localHeapContents);
         HdfFixedPoint localHeapOffset = localHeap.getFreeListOffset();
 
-        // ✅ Step 2: Create a new BtreeV1GroupNode
-        BtreeV1GroupNode newGroupNode = new BtreeV1GroupNode(objectName, objectAddress);
+        // Insert `BTreeEntry` for the new group
+        BTreeEntry newEntry = new BTreeEntry(localHeapOffset, objectAddress);
+        entries.add(newEntry);
 
-        // ✅ Step 3: Initialize lists if empty
-        if (keys == null) keys = new ArrayList<>();
-        if (groupNodes == null) groupNodes = new ArrayList<>();
-        if (childPointers == null) childPointers = new ArrayList<>();
-
-        // ✅ Step 4: Set the first unused key to 0 (represents an empty string)
-        keys.add(HdfFixedPoint.of(0));
-
-        // ✅ Step 5: Insert the first real key (local heap offset)
-        keys.add(localHeapOffset);
-
-        // ✅ Step 6: Set up child pointers
-        // - child[0] is the objectAddress for the new group node.
-        childPointers.add(objectAddress); // Pointer to the actual object
-
-        // ✅ Step 7: Insert the group node
-        groupNodes.add(newGroupNode);
-
-        // ✅ Step 8: Update entriesUsed (we now have 1 real entry, not counting key[0])
-        entriesUsed = 1;
+        // Increment entriesUsed (since we successfully added an entry)
+        entriesUsed++;
     }
 
     public static HdfBTreeV1 readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize) throws IOException {
@@ -107,6 +84,7 @@ public class HdfBTreeV1 {
         ByteBuffer buffer = ByteBuffer.allocate(24).order(java.nio.ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();
+
         // Read and verify the signature
         byte[] signatureBytes = new byte[4];
         buffer.get(signatureBytes);
@@ -125,26 +103,33 @@ public class HdfBTreeV1 {
         int entriesUsed = Short.toUnsignedInt(buffer.getShort());
 
         // Read sibling addresses
-        HdfFixedPoint leftSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-        HdfFixedPoint rightSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
+        HdfFixedPoint leftSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize)
+                ? HdfFixedPoint.undefined(buffer, offsetSize)
+                : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
 
-        // Allocate buffer for keys and child pointers
-        int keyPointerBufferSize = (entriesUsed * (lengthSize + offsetSize)) + lengthSize;
+        HdfFixedPoint rightSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize)
+                ? HdfFixedPoint.undefined(buffer, offsetSize)
+                : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
+
+        // ✅ Corrected Buffer Allocation (Always allocate for keyZero + keys/childPointers)
+        int keyPointerBufferSize = lengthSize + (entriesUsed * (offsetSize + lengthSize));
         buffer = ByteBuffer.allocate(keyPointerBufferSize).order(java.nio.ByteOrder.LITTLE_ENDIAN);
 
         // Read keys and child pointers
         fileChannel.read(buffer);
         buffer.flip();
-        List<HdfFixedPoint> keys = new ArrayList<>();
-        List<HdfFixedPoint> childPointers = new ArrayList<>();
+
+        // ✅ Always Read keyZero (first key)
+        HdfFixedPoint keyZero = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
+
+        // ✅ Read remaining entries (Child Pointer first, then Key)
+        List<BTreeEntry> entries = new ArrayList<>();
 
         for (int i = 0; i < entriesUsed; i++) {
-            keys.add(HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false));
-            childPointers.add(HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false));
+            HdfFixedPoint childPointer = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false); // Read childPointer first
+            HdfFixedPoint key = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false); // Read key after childPointer
+            entries.add(new BTreeEntry(key, childPointer));
         }
-
-        // Read the final key
-        keys.add(HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false));
 
         return new HdfBTreeV1(
                 signature,
@@ -153,9 +138,8 @@ public class HdfBTreeV1 {
                 entriesUsed,
                 leftSiblingAddress,
                 rightSiblingAddress,
-                childPointers,
-                keys,
-                null
+                keyZero,
+                entries
         );
     }
 
@@ -178,45 +162,14 @@ public class HdfBTreeV1 {
         // Step 6: Write Right Sibling Address (offsetSize bytes, little-endian)
         writeFixedPointToBuffer(buffer, rightSiblingAddress);
 
+        // Step 7: Write keyZero (Always needs to be written)
+        writeFixedPointToBuffer(buffer, keyZero);
 
-        if ( entriesUsed > 0 ) {
-            if (nodeType == 0) {
-                writeFixedPointToBuffer(buffer, HdfFixedPoint.of(0));
-                writeFixedPointToBuffer(buffer, childPointers.get(0));
-
-                // Interleave Keys and Child Pointers
-                for (int i = 0; i < entriesUsed; i++) {
-                    writeFixedPointToBuffer(buffer, keys.get(i+1)); // Write Key[i]
-                    if ( i + 1 < entriesUsed) {
-                        writeFixedPointToBuffer(buffer, childPointers.get(i)); // Write Child[i]
-                    }
-                }
-            }
+        // Step 8: Write remaining entries (Keys and Child Pointers)
+        for (BTreeEntry entry : entries) {
+            writeFixedPointToBuffer(buffer, entry.getKey());  // Write key
+            writeFixedPointToBuffer(buffer, entry.getChildPointer());  // Write child pointer
         }
-    }
-
-    public void parseBTreeAndLocalHeap(HdfLocalHeapContents localHeapContents) {
-        if (nodeType != 0 || nodeLevel != 0) {
-            throw new UnsupportedOperationException("Only nodeType=0 and nodeLevel=0 are supported.");
-        }
-
-        // Validate that the number of keys and children match the B-tree structure
-        if (keys.size() != childPointers.size() + 1) {
-            throw new IllegalStateException("Invalid B-tree structure: keys and children count mismatch.");
-        }
-
-        HdfString objectName = null;
-        HdfFixedPoint childAddress = null;
-        // Parse each key and corresponding child
-        for (int i = 0; i < keys.size(); i++) {
-            HdfFixedPoint keyOffset = keys.get(i);
-            objectName = localHeapContents.parseStringAtOffset(keyOffset);
-
-            if (i < childPointers.size()) {
-                childAddress = childPointers.get(i);
-            }
-        }
-        this.groupNodes = Collections.singletonList(new BtreeV1GroupNode(objectName, childAddress));
     }
 
     @Override
@@ -228,9 +181,8 @@ public class HdfBTreeV1 {
                 ", entriesUsed=" + entriesUsed +
                 ", leftSiblingAddress=" + leftSiblingAddress +
                 ", rightSiblingAddress=" + rightSiblingAddress +
-                ", childPointers=" + childPointers +
-                ", keys=" + keys +
-                ", groupNodes=" + (groupNodes==null?"NULL":groupNodes) +
+                ", keyZero=" + keyZero +
+                ", entries=" + entries +
                 '}';
     }
 }

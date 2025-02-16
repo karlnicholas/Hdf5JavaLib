@@ -76,6 +76,19 @@ Initial Metadata
   -> objectHeaderAddress=800	|
   -> linkNameOffset=8  			|  -> /Demand Described @ 800
 
+680 - 136 = 544 - 512 = 32.
+
+HdfBTreeV1
+TREE + 1 + 1 
+ENTRIES_USED + 2
+LSA + 8
+RSA + 8
+KEY[0] + 8
+
+32 total bytes ...
+512 additional bytes storage = 544 total
+
+
 
 
 "C:\Program Files\Java\jdk-21\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2021.3.2\lib\idea_rt.jar=57592:C:\Program Files\JetBrains\IntelliJ IDEA 2021.3.2\bin" -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath C:\Users\karln\IdeaProjects\Hdf5JavaLib\target\classes;C:\Users\karln\.m2\repository\org\projectlombok\lombok\1.18.36\lombok-1.18.36.jar com.github.karlnicholas.hdf5javalib.App
