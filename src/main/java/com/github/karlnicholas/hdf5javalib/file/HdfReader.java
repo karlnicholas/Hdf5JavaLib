@@ -86,14 +86,15 @@ public class HdfReader {
             bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
             System.out.println(bTree);
         }
+        // check if any groups
         if (bTree.getEntries().size() > 0) {
             long snodAddress = bTree.getEntries().get(0).getChildPointer().getBigIntegerValue().longValue();
             fileChannel.position(snodAddress);
-            HdfSymbolTableNode hdfSymbolTableNode = HdfSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
-            System.out.println(hdfSymbolTableNode);
+            HdfGroupSymbolTableNode hdfGroupSymbolTableNode = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
+            System.out.println(hdfGroupSymbolTableNode);
 
             // Parse the Data Object Header Prefix next in line
-            fileChannel.position(hdfSymbolTableNode.getSymbolTableEntries().get(0).getObjectHeaderAddress().getBigIntegerValue().longValue());
+            fileChannel.position(hdfGroupSymbolTableNode.getSymbolTableEntries().get(0).getObjectHeaderAddress().getBigIntegerValue().longValue());
             System.out.print(fileChannel.position() + " = ");
 // --------------------------------------
 

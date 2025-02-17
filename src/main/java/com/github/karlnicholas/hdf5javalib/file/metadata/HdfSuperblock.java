@@ -2,6 +2,7 @@ package com.github.karlnicholas.hdf5javalib.file.metadata;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -25,7 +26,8 @@ public class HdfSuperblock {
 
     private final HdfFixedPoint baseAddress;
     private final HdfFixedPoint freeSpaceAddress;
-    private final HdfFixedPoint endOfFileAddress;
+    @Setter
+    private HdfFixedPoint endOfFileAddress;
     private final HdfFixedPoint driverInformationAddress;
 
     public HdfSuperblock(

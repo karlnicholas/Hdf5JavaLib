@@ -61,14 +61,14 @@ public class HdfBTreeV1 {
         this.entries = new ArrayList<>();
     }
 
-    public void addGroup(HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents) {
+    public int addGroup(HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents) {
         // Ensure we do not exceed the max number of entries (groupLeafNodeK = 4)
         if (entriesUsed >= 4) {
             throw new IllegalStateException("Cannot add more than 4 groups to this B-tree node.");
         }
 
         // Store objectName in the heap & get its offset
-        localHeap.addToHeap(objectName, localHeapContents);
+        int linkNameOffset = localHeap.addToHeap(objectName, localHeapContents);
         HdfFixedPoint localHeapOffset = localHeap.getFreeListOffset();
 
         // Insert `BTreeEntry` for the new group
@@ -77,6 +77,7 @@ public class HdfBTreeV1 {
 
         // Increment entriesUsed (since we successfully added an entry)
         entriesUsed++;
+        return linkNameOffset;
     }
 
     public static HdfBTreeV1 readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize) throws IOException {

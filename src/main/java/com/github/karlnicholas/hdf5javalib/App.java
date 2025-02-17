@@ -27,8 +27,8 @@ public class App {
     private void run() {
         try {
             HdfReader reader = new HdfReader();
-            String filePath = Objects.requireNonNull(App.class.getResource("/test.h5")).getFile();
-//            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
+//            String filePath = Objects.requireNonNull(App.class.getResource("/test.h5")).getFile();
+            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
@@ -39,7 +39,7 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        tryHdfApi();
+        tryHdfApi();
     }
 
     public void tryHdfApi() {
@@ -95,18 +95,18 @@ public class App {
             CompoundDataType compoundType = new CompoundDataType(shipment.size(), compoundSize, shipment);
 //            DatatypeMessage dataTypeMessage = new DatatypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), compoundType);
 
-            // ✅ Create data space
-            HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
+            // Create data space
+//            HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
 //            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
 //            hsize_t dim[1] = { NUM_RECORDS };
 //            DataSpace space(1, dim);
 
-            // ✅ Create dataset
+            // Create dataset
 //            DataSet dataset = file.createDataSet(DATASET_NAME, compoundType, space);
-            HdfDataSet<VolumeData> dataset = file.createDataSet(DATASET_NAME, compoundType, hdfDimensions);
+            HdfDataSet<VolumeData> dataset = file.createDataSet(DATASET_NAME, compoundType);
 
 
-            // ✅ ADD ATTRIBUTE: "GIT root revision"
+            // ADD ATTRIBUTE: "GIT root revision"
             String attributeValue = "Revision: , URL: ";
             HdfFixedPoint attr_type = HdfFixedPoint.of(ATTRIBUTE_NAME.length()+1);
             HdfFixedPoint[] attr_space = new HdfFixedPoint[] {HdfFixedPoint.of(1)};
@@ -116,7 +116,7 @@ public class App {
 //            AtomicInteger countHolder = new AtomicInteger(0);
 //            HdfDataSource<VolumeData> volumeDataHdfDataSource = new HdfDataSource<>(compoundType, VolumeData.class);
 //            ByteBuffer volumeBuffer = ByteBuffer.allocate(compoundType.getSize());
-//            // ✅ Write to dataset
+//            // Write to dataset
 //            dataset.write(() -> {
 //                int count = countHolder.getAndIncrement();
 //                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);

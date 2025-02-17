@@ -102,8 +102,8 @@ public class HdfSymbolTableEntry {
     @Override
     public String toString() {
         return "HdfSymbolTableEntry{" +
-                "linkNameOffset=" + linkNameOffset.getBigIntegerValue() +
-                ", objectHeaderAddress=" + objectHeaderAddress.getBigIntegerValue() +
+                "linkNameOffset=" + (linkNameOffset != null ? linkNameOffset.getBigIntegerValue() : "N/A") +
+                ", objectHeaderAddress=" + (objectHeaderAddress != null ? objectHeaderAddress.getBigIntegerValue() : "N/A") +
                 ", cacheType=" + cacheType +
                 ", bTreeAddress=" + (bTreeAddress != null ? bTreeAddress.getBigIntegerValue() : "N/A") +
                 ", localHeapAddress=" + (localHeapAddress != null ? localHeapAddress.getBigIntegerValue() : "N/A") +

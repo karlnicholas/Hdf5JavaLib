@@ -4,11 +4,9 @@ import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
-import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfBTreeV1;
-import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfLocalHeap;
-import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfLocalHeapContents;
-import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
+import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
+import com.github.karlnicholas.hdf5javalib.message.DataLayoutMessage;
 import com.github.karlnicholas.hdf5javalib.message.SymbolTableMessage;
 import lombok.Getter;
 
@@ -19,7 +17,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,45 +27,107 @@ import java.util.function.Supplier;
 public class HdfFile {
     private final String fileName;
     private final StandardOpenOption[] openOptions;
-    private final HdfGroupManager hdfGroupManager;
-    private final AtomicLong messageCount;
+    private final AtomicLong datasetRecordCount;
     // initial setup without Dataset
-    private HdfSuperblock superblock;
-    private HdfSymbolTableEntry rootGroupEntry;
-    private HdfObjectHeaderPrefixV1 objectHeaderPrefix;
-    private HdfLocalHeap localHeap;
-    private HdfLocalHeapContents localHeapContents;
-    private HdfBTreeV1 bTree;
+    private final HdfSuperblock superblock;
+    private final HdfSymbolTableEntry rootGroupEntry;
+    private final HdfObjectHeaderPrefixV1 objectHeaderPrefix;
+    private final HdfLocalHeap localHeap;
+    private final HdfLocalHeapContents localHeapContents;
+    private final HdfBTreeV1 bTree;
+    private final HdfGroupSymbolTableNode groupSymbolTableNode;
+
+    /**
+     * HDF5 File Structure - Address Offsets and Sizes
+     * This section defines memory layout constants for key structures in an HDF5 file.
+     * Each address is computed relative to the previous structure’s size, ensuring
+     * proper navigation within the file.
+     */
+    // **Superblock (Starting Point)**
+    // The superblock is the first structure in an HDF5 file and contains metadata
+    // about file format versions, data storage, and offsets to key structures.
+    private final int superblockAddress = 0;  // HDF5 file starts at byte 0
+    private final int superblockSize = 56;    // Superblock size (metadata about the file)
+
+    // **Root Group Symbol Table Entry**
+    // The root group symbol table entry stores metadata for the root group.
+    // It contains information about group structure, attributes, and dataset links.
+    private final int rootGroupSymbolTableEntryAddress = superblockAddress + superblockSize;
+    private final int rootGroupSymbolTableEntrySize = 40;
+
+    // **Object Header Prefix (Metadata about the First Group)**
+    // This section contains metadata for the first group, defining attributes,
+    // storage layout, and dataset properties.
+    private final int objectHeaderPrefixAddress = rootGroupSymbolTableEntryAddress + rootGroupSymbolTableEntrySize;
+    private final int objectHeaderPrefixSize = 40;
+
+    // **B-tree (Manages Group Links)**
+    // The B-tree is used to efficiently organize links within the group,
+    // allowing quick access to datasets and subgroups.
+    private final int btreeAddress = objectHeaderPrefixAddress + objectHeaderPrefixSize;
+    private final int btreeSize = 32;  // Size of a B-tree node
+    private final int btreeStorageSize = 512;  // Allocated storage for B-tree nodes
+
+    // **Local Heap (Stores Group Names & Small Objects)**
+    // The local heap stores small metadata elements such as object names
+    // and soft links, reducing fragmentation in the file.
+    private final int localHeapAddress = btreeAddress + btreeSize + btreeStorageSize;
+    private final int localHeapSize = 32;  // Header for the local heap
+    private final int localHeapContentsAddress = localHeapAddress + localHeapSize;  // Contents stored inside the heap
+    private final int localHeapContentsSize = 88;  // Contents stored inside the heap
+
+    // **First Group Address (Computed from Previous Structures)**
+    // This is the byte offset where the first group starts in the file.
+    // It is calculated based on the sum of all preceding metadata structures.
+    private final int firstGroupAddress = localHeapContentsAddress + localHeapContentsSize;
+    private final int firstGroupStorageSize = 1024 + 56;  // Total size of the first group's metadata
+
+    // **Symbol Table Node (SNOD)**
+    // The SNOD (Symbol Table Node) organizes entries for objects within the group.
+    // It manages links to datasets, other groups, and named datatypes.
+    private final int snodAddress = firstGroupAddress + firstGroupStorageSize;
+    private final int snodSize = 8;  // Header or control structure for the SNOD
+
+    // **SNOD Entry (Represents Objects in the Group)**
+    // An SNOD entry describes individual datasets or subgroups within the group.
+    // Each entry in the SNOD table includes the object name, address, and type.
+    private final int snodEntrySize = 32;  // Size of an individual SNOD entry
+    private final int snodEntryStorageSize = snodEntrySize * 10;
+
+    // **Dataset Storage (Where Raw Data Begins)**
+    // The byte offset where actual dataset data is stored.
+    // Everything before this is metadata.
+    private final int dataAddress = snodAddress + snodSize + snodEntryStorageSize;
 
     public HdfFile(String fileName, StandardOpenOption[] openOptions) {
         this.fileName = fileName;
         this.openOptions = openOptions;
-        hdfGroupManager = new HdfGroupManager(this);
 
         // 100320
-        superblock = new HdfSuperblock(0, 0, 0, 0, (short)8, (short)8, 4, 16,
+        superblock = new HdfSuperblock(0, 0, 0, 0,
+                (short)8, (short)8,
+                4, 16,
                 HdfFixedPoint.of(0),
                 HdfFixedPoint.undefined((short)8),
-                HdfFixedPoint.of(800),
+                HdfFixedPoint.of(firstGroupAddress),
                 HdfFixedPoint.undefined((short)8));
         // Define a root group
-        rootGroupEntry = new HdfSymbolTableEntry(HdfFixedPoint.of(0), HdfFixedPoint.of(96), 1,
-                HdfFixedPoint.of(136),
-                HdfFixedPoint.of(680));
+        rootGroupEntry = new HdfSymbolTableEntry(HdfFixedPoint.of(0), HdfFixedPoint.of(objectHeaderPrefixAddress), 1,
+                HdfFixedPoint.of(btreeAddress),
+                HdfFixedPoint.of(localHeapAddress));
 
         objectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, 1, 1, 24,
                 Collections.singletonList(new SymbolTableMessage(
-                        HdfFixedPoint.of(136),
-                        HdfFixedPoint.of(680))));
+                        HdfFixedPoint.of(btreeAddress),
+                        HdfFixedPoint.of(localHeapAddress))));
 
         // Define the heap data size, why 88 I don't know.
-        int dataSegmentSize = 8 + 8*10; // allow for 10 simple entries, or whatever aligned to 8 bytes
         // Initialize the heapData array
-        byte[] heapData = new byte[dataSegmentSize];
+        byte[] heapData = new byte[localHeapContentsSize];
         heapData[0] = (byte)0x1;
-        heapData[8] = (byte)dataSegmentSize;
+        heapData[8] = (byte)localHeapContentsSize;
 
-        localHeap = new HdfLocalHeap(HdfFixedPoint.of(dataSegmentSize), HdfFixedPoint.of(712));
+        localHeap = new HdfLocalHeap(HdfFixedPoint.of(localHeapContentsSize), HdfFixedPoint.of(localHeapContentsAddress));
         localHeapContents = new HdfLocalHeapContents(heapData);
         localHeap.addToHeap(new HdfString(new byte[0], false, false), this.localHeapContents);
 
@@ -76,34 +136,42 @@ public class HdfFile {
                 HdfFixedPoint.undefined((short)8),
                 HdfFixedPoint.undefined((short)8));
 
-        messageCount = new AtomicLong();
+        groupSymbolTableNode = new HdfGroupSymbolTableNode("SNOD", 1, 0, new ArrayList<>());
+
+        datasetRecordCount = new AtomicLong();
 
     }
 
-    public <T> HdfDataSet<T> createDataSet(String datasetName, CompoundDataType compoundType, HdfFixedPoint[] hdfDimensions) {
-        return hdfGroupManager.createDataSet(this, datasetName, compoundType, hdfDimensions);
+    public <T> HdfDataSet<T> createDataSet(String datasetName, CompoundDataType compoundType) {
+        HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), false, false);
+        // real steps needed to add a group.
+        // entry in btree = "Demand" + snodOffset (1880)
+        // entry in locaheapcontents = "Demand" = datasetName
+        int linkNameOffset = bTree.addGroup(hdfDatasetName, HdfFixedPoint.of(firstGroupAddress), localHeap, localHeapContents);
+        HdfSymbolTableEntry ste = new HdfSymbolTableEntry(HdfFixedPoint.of(linkNameOffset), HdfFixedPoint.of(firstGroupAddress), 0, HdfFixedPoint.undefined((short) 8), HdfFixedPoint.undefined((short) 8));
+        groupSymbolTableNode.addEntry(ste);
+        // entry in snod = linkNameOffset=8, objectHeaderAddress=800, cacheType=0,
+        return new HdfDataSet<>(this, datasetName, compoundType, HdfFixedPoint.of(dataAddress));
     }
 
     public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet<?> hdfDataSet) throws IOException {
-        messageCount.set(0);
+        datasetRecordCount.set(0);
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
             long dataAddress = hdfDataSet.getDatasetAddress().getBigIntegerValue().longValue();
             fileChannel.position(dataAddress);
             ByteBuffer buffer;
             while ((buffer = bufferSupplier.get()).hasRemaining()) {
-                messageCount.incrementAndGet();
+                datasetRecordCount.incrementAndGet();
                 fileChannel.write(buffer);
             }
         }
     }
-
-    public <T> void closeDataset(HdfDataSet<T> hdfDataSet) throws IOException {
-        hdfGroupManager.closeDataSet(hdfDataSet, messageCount.get());
-        try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), StandardOpenOption.WRITE)) {
-            fileChannel.position(0);
-            hdfGroupManager.writeToFile(fileChannel, hdfDataSet);
-        }
-    }
+//
+//    public <T> void closeDataset(HdfDataSet<T> hdfDataSet) throws IOException {
+//        long dataSize = hdfDataSet.updateForRecordCount(datasetRecordCount.get());
+//        long endOfFile = dataAddress + dataSize;
+//        superblock.setEndOfFileAddress(HdfFixedPoint.of(endOfFile));
+//    }
 
     public void close() throws IOException {
         Path path = Path.of(fileName);

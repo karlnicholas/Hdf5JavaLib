@@ -11,20 +11,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class HdfSymbolTableNode {
+public class HdfGroupSymbolTableNode {
     private final String signature; // Should be "SNOD"
     private final int version;
-    private final int numberOfSymbols;
+    private int numberOfSymbols;
     private final List<HdfSymbolTableEntry> symbolTableEntries;
 
-    public HdfSymbolTableNode(String signature, int version, int numberOfSymbols, List<HdfSymbolTableEntry> symbolTableEntries) {
+    public HdfGroupSymbolTableNode(String signature, int version, int numberOfSymbols, List<HdfSymbolTableEntry> symbolTableEntries) {
         this.signature = signature;
         this.version = version;
         this.numberOfSymbols = numberOfSymbols;
         this.symbolTableEntries = symbolTableEntries;
     }
 
-    public static HdfSymbolTableNode readFromFileChannel(FileChannel fileChannel, short offsetSize) throws IOException {
+    public static HdfGroupSymbolTableNode readFromFileChannel(FileChannel fileChannel, short offsetSize) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();
@@ -54,16 +54,21 @@ public class HdfSymbolTableNode {
         for (int i = 0; i < numberOfSymbols; i++) {
             symbolTableEntries.add(HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize));
         }
-        return new HdfSymbolTableNode(signature, version, numberOfSymbols, symbolTableEntries);
+        return new HdfGroupSymbolTableNode(signature, version, numberOfSymbols, symbolTableEntries);
     }
 
     @Override
     public String toString() {
-        return "HdfSymbolTableNode{" +
+        return "HdfGroupSymbolTableNode{" +
                 "signature='" + signature + '\'' +
                 ", version=" + version +
                 ", numberOfSymbols=" + numberOfSymbols +
                 ", symbolTableEntries=" + symbolTableEntries +
                 '}';
+    }
+
+    public void addEntry(HdfSymbolTableEntry hdfSymbolTableEntry) {
+        numberOfSymbols++;
+        symbolTableEntries.add(hdfSymbolTableEntry);
     }
 }

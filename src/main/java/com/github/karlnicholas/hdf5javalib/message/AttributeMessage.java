@@ -23,7 +23,11 @@ public class AttributeMessage extends HdfMessage {
     private HdfDataType value;
 
     public AttributeMessage(int version, int nameSize, int datatypeSize, int dataspaceSize, HdfMessage datatypeMessage, HdfMessage dataspaceMessage, HdfString name, HdfDataType value) {
-        super(MessageType.AttributeMessage, ()-> (short) (1+1+2+2+2+nameSize+(((((nameSize + 1) / 8) + 1) * 8) - nameSize)+datatypeSize+dataspaceSize+value.getSizeMessageData()), (byte)0);
+        super(MessageType.AttributeMessage, ()-> {
+            short s = (short) (1+1+2+2+2+nameSize+(((((nameSize + 1) / 8) + 1) * 8) - nameSize)+datatypeSize+dataspaceSize);
+            s += value != null ? value.getSizeMessageData() : 0;
+            return s;
+        }, (byte)0);
         this.version = version;
         this.nameSize = nameSize;
         this.datatypeSize = datatypeSize;

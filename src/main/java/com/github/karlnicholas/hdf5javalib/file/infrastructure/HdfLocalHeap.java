@@ -32,7 +32,7 @@ public class HdfLocalHeap {
         this("HEAP", 0, dataSegmentSize, HdfFixedPoint.of(0), dataSegmentAddress);
     }
 
-    public void addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents) {
+    public int addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents) {
         byte[] objectNameBytes = objectName.getHdfBytes();
         int freeListOffset = this.freeListOffset.getBigIntegerValue().intValue();
         byte[] heapData = localHeapContents.getHeapData();
@@ -69,6 +69,7 @@ public class HdfLocalHeap {
         ByteBuffer buffer = ByteBuffer.wrap(heapData).order(ByteOrder.LITTLE_ENDIAN);
         buffer.putLong(newFreeListOffset, 1);  // Mark as last block
         buffer.putLong(newFreeListOffset + 8, remainingFreeSpace);  // Updated free space size
+        return freeListOffset;
     }
 
     public static HdfLocalHeap readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize) throws IOException {
