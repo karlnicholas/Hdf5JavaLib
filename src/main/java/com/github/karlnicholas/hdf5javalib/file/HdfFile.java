@@ -6,7 +6,6 @@ import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
-import com.github.karlnicholas.hdf5javalib.message.DataLayoutMessage;
 import com.github.karlnicholas.hdf5javalib.message.SymbolTableMessage;
 import lombok.Getter;
 
@@ -142,7 +141,7 @@ public class HdfFile {
 
     }
 
-    public <T> HdfDataSet<T> createDataSet(String datasetName, CompoundDataType compoundType) {
+    public HdfDataSet createDataSet(String datasetName, CompoundDataType compoundType) {
         HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), false, false);
         // real steps needed to add a group.
         // entry in btree = "Demand" + snodOffset (1880)
@@ -151,10 +150,10 @@ public class HdfFile {
         HdfSymbolTableEntry ste = new HdfSymbolTableEntry(HdfFixedPoint.of(linkNameOffset), HdfFixedPoint.of(firstGroupAddress), 0, HdfFixedPoint.undefined((short) 8), HdfFixedPoint.undefined((short) 8));
         groupSymbolTableNode.addEntry(ste);
         // entry in snod = linkNameOffset=8, objectHeaderAddress=800, cacheType=0,
-        return new HdfDataSet<>(this, datasetName, compoundType, HdfFixedPoint.of(dataAddress));
+        return new HdfDataSet(this, datasetName, compoundType, HdfFixedPoint.of(dataAddress));
     }
 
-    public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet<?> hdfDataSet) throws IOException {
+    public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
         datasetRecordCount.set(0);
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
             long dataAddress = hdfDataSet.getDatasetAddress().getBigIntegerValue().longValue();
@@ -162,7 +161,9 @@ public class HdfFile {
             ByteBuffer buffer;
             while ((buffer = bufferSupplier.get()).hasRemaining()) {
                 datasetRecordCount.incrementAndGet();
-                fileChannel.write(buffer);
+                while (buffer.hasRemaining()) {
+                    fileChannel.write(buffer);
+                }
             }
         }
     }
@@ -259,7 +260,9 @@ public class HdfFile {
             }
             buffer.flip();
             fileChannel.position(0);
-            fileChannel.write(buffer);
+            while (buffer.hasRemaining()) {
+                fileChannel.write(buffer);
+            }
         }
     }
 }

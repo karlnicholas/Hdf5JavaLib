@@ -103,7 +103,7 @@ public class App {
 
             // Create dataset
 //            DataSet dataset = file.createDataSet(DATASET_NAME, compoundType, space);
-            HdfDataSet<VolumeData> dataset = file.createDataSet(DATASET_NAME, compoundType);
+            HdfDataSet dataset = file.createDataSet(DATASET_NAME, compoundType);
 
 
             // ADD ATTRIBUTE: "GIT root revision"

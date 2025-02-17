@@ -9,8 +9,6 @@ import lombok.Getter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.sql.Array;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -18,12 +16,12 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @Getter
-public class HdfDataSet<T> {
+public class HdfDataSet {
     private final HdfFile hdfFile;
-    private String datasetName;
-    private CompoundDataType compoundDataType;
-    private List<AttributeMessage> attributes;
-    private HdfFixedPoint datasetAddress;
+    private final String datasetName;
+    private final CompoundDataType compoundDataType;
+    private final List<AttributeMessage> attributes;
+    private final HdfFixedPoint datasetAddress;
     private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
 
     /*
@@ -53,11 +51,7 @@ public class HdfDataSet<T> {
         return attributeMessage;
     }
 
-    public List<AttributeMessage> getAttributes() {
-        return attributes;
-    }
-
-    public void close() throws IOException {
+    public void close() {
         // Initialize the localHeapContents heapData array
 //        System.arraycopy(hdfDataSet.getDatasetName().getBytes(StandardCharsets.US_ASCII), 0, hdfFile.getLocalHeapContents().getHeapData(), 8, hdfDataSet.getDatasetName().length());
 
@@ -90,7 +84,6 @@ public class HdfDataSet<T> {
 //        headerMessages.addAll(hdfDataSet.getAttributes());
 
         // new long[]{1750}, new long[]{98000}
-        headerMessages.size();
         int objectReferenceCount = 1;
         int objectHeaderSize = 0;
         // 8, 1, 1064
