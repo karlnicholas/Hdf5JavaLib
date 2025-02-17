@@ -28,7 +28,7 @@ public class DataspaceMessage extends HdfMessage {
             boolean hasMaxDimensions
     ) {
         super(MessageType.DataspaceMessage, ()->{
-            short size = 8;
+            short size = 8+8;
             for (HdfFixedPoint dimension : dimensions) {
                 size += dimension.getSizeMessageData();
             }

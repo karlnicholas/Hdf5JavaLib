@@ -24,8 +24,10 @@ public class AttributeMessage extends HdfMessage {
 
     public AttributeMessage(int version, int nameSize, int datatypeSize, int dataspaceSize, HdfMessage datatypeMessage, HdfMessage dataspaceMessage, HdfString name, HdfDataType value) {
         super(MessageType.AttributeMessage, ()-> {
-            short s = (short) (1+1+2+2+2+nameSize+(((((nameSize + 1) / 8) + 1) * 8) - nameSize)+datatypeSize+dataspaceSize);
+            short s = 8;
+            s += (short) (1+1+2+2+2+nameSize+(((((nameSize + 1) / 8) + 1) * 8) - nameSize)+datatypeSize+dataspaceSize);
             s += value != null ? value.getSizeMessageData() : 0;
+            s = (short) ((s + 7) & ~7);
             return s;
         }, (byte)0);
         this.version = version;
@@ -47,9 +49,9 @@ public class AttributeMessage extends HdfMessage {
         buffer.get();
 
         // Read the sizes of name, datatype, and dataspace (2 bytes each)
-        int nameSize = nameSize = Short.toUnsignedInt(buffer.getShort());
-        int datatypeSize = datatypeSize = Short.toUnsignedInt(buffer.getShort());
-        int dataspaceSize = dataspaceSize = Short.toUnsignedInt(buffer.getShort());
+        int nameSize = Short.toUnsignedInt(buffer.getShort());
+        int datatypeSize = Short.toUnsignedInt(buffer.getShort());
+        int dataspaceSize = Short.toUnsignedInt(buffer.getShort());
 
         // Read the name (variable size)
         byte[] nameBytes = new byte[nameSize];
@@ -78,8 +80,7 @@ public class AttributeMessage extends HdfMessage {
             buffer.get(dataBytes);
             value = new HdfString(dataBytes, false, false);
         }
-        AttributeMessage attributeMessage = new AttributeMessage(version, nameSize, datatypeSize, dataspaceSize, dt, ds, name, value);
-        return attributeMessage;
+        return new AttributeMessage(version, nameSize, datatypeSize, dataspaceSize, dt, ds, name, value);
     }
 
     @Override
@@ -125,5 +126,8 @@ public class AttributeMessage extends HdfMessage {
 
     public void write(HdfFixedPoint attrType, String attributeValue) {
         value = new HdfString(attributeValue, false);
+        int size = super.getSizeMessageData() + value.getSizeMessageData();
+        size = (short) ((size + 7) & ~7);
+        super.setSizeMessageData((short) size);
     }
 }

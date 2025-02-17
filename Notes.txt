@@ -105,10 +105,13 @@ localHeap = 32
 localHeapContents = 88
 136 = HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress="Value undefined", rightSiblingAddress="Value undefined", childPointers=[1880], keys=[0, 8], groupNodes=[BtreeV1GroupNode [objectName=Demand, dataAddress=1880]]}
 HdfSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderAddress=800, cacheType=0, bTreeAddress=N/A, localHeapAddress=N/A}]}
-800 = HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 8 Object Reference Count: 1 Object Header Size: 1064
-	ObjectHeaderContinuationMessage{continuationOffset=100208, continuationSize=112}
-	NilMessage{}
-	DatatypeMessage{version=1, dataTypeClass=6 (Compound), classBitField=000000000000000000010001, size=56, hdfDataType=CompoundDataType { numberOfMembers: 17, size: 56, 
+
+
+(16) 800 = HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 8 Object Reference Count: 1 Object Header Size: 1064 
+(1064)	
+(24)	ObjectHeaderContinuationMessage{continuationOffset=100208, continuationSize=112}
+(8)	NilMessage{}
+(968)	DatatypeMessage{version=1, dataTypeClass=6 (Compound), classBitField=000000000000000000010001, size=56, hdfDataType=CompoundDataType { numberOfMembers: 17, size: 56, 
 	Member{name='shipmentId', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointMember{size=8, bigEndian=false, loPad=false, hiPad=false, signed=false, bitOffset=0, bitPrecision=64}}
 	Member{name='origCountry', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=StringMember{size=2, paddingType=0, paddingDescription='Null Terminate', charSet=0, charSetDescription='ASCII'}}
 	Member{name='origSlic', offset=10, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=StringMember{size=5, paddingType=0, paddingDescription='Null Terminate', charSet=0, charSetDescription='ASCII'}}
@@ -126,11 +129,13 @@ HdfSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEn
 	Member{name='cube', offset=36, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointMember{size=4, bigEndian=false, loPad=false, hiPad=false, signed=false, bitOffset=0, bitPrecision=32}}
 	Member{name='committedTnt', offset=54, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointMember{size=1, bigEndian=false, loPad=false, hiPad=false, signed=false, bitOffset=0, bitPrecision=8}}
 	Member{name='committedDate', offset=55, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointMember{size=1, bigEndian=false, loPad=false, hiPad=false, signed=false, bitOffset=0, bitPrecision=8}}}
-	FillValueMessage{version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-	DataLayoutMessage{version=3, layoutClass=1, dataAddress=2208, dimensionSizes=[98000], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-	ObjectModificationTimeMessage{version=1, secondsAfterEpoch=1732135426}
-	DataspaceMessage{version=1, dimensionality=1, flags=1, dimensions=[1750], maxDimensions=[1750], hasMaxDimensions=true}
-	AttributeMessage{version=1, nameSize=18, datatypeSize=8, dataspaceSize=8, name='GIT root revision', value='Revision: , URL: '}}
+(16)	FillValueMessage{version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+(32)	DataLayoutMessage{version=3, layoutClass=1, dataAddress=2208, dimensionSizes=[98000], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+(16)	ObjectModificationTimeMessage{version=1, secondsAfterEpoch=1732135426}
+
+
+(8) + (24)	DataspaceMessage{version=1, dimensionality=1, flags=1, dimensions=[1750], maxDimensions=[1750], hasMaxDimensions=true}
+(8) + (72)	AttributeMessage{version=1, nameSize=18, datatypeSize=8, dataspaceSize=8, name='GIT root revision', value='Revision: , URL: '}}
 Parsing complete. NEXT: 100320
 
 Process finished with exit code 0

@@ -1,6 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.nio.ByteBuffer;
 import java.util.function.Supplier;
@@ -8,7 +9,8 @@ import java.util.function.Supplier;
 @Getter
 public abstract class HdfMessage {
     private final MessageType messageType;
-    private final short sizeMessageData;
+    @Setter
+    private short sizeMessageData;
     private final byte messageFlags;
 
     protected HdfMessage(MessageType messageType, Supplier<Short> sizeSupplier, byte messageFlags) {

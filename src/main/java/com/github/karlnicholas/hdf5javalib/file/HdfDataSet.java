@@ -76,10 +76,12 @@ public class HdfDataSet {
         headerMessages.add(new ObjectModificationTimeMessage(1, Instant.now().getEpochSecond()));
 
         // Add DataspaceMessage (Handles dataset dimensionality)
-        HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.undefined((short)8)};
+        HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(hdfFile.getDatasetRecordCount().get())};
 
         DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
         headerMessages.add(dataSpaceMessage);
+
+        headerMessages.addAll(attributes);
 
 //        headerMessages.addAll(hdfDataSet.getAttributes());
 
@@ -90,7 +92,7 @@ public class HdfDataSet {
         for( HdfMessage headerMessage: headerMessages ) {
             objectHeaderSize += headerMessage.getSizeMessageData();
         }
-        if ( objectHeaderSize > 1024) {
+        if ( objectHeaderSize > 1064) {
             List<HdfMessage> newMessages = new ArrayList<>();
             ObjectHeaderContinuationMessage objectHeaderContinuationMessage = new ObjectHeaderContinuationMessage(HdfFixedPoint.of(0), HdfFixedPoint.of(0));
             newMessages.add(objectHeaderContinuationMessage);
@@ -100,7 +102,7 @@ public class HdfDataSet {
             int breakPostion = 0;
             int breakSize = 0;
             while (breakPostion < headerMessages.size()) {
-                if ( breakSize + headerMessages.get(breakPostion).getSizeMessageData() > 1024 ) {
+                if ( breakSize + headerMessages.get(breakPostion).getSizeMessageData() > 1064 ) {
                     break;
                 }
                 breakSize += headerMessages.get(breakPostion).getSizeMessageData();

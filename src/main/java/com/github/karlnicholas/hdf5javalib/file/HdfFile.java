@@ -79,7 +79,7 @@ public class HdfFile {
     // This is the byte offset where the first group starts in the file.
     // It is calculated based on the sum of all preceding metadata structures.
     private final int firstGroupAddress = localHeapContentsAddress + localHeapContentsSize;
-    private final int firstGroupStorageSize = 1024 + 56;  // Total size of the first group's metadata
+    private final int firstGroupStorageSize = 16 + 1064;  // Total size of the first group's metadata
 
     // **Symbol Table Node (SNOD)**
     // The SNOD (Symbol Table Node) organizes entries for objects within the group.
