@@ -1,5 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
+import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
@@ -9,13 +10,14 @@ import lombok.Getter;
 
 import java.io.*;
 import java.nio.channels.FileChannel;
+import java.util.List;
 
 @Getter
 public class HdfReader {
     // level 0
     private HdfSuperblock superblock;
     private HdfSymbolTableEntry rootGroupSymbolTableEntry;
-    private HdfObjectHeaderPrefixV1 objectHeaderPrefix;
+    private HdfObjectHeaderPrefixV1 objectHeader;
     // level 1A
     private HdfBTreeV1 bTree;
     // level 1D
@@ -37,27 +39,24 @@ public class HdfReader {
         System.out.println(superblock);
         System.out.println("superblock = " + (fileChannel.position() - fPosSave));
         fPosSave = fileChannel.position();
-        // Parse root group symbol table entry from the current position
-        System.out.print(fileChannel.position() + " = ");
-        rootGroupSymbolTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, superblock.getSizeOfOffsets());
-        System.out.println(rootGroupSymbolTableEntry);
-        System.out.println("rootGroupSymbolTableEntry = " + (fileChannel.position() - fPosSave));
-        fPosSave = fileChannel.position();
+
 
         short offsetSize = superblock.getSizeOfOffsets();
         short lengthSize = superblock.getSizeOfLengths();
 
+        HdfSymbolTableEntry.HdfFileOffsets fileOffsets = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
+
         // Get the object header address from the superblock
-        long objectHeaderAddress =rootGroupSymbolTableEntry.getObjectHeaderAddress().getBigIntegerValue().longValue();
+        long objectHeaderAddress =fileOffsets.getObjectHeaderAddress().getBigIntegerValue().longValue();
         // Parse the object header from the file using the superblock information
         System.out.print(objectHeaderAddress + " = ");
         fileChannel.position(objectHeaderAddress);
-        objectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
-        System.out.println(objectHeaderPrefix);
+        objectHeader = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
+        System.out.println(objectHeader);
         System.out.println("objectHeaderPrefix = " + (fileChannel.position() - fPosSave));
 
         // Parse the local heap using the file channel
-        long localHeapAddress = objectHeaderPrefix.findHdfSymbolTableMessage(SymbolTableMessage.class)
+        long localHeapAddress = objectHeader.findHdfSymbolTableMessage(SymbolTableMessage.class)
                 .orElseThrow().getLocalHeapAddress().getBigIntegerValue().longValue();
         System.out.print(localHeapAddress + " = ");
         // Read data from file channel starting at the specified position
@@ -79,7 +78,7 @@ public class HdfReader {
         System.out.println("localHeapContents = " + (fileChannel.position() - fPosSave));
 
         if ( superblock.getVersion() == 0 ) {
-            long bTreeAddress = objectHeaderPrefix.findHdfSymbolTableMessage(SymbolTableMessage.class)
+            long bTreeAddress = objectHeader.findHdfSymbolTableMessage(SymbolTableMessage.class)
                     .orElseThrow().getBTreeAddress().getBigIntegerValue().longValue();
             System.out.print(bTreeAddress + " = ");
             fileChannel.position(bTreeAddress);
@@ -88,13 +87,21 @@ public class HdfReader {
         }
         // check if any groups
         if (bTree.getEntries().size() > 0) {
+            // Parse root group symbol table entry from the current position
+            System.out.print(fileChannel.position() + " = ");
+//        rootGroupSymbolTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, superblock.getSizeOfOffsets());
+            rootGroupSymbolTableEntry = new HdfSymbolTableEntry(HdfFixedPoint.of(0), objectHeader, bTree, localHeap);
+            System.out.println(rootGroupSymbolTableEntry);
+            System.out.println("rootGroupSymbolTableEntry = " + (fileChannel.position() - fPosSave));
+            fPosSave = fileChannel.position();
+
             long snodAddress = bTree.getEntries().get(0).getChildPointer().getBigIntegerValue().longValue();
             fileChannel.position(snodAddress);
-            HdfGroupSymbolTableNode hdfGroupSymbolTableNode = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
+            HdfGroupSymbolTableNode hdfGroupSymbolTableNode = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize, List.of(rootGroupSymbolTableEntry));
             System.out.println(hdfGroupSymbolTableNode);
 
             // Parse the Data Object Header Prefix next in line
-            fileChannel.position(hdfGroupSymbolTableNode.getSymbolTableEntries().get(0).getObjectHeaderAddress().getBigIntegerValue().longValue());
+            fileChannel.position(fileOffsets.getObjectHeaderAddress().getBigIntegerValue().longValue());
             System.out.print(fileChannel.position() + " = ");
 // --------------------------------------
 
@@ -118,6 +125,7 @@ public class HdfReader {
                 }
             }
         }
+
 
 //        System.out.println("DataType{" + compoundDataType + "\r\n}");
 

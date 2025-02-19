@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 
 @Getter
 public class HdfDataSet {
-    private final HdfFile hdfFile;
+    private final HdfGroup hdfGroup;
     private final String datasetName;
     private final CompoundDataType compoundDataType;
     private final List<AttributeMessage> attributes;
@@ -31,8 +31,8 @@ public class HdfDataSet {
      * It should have a localHeap and LocalHeap contents, perhaps.
      */
 
-    public HdfDataSet(HdfFile hdfFile, String datasetName, CompoundDataType compoundType, HdfFixedPoint datasetAddress) {
-        this.hdfFile = hdfFile;
+    public HdfDataSet(HdfGroup hdfGroup, String datasetName, CompoundDataType compoundType, HdfFixedPoint datasetAddress) {
+        this.hdfGroup = hdfGroup;
         this.datasetName = datasetName;
         this.compoundDataType = compoundType;
         this.attributes = new ArrayList<>();
@@ -40,7 +40,7 @@ public class HdfDataSet {
     }
 
     public void write(Supplier<ByteBuffer> bufferSupplier) throws IOException {
-        hdfFile.write(bufferSupplier, this);
+        hdfGroup.write(bufferSupplier, this);
     }
 
     public AttributeMessage createAttribute(String attributeName, HdfFixedPoint attrType, HdfFixedPoint[] attrSpace) {
@@ -52,6 +52,7 @@ public class HdfDataSet {
     }
 
     public void close() {
+        long recordCount = hdfGroup.getHdfFile().getDatasetRecordCount().get();
         // Initialize the localHeapContents heapData array
 //        System.arraycopy(hdfDataSet.getDatasetName().getBytes(StandardCharsets.US_ASCII), 0, hdfFile.getLocalHeapContents().getHeapData(), 8, hdfDataSet.getDatasetName().length());
 
@@ -68,15 +69,15 @@ public class HdfDataSet {
         headerMessages.add(new FillValueMessage(2, 2, 2, 1, HdfFixedPoint.of(0), new byte[0]));
 
         // Add DataLayoutMessage (Storage format)
-        HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(hdfFile.getDatasetRecordCount().get()), HdfFixedPoint.of(hdfFile.getDatasetRecordCount().get()) };
-        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1, HdfFixedPoint.of(hdfFile.getDataAddress()), hdfDimensionSizes, 0, null, HdfFixedPoint.undefined((short)8));
+        HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(recordCount), HdfFixedPoint.of(recordCount) };
+        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1, HdfFixedPoint.undefined((short)8), hdfDimensionSizes, 0, null, HdfFixedPoint.undefined((short)8));
         headerMessages.add(dataLayoutMessage);
 
         // add ObjectModification Time message
         headerMessages.add(new ObjectModificationTimeMessage(1, Instant.now().getEpochSecond()));
 
         // Add DataspaceMessage (Handles dataset dimensionality)
-        HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(hdfFile.getDatasetRecordCount().get())};
+        HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(recordCount)};
 
         DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
         headerMessages.add(dataSpaceMessage);
@@ -113,8 +114,9 @@ public class HdfDataSet {
                 continueSize += headerMessages.get(breakPostion).getSizeMessageData();
                 breakPostion++;
             }
-            long endOfData = (hdfFile.getDatasetRecordCount().get() * compoundDataType.getSize()) + hdfFile.getDataAddress();
-            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(endOfData));
+//            long endOfData = (hdfFile.getDatasetRecordCount().get() * compoundDataType.getSize()) + hdfFile.getDataAddress();
+//            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(endOfData));
+            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.undefined((short)8));
             objectHeaderContinuationMessage.setContinuationSize(HdfFixedPoint.of(continueSize));
         }
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, objectHeaderSize, headerMessages);
