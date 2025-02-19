@@ -27,7 +27,6 @@ public class HdfReader {
     private long dimension = 0;
 
     public void readFile(FileChannel fileChannel) throws IOException {
-//        System.out.print(fileChannel.position() + " = ");
         // Parse the superblock at the beginning of the file
         superblock = HdfSuperblock.readFromFileChannel(fileChannel);
         System.out.println(superblock);
@@ -38,82 +37,63 @@ public class HdfReader {
         HdfSymbolTableEntry.HdfFileOffsets fileOffsets = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
 
         // Get the object header address from the superblock
-        long objectHeaderAddress =fileOffsets.getObjectHeaderAddress().getBigIntegerValue().longValue();
         // Parse the object header from the file using the superblock information
-//        System.out.print(objectHeaderAddress + " = ");
+        long objectHeaderAddress =fileOffsets.getObjectHeaderAddress().getBigIntegerValue().longValue();
         fileChannel.position(objectHeaderAddress);
         HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
-//        System.out.println(objectHeader);
 
         // Parse the local heap using the file channel
+        // Read data from file channel starting at the specified position
         long localHeapAddress = objectHeader.findHdfSymbolTableMessage(SymbolTableMessage.class)
                 .orElseThrow().getLocalHeapAddress().getBigIntegerValue().longValue();
-//        System.out.print(localHeapAddress + " = ");
-        // Read data from file channel starting at the specified position
         fileChannel.position(localHeapAddress);
-
-// --------------------------------------
         HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
-//        System.out.println(localHeap);
 
         int dataSize = localHeap.getDataSegmentSize().getBigIntegerValue().intValue();
         long dataSegmentAddress = localHeap.getDataSegmentAddress().getBigIntegerValue().longValue();
         fileChannel.position(dataSegmentAddress);
-//        System.out.print(dataSegmentAddress + " = ");
         HdfLocalHeapContents localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, dataSize);
-//        System.out.println(localHeapContents);
 
         long bTreeAddress = objectHeader.findHdfSymbolTableMessage(SymbolTableMessage.class)
                 .orElseThrow().getBTreeAddress().getBigIntegerValue().longValue();
-//        System.out.print(bTreeAddress + " = ");
         fileChannel.position(bTreeAddress);
         HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
-//        System.out.println(bTree);
-        // check if any groups
-        if (bTree.getEntries().size() > 0) {
-            // Parse root group symbol table entry from the current position
-//            System.out.print(fileChannel.position() + " = ");
-//        rootGroupSymbolTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, superblock.getSizeOfOffsets());
-            HdfSymbolTableEntry rootGroupSymbolTableEntry = new HdfSymbolTableEntry(HdfFixedPoint.of(0), objectHeader, bTree, localHeap);
-//            System.out.println(rootGroupSymbolTableEntry);
 
-            long snodAddress = bTree.getEntries().get(0).getChildPointer().getBigIntegerValue().longValue();
-            fileChannel.position(snodAddress);
-            HdfGroupSymbolTableNode hdfGroupSymbolTableNode = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize, List.of(rootGroupSymbolTableEntry));
+        // Parse root group symbol table entry from the current position
+        HdfSymbolTableEntry rootGroupSymbolTableEntry = new HdfSymbolTableEntry(HdfFixedPoint.of(0), objectHeader, bTree, localHeap, localHeapContents);
+
+        long snodAddress = bTree.getEntries().get(0).getChildPointer().getBigIntegerValue().longValue();
+        fileChannel.position(snodAddress);
+        HdfGroupSymbolTableNode hdfGroupSymbolTableNode = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize, List.of(rootGroupSymbolTableEntry));
 //            System.out.println(hdfGroupSymbolTableNode);
 
-            // Parse the Data Object Header Prefix next in line
-            fileChannel.position(fileOffsets.getObjectHeaderAddress().getBigIntegerValue().longValue());
-//            System.out.print(fileChannel.position() + " = ");
-            dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
-//            System.out.println(dataObjectHeaderPrefix);
+        rootGroup = new HdfGroup(
+                null,
+                hdfGroupSymbolTableNode,
+                ""
+        );
+        System.out.println(rootGroup);
 
-            rootGroup = new HdfGroup(
-                    null,
-//                    rootGroupSymbolTableEntry,
-                    objectHeader,
-                    localHeap,
-                    localHeapContents,
-                    bTree,
-                    hdfGroupSymbolTableNode,
-                    ""
-            );
-            System.out.println(rootGroup);
-            for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
-                if (message instanceof DatatypeMessage dataTypeMessage) {
-                    // Check if the datatype is Compound
-                    if (dataTypeMessage.getDataTypeClass() == 6) {
-                        compoundDataType = (CompoundDataType) dataTypeMessage.getHdfDataType();
-                    } else {
-                        // For other datatype classes, parsing logic will be added later
-                        throw new UnsupportedOperationException("Datatype class " + dataTypeMessage.getDataTypeClass() + " not yet implemented.");
-                    }
-                } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
-                    dataAddress = dataLayoutMessage.getDataAddress().getBigIntegerValue().longValue();
-                    dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getBigIntegerValue().longValue();
-                } else if (message instanceof DataspaceMessage dataSpaceMessage) {
-                    dimension = dataSpaceMessage.getDimensions()[0].getBigIntegerValue().longValue();
+        // Parse the Data Object Header Prefix next in line
+        fileChannel.position(fileOffsets.getObjectHeaderAddress().getBigIntegerValue().longValue());
+        System.out.print(fileChannel.position() + " = ");
+        dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
+        System.out.println(dataObjectHeaderPrefix);
+
+        for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
+            if (message instanceof DatatypeMessage dataTypeMessage) {
+                // Check if the datatype is Compound
+                if (dataTypeMessage.getDataTypeClass() == 6) {
+                    compoundDataType = (CompoundDataType) dataTypeMessage.getHdfDataType();
+                } else {
+                    // For other datatype classes, parsing logic will be added later
+                    throw new UnsupportedOperationException("Datatype class " + dataTypeMessage.getDataTypeClass() + " not yet implemented.");
                 }
+            } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
+                dataAddress = dataLayoutMessage.getDataAddress().getBigIntegerValue().longValue();
+                dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getBigIntegerValue().longValue();
+            } else if (message instanceof DataspaceMessage dataSpaceMessage) {
+                dimension = dataSpaceMessage.getDimensions()[0].getBigIntegerValue().longValue();
             }
         }
 

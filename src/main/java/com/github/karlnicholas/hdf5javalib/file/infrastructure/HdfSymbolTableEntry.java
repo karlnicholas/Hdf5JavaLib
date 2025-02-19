@@ -18,19 +18,22 @@ public class HdfSymbolTableEntry {
     private final int cacheType;
     private final HdfBTreeV1 bTree;
     private final HdfLocalHeap localHeap;
+    private final HdfLocalHeapContents localHeapContents;
 
     // cache type 1
     public HdfSymbolTableEntry(
             HdfFixedPoint linkNameOffset,
             HdfObjectHeaderPrefixV1 objectHeader,
             HdfBTreeV1 bTree,
-            HdfLocalHeap localHeap
+            HdfLocalHeap localHeap,
+            HdfLocalHeapContents localHeapContents
     ) {
         this.cacheType = 1;
         this.linkNameOffset = linkNameOffset;
         this.objectHeader = objectHeader;
         this.bTree = bTree;
         this.localHeap = localHeap;
+        this.localHeapContents = localHeapContents;
     }
 
     @Getter
@@ -129,6 +132,7 @@ public class HdfSymbolTableEntry {
                 "\r\b\t\tcacheType=" + cacheType +
                 "\r\n\t\tbTree=" + (bTree != null ? bTree.toString() : "N/A") +
                 "\r\n\t\tlocalHeap=" + (localHeap != null ? localHeap.toString() : "N/A") +
+                "\r\n\t\tlocalHeap=" + (localHeapContents != null ? localHeapContents.toString() : "N/A") +
                 "\r\n\t}";
     }
 }

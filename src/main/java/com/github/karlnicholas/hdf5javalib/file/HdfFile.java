@@ -122,7 +122,8 @@ public class HdfFile {
      * @return
      */
     public HdfDataSet createDataSet(HdfGroup hdfGroup, String datasetName, CompoundDataType compoundType) {
-        return hdfGroup.createDataSet(datasetName, compoundType);
+//        return hdfGroup.createDataSet(datasetName, compoundType);
+        return null;
     }
 
     public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
@@ -157,7 +158,7 @@ public class HdfFile {
         ByteBuffer buffer = ByteBuffer.allocate(dataStart).order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
 
         superblock.writeToByteBuffer(buffer);
-        rootGroup.close(buffer);
+//        rootGroup.close(buffer);
         Path path = Path.of(fileName);
         StandardOpenOption[] fileOptions = {StandardOpenOption.WRITE};
         if ( !Files.exists(path) ) {
