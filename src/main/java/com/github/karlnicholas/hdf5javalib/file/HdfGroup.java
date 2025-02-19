@@ -5,9 +5,6 @@ import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
-import com.github.karlnicholas.hdf5javalib.message.HdfMessage;
-import com.github.karlnicholas.hdf5javalib.message.NilMessage;
-import com.github.karlnicholas.hdf5javalib.message.ObjectHeaderContinuationMessage;
 import com.github.karlnicholas.hdf5javalib.message.SymbolTableMessage;
 import lombok.Getter;
 
@@ -22,7 +19,7 @@ import java.util.function.Supplier;
 @Getter
 public class HdfGroup {
     private final HdfFile hdfFile;
-    private final HdfSymbolTableEntry symbolTableEntry;
+//    private final HdfSymbolTableEntry symbolTableEntry;
     private final HdfObjectHeaderPrefixV1 objectHeader;
     private final HdfLocalHeap localHeap;
     private final HdfLocalHeapContents localHeapContents;
@@ -30,6 +27,26 @@ public class HdfGroup {
     private final HdfGroupSymbolTableNode symbolTableNode;
     private int localHeapContentsSize;
     private final String name;
+
+    public HdfGroup(
+            HdfFile hdfFile,
+//            HdfSymbolTableEntry symbolTableEntry,
+            HdfObjectHeaderPrefixV1 objectHeader,
+            HdfLocalHeap localHeap,
+            HdfLocalHeapContents localHeapContents,
+            HdfBTreeV1 bTree,
+            HdfGroupSymbolTableNode symbolTableNode,
+            String name
+    ) {
+        this.hdfFile = hdfFile;
+//        this.symbolTableEntry = symbolTableEntry;
+        this.objectHeader = objectHeader;
+        this.localHeap = localHeap;
+        this.localHeapContents = localHeapContents;
+        this.bTree = bTree;
+        this.symbolTableNode = symbolTableNode;
+        this.name = name;
+    }
 
     public HdfGroup(HdfFile hdfFile, String name) {
         this.hdfFile = hdfFile;
@@ -56,14 +73,18 @@ public class HdfGroup {
                         HdfFixedPoint.undefined((short)8))));
 
         // Define a root group
-        symbolTableEntry = new HdfSymbolTableEntry(
+//        symbolTableEntry = new HdfSymbolTableEntry(
+//                HdfFixedPoint.of(0),
+//                objectHeader,
+//                bTree,
+//                localHeap);
+
+
+        symbolTableNode = new HdfGroupSymbolTableNode("SNOD", 1, 0, List.of(new HdfSymbolTableEntry(
                 HdfFixedPoint.of(0),
                 objectHeader,
                 bTree,
-                localHeap);
-
-
-        symbolTableNode = new HdfGroupSymbolTableNode("SNOD", 1, 0, new ArrayList<>());
+                localHeap)));
     }
 
 
@@ -85,7 +106,7 @@ public class HdfGroup {
     }
 
     public ByteBuffer close(ByteBuffer buffer) {
-        System.out.println(symbolTableEntry);
+//        System.out.println(symbolTableEntry);
         // Write the root group symbol table entry immediately after the superblock
 //        symbolTableEntry.writeToByteBuffer(buffer, hdfFile.getSuperblock().getSizeOfOffsets());
 
@@ -142,5 +163,19 @@ public class HdfGroup {
 
     public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
         hdfFile.write(bufferSupplier, hdfDataSet);
+    }
+    @Override
+    public String toString() {
+        return "HdfGroup{" +
+                "name='" + name + '\'' +
+                "\r\n\tlocalHeapContentsSize=" + localHeapContentsSize +
+                "\r\n\thdfFile=" + hdfFile +
+//                "\r\n\tsymbolTableEntry=" + symbolTableEntry +
+                "\r\n\tobjectHeader=" + objectHeader +
+                "\r\n\tlocalHeap=" + localHeap +
+                "\r\n\tlocalHeapContents=" + localHeapContents +
+                "\r\n\tbTree=" + bTree +
+                "\r\n\tsymbolTableNode=" + symbolTableNode +
+                '}';
     }
 }

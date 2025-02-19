@@ -124,11 +124,11 @@ public class HdfSymbolTableEntry {
     @Override
     public String toString() {
         return "HdfSymbolTableEntry{" +
-                "linkNameOffset=" + (linkNameOffset != null ? linkNameOffset.toString() : "N/A") +
-                ", objectHeader=" + (objectHeader != null ? objectHeader.toString() : "N/A") +
-                ", cacheType=" + cacheType +
-                ", bTree=" + (bTree != null ? bTree.toString() : "N/A") +
-                ", localHeap=" + (localHeap != null ? localHeap.toString() : "N/A") +
-                "}";
+                "\r\n\t\tlinkNameOffset=" + (linkNameOffset != null ? linkNameOffset.toString() : "N/A") +
+                "\r\n\t\tobjectHeader=" + (objectHeader != null ? objectHeader.toString() : "N/A") +
+                "\r\b\t\tcacheType=" + cacheType +
+                "\r\n\t\tbTree=" + (bTree != null ? bTree.toString() : "N/A") +
+                "\r\n\t\tlocalHeap=" + (localHeap != null ? localHeap.toString() : "N/A") +
+                "\r\n\t}";
     }
 }
