@@ -17,14 +17,14 @@ public class HdfDebugUtils {
             fileChannel.read(dataBuffer);
             dataBuffer.flip();
             for ( int column = 0; column < compoundDataType.getNumberOfMembers(); ++column ) {
-                HdfDataTypeMember member = compoundDataType.getMembers().get(column);
+                HdfDataTypeBase member = compoundDataType.getMembers().get(column);
                 dataBuffer.position(member.getOffset());
-                if (member.getType() instanceof StringMember) {
-                    data[column] = ((StringMember) member.getType()).getInstance(dataBuffer);
-                } else if (member.getType() instanceof FixedPointMember) {
-                    data[column] = ((FixedPointMember) member.getType()).getInstance(dataBuffer);
-                } else if (member.getType() instanceof FloatingPointMember) {
-                    data[column] = ((FloatingPointMember) member.getType()).getInstance();
+                if (member.getType() instanceof StringType) {
+                    data[column] = ((StringType) member.getType()).getInstance(dataBuffer);
+                } else if (member.getType() instanceof FixedPointType) {
+                    data[column] = ((FixedPointType) member.getType()).getInstance(dataBuffer);
+                } else if (member.getType() instanceof FloatingPointType) {
+                    data[column] = ((FloatingPointType) member.getType()).getInstance();
                 } else {
                     throw new UnsupportedOperationException("Member type " + member.getType() + " not yet implemented.");
                 }

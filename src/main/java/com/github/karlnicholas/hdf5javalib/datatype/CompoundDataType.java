@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.datatype;
 
-import com.github.karlnicholas.hdf5javalib.utils.HdfParseUtils;
+import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
 import lombok.Getter;
 
 import java.nio.ByteBuffer;
@@ -14,10 +14,10 @@ import java.util.List;
 public class CompoundDataType implements HdfDataType {
     private final int numberOfMembers; // Number of members in the compound datatype
     private final int size;
-    private List<HdfDataTypeMember> members;     // Member definitions
+    private List<HdfDataTypeBase> members;     // Member definitions
 
     // New application-level constructor
-    public CompoundDataType(int numberOfMembers, int size, List<HdfDataTypeMember> members) {
+    public CompoundDataType(int numberOfMembers, int size, List<HdfDataTypeBase> members) {
         this.numberOfMembers = numberOfMembers;
         this.size = size;
         this.members = new ArrayList<>(members); // Deep copy to avoid external modification
@@ -45,14 +45,14 @@ public class CompoundDataType implements HdfDataType {
 //        buffer.position(8);
         for (int i = 0; i < numberOfMembers; i++) {
 
-            members.add(HdfParseUtils.parseMember(buffer));
+            members.add(DatatypeMessage.parseMember(buffer));
         }
     }
 
 
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        for (HdfDataTypeMember member: members) {
+        for (HdfDataTypeBase member: members) {
             buffer.put(member.getName().getBytes(StandardCharsets.US_ASCII));
             buffer.put((byte)0);
             int paddingSize = (8 -  ((member.getName().length()+1)% 8)) % 8;
@@ -87,7 +87,7 @@ public class CompoundDataType implements HdfDataType {
     @Override
     public short getSizeMessageData() {
         short size = 0;
-        for(HdfDataTypeMember member: members) {
+        for(HdfDataTypeBase member: members) {
             size += member.getType().getSizeMessageData();
         }
         return size;
