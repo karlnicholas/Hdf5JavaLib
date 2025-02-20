@@ -1,8 +1,8 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfDataTypeMember;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
-import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
 import com.github.karlnicholas.hdf5javalib.message.*;
@@ -21,7 +21,7 @@ public class HdfReader {
     // level 2A1
     private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
     // parsed Datatype
-    private CompoundDataType compoundDataType;
+    private HdfDataTypeMember dataTypeMember;
     private long dataAddress = 0;
     private long dimensionSize = 0;
     private long dimension = 0;
@@ -85,7 +85,7 @@ public class HdfReader {
             if (message instanceof DatatypeMessage dataTypeMessage) {
                 // Check if the datatype is Compound
                 if (dataTypeMessage.getDataTypeClass() == 6) {
-                    compoundDataType = (CompoundDataType) dataTypeMessage.getHdfDataType();
+                    dataTypeMember = dataTypeMessage.getHdfDataTypeMember();
                 } else {
                     // For other datatype classes, parsing logic will be added later
                     throw new UnsupportedOperationException("Datatype class " + dataTypeMessage.getDataTypeClass() + " not yet implemented.");

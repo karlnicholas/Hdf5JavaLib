@@ -115,8 +115,8 @@ public class App {
             String attributeValue = "Revision: , URL: ";
             HdfFixedPoint attr_type = HdfFixedPoint.of(ATTRIBUTE_NAME.length()+1);
             HdfFixedPoint[] attr_space = new HdfFixedPoint[] {HdfFixedPoint.of(1)};
-            AttributeMessage attributeMessage = dataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
-            attributeMessage.write(attr_type, attributeValue);
+//            AttributeMessage attributeMessage = dataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
+//            attributeMessage.write(attr_type, attributeValue);
 
 //            AtomicInteger countHolder = new AtomicInteger(0);
 //            HdfDataSource<VolumeData> volumeDataHdfDataSource = new HdfDataSource<>(compoundType, VolumeData.class);
@@ -199,11 +199,11 @@ public class App {
 
     public void trySpliterator(FileChannel fileChannel, HdfReader reader) {
 
-        HdfDataSource<VolumeData> hdfDataSource = new HdfDataSource<>(reader.getCompoundDataType(), VolumeData.class);
-
-        Spliterator<VolumeData> spliterator = new HdfSpliterator<>(fileChannel, reader.getDataAddress(), reader.getCompoundDataType().getSize(), reader.getDimension(), hdfDataSource);
-
-        System.out.println("count = " + StreamSupport.stream(spliterator, false).map(VolumeData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
+//        HdfDataSource<VolumeData> hdfDataSource = new HdfDataSource<>(reader.getDataTypeMember(), VolumeData.class);
+//
+//        Spliterator<VolumeData> spliterator = new HdfSpliterator<>(fileChannel, reader.getDataAddress(), reader.getDataTypeMember().getSize(), reader.getDimension(), hdfDataSource);
+//
+//        System.out.println("count = " + StreamSupport.stream(spliterator, false).map(VolumeData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
 
 
 //        spliterator.forEachRemaining(buffer -> {

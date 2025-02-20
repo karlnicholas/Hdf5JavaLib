@@ -63,27 +63,28 @@ public class DatatypeMessage extends HdfMessage {
 
         // Parse Size (unsigned 4 bytes)
         HdfFixedPoint size = HdfFixedPoint.readFromByteBuffer(buffer, (short) 4, false);
-        // Return a constructed instance of DatatypeMessage
-        HdfDataTypeMember hdfDataTypeMember;
-        if ( dataTypeClass == 6) {
-            CompoundDataType compoundDataType = new CompoundDataType(classBitField, size.getBigIntegerValue().intValue(), dataTypeData);
-            hdfDataTypeMember = new HdfDataTypeMember("", 0, dimensionality, dimensionPermutation, dimensionSizes, compoundDataType);;
-        } else if ( dataTypeClass == 0) {
-            ByteBuffer cdtcBuffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-//            readFromByteBuffer(cdtcBuffer);
-            HdfDataTypeMember member = HdfParseUtils.parseMember(cdtcBuffer);
-            hdfDataTypeMember = member;
-//            hdfDataType = CompoundDataType.parseMember() (classBitField, size.getBigIntegerValue().intValue(), dataTypeData);
-        } else if ( dataTypeClass == 3) {
-//            byte[] dataBytes = new byte[size];
-//            buffer.get(dataBytes);
-//            dt.addDataType(dataBytes);
-//            value = dt.getHdfDataType();
-            // Return a constructed instance of DatatypeMessage
-            hdfDataTypeMember = new HdfString(dataTypeData, false, false);
-        } else {
-            throw new IllegalStateException("Unsupported data type class: " + dataTypeClass);
-        }
+//        // Return a constructed instance of DatatypeMessage
+//        HdfDataTypeMember hdfDataTypeMember;
+//        if ( dataTypeClass == 6) {
+//            CompoundDataType compoundDataType = new CompoundDataType(classBitField, size.getBigIntegerValue().intValue(), dataTypeData);
+//            hdfDataTypeMember = new HdfDataTypeMember("", 0, dimensionality, dimensionPermutation, dimensionSizes, compoundDataType);;
+//        } else if ( dataTypeClass == 0) {
+//            ByteBuffer cdtcBuffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+////            readFromByteBuffer(cdtcBuffer);
+//            HdfDataTypeMember member = HdfParseUtils.parseMember(cdtcBuffer);
+//            hdfDataTypeMember = member;
+////            hdfDataType = CompoundDataType.parseMember() (classBitField, size.getBigIntegerValue().intValue(), dataTypeData);
+//        } else if ( dataTypeClass == 3) {
+////            byte[] dataBytes = new byte[size];
+////            buffer.get(dataBytes);
+////            dt.addDataType(dataBytes);
+////            value = dt.getHdfDataType();
+//            // Return a constructed instance of DatatypeMessage
+//            hdfDataTypeMember = new HdfString(dataTypeData, false, false);
+//        } else {
+//            throw new IllegalStateException("Unsupported data type class: " + dataTypeClass);
+//        }
+            HdfDataTypeMember hdfDataTypeMember = HdfParseUtils.parseMember(buffer);
 
         return new DatatypeMessage(version, dataTypeClass, classBitField, size, hdfDataTypeMember);
     }

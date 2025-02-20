@@ -3,6 +3,7 @@ package com.github.karlnicholas.hdf5javalib.file;
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfDataTypeMember;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.message.*;
 import lombok.Getter;
@@ -19,7 +20,7 @@ import java.util.function.Supplier;
 public class HdfDataSet {
     private final HdfGroup hdfGroup;
     private final String datasetName;
-    private final CompoundDataType compoundDataType;
+    private final HdfDataTypeMember hdfDataTypeMember;
     private final List<AttributeMessage> attributes;
     private final HdfFixedPoint datasetAddress;
     private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
@@ -31,10 +32,10 @@ public class HdfDataSet {
      * It should have a localHeap and LocalHeap contents, perhaps.
      */
 
-    public HdfDataSet(HdfGroup hdfGroup, String datasetName, CompoundDataType compoundType, HdfFixedPoint datasetAddress) {
+    public HdfDataSet(HdfGroup hdfGroup, String datasetName, HdfDataTypeMember hdfDataTypeMember, HdfFixedPoint datasetAddress) {
         this.hdfGroup = hdfGroup;
         this.datasetName = datasetName;
-        this.compoundDataType = compoundType;
+        this.hdfDataTypeMember = hdfDataTypeMember;
         this.attributes = new ArrayList<>();
         this.datasetAddress = datasetAddress;
     }
@@ -43,13 +44,13 @@ public class HdfDataSet {
         hdfGroup.write(bufferSupplier, this);
     }
 
-    public AttributeMessage createAttribute(String attributeName, HdfFixedPoint attrType, HdfFixedPoint[] attrSpace) {
-        DatatypeMessage dt = new DatatypeMessage(1, 3, BitSet.valueOf(new byte[0]), attrType, new HdfString(attributeName, false));
-        DataspaceMessage ds = new DataspaceMessage(1, 1, 1, attrSpace, null, false);
-        AttributeMessage attributeMessage = new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), null);
-        attributes.add(attributeMessage);
-        return attributeMessage;
-    }
+//    public AttributeMessage createAttribute(String attributeName, HdfFixedPoint attrType, HdfFixedPoint[] attrSpace) {
+//        DatatypeMessage dt = new DatatypeMessage(1, 3, BitSet.valueOf(new byte[0]), attrType, new HdfString(attributeName, false));
+//        DataspaceMessage ds = new DataspaceMessage(1, 1, 1, attrSpace, null, false);
+//        AttributeMessage attributeMessage = new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), null);
+//        attributes.add(attributeMessage);
+//        return attributeMessage;
+//    }
 
     public void close() {
         long recordCount = hdfGroup.getHdfFile().getDatasetRecordCount().get();
@@ -60,10 +61,9 @@ public class HdfDataSet {
 //        headerMessages.add(new ObjectHeaderContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
 //        headerMessages.add(new NilMessage());
 
-        int cdtSize = compoundDataType.getSize();
-        DatatypeMessage dataTypeMessage = new DatatypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)cdtSize}, (short)4), compoundDataType);
-//        dataTypeMessage.setDataType(compoundType);
-        headerMessages.add(dataTypeMessage);
+//        DatatypeMessage dataTypeMessage = new DatatypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)cdtSize}, (short)4), compoundDataType);
+////        dataTypeMessage.setDataType(compoundType);
+//        headerMessages.add(dataTypeMessage);
 
         // Add FillValue message
         headerMessages.add(new FillValueMessage(2, 2, 2, 1, HdfFixedPoint.of(0), new byte[0]));

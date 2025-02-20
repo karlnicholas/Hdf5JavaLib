@@ -1,5 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
+import com.github.karlnicholas.hdf5javalib.data.HdfData;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfDataType;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
@@ -20,9 +21,9 @@ public class AttributeMessage extends HdfMessage {
     private final HdfMessage datatypeMessage;
     private final HdfMessage dataspaceMessage;
     private final HdfString name;
-    private HdfDataType value;
+    private HdfData value;
 
-    public AttributeMessage(int version, int nameSize, int datatypeSize, int dataspaceSize, HdfMessage datatypeMessage, HdfMessage dataspaceMessage, HdfString name, HdfDataType value) {
+    public AttributeMessage(int version, int nameSize, int datatypeSize, int dataspaceSize, HdfMessage datatypeMessage, HdfMessage dataspaceMessage, HdfString name, HdfData value) {
         super(MessageType.AttributeMessage, ()-> {
             short s = 8;
             s += (short) (1+1+2+2+2+nameSize+(((((nameSize + 1) / 8) + 1) * 8) - nameSize)+datatypeSize+dataspaceSize);
@@ -73,7 +74,7 @@ public class AttributeMessage extends HdfMessage {
         HdfMessage hdfDataObjectHeaderDs = createMessageInstance(MessageType.DataspaceMessage, (byte) 0, dsBytes, offsetSize, lengthSize, null);
         DataspaceMessage ds = (DataspaceMessage) hdfDataObjectHeaderDs;
 
-        HdfDataType value = null;
+        HdfData value = null;
         if ( dt.getDataTypeClass() == 3 ) {
             int dtDataSize = dt.getSize().getBigIntegerValue().intValue();
             byte[] dataBytes = new byte[dtDataSize];
@@ -119,8 +120,8 @@ public class AttributeMessage extends HdfMessage {
 
         dataspaceMessage.writeToByteBuffer(buffer);
 
-        value.writeDefinitionToByteBuffer(buffer);
-
+        // not right
+        value.writeValueToByteBuffer(buffer);
 
     }
 
