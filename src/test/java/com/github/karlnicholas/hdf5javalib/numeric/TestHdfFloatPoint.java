@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.numeric;
 
-import com.github.karlnicholas.hdf5javalib.datatype.HdfFloatPoint;
+import com.github.karlnicholas.hdf5javalib.data.HdfFloatPoint;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

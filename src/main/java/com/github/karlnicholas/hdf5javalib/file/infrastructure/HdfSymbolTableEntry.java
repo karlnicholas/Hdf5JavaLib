@@ -1,15 +1,12 @@
 package com.github.karlnicholas.hdf5javalib.file.infrastructure;
 
-import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
-import com.github.karlnicholas.hdf5javalib.utils.HdfUtils;
+import com.github.karlnicholas.hdf5javalib.utils.HdfParseUtils;
 import lombok.Getter;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-
-import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
 
 @Getter
 public class HdfSymbolTableEntry {
@@ -63,8 +60,8 @@ public class HdfSymbolTableEntry {
         HdfFixedPoint objectHeaderAddress = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, false);
 
         // Read cache type and skip reserved field
-        int cacheType = HdfUtils.readIntFromFileChannel(fileChannel);
-        HdfUtils.skipBytes(fileChannel, 4); // Skip reserved field
+        int cacheType = HdfParseUtils.readIntFromFileChannel(fileChannel);
+        HdfParseUtils.skipBytes(fileChannel, 4); // Skip reserved field
 
         // Initialize addresses for cacheType 1
         HdfFixedPoint bTreeAddress = null;
@@ -73,7 +70,7 @@ public class HdfSymbolTableEntry {
             bTreeAddress = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, false);
             localHeapAddress = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, false);
         } else {
-            HdfUtils.skipBytes(fileChannel, 16); // Skip 16 bytes for scratch-pad
+            HdfParseUtils.skipBytes(fileChannel, 16); // Skip 16 bytes for scratch-pad
         }
 
         return new HdfFileOffsets(linkNameOffset, objectHeaderAddress, cacheType, bTreeAddress, localHeapAddress);

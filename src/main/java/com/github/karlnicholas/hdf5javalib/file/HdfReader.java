@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
-import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
@@ -75,7 +75,8 @@ public class HdfReader {
         System.out.println(rootGroup);
 
         // Parse the Data Object Header Prefix next in line
-        fileChannel.position(fileOffsets.getObjectHeaderAddress().getBigIntegerValue().longValue());
+//        fileChannel.position(fileOffsets.getObjectHeaderAddress().getBigIntegerValue().longValue());
+        fileChannel.position(800);
         System.out.print(fileChannel.position() + " = ");
         dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
         System.out.println(dataObjectHeaderPrefix);

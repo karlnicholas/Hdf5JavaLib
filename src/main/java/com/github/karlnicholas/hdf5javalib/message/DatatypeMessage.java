@@ -1,9 +1,10 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfDataType;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
+import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.data.HdfString;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfDataTypeMember;
+import com.github.karlnicholas.hdf5javalib.utils.HdfParseUtils;
 import lombok.Getter;
 
 import java.nio.ByteBuffer;
@@ -19,13 +20,13 @@ public class DatatypeMessage extends HdfMessage {
     private final int dataTypeClass;           // Datatype class
     private final BitSet classBitField;        // Class Bit Field (24 bits)
     private final HdfFixedPoint size;          // Size of the datatype element
-    private final HdfDataType hdfDataType;                 // Remaining raw data
+    private final HdfDataTypeMember hdfDataTypeMember;                 // Remaining raw data
 
     // Constructor to initialize all fields
-    public DatatypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size, HdfDataType hdfDataType) {
+    public DatatypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size, HdfDataTypeMember hdfDataTypeMember) {
         super(MessageType.DatatypeMessage, ()-> {
             short sizeMessageData = 8+8;
-            sizeMessageData += hdfDataType.getSizeMessageData();
+            sizeMessageData += hdfDataTypeMember.getType().getSizeMessageData();
             // to 8 byte boundary
             return (short) ((sizeMessageData + 7) & ~7);
         },(byte)1);
@@ -33,7 +34,7 @@ public class DatatypeMessage extends HdfMessage {
         this.dataTypeClass = dataTypeClass;
         this.classBitField = classBitField;
         this.size = size;
-        this.hdfDataType = hdfDataType;
+        this.hdfDataTypeMember = hdfDataTypeMember;
     }
 
     /**
@@ -63,21 +64,28 @@ public class DatatypeMessage extends HdfMessage {
         // Parse Size (unsigned 4 bytes)
         HdfFixedPoint size = HdfFixedPoint.readFromByteBuffer(buffer, (short) 4, false);
         // Return a constructed instance of DatatypeMessage
-        HdfDataType hdfDataType;
+        HdfDataTypeMember hdfDataTypeMember;
         if ( dataTypeClass == 6) {
-            hdfDataType = new CompoundDataType(classBitField, size.getBigIntegerValue().intValue(), dataTypeData);
+            CompoundDataType compoundDataType = new CompoundDataType(classBitField, size.getBigIntegerValue().intValue(), dataTypeData);
+            hdfDataTypeMember = new HdfDataTypeMember("", 0, dimensionality, dimensionPermutation, dimensionSizes, compoundDataType);;
+        } else if ( dataTypeClass == 0) {
+            ByteBuffer cdtcBuffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+//            readFromByteBuffer(cdtcBuffer);
+            HdfDataTypeMember member = HdfParseUtils.parseMember(cdtcBuffer);
+            hdfDataTypeMember = member;
+//            hdfDataType = CompoundDataType.parseMember() (classBitField, size.getBigIntegerValue().intValue(), dataTypeData);
         } else if ( dataTypeClass == 3) {
 //            byte[] dataBytes = new byte[size];
 //            buffer.get(dataBytes);
 //            dt.addDataType(dataBytes);
 //            value = dt.getHdfDataType();
             // Return a constructed instance of DatatypeMessage
-            hdfDataType = new HdfString(dataTypeData, false, false);
+            hdfDataTypeMember = new HdfString(dataTypeData, false, false);
         } else {
             throw new IllegalStateException("Unsupported data type class: " + dataTypeClass);
         }
 
-        return new DatatypeMessage(version, dataTypeClass, classBitField, size, hdfDataType);
+        return new DatatypeMessage(version, dataTypeClass, classBitField, size, hdfDataTypeMember);
     }
 
 //    public void addDataType(byte[] remainingData) {
@@ -102,7 +110,7 @@ public class DatatypeMessage extends HdfMessage {
         sb.append(", dataTypeClass=").append(dataTypeClass).append(" (").append(dataTypeClassToString(dataTypeClass)).append(")");
         sb.append(", classBitField=").append(bitSetToString(classBitField, 24));
         sb.append(", size=").append(size.getBigIntegerValue());
-        sb.append(", hdfDataType=").append(hdfDataType);
+        sb.append(", hdfDataTypeMember=").append(hdfDataTypeMember);
         sb.append('}');
         return sb.toString();
     }
@@ -148,6 +156,6 @@ public class DatatypeMessage extends HdfMessage {
         System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
         buffer.put(result);
         writeFixedPointToBuffer(buffer, size);
-        hdfDataType.writeDefinitionToByteBuffer(buffer);
+        hdfDataTypeMember.getType().writeDefinitionToByteBuffer(buffer);
     }
 }

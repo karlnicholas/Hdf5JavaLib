@@ -1,15 +1,15 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
 import com.github.karlnicholas.hdf5javalib.datatype.HdfDataType;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
+import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.createMessageInstance;
+import static com.github.karlnicholas.hdf5javalib.utils.HdfParseUtils.createMessageInstance;
 
 @Getter
 public class AttributeMessage extends HdfMessage {

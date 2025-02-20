@@ -1,13 +1,13 @@
-package com.github.karlnicholas.hdf5javalib.datatype;
+package com.github.karlnicholas.hdf5javalib.data;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-public class HdfFloatPoint implements HdfDataType {
+public class HdfFloatPoint implements HdfData {
     private final byte[] bytes;
-    private final int size;
+    private final short size;
     private final boolean littleEndian;
 
     // Constructor for float
@@ -30,11 +30,11 @@ public class HdfFloatPoint implements HdfDataType {
                 .array();
     }
 
-    public HdfFloatPoint(byte[] bytes, int size) {
+    public HdfFloatPoint(byte[] bytes, short size) {
         this(bytes, size, true); // Defaults to little-endian
     }
 
-    public HdfFloatPoint(byte[] bytes, int size, boolean littleEndian) {
+    public HdfFloatPoint(byte[] bytes, short size, boolean littleEndian) {
         if (bytes == null) {
             throw new IllegalArgumentException("Byte array cannot be null");
         }
@@ -107,12 +107,7 @@ public class HdfFloatPoint implements HdfDataType {
 
     @Override
     public short getSizeMessageData() {
-        return (short) bytes.length;
-    }
-
-    @Override
-    public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-
+        return (short)bytes.length;
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.file.dataobject;
 
-import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.message.ObjectHeaderContinuationMessage;
 import com.github.karlnicholas.hdf5javalib.message.DataLayoutMessage;
 import com.github.karlnicholas.hdf5javalib.message.HdfMessage;
@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.parseContinuationMessage;
-import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.parseDataObjectHeaderMessages;
+import static com.github.karlnicholas.hdf5javalib.utils.HdfParseUtils.parseContinuationMessage;
+import static com.github.karlnicholas.hdf5javalib.utils.HdfParseUtils.parseDataObjectHeaderMessages;
 
 @Getter
 public class HdfObjectHeaderPrefixV1 {

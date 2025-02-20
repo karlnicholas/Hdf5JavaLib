@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.file.infrastructure;
 
-import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import lombok.Data;
 
 @Data

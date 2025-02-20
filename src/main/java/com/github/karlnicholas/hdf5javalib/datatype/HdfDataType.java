@@ -5,5 +5,5 @@ import java.nio.ByteBuffer;
 public interface HdfDataType {
     short getSizeMessageData();
     void writeDefinitionToByteBuffer(ByteBuffer buffer);
-    void writeValueToByteBuffer(ByteBuffer buffer);
+//    short getSize();
 }

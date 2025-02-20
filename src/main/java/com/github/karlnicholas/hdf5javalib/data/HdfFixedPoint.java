@@ -1,4 +1,4 @@
-package com.github.karlnicholas.hdf5javalib.datatype;
+package com.github.karlnicholas.hdf5javalib.data;
 
 import lombok.Getter;
 
@@ -10,7 +10,7 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
 @Getter
-public class HdfFixedPoint implements HdfDataType {
+public class HdfFixedPoint implements HdfData {
     private final byte[] bytes;
     private final short size;
     private final boolean signed;
@@ -124,8 +124,8 @@ public class HdfFixedPoint implements HdfDataType {
         byte[] undefinedBytes = new byte[sizeOfOffsets];
         buffer.get(undefinedBytes);
         buffer.reset();
-        for (int i = 0; i < undefinedBytes.length; i++) {
-            if (undefinedBytes[i] != (byte) 0xFF) {
+        for (byte undefinedByte : undefinedBytes) {
+            if (undefinedByte != (byte) 0xFF) {
                 return false;
             }
         }
@@ -212,11 +212,6 @@ public class HdfFixedPoint implements HdfDataType {
         }
     }
 
-    // Get size in bits
-    public int getSize() {
-        return size;
-    }
-
     @Override
     public String toString() {
         return isUndefined() ? "\"Value undefined\"" : getBigIntegerValue().toString();
@@ -224,12 +219,7 @@ public class HdfFixedPoint implements HdfDataType {
 
     @Override
     public short getSizeMessageData() {
-        return size;
-    }
-
-    @Override
-    public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-
+        return (short)bytes.length;
     }
 
     @Override

@@ -1,8 +1,11 @@
 package com.github.karlnicholas.hdf5javalib.utils;
 
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfString;
+import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.data.HdfString;
+import com.github.karlnicholas.hdf5javalib.datatype.FixedPointMember;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfDataTypeMember;
+import com.github.karlnicholas.hdf5javalib.datatype.StringMember;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
@@ -13,7 +16,7 @@ import java.util.Map;
 
 public class HdfDataSource<T> {
     private final Class<T> clazz;
-    private final Map<Field, CompoundDataType.Member> fieldToMemberMap = new HashMap<>();
+    private final Map<Field, HdfDataTypeMember> fieldToMemberMap = new HashMap<>();
 
     public HdfDataSource(CompoundDataType compoundDataType, Class<T> clazz) {
         this.clazz = clazz;
@@ -38,17 +41,17 @@ public class HdfDataSource<T> {
             T instance = clazz.getDeclaredConstructor().newInstance();
 
             // Populate fields using the pre-parsed map
-            for (Map.Entry<Field, CompoundDataType.Member> entry : fieldToMemberMap.entrySet()) {
+            for (Map.Entry<Field, HdfDataTypeMember> entry : fieldToMemberMap.entrySet()) {
                 Field field = entry.getKey();
-                CompoundDataType.Member member = entry.getValue();
+                HdfDataTypeMember member = entry.getValue();
 
                 buffer.position(member.getOffset());
 
-                if (field.getType() == String.class && member.getType() instanceof CompoundDataType.StringMember) {
-                    String value = ((CompoundDataType.StringMember) member.getType()).getInstance(buffer).getValue();
+                if (field.getType() == String.class && member.getType() instanceof StringMember) {
+                    String value = ((StringMember) member.getType()).getInstance(buffer).getValue();
                     field.set(instance, value);
-                } else if (field.getType() == BigInteger.class && member.getType() instanceof CompoundDataType.FixedPointMember) {
-                    BigInteger value = ((CompoundDataType.FixedPointMember) member.getType()).getInstance(buffer).getBigIntegerValue();
+                } else if (field.getType() == BigInteger.class && member.getType() instanceof FixedPointMember) {
+                    BigInteger value = ((FixedPointMember) member.getType()).getInstance(buffer).getBigIntegerValue();
                     field.set(instance, value);
                 }
                 // Add more type handling as needed
@@ -64,31 +67,25 @@ public class HdfDataSource<T> {
      */
     public void writeToBuffer(T instance, ByteBuffer buffer) {
         try {
-            for (Map.Entry<Field, CompoundDataType.Member> entry : fieldToMemberMap.entrySet()) {
+            for (Map.Entry<Field, HdfDataTypeMember> entry : fieldToMemberMap.entrySet()) {
                 Field field = entry.getKey();
-                CompoundDataType.Member member = entry.getValue();
+                HdfDataTypeMember member = entry.getValue();
 
                 // Move to the correct offset
                 buffer.position(member.getOffset());
 
                 Object value = field.get(instance);
 
-                if (value instanceof String strValue && member.getType() instanceof CompoundDataType.StringMember stringMember) {
+                if (value instanceof String strValue && member.getType() instanceof StringMember stringMember) {
                     // Convert string to bytes and write to buffer
                     ByteBuffer stringBuffer = ByteBuffer.allocate(stringMember.getSize());
-                    if (value != null) {
-                        HdfString s = new HdfString(strValue.getBytes(StandardCharsets.US_ASCII), false, false);
-                        s.writeValueToByteBuffer(stringBuffer);
-                    }
+                    HdfString s = new HdfString(strValue.getBytes(StandardCharsets.US_ASCII), false, false);
+                    s.writeValueToByteBuffer(stringBuffer);
                     buffer.put(stringBuffer.array());
-                } else if (value instanceof BigInteger bigIntValue && member.getType() instanceof CompoundDataType.FixedPointMember fixedPointMember) {
-                    if (value == null) {
-                        HdfFixedPoint.undefined(fixedPointMember.getSize()).writeValueToByteBuffer(buffer);
-                    } else {
-                        // Convert BigInteger to bytes and write to buffer
-                        new HdfFixedPoint(bigIntValue, fixedPointMember.getSize(), fixedPointMember.isSigned(), fixedPointMember.isBigEndian())
-                                .writeValueToByteBuffer(buffer);
-                    }
+                } else if (value instanceof BigInteger bigIntValue && member.getType() instanceof FixedPointMember fixedPointMember) {
+                    // Convert BigInteger to bytes and write to buffer
+                    new HdfFixedPoint(bigIntValue, fixedPointMember.getSize(), fixedPointMember.isSigned(), fixedPointMember.isBigEndian())
+                            .writeValueToByteBuffer(buffer);
                 }
                 // Add more type handling as needed
 

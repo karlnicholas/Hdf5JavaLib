@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.numeric;
 
-import com.github.karlnicholas.hdf5javalib.datatype.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
