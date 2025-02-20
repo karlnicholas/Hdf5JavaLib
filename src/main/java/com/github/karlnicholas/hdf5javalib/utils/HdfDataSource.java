@@ -1,11 +1,11 @@
 package com.github.karlnicholas.hdf5javalib.utils;
 
-import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
+import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
-import com.github.karlnicholas.hdf5javalib.datatype.FixedPointType;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfDataTypeBase;
-import com.github.karlnicholas.hdf5javalib.datatype.StringType;
+import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatypeBase;
+import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 public class HdfDataSource<T> {
     private final Class<T> clazz;
-    private final Map<Field, HdfDataTypeBase> fieldToMemberMap = new HashMap<>();
+    private final Map<Field, HdfDatatypeBase> fieldToMemberMap = new HashMap<>();
 
-    public HdfDataSource(CompoundDataType compoundDataType, Class<T> clazz) {
+    public HdfDataSource(CompoundDatatype compoundDataType, Class<T> clazz) {
         this.clazz = clazz;
 
-        // Parse fields and map them to CompoundDataType members
+        // Parse fields and map them to CompoundDatatype members
         for (Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
 
@@ -41,17 +41,17 @@ public class HdfDataSource<T> {
             T instance = clazz.getDeclaredConstructor().newInstance();
 
             // Populate fields using the pre-parsed map
-            for (Map.Entry<Field, HdfDataTypeBase> entry : fieldToMemberMap.entrySet()) {
+            for (Map.Entry<Field, HdfDatatypeBase> entry : fieldToMemberMap.entrySet()) {
                 Field field = entry.getKey();
-                HdfDataTypeBase member = entry.getValue();
+                HdfDatatypeBase member = entry.getValue();
 
                 buffer.position(member.getOffset());
 
-                if (field.getType() == String.class && member.getType() instanceof StringType) {
-                    String value = ((StringType) member.getType()).getInstance(buffer).getValue();
+                if (field.getType() == String.class && member.getType() instanceof StringDatatype) {
+                    String value = ((StringDatatype) member.getType()).getInstance(buffer).getValue();
                     field.set(instance, value);
-                } else if (field.getType() == BigInteger.class && member.getType() instanceof FixedPointType) {
-                    BigInteger value = ((FixedPointType) member.getType()).getInstance(buffer).getBigIntegerValue();
+                } else if (field.getType() == BigInteger.class && member.getType() instanceof FixedPointDatatype) {
+                    BigInteger value = ((FixedPointDatatype) member.getType()).getInstance(buffer).getBigIntegerValue();
                     field.set(instance, value);
                 }
                 // Add more type handling as needed
@@ -67,24 +67,24 @@ public class HdfDataSource<T> {
      */
     public void writeToBuffer(T instance, ByteBuffer buffer) {
         try {
-            for (Map.Entry<Field, HdfDataTypeBase> entry : fieldToMemberMap.entrySet()) {
+            for (Map.Entry<Field, HdfDatatypeBase> entry : fieldToMemberMap.entrySet()) {
                 Field field = entry.getKey();
-                HdfDataTypeBase member = entry.getValue();
+                HdfDatatypeBase member = entry.getValue();
 
                 // Move to the correct offset
                 buffer.position(member.getOffset());
 
                 Object value = field.get(instance);
 
-                if (value instanceof String strValue && member.getType() instanceof StringType stringType) {
+                if (value instanceof String strValue && member.getType() instanceof StringDatatype stringDatatype) {
                     // Convert string to bytes and write to buffer
-                    ByteBuffer stringBuffer = ByteBuffer.allocate(stringType.getSize());
+                    ByteBuffer stringBuffer = ByteBuffer.allocate(stringDatatype.getSize());
                     HdfString s = new HdfString(strValue.getBytes(StandardCharsets.US_ASCII), false, false);
                     s.writeValueToByteBuffer(stringBuffer);
                     buffer.put(stringBuffer.array());
-                } else if (value instanceof BigInteger bigIntValue && member.getType() instanceof FixedPointType fixedPointType) {
+                } else if (value instanceof BigInteger bigIntValue && member.getType() instanceof FixedPointDatatype fixedPointDatatype) {
                     // Convert BigInteger to bytes and write to buffer
-                    new HdfFixedPoint(bigIntValue, fixedPointType.getSize(), fixedPointType.isSigned(), fixedPointType.isBigEndian())
+                    new HdfFixedPoint(bigIntValue, fixedPointDatatype.getSize(), fixedPointDatatype.isSigned(), fixedPointDatatype.isBigEndian())
                             .writeValueToByteBuffer(buffer);
                 }
                 // Add more type handling as needed

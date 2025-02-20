@@ -17,10 +17,10 @@ public class DatatypeMessage extends HdfMessage {
     private final int dataTypeClass;           // Datatype class
     private final BitSet classBitField;        // Class Bit Field (24 bits)
     private final HdfFixedPoint size;          // Size of the datatype element
-    private final HdfDataTypeBase hdfDataTypeBase;                 // Remaining raw data
+    private final HdfDatatypeBase hdfDataTypeBase;                 // Remaining raw data
 
     // Constructor to initialize all fields
-    public DatatypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size, HdfDataTypeBase hdfDataTypeBase) {
+    public DatatypeMessage(int version, int dataTypeClass, BitSet classBitField, HdfFixedPoint size, HdfDatatypeBase hdfDataTypeBase) {
         super(MessageType.DatatypeMessage, ()-> {
             short sizeMessageData = 8+8;
             sizeMessageData += hdfDataTypeBase.getType().getSizeMessageData();
@@ -61,16 +61,16 @@ public class DatatypeMessage extends HdfMessage {
         // Parse Size (unsigned 4 bytes)
         HdfFixedPoint size = HdfFixedPoint.readFromByteBuffer(buffer, (short) 4, false);
 //        // Return a constructed instance of DatatypeMessage
-//        HdfDataTypeBase hdfDataTypeBase;
+//        HdfDatatypeBase hdfDataTypeBase;
 //        if ( dataTypeClass == 6) {
-//            CompoundDataType compoundDataType = new CompoundDataType(classBitField, size.getBigIntegerValue().intValue(), dataTypeData);
-//            hdfDataTypeBase = new HdfDataTypeBase("", 0, dimensionality, dimensionPermutation, dimensionSizes, compoundDataType);;
+//            CompoundDatatype compoundDataType = new CompoundDatatype(classBitField, size.getBigIntegerValue().intValue(), dataTypeData);
+//            hdfDataTypeBase = new HdfDatatypeBase("", 0, dimensionality, dimensionPermutation, dimensionSizes, compoundDataType);;
 //        } else if ( dataTypeClass == 0) {
 //            ByteBuffer cdtcBuffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 ////            readFromByteBuffer(cdtcBuffer);
-//            HdfDataTypeBase member = HdfParseUtils.parseMember(cdtcBuffer);
+//            HdfDatatypeBase member = HdfParseUtils.parseMember(cdtcBuffer);
 //            hdfDataTypeBase = member;
-////            hdfDataType = CompoundDataType.parseMember() (classBitField, size.getBigIntegerValue().intValue(), dataTypeData);
+////            hdfDataType = CompoundDatatype.parseMember() (classBitField, size.getBigIntegerValue().intValue(), dataTypeData);
 //        } else if ( dataTypeClass == 3) {
 ////            byte[] dataBytes = new byte[size];
 ////            buffer.get(dataBytes);
@@ -81,7 +81,7 @@ public class DatatypeMessage extends HdfMessage {
 //        } else {
 //            throw new IllegalStateException("Unsupported data type class: " + dataTypeClass);
 //        }
-            HdfDataTypeBase hdfDataTypeBase = parseMember(buffer);
+            HdfDatatypeBase hdfDataTypeBase = parseMember(buffer);
 
         return new DatatypeMessage(version, dataTypeClass, classBitField, size, hdfDataTypeBase);
     }
@@ -95,7 +95,7 @@ public class DatatypeMessage extends HdfMessage {
         return nameBuilder.toString();
     }
 
-    public static HdfDataTypeBase parseMember(ByteBuffer buffer) {
+    public static HdfDatatypeBase parseMember(ByteBuffer buffer) {
         buffer.mark();
         String name = readNullTerminatedString(buffer);
 
@@ -113,8 +113,8 @@ public class DatatypeMessage extends HdfMessage {
             dimensionSizes[j] = buffer.getInt();
         }
 
-        HdfDataType type = parseMemberDataType(buffer, name);
-        return new HdfDataTypeBase(name, offset, dimensionality, dimensionPermutation, dimensionSizes, type);
+        HdfDatatype type = parseMemberDataType(buffer, name);
+        return new HdfDatatypeBase(name, offset, dimensionality, dimensionPermutation, dimensionSizes, type);
 
     }
 
@@ -123,7 +123,7 @@ public class DatatypeMessage extends HdfMessage {
         buffer.position(buffer.position() + padding);
     }
 
-    public static HdfDataType parseMemberDataType(ByteBuffer buffer, String name) {
+    public static HdfDatatype parseMemberDataType(ByteBuffer buffer, String name) {
         byte classAndVersion = buffer.get();
         byte version = (byte) ((classAndVersion >> 4) & 0x0F);
         int dataTypeClass = classAndVersion & 0x0F;
@@ -145,11 +145,11 @@ public class DatatypeMessage extends HdfMessage {
         };
     }
 
-    private static CompoundDataType parseCompoundDataType(byte version, short size, BitSet classBitField, String name, ByteBuffer buffer) {
-        return new CompoundDataType(classBitField, size, buffer.array());
+    private static CompoundDatatype parseCompoundDataType(byte version, short size, BitSet classBitField, String name, ByteBuffer buffer) {
+        return new CompoundDatatype(classBitField, size, buffer.array());
     }
 
-    private static FixedPointType parseFixedPoint(ByteBuffer buffer, byte version, short size, BitSet classBitField, String name) {
+    private static FixedPointDatatype parseFixedPoint(ByteBuffer buffer, byte version, short size, BitSet classBitField, String name) {
         boolean bigEndian = classBitField.get(0);
         boolean loPad = classBitField.get(1);
         boolean hiPad = classBitField.get(2);
@@ -161,17 +161,17 @@ public class DatatypeMessage extends HdfMessage {
         int padding = (8 -  ((name.length()+1)% 8)) % 8;
         short messageDataSize = (short) (name.length()+1 + padding + 44);
 
-        return new FixedPointType(version, size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision, messageDataSize, classBitField);
+        return new FixedPointDatatype(version, size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision, messageDataSize, classBitField);
     }
 
-    private static FloatingPointType parseFloatingPoint(ByteBuffer buffer, byte version, short size, BitSet classBitField, String name) {
+    private static FloatingPointDatatype parseFloatingPoint(ByteBuffer buffer, byte version, short size, BitSet classBitField, String name) {
         boolean bigEndian = classBitField.get(0);
         int exponentBits = buffer.getInt();
         int mantissaBits = buffer.getInt();
-        return new FloatingPointType(version, size, exponentBits, mantissaBits, bigEndian);
+        return new FloatingPointDatatype(version, size, exponentBits, mantissaBits, bigEndian);
     }
 
-    private static StringType parseString(byte version, short size, BitSet classBitField, String name) {
+    private static StringDatatype parseString(byte version, short size, BitSet classBitField, String name) {
         int paddingType = extractBits(classBitField, 0, 3);
         int charSet = extractBits(classBitField, 4, 7);
 
@@ -191,7 +191,7 @@ public class DatatypeMessage extends HdfMessage {
         int padding = (8 -  ((name.length()+1)% 8)) % 8;
         short messageDataSize = (short) (name.length()+1 + padding + 40);
 
-        return new StringType(version, size, paddingType, paddingDescription, charSet, charSetDescription, messageDataSize);
+        return new StringDatatype(version, size, paddingType, paddingDescription, charSet, charSetDescription, messageDataSize);
     }
 
     private static int extractBits(BitSet bitSet, int start, int end) {
@@ -206,7 +206,7 @@ public class DatatypeMessage extends HdfMessage {
 
 //    public void addDataType(byte[] remainingData) {
 //        if ( dataTypeClass == 6) {
-//            hdfDataType = new CompoundDataType(classBitField, size.getBigIntegerValue().intValue(), remainingData);
+//            hdfDataType = new CompoundDatatype(classBitField, size.getBigIntegerValue().intValue(), remainingData);
 //        } else if ( dataTypeClass == 3) {
 //            // Return a constructed instance of DatatypeMessage
 //            hdfDataType = new HdfString(remainingData, false, false);
@@ -215,7 +215,7 @@ public class DatatypeMessage extends HdfMessage {
 //        }
 //    }
 
-//    public void setDataType(HdfDataType hdfDataType) {
+//    public void setDataType(HdfDatatype hdfDataType) {
 //        this.hdfDataType = hdfDataType;
 //    }
 

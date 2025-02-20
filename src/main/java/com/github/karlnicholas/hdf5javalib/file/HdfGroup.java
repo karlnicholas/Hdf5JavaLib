@@ -88,7 +88,7 @@ public class HdfGroup {
     }
 
 
-//    public HdfDataSet createDataSet(String datasetName, CompoundDataType compoundType) {
+//    public HdfDataSet createDataSet(String datasetName, CompoundDatatype compoundType) {
 //        HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), false, false);
 //        // real steps needed to add a group.
 //        // entry in btree = "Demand" + snodOffset (1880)

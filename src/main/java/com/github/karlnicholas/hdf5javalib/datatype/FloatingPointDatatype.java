@@ -5,14 +5,14 @@ import lombok.Getter;
 import java.nio.ByteBuffer;
 
 @Getter
-public class FloatingPointType implements HdfDataType {
+public class FloatingPointDatatype implements HdfDatatype {
     private final byte version;
     private final short size;
     private final int exponentBits;
     private final int mantissaBits;
     private final boolean bigEndian;
 
-    public FloatingPointType(byte version, short size, int exponentBits, int mantissaBits, boolean bigEndian) {
+    public FloatingPointDatatype(byte version, short size, int exponentBits, int mantissaBits, boolean bigEndian) {
         this.version = version;
         this.size = size;
         this.exponentBits = exponentBits;
@@ -26,7 +26,7 @@ public class FloatingPointType implements HdfDataType {
 
     @Override
     public String toString() {
-        return "FloatingPointType{" +
+        return "FloatingPointDatatype{" +
                 "size=" + size +
                 ", exponentBits=" + exponentBits +
                 ", mantissaBits=" + mantissaBits +

@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.BitSet;
 
 @Getter
-public class FixedPointType implements HdfDataType {
+public class FixedPointDatatype implements HdfDatatype {
     private final byte version;
     private final BitSet classBitField;
     private final short size;
@@ -20,7 +20,7 @@ public class FixedPointType implements HdfDataType {
     private final short bitPrecision;
     private final short sizeMessageData;
 
-    public FixedPointType(byte version, short size, boolean bigEndian, boolean loPad, boolean hiPad, boolean signed, short bitOffset, short bitPrecision, short sizeMessageData, BitSet classBitField) {
+    public FixedPointDatatype(byte version, short size, boolean bigEndian, boolean loPad, boolean hiPad, boolean signed, short bitOffset, short bitPrecision, short sizeMessageData, BitSet classBitField) {
 
         this.version = version;
         this.size = size;
@@ -36,7 +36,7 @@ public class FixedPointType implements HdfDataType {
 
     @Override
     public String toString() {
-        return "FixedPointType{" +
+        return "FixedPointDatatype{" +
                 "size=" + size +
                 ", bigEndian=" + bigEndian +
                 ", loPad=" + loPad +

@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.nio.ByteBuffer;
 
 @Getter
-public class StringType implements HdfDataType {
+public class StringDatatype implements HdfDatatype {
     private final byte version;
     private final short size;
     private final int paddingType;
@@ -15,7 +15,7 @@ public class StringType implements HdfDataType {
     private final String charSetDescription;
     private final short sizeMessageData;
 
-    public StringType(byte version, short size, int paddingType, String paddingDescription, int charSet, String charSetDescription, short sizeMessageData) {
+    public StringDatatype(byte version, short size, int paddingType, String paddingDescription, int charSet, String charSetDescription, short sizeMessageData) {
         this.version = version;
         this.size = size;
         this.paddingType = paddingType;
@@ -33,7 +33,7 @@ public class StringType implements HdfDataType {
 
     @Override
     public String toString() {
-        return "StringType{" +
+        return "StringDatatype{" +
                 "size=" + size +
                 ", paddingType=" + paddingType +
                 ", paddingDescription='" + paddingDescription + '\'' +

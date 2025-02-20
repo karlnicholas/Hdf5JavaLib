@@ -11,19 +11,19 @@ import java.util.BitSet;
 import java.util.List;
 
 @Getter
-public class CompoundDataType implements HdfDataType {
+public class CompoundDatatype implements HdfDatatype {
     private final int numberOfMembers; // Number of members in the compound datatype
     private final int size;
-    private List<HdfDataTypeBase> members;     // Member definitions
+    private List<HdfDatatypeBase> members;     // Member definitions
 
     // New application-level constructor
-    public CompoundDataType(int numberOfMembers, int size, List<HdfDataTypeBase> members) {
+    public CompoundDatatype(int numberOfMembers, int size, List<HdfDatatypeBase> members) {
         this.numberOfMembers = numberOfMembers;
         this.size = size;
         this.members = new ArrayList<>(members); // Deep copy to avoid external modification
     }
 
-    public CompoundDataType(BitSet classBitField, int size, byte[] data) {
+    public CompoundDatatype(BitSet classBitField, int size, byte[] data) {
         this.numberOfMembers = extractNumberOfMembersFromBitSet(classBitField);
         this.size = size;
         ByteBuffer cdtcBuffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
@@ -52,7 +52,7 @@ public class CompoundDataType implements HdfDataType {
 
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        for (HdfDataTypeBase member: members) {
+        for (HdfDatatypeBase member: members) {
             buffer.put(member.getName().getBytes(StandardCharsets.US_ASCII));
             buffer.put((byte)0);
             int paddingSize = (8 -  ((member.getName().length()+1)% 8)) % 8;
@@ -73,7 +73,7 @@ public class CompoundDataType implements HdfDataType {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("CompoundDataType {")
+        builder.append("CompoundDatatype {")
                 .append(" numberOfMembers: ").append(numberOfMembers)
                 .append(", size: ").append(size)
                 .append(", ");
@@ -87,7 +87,7 @@ public class CompoundDataType implements HdfDataType {
     @Override
     public short getSizeMessageData() {
         short size = 0;
-        for(HdfDataTypeBase member: members) {
+        for(HdfDatatypeBase member: members) {
             size += member.getType().getSizeMessageData();
         }
         return size;

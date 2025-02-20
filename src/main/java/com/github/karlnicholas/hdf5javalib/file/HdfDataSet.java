@@ -1,7 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfDataTypeBase;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatypeBase;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.message.*;
 import lombok.Getter;
@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 public class HdfDataSet {
     private final HdfGroup hdfGroup;
     private final String datasetName;
-    private final HdfDataTypeBase hdfDataTypeBase;
+    private final HdfDatatypeBase hdfDataTypeBase;
     private final List<AttributeMessage> attributes;
     private final HdfFixedPoint datasetAddress;
     private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
@@ -29,7 +29,7 @@ public class HdfDataSet {
      * It should have a localHeap and LocalHeap contents, perhaps.
      */
 
-    public HdfDataSet(HdfGroup hdfGroup, String datasetName, HdfDataTypeBase hdfDataTypeBase, HdfFixedPoint datasetAddress) {
+    public HdfDataSet(HdfGroup hdfGroup, String datasetName, HdfDatatypeBase hdfDataTypeBase, HdfFixedPoint datasetAddress) {
         this.hdfGroup = hdfGroup;
         this.datasetName = datasetName;
         this.hdfDataTypeBase = hdfDataTypeBase;

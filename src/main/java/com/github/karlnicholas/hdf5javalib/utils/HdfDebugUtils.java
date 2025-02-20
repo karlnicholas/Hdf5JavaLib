@@ -9,7 +9,7 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
 public class HdfDebugUtils {
-    public static void printData(FileChannel fileChannel, CompoundDataType compoundDataType, long dataAddress, long dimension ) throws IOException {
+    public static void printData(FileChannel fileChannel, CompoundDatatype compoundDataType, long dataAddress, long dimension ) throws IOException {
         Object[] data = new Object[17];
         fileChannel.position(dataAddress);
         for ( int i=0; i <dimension; ++i) {
@@ -17,14 +17,14 @@ public class HdfDebugUtils {
             fileChannel.read(dataBuffer);
             dataBuffer.flip();
             for ( int column = 0; column < compoundDataType.getNumberOfMembers(); ++column ) {
-                HdfDataTypeBase member = compoundDataType.getMembers().get(column);
+                HdfDatatypeBase member = compoundDataType.getMembers().get(column);
                 dataBuffer.position(member.getOffset());
-                if (member.getType() instanceof StringType) {
-                    data[column] = ((StringType) member.getType()).getInstance(dataBuffer);
-                } else if (member.getType() instanceof FixedPointType) {
-                    data[column] = ((FixedPointType) member.getType()).getInstance(dataBuffer);
-                } else if (member.getType() instanceof FloatingPointType) {
-                    data[column] = ((FloatingPointType) member.getType()).getInstance();
+                if (member.getType() instanceof StringDatatype) {
+                    data[column] = ((StringDatatype) member.getType()).getInstance(dataBuffer);
+                } else if (member.getType() instanceof FixedPointDatatype) {
+                    data[column] = ((FixedPointDatatype) member.getType()).getInstance(dataBuffer);
+                } else if (member.getType() instanceof FloatingPointDatatype) {
+                    data[column] = ((FloatingPointDatatype) member.getType()).getInstance();
                 } else {
                     throw new UnsupportedOperationException("Member type " + member.getType() + " not yet implemented.");
                 }

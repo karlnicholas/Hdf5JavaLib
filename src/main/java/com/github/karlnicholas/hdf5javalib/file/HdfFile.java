@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
-import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
+import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
 import lombok.Getter;
@@ -111,7 +111,7 @@ public class HdfFile {
      * @param compoundType
      * @return
      */
-    public HdfDataSet createDataSet(String datasetName, CompoundDataType compoundType) {
+    public HdfDataSet createDataSet(String datasetName, CompoundDatatype compoundType) {
         return createDataSet(rootGroup, datasetName, compoundType);
     }
 
@@ -121,7 +121,7 @@ public class HdfFile {
      * @param compoundType
      * @return
      */
-    public HdfDataSet createDataSet(HdfGroup hdfGroup, String datasetName, CompoundDataType compoundType) {
+    public HdfDataSet createDataSet(HdfGroup hdfGroup, String datasetName, CompoundDatatype compoundType) {
 //        return hdfGroup.createDataSet(datasetName, compoundType);
         return null;
     }

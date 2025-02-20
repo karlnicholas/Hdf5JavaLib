@@ -1,7 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfData;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfDataType;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import lombok.Getter;

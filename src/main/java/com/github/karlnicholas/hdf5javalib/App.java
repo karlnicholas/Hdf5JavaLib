@@ -1,10 +1,10 @@
 package com.github.karlnicholas.hdf5javalib;
 
-import com.github.karlnicholas.hdf5javalib.datatype.CompoundDataType;
+import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.datatype.FixedPointType;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfDataTypeBase;
-import com.github.karlnicholas.hdf5javalib.datatype.StringType;
+import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatypeBase;
+import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
 import com.github.karlnicholas.hdf5javalib.file.*;
 
 import java.io.FileInputStream;
@@ -52,46 +52,46 @@ public class App {
             // Create a new HDF5 file
             HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
 
-            // DatatypeMessage with CompoundDataType
-            List<HdfDataTypeBase> shipment = List.of(
-                    new HdfDataTypeBase("shipmentId", 0, 0, 0, new int[4],
-                            new FixedPointType((byte) 1, (short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"), new BitSet())),
-                    new HdfDataTypeBase("origCountry", 8, 0, 0, new int[4],
-                            new StringType((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origCountry"))),
-                    new HdfDataTypeBase("origSlic", 10, 0, 0, new int[4],
-                            new StringType((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origSlic"))),
-                    new HdfDataTypeBase("origSort", 15, 0, 0, new int[4],
-                            new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("origSort"), new BitSet())),
-                    new HdfDataTypeBase("destCountry", 16, 0, 0, new int[4],
-                            new StringType((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destCountry"))),
-                    new HdfDataTypeBase("destSlic", 18, 0, 0, new int[4],
-                            new StringType((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destSlic"))),
-                    new HdfDataTypeBase("destIbi", 23, 0, 0, new int[4],
-                            new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("destIbi"), new BitSet())),
-                    new HdfDataTypeBase("destPostalCode", 40, 0, 0, new int[4],
-                            new StringType((byte) 1, (short)9, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destPostalCode"))),
-                    new HdfDataTypeBase("shipper", 24, 0, 0, new int[4],
-                            new StringType((byte) 1, (short)10, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("shipper"))),
-                    new HdfDataTypeBase("service", 49, 0, 0, new int[4],
-                            new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("service"), new BitSet())),
-                    new HdfDataTypeBase("packageType", 50, 0, 0, new int[4],
-                            new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("packageType"), new BitSet())),
-                    new HdfDataTypeBase("accessorials", 51, 0, 0, new int[4],
-                            new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("accessorials"), new BitSet())),
-                    new HdfDataTypeBase("pieces", 52, 0, 0, new int[4],
-                            new FixedPointType((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("pieces"), new BitSet())),
-                    new HdfDataTypeBase("weight", 34, 0, 0, new int[4],
-                            new FixedPointType((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("weight"), new BitSet())),
-                    new HdfDataTypeBase("cube", 36, 0, 0, new int[4],
-                            new FixedPointType((byte) 1, (short)4, false, false, false, false, (short)0, (short)32, computeFixedMessageDataSize("cube"), new BitSet())),
-                    new HdfDataTypeBase("committedTnt", 54, 0, 0, new int[4],
-                            new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedTnt"), new BitSet())),
-                    new HdfDataTypeBase("committedDate", 55, 0, 0, new int[4],
-                            new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedDate"), new BitSet()))
+            // DatatypeMessage with CompoundDatatype
+            List<HdfDatatypeBase> shipment = List.of(
+                    new HdfDatatypeBase("shipmentId", 0, 0, 0, new int[4],
+                            new FixedPointDatatype((byte) 1, (short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"), new BitSet())),
+                    new HdfDatatypeBase("origCountry", 8, 0, 0, new int[4],
+                            new StringDatatype((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origCountry"))),
+                    new HdfDatatypeBase("origSlic", 10, 0, 0, new int[4],
+                            new StringDatatype((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origSlic"))),
+                    new HdfDatatypeBase("origSort", 15, 0, 0, new int[4],
+                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("origSort"), new BitSet())),
+                    new HdfDatatypeBase("destCountry", 16, 0, 0, new int[4],
+                            new StringDatatype((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destCountry"))),
+                    new HdfDatatypeBase("destSlic", 18, 0, 0, new int[4],
+                            new StringDatatype((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destSlic"))),
+                    new HdfDatatypeBase("destIbi", 23, 0, 0, new int[4],
+                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("destIbi"), new BitSet())),
+                    new HdfDatatypeBase("destPostalCode", 40, 0, 0, new int[4],
+                            new StringDatatype((byte) 1, (short)9, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destPostalCode"))),
+                    new HdfDatatypeBase("shipper", 24, 0, 0, new int[4],
+                            new StringDatatype((byte) 1, (short)10, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("shipper"))),
+                    new HdfDatatypeBase("service", 49, 0, 0, new int[4],
+                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("service"), new BitSet())),
+                    new HdfDatatypeBase("packageType", 50, 0, 0, new int[4],
+                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("packageType"), new BitSet())),
+                    new HdfDatatypeBase("accessorials", 51, 0, 0, new int[4],
+                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("accessorials"), new BitSet())),
+                    new HdfDatatypeBase("pieces", 52, 0, 0, new int[4],
+                            new FixedPointDatatype((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("pieces"), new BitSet())),
+                    new HdfDatatypeBase("weight", 34, 0, 0, new int[4],
+                            new FixedPointDatatype((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("weight"), new BitSet())),
+                    new HdfDatatypeBase("cube", 36, 0, 0, new int[4],
+                            new FixedPointDatatype((byte) 1, (short)4, false, false, false, false, (short)0, (short)32, computeFixedMessageDataSize("cube"), new BitSet())),
+                    new HdfDatatypeBase("committedTnt", 54, 0, 0, new int[4],
+                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedTnt"), new BitSet())),
+                    new HdfDatatypeBase("committedDate", 55, 0, 0, new int[4],
+                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedDate"), new BitSet()))
             );
             short compoundSize = (short) shipment.stream().mapToInt(c->c.getType().getSizeMessageData()).sum();
             // Define Compound DataType correctly
-            CompoundDataType compoundType = new CompoundDataType(shipment.size(), compoundSize, shipment);
+            CompoundDatatype compoundType = new CompoundDatatype(shipment.size(), compoundSize, shipment);
 //            DatatypeMessage dataTypeMessage = new DatatypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), compoundType);
 
             // Create data space
@@ -236,43 +236,43 @@ public class App {
 //
 //        builder.localHeap(dataSegmentSize, 16, 712, heapData);
 //
-//        // Define a dataset with correct CompoundDataType members
-//        // DatatypeMessage with CompoundDataType
-//        List<HdfDataTypeBase> members = List.of(
-//                new HdfDataTypeBase("shipmentId", 0, 0, 0, new int[4],
-//                        new FixedPointType((byte) 1, (short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"), new BitSet())),
-//                new HdfDataTypeBase("origCountry", 8, 0, 0, new int[4],
-//                        new StringType((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origCountry"))),
-//                new HdfDataTypeBase("origSlic", 10, 0, 0, new int[4],
-//                        new StringType((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origSlic"))),
-//                new HdfDataTypeBase("origSort", 15, 0, 0, new int[4],
-//                        new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("origSort"), new BitSet())),
-//                new HdfDataTypeBase("destCountry", 16, 0, 0, new int[4],
-//                        new StringType((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destCountry"))),
-//                new HdfDataTypeBase("destSlic", 18, 0, 0, new int[4],
-//                        new StringType((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destSlic"))),
-//                new HdfDataTypeBase("destIbi", 23, 0, 0, new int[4],
-//                        new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("destIbi"), new BitSet())),
-//                new HdfDataTypeBase("destPostalCode", 40, 0, 0, new int[4],
-//                        new StringType((byte) 1, (short)9, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destPostalCode"))),
-//                new HdfDataTypeBase("shipper", 24, 0, 0, new int[4],
-//                        new StringType((byte) 1, (short)10, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("shipper"))),
-//                new HdfDataTypeBase("service", 49, 0, 0, new int[4],
-//                        new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("service"), new BitSet())),
-//                new HdfDataTypeBase("packageType", 50, 0, 0, new int[4],
-//                        new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("packageType"), new BitSet())),
-//                new HdfDataTypeBase("accessorials", 51, 0, 0, new int[4],
-//                        new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("accessorials"), new BitSet())),
-//                new HdfDataTypeBase("pieces", 52, 0, 0, new int[4],
-//                        new FixedPointType((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("pieces"), new BitSet())),
-//                new HdfDataTypeBase("weight", 34, 0, 0, new int[4],
-//                        new FixedPointType((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("weight"), new BitSet())),
-//                new HdfDataTypeBase("cube", 36, 0, 0, new int[4],
-//                        new FixedPointType((byte) 1, (short)4, false, false, false, false, (short)0, (short)32, computeFixedMessageDataSize("cube"), new BitSet())),
-//                new HdfDataTypeBase("committedTnt", 54, 0, 0, new int[4],
-//                        new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedTnt"), new BitSet())),
-//                new HdfDataTypeBase("committedDate", 55, 0, 0, new int[4],
-//                        new FixedPointType((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedDate"), new BitSet()))
+//        // Define a dataset with correct CompoundDatatype members
+//        // DatatypeMessage with CompoundDatatype
+//        List<HdfDatatypeBase> members = List.of(
+//                new HdfDatatypeBase("shipmentId", 0, 0, 0, new int[4],
+//                        new FixedPointDatatype((byte) 1, (short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"), new BitSet())),
+//                new HdfDatatypeBase("origCountry", 8, 0, 0, new int[4],
+//                        new StringDatatype((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origCountry"))),
+//                new HdfDatatypeBase("origSlic", 10, 0, 0, new int[4],
+//                        new StringDatatype((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origSlic"))),
+//                new HdfDatatypeBase("origSort", 15, 0, 0, new int[4],
+//                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("origSort"), new BitSet())),
+//                new HdfDatatypeBase("destCountry", 16, 0, 0, new int[4],
+//                        new StringDatatype((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destCountry"))),
+//                new HdfDatatypeBase("destSlic", 18, 0, 0, new int[4],
+//                        new StringDatatype((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destSlic"))),
+//                new HdfDatatypeBase("destIbi", 23, 0, 0, new int[4],
+//                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("destIbi"), new BitSet())),
+//                new HdfDatatypeBase("destPostalCode", 40, 0, 0, new int[4],
+//                        new StringDatatype((byte) 1, (short)9, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destPostalCode"))),
+//                new HdfDatatypeBase("shipper", 24, 0, 0, new int[4],
+//                        new StringDatatype((byte) 1, (short)10, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("shipper"))),
+//                new HdfDatatypeBase("service", 49, 0, 0, new int[4],
+//                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("service"), new BitSet())),
+//                new HdfDatatypeBase("packageType", 50, 0, 0, new int[4],
+//                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("packageType"), new BitSet())),
+//                new HdfDatatypeBase("accessorials", 51, 0, 0, new int[4],
+//                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("accessorials"), new BitSet())),
+//                new HdfDatatypeBase("pieces", 52, 0, 0, new int[4],
+//                        new FixedPointDatatype((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("pieces"), new BitSet())),
+//                new HdfDatatypeBase("weight", 34, 0, 0, new int[4],
+//                        new FixedPointDatatype((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("weight"), new BitSet())),
+//                new HdfDatatypeBase("cube", 36, 0, 0, new int[4],
+//                        new FixedPointDatatype((byte) 1, (short)4, false, false, false, false, (short)0, (short)32, computeFixedMessageDataSize("cube"), new BitSet())),
+//                new HdfDatatypeBase("committedTnt", 54, 0, 0, new int[4],
+//                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedTnt"), new BitSet())),
+//                new HdfDatatypeBase("committedDate", 55, 0, 0, new int[4],
+//                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedDate"), new BitSet()))
 //        );
 //
 //
@@ -283,7 +283,7 @@ public class App {
 //        // Define Compound DataType correctly
 //        short compoundSize = (short) members.stream().mapToInt(c->c.getType().getSize()).sum();
 //        // Define Compound DataType correctly
-//        CompoundDataType compoundType = new CompoundDataType(members.size(), compoundSize, members);
+//        CompoundDatatype compoundType = new CompoundDatatype(members.size(), compoundSize, members);
 //        DatatypeMessage dataTypeMessage = new DatatypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)56}, (short)4), compoundType);
 ////        dataTypeMessage.setDataType(compoundType);
 //        headerMessages.add(dataTypeMessage);
