@@ -44,9 +44,57 @@ public class CompoundDatatype implements HdfDatatype {
         this.members = new ArrayList<>();
 //        buffer.position(8);
         for (int i = 0; i < numberOfMembers; i++) {
+            buffer.mark();
+            String name = readNullTerminatedString(buffer);
 
-            members.add(DatatypeMessage.parseMember(buffer));
+            // Align to 8-byte boundary
+            alignBufferTo8ByteBoundary(buffer, name.length() + 1);
+
+            int offset = buffer.getInt();
+            int dimensionality = Byte.toUnsignedInt(buffer.get());
+            buffer.position(buffer.position() + 3); // Skip reserved bytes
+            int dimensionPermutation = buffer.getInt();
+            buffer.position(buffer.position() + 4); // Skip reserved bytes
+
+            int[] dimensionSizes = new int[4];
+            for (int j = 0; j < 4; j++) {
+                dimensionSizes[j] = buffer.getInt();
+            }
+
+//            HdfDatatype type = parseMessageDataType(buffer, name);
+
+//            String name = "get parsed";
+            byte classAndVersion = buffer.get();
+            byte version = (byte) ((classAndVersion >> 4) & 0x0F);
+            byte dataTypeClass = (byte) (classAndVersion & 0x0F);
+
+            byte[] classBits = new byte[3];
+            buffer.get(classBits);
+            BitSet classBitField = BitSet.valueOf(new long[]{
+                    ((long) classBits[2] & 0xFF) << 16 | ((long) classBits[1] & 0xFF) << 8 | ((long) classBits[0] & 0xFF)
+            });
+
+            int size = buffer.getInt();
+            HdfDatatype hdfDatatype = DatatypeMessage.parseCompoundDataType(version, dataTypeClass, classBitField, size, name, buffer);
+            HdfCompoundDatatypeMember hdfCompoundDatatypeMember = new HdfCompoundDatatypeMember(name, offset, dimensionality, dimensionPermutation, dimensionSizes, hdfDatatype);
+
+            members.add(hdfCompoundDatatypeMember);
         }
+    }
+
+
+    private static String readNullTerminatedString(ByteBuffer buffer) {
+        StringBuilder nameBuilder = new StringBuilder();
+        byte b;
+        while ((b = buffer.get()) != 0) {
+            nameBuilder.append((char) b);
+        }
+        return nameBuilder.toString();
+    }
+
+    private static void alignBufferTo8ByteBoundary(ByteBuffer buffer, int dataLength) {
+        int padding = (8 - (dataLength % 8)) % 8;
+        buffer.position(buffer.position() + padding);
     }
 
 

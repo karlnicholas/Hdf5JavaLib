@@ -12,7 +12,7 @@ import java.util.Arrays;
 @Getter
 public class HdfFixedPoint implements HdfData {
     private final byte[] bytes;
-    private final short size;
+    private final int size;
     private final boolean signed;
     private final boolean littleEndian;
     private final boolean undefined;
@@ -30,7 +30,7 @@ public class HdfFixedPoint implements HdfData {
         this.undefined = false;
     }
 
-    public HdfFixedPoint(BigInteger value, short size, boolean signed, boolean bigEndian) {
+    public HdfFixedPoint(BigInteger value, int size, boolean signed, boolean bigEndian) {
         this.size = size;
         this.signed = signed;
         this.littleEndian = !bigEndian;
@@ -38,7 +38,7 @@ public class HdfFixedPoint implements HdfData {
         this.undefined = false;
     }
 
-    public HdfFixedPoint(boolean undefined, byte[] bytes, short size) {
+    public HdfFixedPoint(boolean undefined, byte[] bytes, int size) {
         validateSize(size);
         this.bytes = Arrays.copyOf(bytes, bytes.length);
         this.size = size;
@@ -48,7 +48,7 @@ public class HdfFixedPoint implements HdfData {
     }
 
     // Private constructor for internal usage
-    private HdfFixedPoint(byte[] bytes, short size, boolean signed, boolean littleEndian) {
+    private HdfFixedPoint(byte[] bytes, int size, boolean signed, boolean littleEndian) {
         validateSize(size);
         this.bytes = Arrays.copyOf(bytes, bytes.length);
         this.size = size;
@@ -68,11 +68,11 @@ public class HdfFixedPoint implements HdfData {
     }
 
     // Constructor for FileChannel
-    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, short size, boolean signed) throws IOException {
+    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, int size, boolean signed) throws IOException {
         return readFromFileChannel(fileChannel, size, signed, true); // Default to little-endian
     }
 
-    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, short size, boolean signed, boolean littleEndian) throws IOException {
+    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, int size, boolean signed, boolean littleEndian) throws IOException {
         validateSize(size);
         byte[] bytes = new byte[size];
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
@@ -87,11 +87,11 @@ public class HdfFixedPoint implements HdfData {
     }
 
     // Constructor for ByteBuffer
-    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, short size, boolean signed) {
+    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, int size, boolean signed) {
         return readFromByteBuffer(buffer, size, signed, true); // Default to little-endian
     }
 
-    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, short size, boolean signed, boolean littleEndian) {
+    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, int size, boolean signed, boolean littleEndian) {
         validateSize(size);
         byte[] bytes = new byte[size];
         buffer.get(bytes);
@@ -106,14 +106,14 @@ public class HdfFixedPoint implements HdfData {
     }
 
     // Factory method for undefined values
-    public static HdfFixedPoint undefined(short size) {
+    public static HdfFixedPoint undefined(int size) {
         byte[] undefinedBytes = new byte[size];
         Arrays.fill(undefinedBytes, (byte) 0xFF);
         return new HdfFixedPoint(true, undefinedBytes, size);
     }
 
     // Factory method for undefined values
-    public static HdfFixedPoint undefined(ByteBuffer buffer, short size) {
+    public static HdfFixedPoint undefined(ByteBuffer buffer, int size) {
         byte[] undefinedBytes = new byte[size];
         buffer.get(undefinedBytes);
         return new HdfFixedPoint(true, undefinedBytes, size);

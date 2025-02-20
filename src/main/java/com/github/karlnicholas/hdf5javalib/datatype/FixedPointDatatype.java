@@ -11,7 +11,7 @@ import java.util.BitSet;
 public class FixedPointDatatype implements HdfDatatype {
     private final byte version;
     private final BitSet classBitField;
-    private final short size;
+    private final int size;
     private final boolean bigEndian;
     private final boolean loPad;
     private final boolean hiPad;
@@ -20,7 +20,7 @@ public class FixedPointDatatype implements HdfDatatype {
     private final short bitPrecision;
     private final short sizeMessageData;
 
-    public FixedPointDatatype(byte version, short size, boolean bigEndian, boolean loPad, boolean hiPad, boolean signed, short bitOffset, short bitPrecision, short sizeMessageData, BitSet classBitField) {
+    public FixedPointDatatype(byte version, int size, boolean bigEndian, boolean loPad, boolean hiPad, boolean signed, short bitOffset, short bitPrecision, short sizeMessageData, BitSet classBitField) {
 
         this.version = version;
         this.size = size;

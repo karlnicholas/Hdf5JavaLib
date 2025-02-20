@@ -8,14 +8,14 @@ import java.nio.ByteBuffer;
 @Getter
 public class StringDatatype implements HdfDatatype {
     private final byte version;
-    private final short size;
+    private final int size;
     private final int paddingType;
     private final String paddingDescription;
     private final int charSet;
     private final String charSetDescription;
     private final short sizeMessageData;
 
-    public StringDatatype(byte version, short size, int paddingType, String paddingDescription, int charSet, String charSetDescription, short sizeMessageData) {
+    public StringDatatype(byte version, int size, int paddingType, String paddingDescription, int charSet, String charSetDescription, short sizeMessageData) {
         this.version = version;
         this.size = size;
         this.paddingType = paddingType;
@@ -26,7 +26,7 @@ public class StringDatatype implements HdfDatatype {
     }
 
     public HdfString getInstance(ByteBuffer dataBuffer) {
-        byte[] bytes = new byte[(int)size];
+        byte[] bytes = new byte[size];
         dataBuffer.get(bytes);
         return new HdfString(bytes, paddingType > 0 , charSet > 0 );
     }

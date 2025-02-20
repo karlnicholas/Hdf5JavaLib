@@ -7,12 +7,12 @@ import java.nio.ByteBuffer;
 @Getter
 public class FloatingPointDatatype implements HdfDatatype {
     private final byte version;
-    private final short size;
+    private final int size;
     private final int exponentBits;
     private final int mantissaBits;
     private final boolean bigEndian;
 
-    public FloatingPointDatatype(byte version, short size, int exponentBits, int mantissaBits, boolean bigEndian) {
+    public FloatingPointDatatype(byte version, int size, int exponentBits, int mantissaBits, boolean bigEndian) {
         this.version = version;
         this.size = size;
         this.exponentBits = exponentBits;
@@ -36,7 +36,7 @@ public class FloatingPointDatatype implements HdfDatatype {
 
     @Override
     public short getSizeMessageData() {
-        return size;
+        return (short)size;
     }
 
     @Override
