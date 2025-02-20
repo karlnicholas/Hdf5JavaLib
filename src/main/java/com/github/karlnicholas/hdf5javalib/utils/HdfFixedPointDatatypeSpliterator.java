@@ -1,24 +1,27 @@
 package com.github.karlnicholas.hdf5javalib.utils;
 
+import com.github.karlnicholas.hdf5javalib.data.CompoundDataSource;
+import com.github.karlnicholas.hdf5javalib.data.FixedPointDataSource;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
-public class HdfSpliterator<T> implements Spliterator<T> {
+public class HdfFixedPointDatatypeSpliterator<T> implements Spliterator<T> {
     private final FileChannel fileChannel;
     private final long recordSize;
     private final long endOffset;
     private long currentOffset;
-    private HdfDataSource<T> hdfDataSource;
+    private FixedPointDataSource<T> fixedPointDataSource;
 
-    public HdfSpliterator(FileChannel fileChannel, long startOffset, long recordSize, long numberOfRecords, HdfDataSource<T> hdfDataSource) {
+    public HdfFixedPointDatatypeSpliterator(FileChannel fileChannel, long startOffset, long recordSize, long numberOfRecords, FixedPointDataSource<T> fixedPointDataSource) {
         this.fileChannel = fileChannel;
         this.recordSize = recordSize;
         this.currentOffset = startOffset;
         this.endOffset = startOffset + recordSize * numberOfRecords;
-        this.hdfDataSource = hdfDataSource;
+        this.fixedPointDataSource = fixedPointDataSource;
     }
 
     @Override
@@ -39,7 +42,7 @@ public class HdfSpliterator<T> implements Spliterator<T> {
             buffer.flip();
 
             // Use the prototype to populate a new instance
-            T dataSource = hdfDataSource.populateFromBuffer(buffer);
+            T dataSource = fixedPointDataSource.populateFromBuffer(buffer);
 
             action.accept(dataSource);
 
@@ -58,8 +61,8 @@ public class HdfSpliterator<T> implements Spliterator<T> {
         }
 
         long midpoint = currentOffset + (remainingRecords / 2) * recordSize;
-        Spliterator<T> newSpliterator = new HdfSpliterator<>(
-                fileChannel, currentOffset, recordSize, (midpoint - currentOffset) / recordSize, hdfDataSource
+        Spliterator<T> newSpliterator = new HdfFixedPointDatatypeSpliterator<>(
+                fileChannel, currentOffset, recordSize, (midpoint - currentOffset) / recordSize, fixedPointDataSource
         );
         currentOffset = midpoint;
         return newSpliterator;

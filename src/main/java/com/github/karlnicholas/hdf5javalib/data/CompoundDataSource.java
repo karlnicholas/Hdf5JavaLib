@@ -1,8 +1,6 @@
-package com.github.karlnicholas.hdf5javalib.utils;
+package com.github.karlnicholas.hdf5javalib.data;
 
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
-import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfCompoundDatatypeMember;
 import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
@@ -14,11 +12,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HdfDataSource<T> {
+public class CompoundDataSource<T> {
     private final Class<T> clazz;
     private final Map<Field, HdfCompoundDatatypeMember> fieldToMemberMap = new HashMap<>();
 
-    public HdfDataSource(CompoundDatatype compoundDataType, Class<T> clazz) {
+    public CompoundDataSource(CompoundDatatype compoundDataType, Class<T> clazz) {
         this.clazz = clazz;
 
         // Parse fields and map them to CompoundDatatype members

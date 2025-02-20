@@ -83,13 +83,14 @@ public class HdfReader {
 
         for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
             if (message instanceof DatatypeMessage dataTypeMessage) {
-                // Check if the datatype is Compound
-                if (dataTypeMessage.getDataTypeClass() == 6) {
+//                // Check if the datatype is Compound
+//                if (dataTypeMessage.getDataTypeClass() == 6) {
+//                    dataType = dataTypeMessage.getHdfDatatype();
+//                } else {
+//                    // For other datatype classes, parsing logic will be added later
+//                    throw new UnsupportedOperationException("Datatype class " + dataTypeMessage.getDataTypeClass() + " not yet implemented.");
+//                }
                     dataType = dataTypeMessage.getHdfDatatype();
-                } else {
-                    // For other datatype classes, parsing logic will be added later
-                    throw new UnsupportedOperationException("Datatype class " + dataTypeMessage.getDataTypeClass() + " not yet implemented.");
-                }
             } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
                 dataAddress = dataLayoutMessage.getDataAddress().getBigIntegerValue().longValue();
                 dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getBigIntegerValue().longValue();

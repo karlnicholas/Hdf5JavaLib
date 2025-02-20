@@ -1,18 +1,23 @@
 package com.github.karlnicholas.hdf5javalib;
 
+import com.github.karlnicholas.hdf5javalib.data.FixedPointDataSource;
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfCompoundDatatypeMember;
 import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
 import com.github.karlnicholas.hdf5javalib.file.*;
-import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
+import com.github.karlnicholas.hdf5javalib.utils.HdfCompoundDatatypeSpliterator;
+import com.github.karlnicholas.hdf5javalib.utils.HdfFixedPointDatatypeSpliterator;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Hello world!
@@ -33,7 +38,7 @@ public class App {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
 //                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
-//                trySpliterator(channel, reader);
+                trySpliterator(channel, reader);
 //                new HdfConstruction().buildHfd();
             }
         } catch (IOException e) {
@@ -114,7 +119,7 @@ public class App {
 //            attributeMessage.write(attr_type, attributeValue);
 
 //            AtomicInteger countHolder = new AtomicInteger(0);
-//            HdfDataSource<VolumeData> volumeDataHdfDataSource = new HdfDataSource<>(compoundType, VolumeData.class);
+//            CompoundDataSource<VolumeData> volumeDataHdfDataSource = new CompoundDataSource<>(compoundType, VolumeData.class);
 //            ByteBuffer volumeBuffer = ByteBuffer.allocate(compoundType.getSize());
 //            // Write to dataset
 //            dataset.write(() -> {
@@ -194,17 +199,17 @@ public class App {
 
     public void trySpliterator(FileChannel fileChannel, HdfReader reader) {
 
-//        HdfDataSource<VolumeData> hdfDataSource = new HdfDataSource<>(reader.getDataTypeMember(), VolumeData.class);
-//
-//        Spliterator<VolumeData> spliterator = new HdfSpliterator<>(fileChannel, reader.getDataAddress(), reader.getDataTypeMember().getSize(), reader.getDimension(), hdfDataSource);
-//
-//        System.out.println("count = " + StreamSupport.stream(spliterator, false).map(VolumeData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
+        FixedPointDataSource<TemperatureData> fixedPointDataSource = new FixedPointDataSource<>((FixedPointDatatype) reader.getDataType(), "temperature", TemperatureData.class);
+
+        Spliterator<TemperatureData> spliterator = new HdfFixedPointDatatypeSpliterator<>(fileChannel, reader.getDataAddress(), reader.getDataType().getSize(), reader.getDimension(), fixedPointDataSource);
+
+        System.out.println("count = " + StreamSupport.stream(spliterator, false).map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
 
 
-//        spliterator.forEachRemaining(buffer -> {
-//            // Process each ByteBuffer (record) here
-//            System.out.println("Record: " + buffer);
-//        });
+        spliterator.forEachRemaining(buffer -> {
+            // Process each ByteBuffer (record) here
+            System.out.println("Record: " + buffer);
+        });
 
     }
 

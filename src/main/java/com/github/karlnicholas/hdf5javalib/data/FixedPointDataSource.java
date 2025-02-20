@@ -1,0 +1,81 @@
+package com.github.karlnicholas.hdf5javalib.data;
+
+import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
+import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfCompoundDatatypeMember;
+import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
+
+import java.lang.reflect.Field;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
+public class FixedPointDataSource<T> {
+    private final Class<T> clazz;
+    private final FixedPointDatatype fixedPointDatatype;
+    private final Field field;
+
+    public FixedPointDataSource(FixedPointDatatype fixedPointDatatype, String name, Class<T> clazz) {
+        this.clazz = clazz;
+        this.fixedPointDatatype = fixedPointDatatype;
+        // Parse fields and map them to CompoundDatatype members
+        Field fieldToSet = null;
+        for (Field field : clazz.getDeclaredFields()) {
+            field.setAccessible(true);
+            if( field.getName().equals(name)) {
+                fieldToSet = field;
+                break;
+            }
+        }
+        this.field = fieldToSet;
+    }
+
+    /**
+     * Populates a new instance of T with data from the buffer.
+     */
+    public T populateFromBuffer(ByteBuffer buffer) {
+        try {
+            // Create an instance of T
+            T instance = clazz.getDeclaredConstructor().newInstance();
+            BigInteger value = fixedPointDatatype.getInstance(buffer).getBigIntegerValue();
+            field.set(instance, value);
+            return instance;
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating and populating instance of " + clazz.getName(), e);
+        }
+    }
+    /**
+     * Writes the given instance of T into the provided ByteBuffer.
+     */
+//    public void writeToBuffer(T instance, ByteBuffer buffer) {
+//        try {
+//            for (Map.Entry<Field, HdfCompoundDatatypeMember> entry : fieldToMemberMap.entrySet()) {
+//                Field field = entry.getKey();
+//                HdfCompoundDatatypeMember member = entry.getValue();
+//
+//                // Move to the correct offset
+//                buffer.position(member.getOffset());
+//
+//                Object value = field.get(instance);
+//
+//                if (value instanceof String strValue && member.getType() instanceof StringDatatype stringDatatype) {
+//                    // Convert string to bytes and write to buffer
+//                    ByteBuffer stringBuffer = ByteBuffer.allocate(stringDatatype.getSize());
+//                    HdfString s = new HdfString(strValue.getBytes(StandardCharsets.US_ASCII), false, false);
+//                    s.writeValueToByteBuffer(stringBuffer);
+//                    buffer.put(stringBuffer.array());
+//                } else if (value instanceof BigInteger bigIntValue && member.getType() instanceof FixedPointDatatype fixedPointDatatype) {
+//                    // Convert BigInteger to bytes and write to buffer
+//                    new HdfFixedPoint(bigIntValue, fixedPointDatatype.getSize(), fixedPointDatatype.isSigned(), fixedPointDatatype.isBigEndian())
+//                            .writeValueToByteBuffer(buffer);
+//                }
+//                // Add more type handling as needed
+//
+//            }
+//        } catch (Exception e) {
+//            throw new RuntimeException("Error writing instance of " + clazz.getName() + " to ByteBuffer", e);
+//        }
+//    }
+}
