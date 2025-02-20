@@ -75,7 +75,7 @@ public class AttributeMessage extends HdfMessage {
 
         HdfData value = null;
         if ( dt.getDataTypeClass() == 3 ) {
-            int dtDataSize = dt.getSize().getBigIntegerValue().intValue();
+            int dtDataSize = dt.getSize();
             byte[] dataBytes = new byte[dtDataSize];
             buffer.get(dataBytes);
             value = new HdfString(dataBytes, false, false);

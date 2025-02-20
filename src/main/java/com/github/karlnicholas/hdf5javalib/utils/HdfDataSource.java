@@ -4,7 +4,7 @@ import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatypeBase;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfCompoundDatatypeMember;
 import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
 
 import java.lang.reflect.Field;
@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class HdfDataSource<T> {
     private final Class<T> clazz;
-    private final Map<Field, HdfDatatypeBase> fieldToMemberMap = new HashMap<>();
+    private final Map<Field, HdfCompoundDatatypeMember> fieldToMemberMap = new HashMap<>();
 
     public HdfDataSource(CompoundDatatype compoundDataType, Class<T> clazz) {
         this.clazz = clazz;
@@ -41,9 +41,9 @@ public class HdfDataSource<T> {
             T instance = clazz.getDeclaredConstructor().newInstance();
 
             // Populate fields using the pre-parsed map
-            for (Map.Entry<Field, HdfDatatypeBase> entry : fieldToMemberMap.entrySet()) {
+            for (Map.Entry<Field, HdfCompoundDatatypeMember> entry : fieldToMemberMap.entrySet()) {
                 Field field = entry.getKey();
-                HdfDatatypeBase member = entry.getValue();
+                HdfCompoundDatatypeMember member = entry.getValue();
 
                 buffer.position(member.getOffset());
 
@@ -67,9 +67,9 @@ public class HdfDataSource<T> {
      */
     public void writeToBuffer(T instance, ByteBuffer buffer) {
         try {
-            for (Map.Entry<Field, HdfDatatypeBase> entry : fieldToMemberMap.entrySet()) {
+            for (Map.Entry<Field, HdfCompoundDatatypeMember> entry : fieldToMemberMap.entrySet()) {
                 Field field = entry.getKey();
-                HdfDatatypeBase member = entry.getValue();
+                HdfCompoundDatatypeMember member = entry.getValue();
 
                 // Move to the correct offset
                 buffer.position(member.getOffset());

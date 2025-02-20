@@ -14,10 +14,10 @@ import java.util.List;
 public class CompoundDatatype implements HdfDatatype {
     private final int numberOfMembers; // Number of members in the compound datatype
     private final int size;
-    private List<HdfDatatypeBase> members;     // Member definitions
+    private List<HdfCompoundDatatypeMember> members;     // Member definitions
 
     // New application-level constructor
-    public CompoundDatatype(int numberOfMembers, int size, List<HdfDatatypeBase> members) {
+    public CompoundDatatype(int numberOfMembers, int size, List<HdfCompoundDatatypeMember> members) {
         this.numberOfMembers = numberOfMembers;
         this.size = size;
         this.members = new ArrayList<>(members); // Deep copy to avoid external modification
@@ -52,7 +52,7 @@ public class CompoundDatatype implements HdfDatatype {
 
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        for (HdfDatatypeBase member: members) {
+        for (HdfCompoundDatatypeMember member: members) {
             buffer.put(member.getName().getBytes(StandardCharsets.US_ASCII));
             buffer.put((byte)0);
             int paddingSize = (8 -  ((member.getName().length()+1)% 8)) % 8;
@@ -87,7 +87,7 @@ public class CompoundDatatype implements HdfDatatype {
     @Override
     public short getSizeMessageData() {
         short size = 0;
-        for(HdfDatatypeBase member: members) {
+        for(HdfCompoundDatatypeMember member: members) {
             size += member.getType().getSizeMessageData();
         }
         return size;
