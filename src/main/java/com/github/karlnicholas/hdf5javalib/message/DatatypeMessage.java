@@ -1,6 +1,5 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
-import com.github.karlnicholas.hdf5javalib.data.HdfData;
 import com.github.karlnicholas.hdf5javalib.datatype.*;
 import lombok.Getter;
 
@@ -59,7 +58,7 @@ public class DatatypeMessage extends HdfMessage {
 
         // Parse Size (unsigned 4 bytes)
         int size = buffer.getInt();
-        HdfDatatype hdfDatatype = parseMessageDataType(version, dataTypeClass, classBitField, size, buffer, null);
+        HdfDatatype hdfDatatype = parseMessageDataType(version, dataTypeClass, classBitField, size, buffer);
     //        // Return a constructed instance of DatatypeMessage
 //        HdfCompoundDatatypeMember hdfDataTypeBase;
 //        if ( dataTypeClass == 6) {
@@ -108,21 +107,21 @@ public class DatatypeMessage extends HdfMessage {
 //
 //    }
 
-    private static HdfDatatype parseMessageDataType(byte version, byte dataTypeClass, BitSet classBitField, int size, ByteBuffer buffer, String name) {
+    private static HdfDatatype parseMessageDataType(byte version, byte dataTypeClass, BitSet classBitField, int size, ByteBuffer buffer) {
         return switch (dataTypeClass) {
-            case 0 -> parseFixedPoint(version, classBitField, size, name, buffer);
-            case 1 -> parseFloatingPoint(version, classBitField, size, name, buffer);
-            case 3 -> parseString(version, classBitField, size, name);
-            case 6 -> parseCompoundDataType(version, dataTypeClass, classBitField, size, name, buffer);
+            case 0 -> parseFixedPoint(version, classBitField, size, buffer);
+            case 1 -> parseFloatingPoint(version, classBitField, size, buffer);
+            case 3 -> parseString(version, classBitField, size);
+            case 6 -> parseCompoundDataType(version, dataTypeClass, classBitField, size, buffer);
             default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
         };
     }
 
-    public static HdfDatatype parseCompoundDataType(byte version, byte dataTypeClass, BitSet classBitField, int size, String name, ByteBuffer buffer) {
+    public static HdfDatatype parseCompoundDataType(byte version, byte dataTypeClass, BitSet classBitField, int size, ByteBuffer buffer) {
          return switch (dataTypeClass) {
-            case 0 -> parseFixedPoint(version, classBitField, size, name, buffer);
-            case 1 -> parseFloatingPoint(version, classBitField, size, name, buffer );
-            case 3 -> parseString(version, classBitField, size, name);
+            case 0 -> parseFixedPoint(version, classBitField, size, buffer);
+            case 1 -> parseFloatingPoint(version, classBitField, size, buffer );
+            case 3 -> parseString(version, classBitField, size);
 //            case 6 -> parseCompoundDataType(version, size, classBitField, name, buffer);
             default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
         };
@@ -134,7 +133,7 @@ public class DatatypeMessage extends HdfMessage {
 //        return new HdfCompoundDatatypeMember(name, offset, dimensionality, dimensionPermutation, dimensionSizes, hdfDatatype);
     }
 
-    private static FixedPointDatatype parseFixedPoint(byte version, BitSet classBitField, int size, String name, ByteBuffer buffer) {
+    private static FixedPointDatatype parseFixedPoint(byte version, BitSet classBitField, int size, ByteBuffer buffer) {
         boolean bigEndian = classBitField.get(0);
         boolean loPad = classBitField.get(1);
         boolean hiPad = classBitField.get(2);
@@ -143,25 +142,26 @@ public class DatatypeMessage extends HdfMessage {
         short bitOffset = buffer.getShort();
         short bitPrecision = buffer.getShort();
 
-        short messageDataSize;
-        if ( name.length() > 0 ) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            messageDataSize = (short) (name.length()+1 + padding + 44);
-        } else {
-            messageDataSize = 44;
-        }
+//        short messageDataSize;
+//        if ( name.length() > 0 ) {
+//            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+//            messageDataSize = (short) (name.length()+1 + padding + 44);
+//        } else {
+//            messageDataSize = 44;
+//        }
+        short messageDataSize = 44;
 
         return new FixedPointDatatype(version, size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision, messageDataSize, classBitField);
     }
 
-    private static FloatingPointDatatype parseFloatingPoint(byte version, BitSet classBitField, int size, String name, ByteBuffer buffer) {
+    private static FloatingPointDatatype parseFloatingPoint(byte version, BitSet classBitField, int size, ByteBuffer buffer) {
         boolean bigEndian = classBitField.get(0);
         int exponentBits = buffer.getInt();
         int mantissaBits = buffer.getInt();
         return new FloatingPointDatatype(version, size, exponentBits, mantissaBits, bigEndian);
     }
 
-    private static StringDatatype parseString(byte version, BitSet classBitField, int size, String name) {
+    private static StringDatatype parseString(byte version, BitSet classBitField, int size) {
         int paddingType = extractBits(classBitField, 0, 3);
         int charSet = extractBits(classBitField, 4, 7);
 
@@ -178,8 +178,9 @@ public class DatatypeMessage extends HdfMessage {
             default -> "Reserved";
         };
 
-        int padding = (8 -  ((name.length()+1)% 8)) % 8;
-        short messageDataSize = (short) (name.length()+1 + padding + 40);
+//        int padding = (8 -  ((name.length()+1)% 8)) % 8;
+//        short messageDataSize = (short) (name.length()+1 + padding + 40);
+        short messageDataSize = (short) 40;
 
         return new StringDatatype(version, size, paddingType, paddingDescription, charSet, charSetDescription, messageDataSize);
     }

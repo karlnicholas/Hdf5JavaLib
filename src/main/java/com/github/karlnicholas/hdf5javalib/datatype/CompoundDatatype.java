@@ -75,7 +75,7 @@ public class CompoundDatatype implements HdfDatatype {
             });
 
             int size = buffer.getInt();
-            HdfDatatype hdfDatatype = DatatypeMessage.parseCompoundDataType(version, dataTypeClass, classBitField, size, name, buffer);
+            HdfDatatype hdfDatatype = DatatypeMessage.parseCompoundDataType(version, dataTypeClass, classBitField, size, buffer);
             HdfCompoundDatatypeMember hdfCompoundDatatypeMember = new HdfCompoundDatatypeMember(name, offset, dimensionality, dimensionPermutation, dimensionSizes, hdfDatatype);
 
             members.add(hdfCompoundDatatypeMember);
