@@ -1,5 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
+import com.github.karlnicholas.hdf5javalib.SymbolTableEntry;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
@@ -18,7 +19,6 @@ import java.util.function.Supplier;
 
 @Getter
 public class HdfGroup {
-    private final HdfFile hdfFile;
     private final String name;
     private final HdfSymbolTableEntry symbolTableEntry;
     private final HdfObjectHeaderPrefixV1 objectHeader;
@@ -29,7 +29,6 @@ public class HdfGroup {
 //    private int localHeapContentsSize;
 
     public HdfGroup(
-            HdfFile hdfFile,
             String name,
             HdfSymbolTableEntry symbolTableEntry,
             HdfObjectHeaderPrefixV1 objectHeader,
@@ -38,7 +37,6 @@ public class HdfGroup {
             HdfLocalHeapContents localHeapContents,
             HdfGroupSymbolTableNode symbolTableNode
     ) {
-        this.hdfFile = hdfFile;
         this.name = name;
         this.symbolTableEntry = symbolTableEntry;
         this.objectHeader = objectHeader;
@@ -48,8 +46,7 @@ public class HdfGroup {
         this.symbolTableNode = symbolTableNode;
     }
 
-    public HdfGroup(HdfFile hdfFile, String name) {
-        this.hdfFile = hdfFile;
+    public HdfGroup(String name, HdfSymbolTableEntry symbolTableEntry) {
         this.name = name;
         int localHeapContentsSize;
         // Define the heap data size, why 88 I don't know.
@@ -74,12 +71,7 @@ public class HdfGroup {
                         HdfFixedPoint.undefined((short)8))));
 
         // Define a root group
-        symbolTableEntry = new HdfSymbolTableEntry(
-                HdfFixedPoint.of(0),
-                HdfFixedPoint.of(hdfFile.getObjectHeaderPrefixAddress()),
-                1,
-                HdfFixedPoint.of(hdfFile.getBtreeAddress()),
-                HdfFixedPoint.of(hdfFile.getLocalHeapAddress()));
+        this.symbolTableEntry = symbolTableEntry;
         symbolTableNode = new HdfGroupSymbolTableNode("SNOD", 1, 0, new ArrayList<>());
     }
 
@@ -160,14 +152,14 @@ public class HdfGroup {
 //        return buffer.flip();
 //    }
 
-    public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
-        hdfFile.write(bufferSupplier, hdfDataSet);
+    public long write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
+//        hdfFile.write(bufferSupplier, hdfDataSet);
+        return 0;
     }
     @Override
     public String toString() {
         return "HdfGroup{" +
-                "hdfFile=" + hdfFile +
-                "\r\n\tname='" + name + '\'' +
+                "name='" + name + '\'' +
                 "\r\n\tsymbolTableEntry=" + symbolTableEntry +
                 "\r\n\tobjectHeader=" + objectHeader +
                 "\r\n\tbTree=" + bTree +

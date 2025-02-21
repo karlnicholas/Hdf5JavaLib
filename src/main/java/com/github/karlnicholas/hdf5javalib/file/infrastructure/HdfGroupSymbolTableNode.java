@@ -63,8 +63,8 @@ public class HdfGroupSymbolTableNode {
                 "signature='" + signature + '\'' +
                 ", version=" + version +
                 ", numberOfSymbols=" + numberOfSymbols +
-                ", symbolTableEntries=" + symbolTableEntries +
-                '}';
+                ", symbolTableEntries=\r\n\t\t" + symbolTableEntries +
+                "\r\n}";
     }
 
     public void addEntry(HdfSymbolTableEntry hdfSymbolTableEntry) {

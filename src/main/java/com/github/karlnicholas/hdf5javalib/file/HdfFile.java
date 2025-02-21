@@ -3,6 +3,7 @@ package com.github.karlnicholas.hdf5javalib.file;
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
+import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
 import lombok.Getter;
@@ -102,7 +103,15 @@ public class HdfFile {
                 HdfFixedPoint.of(dataGroupAddress),
                 HdfFixedPoint.undefined((short)8));
 
-        rootGroup = new HdfGroup(this, "");
+        HdfSymbolTableEntry symbolTableEntry = new HdfSymbolTableEntry(
+                HdfFixedPoint.of(0),
+                HdfFixedPoint.of(objectHeaderPrefixAddress),
+                1,
+                HdfFixedPoint.of(localHeapAddress),
+                HdfFixedPoint.of(localHeapContentsAddress)
+        );
+
+        rootGroup = new HdfGroup("", symbolTableEntry);
         datasetRecordCount = new AtomicLong();
 
     }

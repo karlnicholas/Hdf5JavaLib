@@ -41,22 +41,7 @@ public class HdfDataSet {
     }
 
     public void write(Supplier<ByteBuffer> bufferSupplier) throws IOException {
-        hdfGroup.write(bufferSupplier, this);
-    }
-
-//    public AttributeMessage createAttribute(String attributeName, HdfFixedPoint attrType, HdfFixedPoint[] attrSpace) {
-//        DatatypeMessage dt = new DatatypeMessage(1, 3, BitSet.valueOf(new byte[0]), attrType, new HdfString(attributeName, false));
-//        DataspaceMessage ds = new DataspaceMessage(1, 1, 1, attrSpace, null, false);
-//        AttributeMessage attributeMessage = new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), null);
-//        attributes.add(attributeMessage);
-//        return attributeMessage;
-//    }
-
-    public void close() {
-        long recordCount = hdfGroup.getHdfFile().getDatasetRecordCount().get();
-        // Initialize the localHeapContents heapData array
-//        System.arraycopy(hdfDataSet.getDatasetName().getBytes(StandardCharsets.US_ASCII), 0, hdfFile.getLocalHeapContents().getHeapData(), 8, hdfDataSet.getDatasetName().length());
-
+        long recordCount = hdfGroup.write(bufferSupplier, this);
         List<HdfMessage> headerMessages = new ArrayList<>();
 //        headerMessages.add(new ObjectHeaderContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
 //        headerMessages.add(new NilMessage());
@@ -121,6 +106,85 @@ public class HdfDataSet {
         }
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, objectHeaderSize, headerMessages);
 
+    }
+
+//    public AttributeMessage createAttribute(String attributeName, HdfFixedPoint attrType, HdfFixedPoint[] attrSpace) {
+//        DatatypeMessage dt = new DatatypeMessage(1, 3, BitSet.valueOf(new byte[0]), attrType, new HdfString(attributeName, false));
+//        DataspaceMessage ds = new DataspaceMessage(1, 1, 1, attrSpace, null, false);
+//        AttributeMessage attributeMessage = new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), null);
+//        attributes.add(attributeMessage);
+//        return attributeMessage;
+//    }
+
+    public void close() {
+//        long recordCount = hdfGroup.getHdfFile().getDatasetRecordCount().get();
+        // Initialize the localHeapContents heapData array
+//        System.arraycopy(hdfDataSet.getDatasetName().getBytes(StandardCharsets.US_ASCII), 0, hdfFile.getLocalHeapContents().getHeapData(), 8, hdfDataSet.getDatasetName().length());
+
+//        List<HdfMessage> headerMessages = new ArrayList<>();
+////        headerMessages.add(new ObjectHeaderContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
+////        headerMessages.add(new NilMessage());
+//
+////        DatatypeMessage dataTypeMessage = new DatatypeMessage(1, 6, BitSet.valueOf(new byte[]{0b10001}), new HdfFixedPoint(false, new byte[]{(byte)cdtSize}, (short)4), compoundDataType);
+//////        dataTypeMessage.setDataType(compoundType);
+////        headerMessages.add(dataTypeMessage);
+//
+//        // Add FillValue message
+//        headerMessages.add(new FillValueMessage(2, 2, 2, 1, HdfFixedPoint.of(0), new byte[0]));
+//
+//        // Add DataLayoutMessage (Storage format)
+//        HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(recordCount), HdfFixedPoint.of(recordCount) };
+//        DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1, HdfFixedPoint.undefined((short)8), hdfDimensionSizes, 0, null, HdfFixedPoint.undefined((short)8));
+//        headerMessages.add(dataLayoutMessage);
+//
+//        // add ObjectModification Time message
+//        headerMessages.add(new ObjectModificationTimeMessage(1, Instant.now().getEpochSecond()));
+//
+//        // Add DataspaceMessage (Handles dataset dimensionality)
+//        HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(recordCount)};
+//
+//        DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
+//        headerMessages.add(dataSpaceMessage);
+//
+//        headerMessages.addAll(attributes);
+//
+////        headerMessages.addAll(hdfDataSet.getAttributes());
+//
+//        // new long[]{1750}, new long[]{98000}
+//        int objectReferenceCount = 1;
+//        int objectHeaderSize = 0;
+//        // 8, 1, 1064
+//        for( HdfMessage headerMessage: headerMessages ) {
+//            objectHeaderSize += headerMessage.getSizeMessageData();
+//        }
+//        if ( objectHeaderSize > 1064) {
+//            List<HdfMessage> newMessages = new ArrayList<>();
+//            ObjectHeaderContinuationMessage objectHeaderContinuationMessage = new ObjectHeaderContinuationMessage(HdfFixedPoint.of(0), HdfFixedPoint.of(0));
+//            newMessages.add(objectHeaderContinuationMessage);
+//            newMessages.add(new NilMessage());
+//            newMessages.addAll(headerMessages);
+//            headerMessages = newMessages;
+//            int breakPostion = 0;
+//            int breakSize = 0;
+//            while (breakPostion < headerMessages.size()) {
+//                if ( breakSize + headerMessages.get(breakPostion).getSizeMessageData() > 1064 ) {
+//                    break;
+//                }
+//                breakSize += headerMessages.get(breakPostion).getSizeMessageData();
+//                breakPostion++;
+//            }
+//            int continueSize = 0;
+//            while (breakPostion < headerMessages.size()) {
+//                continueSize += headerMessages.get(breakPostion).getSizeMessageData();
+//                breakPostion++;
+//            }
+////            long endOfData = (hdfFile.getDatasetRecordCount().get() * compoundDataType.getSize()) + hdfFile.getDataAddress();
+////            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(endOfData));
+//            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.undefined((short)8));
+//            objectHeaderContinuationMessage.setContinuationSize(HdfFixedPoint.of(continueSize));
+//        }
+//        this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, objectHeaderSize, headerMessages);
+//
     }
 
     public void write(BigInteger[] weatherData, HdfDatatype hdfDatatype) throws IOException {

@@ -83,7 +83,6 @@ public class HdfReader {
             symbolTableNode.getSymbolTableEntries().add(symbolTableEntry);
         }
         rootGroup = new HdfGroup(
-                null,
                 "",
                 rootGroupSymbolTableEntry,
                 objectHeader,
