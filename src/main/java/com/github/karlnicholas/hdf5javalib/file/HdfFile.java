@@ -2,7 +2,9 @@ package com.github.karlnicholas.hdf5javalib.file;
 
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
+import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -107,23 +109,13 @@ public class HdfFile {
 
     /**
      * by default, the root group.
-     * @param datasetName
-     * @param compoundType
+     * @param datasetName String
+     * @param hdfDatatype HdfDatatype
+     * @param dataSpaceMessage DataspaceMessage
      * @return
      */
-    public HdfDataSet createDataSet(String datasetName, CompoundDatatype compoundType) {
-        return createDataSet(rootGroup, datasetName, compoundType);
-    }
-
-    /**
-     * Create a dataset in the group.
-     * @param datasetName
-     * @param compoundType
-     * @return
-     */
-    public HdfDataSet createDataSet(HdfGroup hdfGroup, String datasetName, CompoundDatatype compoundType) {
-//        return hdfGroup.createDataSet(datasetName, compoundType);
-        return null;
+    public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
+        return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage);
     }
 
     public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {

@@ -1,6 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
@@ -10,6 +11,7 @@ import lombok.Getter;
 
 import java.io.*;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -34,7 +36,7 @@ public class HdfReader {
         short offsetSize = superblock.getSizeOfOffsets();
         short lengthSize = superblock.getSizeOfLengths();
 
-        HdfSymbolTableEntry.HdfFileOffsets fileOffsets = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
+        HdfSymbolTableEntry fileOffsets = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
 
         // Get the object header address from the superblock
         // Parse the object header from the file using the superblock information
@@ -60,29 +62,54 @@ public class HdfReader {
         HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
 
         // Parse root group symbol table entry from the current position
-        HdfSymbolTableEntry rootGroupSymbolTableEntry = new HdfSymbolTableEntry(HdfFixedPoint.of(0), objectHeader, bTree, localHeap, localHeapContents);
-
-        long snodAddress = bTree.getEntries().get(0).getChildPointer().getBigIntegerValue().longValue();
+        HdfSymbolTableEntry rootGroupSymbolTableEntry = new HdfSymbolTableEntry(
+                HdfFixedPoint.of(0),
+                HdfFixedPoint.of(objectHeaderAddress),
+                1,
+                HdfFixedPoint.of(bTreeAddress),
+                HdfFixedPoint.of(localHeapAddress)
+        );
+        // get datasets?
+        if ( bTree.getEntriesUsed() != 1) {
+            throw new UnsupportedEncodingException("Only one btree entry is supported");
+        }
+        BTreeEntry bTreeEntry = bTree.getEntries().get(0);
+        long snodAddress = bTreeEntry.getChildPointer().getBigIntegerValue().longValue();
         fileChannel.position(snodAddress);
-        HdfGroupSymbolTableNode hdfGroupSymbolTableNode = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize, List.of(rootGroupSymbolTableEntry));
-//            System.out.println(hdfGroupSymbolTableNode);
-
+        HdfGroupSymbolTableNode symbolTableNode = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
+        int entriesToRead = symbolTableNode.getNumberOfSymbols();
+        for(int i=0; i <entriesToRead; ++i) {
+            HdfSymbolTableEntry symbolTableEntry  = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
+            symbolTableNode.getSymbolTableEntries().add(symbolTableEntry);
+        }
         rootGroup = new HdfGroup(
                 null,
-                hdfGroupSymbolTableNode,
-                ""
+                "",
+                rootGroupSymbolTableEntry,
+                objectHeader,
+                bTree,
+                localHeap,
+                localHeapContents,
+                symbolTableNode
         );
+
+
+//            System.out.println(hdfGroupSymbolTableNode);
+
         System.out.println(rootGroup);
 
-        // Parse the Data Object Header Prefix next in line
+        for( int i=0; i < symbolTableNode.getNumberOfSymbols(); ++i ) {
+            HdfSymbolTableEntry ste = symbolTableNode.getSymbolTableEntries().get(i);
+            HdfString datasetName = localHeapContents.parseStringAtOffset(ste.getLinkNameOffset());
+            // Parse the Data Object Header Prefix next in line
 //        fileChannel.position(fileOffsets.getObjectHeaderAddress().getBigIntegerValue().longValue());
-        fileChannel.position(800);
-        System.out.print(fileChannel.position() + " = ");
-        dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
-        System.out.println(dataObjectHeaderPrefix);
+            long dataLObjectHeaderAddress = ste.getObjectHeaderAddress().getBigIntegerValue().longValue();
+            fileChannel.position(dataLObjectHeaderAddress);
+            dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
+            System.out.println(datasetName + "@" + dataLObjectHeaderAddress + " = " + dataObjectHeaderPrefix);
 
-        for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
-            if (message instanceof DatatypeMessage dataTypeMessage) {
+            for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
+                if (message instanceof DatatypeMessage dataTypeMessage) {
 //                // Check if the datatype is Compound
 //                if (dataTypeMessage.getDataTypeClass() == 6) {
 //                    dataType = dataTypeMessage.getHdfDatatype();
@@ -91,12 +118,14 @@ public class HdfReader {
 //                    throw new UnsupportedOperationException("Datatype class " + dataTypeMessage.getDataTypeClass() + " not yet implemented.");
 //                }
                     dataType = dataTypeMessage.getHdfDatatype();
-            } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
-                dataAddress = dataLayoutMessage.getDataAddress().getBigIntegerValue().longValue();
-                dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getBigIntegerValue().longValue();
-            } else if (message instanceof DataspaceMessage dataSpaceMessage) {
-                dimension = dataSpaceMessage.getDimensions()[0].getBigIntegerValue().longValue();
+                } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
+                    dataAddress = dataLayoutMessage.getDataAddress().getBigIntegerValue().longValue();
+                    dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getBigIntegerValue().longValue();
+                } else if (message instanceof DataspaceMessage dataSpaceMessage) {
+                    dimension = dataSpaceMessage.getDimensions()[0].getBigIntegerValue().longValue();
+                }
             }
+
         }
 
 

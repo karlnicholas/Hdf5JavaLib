@@ -7,7 +7,7 @@ import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfCompoundDatatypeMember;
 import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
 import com.github.karlnicholas.hdf5javalib.file.*;
-import com.github.karlnicholas.hdf5javalib.utils.HdfCompoundDatatypeSpliterator;
+import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
 import com.github.karlnicholas.hdf5javalib.utils.HdfFixedPointDatatypeSpliterator;
 
 import java.io.FileInputStream;
@@ -38,16 +38,59 @@ public class App {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
 //                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
-                trySpliterator(channel, reader);
+//                trySpliterator(channel, reader);
 //                new HdfConstruction().buildHfd();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        tryHdfApi();
+//        tryHdfApiCompound();
+        tryHdfApiInts();
     }
 
-    public void tryHdfApi() {
+    public void tryHdfApiInts() {
+        final String FILE_NAME = "testone.h5";
+        final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
+        final String DATASET_NAME = "temperature";
+        final int NUM_RECORDS = 100;
+
+        try {
+            // Create a new HDF5 file
+            HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
+
+            BigInteger[] weatherData = new BigInteger[NUM_RECORDS];
+            for (int i = 0; i < NUM_RECORDS; i++) {
+                weatherData[i] = BigInteger.valueOf((long) (Math.random() *40.0 + 10.0));
+            }
+
+
+            // Create data space
+            HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
+//            hsize_t dim[1] = { NUM_RECORDS };
+//            DataSpace space(1, dim);
+
+            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype((byte) 1, 8, false, false, false, false, (short)0, (short)64, (short)-1, new BitSet());
+
+            // Create dataset
+//            DataSet dataset = file.createDataSet(DATASET_NAME, compoundType, space);
+            HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
+
+            dataset.write(weatherData, fixedPointDatatype);
+
+
+            dataset.close();
+            file.close();
+
+            // auto close
+
+            System.out.println("HDF5 file created and written successfully!");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void tryHdfApiCompound() {
         final String FILE_NAME = "testone.h5";
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "Demand";
@@ -101,14 +144,14 @@ public class App {
 //            DatatypeMessage dataTypeMessage = new DatatypeMessage((byte) 1, (byte) 6, BitSet.valueOf(new byte[]{0b10001}), 56, compoundType);
 
             // Create data space
-//            HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
-//            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
+            HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
 //            hsize_t dim[1] = { NUM_RECORDS };
 //            DataSpace space(1, dim);
 
             // Create dataset
 //            DataSet dataset = file.createDataSet(DATASET_NAME, compoundType, space);
-            HdfDataSet dataset = file.createDataSet(DATASET_NAME, compoundType);
+            HdfDataSet dataset = file.createDataSet(DATASET_NAME, compoundType, dataSpaceMessage);
 
 
             // ADD ATTRIBUTE: "GIT root revision"

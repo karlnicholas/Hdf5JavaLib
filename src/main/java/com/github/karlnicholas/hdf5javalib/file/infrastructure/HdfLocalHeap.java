@@ -145,5 +145,4 @@ public class HdfLocalHeap {
         // Step 6: Write Data Segment Address (offsetSize bytes, little-endian)
         writeFixedPointToBuffer(buffer, dataSegmentAddress);
     }
-
 }

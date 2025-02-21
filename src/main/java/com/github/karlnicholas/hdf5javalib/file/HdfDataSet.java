@@ -1,12 +1,15 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfCompoundDatatypeMember;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.message.*;
 import lombok.Getter;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -17,7 +20,7 @@ import java.util.function.Supplier;
 public class HdfDataSet {
     private final HdfGroup hdfGroup;
     private final String datasetName;
-    private final HdfCompoundDatatypeMember hdfCompoundDataTypeMember;
+    private final HdfDatatype hdfDatatype;
     private final List<AttributeMessage> attributes;
     private final HdfFixedPoint datasetAddress;
     private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
@@ -29,10 +32,10 @@ public class HdfDataSet {
      * It should have a localHeap and LocalHeap contents, perhaps.
      */
 
-    public HdfDataSet(HdfGroup hdfGroup, String datasetName, HdfCompoundDatatypeMember hdfCompoundDataTypeMember, HdfFixedPoint datasetAddress) {
+    public HdfDataSet(HdfGroup hdfGroup, String datasetName, HdfDatatype hdfDatatype, HdfFixedPoint datasetAddress) {
         this.hdfGroup = hdfGroup;
         this.datasetName = datasetName;
-        this.hdfCompoundDataTypeMember = hdfCompoundDataTypeMember;
+        this.hdfDatatype = hdfDatatype;
         this.attributes = new ArrayList<>();
         this.datasetAddress = datasetAddress;
     }
@@ -118,6 +121,9 @@ public class HdfDataSet {
         }
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, objectHeaderSize, headerMessages);
 
+    }
+
+    public void write(BigInteger[] weatherData, HdfDatatype hdfDatatype) throws IOException {
     }
 
 //    public long updateForRecordCount(long l) {

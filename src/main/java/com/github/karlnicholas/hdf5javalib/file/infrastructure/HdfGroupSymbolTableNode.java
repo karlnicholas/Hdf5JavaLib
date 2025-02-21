@@ -24,7 +24,7 @@ public class HdfGroupSymbolTableNode {
         this.symbolTableEntries = symbolTableEntries;
     }
 
-    public static HdfGroupSymbolTableNode readFromFileChannel(FileChannel fileChannel, short offsetSize, List<HdfSymbolTableEntry> symbolTableEntries) throws IOException {
+    public static HdfGroupSymbolTableNode readFromFileChannel(FileChannel fileChannel, short offsetSize) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();
@@ -47,14 +47,14 @@ public class HdfGroupSymbolTableNode {
 
         // Read Number of Symbols (2 bytes, little-endian)
         numberOfSymbols = Short.toUnsignedInt(buffer.getShort());
-
-        ;
+//        int allocationSize = numberOfSymbols * (16+16+8);
+//        fileChannel.read(buffer);
         // Read Symbol Table Entries
-//        symbolTableEntries = new ArrayList<>();
+//        List symbolTableEntries = new ArrayList<>();
 //        for (int i = 0; i < numberOfSymbols; i++) {
 //            symbolTableEntries = symbolTableEntries;
 //        }
-        return new HdfGroupSymbolTableNode(signature, version, numberOfSymbols, symbolTableEntries);
+        return new HdfGroupSymbolTableNode(signature, version, numberOfSymbols, new ArrayList<>());
     }
 
     @Override
