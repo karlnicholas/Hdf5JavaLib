@@ -1,16 +1,10 @@
 package com.github.karlnicholas.hdf5javalib.data;
 
-import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
 import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfCompoundDatatypeMember;
-import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
 public class FixedPointDataSource<T> {
     private final Class<T> clazz;

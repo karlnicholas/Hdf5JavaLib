@@ -1,6 +1,5 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
-import com.github.karlnicholas.hdf5javalib.SymbolTableEntry;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;

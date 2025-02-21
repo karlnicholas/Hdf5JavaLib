@@ -1,18 +1,19 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
-import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
-import com.github.karlnicholas.hdf5javalib.message.*;
+import com.github.karlnicholas.hdf5javalib.message.DataLayoutMessage;
+import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
+import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
+import com.github.karlnicholas.hdf5javalib.message.HdfMessage;
 import lombok.Getter;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 public class HdfReader {
@@ -36,17 +37,17 @@ public class HdfReader {
         short offsetSize = superblock.getSizeOfOffsets();
         short lengthSize = superblock.getSizeOfLengths();
 
-        HdfSymbolTableEntry fileOffsets = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
+        HdfSymbolTableEntry rootGroupSymbolTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
 
         // Get the object header address from the superblock
         // Parse the object header from the file using the superblock information
-        long objectHeaderAddress =fileOffsets.getObjectHeaderAddress().getBigIntegerValue().longValue();
+        long objectHeaderAddress =rootGroupSymbolTableEntry.getObjectHeaderAddress().getBigIntegerValue().longValue();
         fileChannel.position(objectHeaderAddress);
         HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
 
         // Parse the local heap using the file channel
         // Read data from file channel starting at the specified position
-        long localHeapAddress = fileOffsets.getLocalHeapAddress().getBigIntegerValue().longValue();
+        long localHeapAddress = rootGroupSymbolTableEntry.getLocalHeapAddress().getBigIntegerValue().longValue();
         fileChannel.position(localHeapAddress);
         HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
 
@@ -55,21 +56,13 @@ public class HdfReader {
         fileChannel.position(dataSegmentAddress);
         HdfLocalHeapContents localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, dataSize);
 
-        long bTreeAddress = fileOffsets.getBTreeAddress().getBigIntegerValue().longValue();
+        long bTreeAddress = rootGroupSymbolTableEntry.getBTreeAddress().getBigIntegerValue().longValue();
         fileChannel.position(bTreeAddress);
         HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
 
-        // Parse root group symbol table entry from the current position
-        HdfSymbolTableEntry rootGroupSymbolTableEntry = new HdfSymbolTableEntry(
-                HdfFixedPoint.of(0),
-                HdfFixedPoint.of(objectHeaderAddress),
-                1,
-                HdfFixedPoint.of(bTreeAddress),
-                HdfFixedPoint.of(localHeapAddress)
-        );
         // get datasets?
         if ( bTree.getEntriesUsed() != 1) {
-            throw new UnsupportedEncodingException("Only one btree entry is supported");
+            throw new UnsupportedEncodingException("Only one btree entry is currently supported");
         }
         BTreeEntry bTreeEntry = bTree.getEntries().get(0);
         long snodAddress = bTreeEntry.getChildPointer().getBigIntegerValue().longValue();

@@ -1,12 +1,15 @@
 package com.github.karlnicholas.hdf5javalib;
 
 import com.github.karlnicholas.hdf5javalib.data.FixedPointDataSource;
-import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
 import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfCompoundDatatypeMember;
 import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
-import com.github.karlnicholas.hdf5javalib.file.*;
+import com.github.karlnicholas.hdf5javalib.file.HdfAllocator;
+import com.github.karlnicholas.hdf5javalib.file.HdfDataSet;
+import com.github.karlnicholas.hdf5javalib.file.HdfFile;
+import com.github.karlnicholas.hdf5javalib.file.HdfReader;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
 import com.github.karlnicholas.hdf5javalib.utils.HdfFixedPointDatatypeSpliterator;
 
@@ -15,7 +18,10 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Spliterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 

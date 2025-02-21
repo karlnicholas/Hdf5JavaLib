@@ -1,8 +1,8 @@
 package com.github.karlnicholas.hdf5javalib;
 
 public class SymbolTableEntry {
-    private String symbol;
-    private String value;
+    private final String symbol;
+    private final String value;
 
     public SymbolTableEntry(String symbol, String value) {
         this.symbol = symbol;

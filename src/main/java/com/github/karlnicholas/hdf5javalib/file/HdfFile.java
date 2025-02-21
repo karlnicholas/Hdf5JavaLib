@@ -1,6 +1,5 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
-import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
@@ -56,39 +55,39 @@ public class HdfFile {
     // allowing quick access to datasets and subgroups.
     private final int btreeAddress = objectHeaderPrefixAddress + objectHeaderPrefixSize;
     private final int btreeSize = 32;  // Size of a B-tree node
-    private int btreeStorageSize = 512;  // Allocated storage for B-tree nodes
+    private final int btreeStorageSize = 512;  // Allocated storage for B-tree nodes
 
     // **Local Heap (Stores Group Names & Small Objects)**
     // The local heap stores small metadata elements such as object names
     // and soft links, reducing fragmentation in the file.
-    private int localHeapAddress = btreeAddress + btreeSize + btreeStorageSize;
-    private int localHeapSize = 32;  // Header for the local heap
-    private int localHeapContentsAddress = localHeapAddress + localHeapSize;  // Contents stored inside the heap
-    private int localHeapContentsSize = 88;  // Contents stored inside the heap
+    private final int localHeapAddress = btreeAddress + btreeSize + btreeStorageSize;
+    private final int localHeapSize = 32;  // Header for the local heap
+    private final int localHeapContentsAddress = localHeapAddress + localHeapSize;  // Contents stored inside the heap
+    private final int localHeapContentsSize = 88;  // Contents stored inside the heap
 
     // **First Group Address (Computed from Previous Structures)**
     // This is the byte offset where the first group starts in the file.
     // It is calculated based on the sum of all preceding metadata structures.
-    private int dataGroupAddress = localHeapContentsAddress + localHeapContentsSize;
-    private int dataGroupStorageSize = 256;  // Total size of the first group's metadata
+    private final int dataGroupAddress = localHeapContentsAddress + localHeapContentsSize;
+    private final int dataGroupStorageSize = 256;  // Total size of the first group's metadata
 //    private int dataGroupStorageSize = 16 + 1064;  // Total size of the first group's metadata
 
     // **Symbol Table Node (SNOD)**
     // The SNOD (Symbol Table Node) organizes entries for objects within the group.
     // It manages links to datasets, other groups, and named datatypes.
-    private int snodAddress = dataGroupAddress + dataGroupStorageSize;
-    private int snodSize = 8;  // Header or control structure for the SNOD
+    private final int snodAddress = dataGroupAddress + dataGroupStorageSize;
+    private final int snodSize = 8;  // Header or control structure for the SNOD
 
     // **SNOD Entry (Represents Objects in the Group)**
     // An SNOD entry describes individual datasets or subgroups within the group.
     // Each entry in the SNOD table includes the object name, address, and type.
-    private int snodEntrySize = 32;  // Size of an individual SNOD entry
-    private int snodEntryStorageSize = snodEntrySize * 10;
+    private final int snodEntrySize = 32;  // Size of an individual SNOD entry
+    private final int snodEntryStorageSize = snodEntrySize * 10;
 
     // **Dataset Storage (Where Raw Data Begins)**
     // The byte offset where actual dataset data is stored.
     // Everything before this is metadata.
-    private int dataAddress = snodAddress + snodSize + snodEntryStorageSize;
+    private final int dataAddress = snodAddress + snodSize + snodEntryStorageSize;
 
     public HdfFile(String fileName, StandardOpenOption[] openOptions) {
         this.fileName = fileName;

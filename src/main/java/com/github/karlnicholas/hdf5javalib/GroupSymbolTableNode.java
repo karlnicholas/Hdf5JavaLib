@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GroupSymbolTableNode {
-    private boolean isLeaf;
+    private final boolean isLeaf;
     private List<GroupSymbolTableNode> childNodes;
     private List<SymbolTableEntry> entries;
 

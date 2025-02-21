@@ -1,6 +1,5 @@
 package com.github.karlnicholas.hdf5javalib.utils;
 
-import com.github.karlnicholas.hdf5javalib.data.CompoundDataSource;
 import com.github.karlnicholas.hdf5javalib.data.FixedPointDataSource;
 
 import java.nio.ByteBuffer;
@@ -14,7 +13,7 @@ public class HdfFixedPointDatatypeSpliterator<T> implements Spliterator<T> {
     private final long recordSize;
     private final long endOffset;
     private long currentOffset;
-    private FixedPointDataSource<T> fixedPointDataSource;
+    private final FixedPointDataSource<T> fixedPointDataSource;
 
     public HdfFixedPointDatatypeSpliterator(FileChannel fileChannel, long startOffset, long recordSize, long numberOfRecords, FixedPointDataSource<T> fixedPointDataSource) {
         this.fileChannel = fileChannel;

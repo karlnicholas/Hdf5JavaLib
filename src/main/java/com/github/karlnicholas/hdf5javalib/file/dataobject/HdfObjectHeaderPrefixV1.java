@@ -1,7 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.file.dataobject;
 
-import com.github.karlnicholas.hdf5javalib.message.ObjectHeaderContinuationMessage;
 import com.github.karlnicholas.hdf5javalib.message.HdfMessage;
+import com.github.karlnicholas.hdf5javalib.message.ObjectHeaderContinuationMessage;
 import lombok.Getter;
 
 import java.io.IOException;

@@ -67,8 +67,7 @@ public class BTree {
 
             // **Ensure correct casting**
             Object child = node.children.get(i);
-            if (child instanceof BTreeNode) {
-                BTreeNode childNode = (BTreeNode) child;
+            if (child instanceof BTreeNode childNode) {
                 if (childNode.keys.size() == childNode.maxKeys) {
                     splitChild(node, i);
                     if (key > node.keys.get(i)) {
@@ -76,8 +75,7 @@ public class BTree {
                     }
                 }
                 insertNonFull((BTreeNode) node.children.get(i), key, entry);
-            } else if (child instanceof GroupSymbolTableNode) {
-                GroupSymbolTableNode leafNode = (GroupSymbolTableNode) child;
+            } else if (child instanceof GroupSymbolTableNode leafNode) {
                 if (leafNode.getEntries().size() == leafNodeMaxKeys) {
                     splitLeaf(node, i, entry);
                 } else {
@@ -178,8 +176,7 @@ public class BTree {
     }
 
     public SymbolTableEntry getRootSymbolTableEntry() {
-        if (!root.children.isEmpty() && root.children.get(0) instanceof GroupSymbolTableNode) {
-            GroupSymbolTableNode rootNode = (GroupSymbolTableNode) root.children.get(0);
+        if (!root.children.isEmpty() && root.children.get(0) instanceof GroupSymbolTableNode rootNode) {
             return rootNode.getEntries().isEmpty() ? null : rootNode.getEntries().get(0);
         }
         return null;

@@ -1,6 +1,9 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
-import com.github.karlnicholas.hdf5javalib.datatype.*;
+import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
+import com.github.karlnicholas.hdf5javalib.datatype.FloatingPointDatatype;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
+import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
 import lombok.Getter;
 
 import java.nio.ByteBuffer;
@@ -212,14 +215,13 @@ public class DatatypeMessage extends HdfMessage {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("DatatypeMessage{");
-        sb.append("version=").append(version);
-        sb.append(", dataTypeClass=").append(dataTypeClass).append(" (").append(dataTypeClassToString(dataTypeClass)).append(")");
-        sb.append(", classBitField=").append(bitSetToString(classBitField, 24));
-        sb.append(", size=").append(size);
-        sb.append(", hdfDatatype=").append(hdfDatatype);
-        sb.append('}');
-        return sb.toString();
+        String sb = "DatatypeMessage{" + "version=" + version +
+                ", dataTypeClass=" + dataTypeClass + " (" + dataTypeClassToString(dataTypeClass) + ")" +
+                ", classBitField=" + bitSetToString(classBitField, 24) +
+                ", size=" + size +
+                ", hdfDatatype=" + hdfDatatype +
+                '}';
+        return sb;
     }
 
     // Helper method to convert the dataTypeClass to a human-readable string

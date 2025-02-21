@@ -16,10 +16,10 @@ import java.nio.ByteOrder;
  */
 @Getter
 public class BTreeKValuesMessage extends HdfMessage {
-    private int version;
-    private int indexedStorageInternalNodeK;
-    private int groupInternalNodeK;
-    private int groupLeafNodeK;
+    private final int version;
+    private final int indexedStorageInternalNodeK;
+    private final int groupInternalNodeK;
+    private final int groupLeafNodeK;
 
     public BTreeKValuesMessage(int version, int indexedStorageInternalNodeK, int groupInternalNodeK, int groupLeafNodeK) {
         super(MessageType.BtreeKValuesMessage, ()-> (short) (1+2+2+2), (byte)0);

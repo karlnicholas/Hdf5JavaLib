@@ -13,7 +13,7 @@ public class HdfCompoundDatatypeSpliterator<T> implements Spliterator<T> {
     private final long recordSize;
     private final long endOffset;
     private long currentOffset;
-    private CompoundDataSource<T> compoundDataSource;
+    private final CompoundDataSource<T> compoundDataSource;
 
     public HdfCompoundDatatypeSpliterator(FileChannel fileChannel, long startOffset, long recordSize, long numberOfRecords, CompoundDataSource<T> compoundDataSource) {
         this.fileChannel = fileChannel;
