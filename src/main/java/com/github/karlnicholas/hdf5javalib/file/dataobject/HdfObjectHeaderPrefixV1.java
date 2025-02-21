@@ -1,8 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.file.dataobject;
 
-import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.message.ObjectHeaderContinuationMessage;
-import com.github.karlnicholas.hdf5javalib.message.DataLayoutMessage;
 import com.github.karlnicholas.hdf5javalib.message.HdfMessage;
 import lombok.Getter;
 
@@ -12,7 +10,6 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfParseUtils.parseContinuationMessage;
 import static com.github.karlnicholas.hdf5javalib.utils.HdfParseUtils.parseDataObjectHeaderMessages;
@@ -106,14 +103,14 @@ public class HdfObjectHeaderPrefixV1 {
         }
     }
 
-    public Optional<HdfFixedPoint> getDataAddress() {
-        for (HdfMessage message : headerMessages) {
-            if (message instanceof DataLayoutMessage layoutMessage) {
-                return Optional.of(layoutMessage.getDataAddress());
-            }
-        }
-        return Optional.empty();
-    }
+//    public Optional<HdfFixedPoint> getDataAddress() {
+//        for (HdfMessage message : headerMessages) {
+//            if (message instanceof DataLayoutMessage layoutMessage) {
+//                return Optional.of(layoutMessage.getDataAddress());
+//            }
+//        }
+//        return Optional.empty();
+//    }
 
     @Override
     public String toString() {
@@ -127,21 +124,21 @@ public class HdfObjectHeaderPrefixV1 {
 //        dataObjectHeaderMessages.forEach(hm->builder.append("\r\n\t" + hm));
         for( HdfMessage message: headerMessages) {
             String ms = message.toString();
-            builder.append("\r\n\t").append(ms);
+            builder.append("\r\n\t\t").append(ms);
         }
         builder.append("}");
 
         return builder.toString();
     }
 
-    public <T extends HdfMessage> Optional<T> findHdfSymbolTableMessage(Class<T> messageClass) {
-        for (HdfMessage message : headerMessages) {
-            if (messageClass.isInstance(message)) {
-                return Optional.of(messageClass.cast(message)); // Avoids unchecked cast warning
-            }
-        }
-        return Optional.empty();
-    }
+//    public <T extends HdfMessage> Optional<T> findHdfSymbolTableMessage(Class<T> messageClass) {
+//        for (HdfMessage message : headerMessages) {
+//            if (messageClass.isInstance(message)) {
+//                return Optional.of(messageClass.cast(message)); // Avoids unchecked cast warning
+//            }
+//        }
+//        return Optional.empty();
+//    }
 
 
 }

@@ -46,8 +46,7 @@ public class HdfReader {
 
         // Parse the local heap using the file channel
         // Read data from file channel starting at the specified position
-        long localHeapAddress = objectHeader.findHdfSymbolTableMessage(SymbolTableMessage.class)
-                .orElseThrow().getLocalHeapAddress().getBigIntegerValue().longValue();
+        long localHeapAddress = fileOffsets.getLocalHeapAddress().getBigIntegerValue().longValue();
         fileChannel.position(localHeapAddress);
         HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
 
@@ -56,8 +55,7 @@ public class HdfReader {
         fileChannel.position(dataSegmentAddress);
         HdfLocalHeapContents localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, dataSize);
 
-        long bTreeAddress = objectHeader.findHdfSymbolTableMessage(SymbolTableMessage.class)
-                .orElseThrow().getBTreeAddress().getBigIntegerValue().longValue();
+        long bTreeAddress = fileOffsets.getBTreeAddress().getBigIntegerValue().longValue();
         fileChannel.position(bTreeAddress);
         HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
 
