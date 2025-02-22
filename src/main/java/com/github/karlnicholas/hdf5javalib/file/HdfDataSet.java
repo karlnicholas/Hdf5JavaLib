@@ -127,7 +127,7 @@ public class HdfDataSet {
             objectHeaderContinuationMessage.setContinuationSize(HdfFixedPoint.of(continueSize));
         }
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, Math.max(objectHeaderSize, currentObjectHeaderSize), headerMessages);
-        System.out.println("HDF5 dataset message" + dataObjectHeaderPrefix);
+        System.out.println(datasetName + "@" + hdfGroup.getHdfFile().getDataGroupAddress() + " = " + dataObjectHeaderPrefix);
 
     }
 //    public long updateForRecordCount(long l) {
