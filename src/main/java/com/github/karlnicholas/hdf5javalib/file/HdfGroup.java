@@ -133,7 +133,6 @@ public class HdfGroup {
 
         // Validate B-Tree Position and write it
         if (bTreePosition != -1) {
-            System.out.println(bTree);
             buffer.position((int) bTreePosition); // Move to the correct position
             bTree.writeToByteBuffer(buffer);
         } else {
