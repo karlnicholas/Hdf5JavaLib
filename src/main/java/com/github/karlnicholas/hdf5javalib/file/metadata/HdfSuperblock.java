@@ -135,7 +135,7 @@ public class HdfSuperblock {
     }
 
     public void writeToByteBuffer(ByteBuffer buffer) {
-        buffer.order(ByteOrder.LITTLE_ENDIAN); // Ensure little-endian ordering
+//        buffer.order(ByteOrder.LITTLE_ENDIAN); // Ensure little-endian ordering
 
         // Step 1: Write the HDF5 file signature (8 bytes)
         buffer.put(new byte[]{(byte) 0x89, 0x48, 0x44, 0x46, 0x0D, 0x0A, 0x1A, 0x0A});

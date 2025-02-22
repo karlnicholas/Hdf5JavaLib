@@ -76,7 +76,6 @@ public class HdfReader {
         rootGroup = new HdfGroup(
                 null,
                 "",
-                rootGroupSymbolTableEntry,
                 objectHeader,
                 bTree,
                 localHeap,

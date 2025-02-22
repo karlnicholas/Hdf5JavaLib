@@ -101,14 +101,7 @@ public class HdfFile {
                 HdfFixedPoint.of(dataAddress),
                 HdfFixedPoint.undefined((short)8));
 
-        HdfSymbolTableEntry symbolTableEntry = new HdfSymbolTableEntry(
-                HdfFixedPoint.of(0),
-                HdfFixedPoint.of(objectHeaderPrefixAddress),
-                HdfFixedPoint.of(localHeapAddress),
-                HdfFixedPoint.of(localHeapContentsAddress)
-        );
-
-        rootGroup = new HdfGroup(this, "", symbolTableEntry);
+        rootGroup = new HdfGroup(this, "", btreeAddress, localHeapAddress);
     }
 
     /**
@@ -119,7 +112,7 @@ public class HdfFile {
      * @return HdfDataSet
      */
     public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
-        return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage);
+        return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage, dataGroupAddress);
     }
 
     public long write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
@@ -142,7 +135,7 @@ public class HdfFile {
 //    }
 
     public void close() throws IOException {
-        int dataStart = 0;
+//        int dataStart = 0;
 //        hdfGroup.writeToBuffer();
 //        if ( bTree.getEntriesUsed() <= 0 ) {
 //            dataStart = superblock.getEndOfFileAddress().getBigIntegerValue().intValue();
@@ -152,7 +145,7 @@ public class HdfFile {
         System.out.println("HDF5 file close: rootGroup "+rootGroup );
 
         // Allocate the buffer dynamically up to the data start location
-        ByteBuffer buffer = ByteBuffer.allocate(dataStart).order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
+        ByteBuffer buffer = ByteBuffer.allocate(dataAddress).order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
         buffer.position(superblockAddress);
         superblock.writeToByteBuffer(buffer);
         buffer.position(rootSymbolTableEntryAddress);

@@ -69,10 +69,10 @@ public class HdfBTreeV1 {
 
         // Store objectName in the heap & get its offset
         int linkNameOffset = localHeap.addToHeap(objectName, localHeapContents);
-        HdfFixedPoint localHeapOffset = localHeap.getFreeListOffset();
+//        HdfFixedPoint localHeapOffset = localHeap.getFreeListOffset();
 
         // Insert `BTreeEntry` for the new group
-        BTreeEntry newEntry = new BTreeEntry(localHeapOffset, objectAddress);
+        BTreeEntry newEntry = new BTreeEntry(HdfFixedPoint.of(linkNameOffset), objectAddress);
         entries.add(newEntry);
 
         // Increment entriesUsed (since we successfully added an entry)
