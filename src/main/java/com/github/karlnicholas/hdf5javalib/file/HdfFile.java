@@ -14,7 +14,6 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 @Getter
@@ -23,6 +22,7 @@ public class HdfFile {
     private final StandardOpenOption[] openOptions;
     // initial setup without Dataset
     private final HdfSuperblock superblock;
+    private final HdfSymbolTableEntry rootSymbolTableEntry;
     private final HdfGroup rootGroup;
 
     /**
@@ -100,6 +100,11 @@ public class HdfFile {
                 HdfFixedPoint.undefined((short)8),
                 HdfFixedPoint.of(dataAddress),
                 HdfFixedPoint.undefined((short)8));
+        rootSymbolTableEntry = new HdfSymbolTableEntry(
+                HdfFixedPoint.of(0),
+                HdfFixedPoint.of(objectHeaderPrefixAddress),
+                HdfFixedPoint.of(btreeAddress),
+                HdfFixedPoint.of(localHeapAddress));
 
         rootGroup = new HdfGroup(this, "", btreeAddress, localHeapAddress);
     }
@@ -141,14 +146,17 @@ public class HdfFile {
 //            dataStart = superblock.getEndOfFileAddress().getBigIntegerValue().intValue();
 //        }
 
-        System.out.println("HDF5 file close: superblock "+superblock );
-        System.out.println("HDF5 file close: rootGroup "+rootGroup );
+        System.out.println(superblock);
+        System.out.println(rootSymbolTableEntry);
+        System.out.println(rootGroup);
 
         // Allocate the buffer dynamically up to the data start location
         ByteBuffer buffer = ByteBuffer.allocate(dataAddress).order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
         buffer.position(superblockAddress);
         superblock.writeToByteBuffer(buffer);
         buffer.position(rootSymbolTableEntryAddress);
+        rootSymbolTableEntry.writeToBuffer(buffer);
+        buffer.position(objectHeaderPrefixAddress);
         rootGroup.writeToBuffer(buffer);
 
         buffer.flip();

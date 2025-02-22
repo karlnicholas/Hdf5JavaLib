@@ -75,7 +75,7 @@ public class HdfSymbolTableEntry {
 
     }
 
-    public void writeToByteBuffer(ByteBuffer buffer) {
+    public void writeToBuffer(ByteBuffer buffer) {
         // Write Link Name Offset (sizeOfOffsets bytes, little-endian)
         writeFixedPointToBuffer(buffer, linkNameOffset);
 

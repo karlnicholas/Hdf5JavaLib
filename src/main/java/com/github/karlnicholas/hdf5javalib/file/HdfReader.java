@@ -19,6 +19,7 @@ import java.nio.channels.FileChannel;
 public class HdfReader {
     // level 0
     private HdfSuperblock superblock;
+    private HdfSymbolTableEntry rootSymbolTableEntry;
     // level 1
     private HdfGroup rootGroup;
     // level 2A1
@@ -37,17 +38,17 @@ public class HdfReader {
         short offsetSize = superblock.getSizeOfOffsets();
         short lengthSize = superblock.getSizeOfLengths();
 
-        HdfSymbolTableEntry rootGroupSymbolTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
+        rootSymbolTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
 
         // Get the object header address from the superblock
         // Parse the object header from the file using the superblock information
-        long objectHeaderAddress =rootGroupSymbolTableEntry.getObjectHeaderAddress().getBigIntegerValue().longValue();
+        long objectHeaderAddress =rootSymbolTableEntry.getObjectHeaderAddress().getBigIntegerValue().longValue();
         fileChannel.position(objectHeaderAddress);
         HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
 
         // Parse the local heap using the file channel
         // Read data from file channel starting at the specified position
-        long localHeapAddress = rootGroupSymbolTableEntry.getLocalHeapAddress().getBigIntegerValue().longValue();
+        long localHeapAddress = rootSymbolTableEntry.getLocalHeapAddress().getBigIntegerValue().longValue();
         fileChannel.position(localHeapAddress);
         HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
 
@@ -56,7 +57,7 @@ public class HdfReader {
         fileChannel.position(dataSegmentAddress);
         HdfLocalHeapContents localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, dataSize);
 
-        long bTreeAddress = rootGroupSymbolTableEntry.getBTreeAddress().getBigIntegerValue().longValue();
+        long bTreeAddress = rootSymbolTableEntry.getBTreeAddress().getBigIntegerValue().longValue();
         fileChannel.position(bTreeAddress);
         HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
 
@@ -86,6 +87,7 @@ public class HdfReader {
 
 //            System.out.println(hdfGroupSymbolTableNode);
 
+        System.out.println(rootSymbolTableEntry);
         System.out.println(rootGroup);
 
         for( int i=0; i < symbolTableNode.getNumberOfSymbols(); ++i ) {

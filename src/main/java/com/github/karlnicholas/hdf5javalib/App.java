@@ -57,7 +57,7 @@ public class App {
     }
 
     public void tryHdfApiInts() {
-        final String FILE_NAME = "ransomints.h5";
+        final String FILE_NAME = "randomints.h5";
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "temperature";
         final int NUM_RECORDS = 100;
