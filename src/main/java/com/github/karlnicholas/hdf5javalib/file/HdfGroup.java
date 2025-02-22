@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 
 @Getter
 public class HdfGroup {
+    private final HdfFile hdfFile;
     private final String name;
     private final HdfSymbolTableEntry symbolTableEntry;
     private final HdfObjectHeaderPrefixV1 objectHeader;
@@ -27,6 +28,7 @@ public class HdfGroup {
 //    private int localHeapContentsSize;
 
     public HdfGroup(
+            HdfFile hdfFile,
             String name,
             HdfSymbolTableEntry symbolTableEntry,
             HdfObjectHeaderPrefixV1 objectHeader,
@@ -35,6 +37,7 @@ public class HdfGroup {
             HdfLocalHeapContents localHeapContents,
             HdfGroupSymbolTableNode symbolTableNode
     ) {
+        this.hdfFile = hdfFile;
         this.name = name;
         this.symbolTableEntry = symbolTableEntry;
         this.objectHeader = objectHeader;
@@ -44,7 +47,8 @@ public class HdfGroup {
         this.symbolTableNode = symbolTableNode;
     }
 
-    public HdfGroup(String name, HdfSymbolTableEntry symbolTableEntry) {
+    public HdfGroup(HdfFile hdfFile, String name, HdfSymbolTableEntry symbolTableEntry) {
+        this.hdfFile = hdfFile;
         this.name = name;
         int localHeapContentsSize;
         // Define the heap data size, why 88 I don't know.
@@ -85,13 +89,9 @@ public class HdfGroup {
         HdfSymbolTableEntry ste = new HdfSymbolTableEntry(
                 HdfFixedPoint.of(linkNameOffset),
                 // not correct?
-                symbolTableEntry.getObjectHeaderAddress(),
-                0,
-                null,
-                null
-        );
+                symbolTableEntry.getObjectHeaderAddress());
         symbolTableNode.addEntry(ste);
-        return new HdfDataSet(this, datasetName, hdfDatatype, HdfFixedPoint.undefined((short)0));
+        return new HdfDataSet(this, datasetName, hdfDatatype, dataSpaceMessage);
     }
 //
 //    public ByteBuffer close(ByteBuffer buffer) {
@@ -151,8 +151,7 @@ public class HdfGroup {
 //    }
 
     public long write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
-//        hdfFile.write(bufferSupplier, hdfDataSet);
-        return 0;
+        return hdfFile.write(bufferSupplier, hdfDataSet);
     }
     @Override
     public String toString() {

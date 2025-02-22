@@ -69,5 +69,10 @@ public class FixedPointDatatype implements HdfDatatype {
 
     }
 
+    @Override
+    public DatatypeClass getDatatypeClass() {
+            return DatatypeClass.FIXED;
+    }
+
 }
 

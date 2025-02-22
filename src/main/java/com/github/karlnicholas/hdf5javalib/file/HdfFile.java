@@ -21,7 +21,6 @@ import java.util.function.Supplier;
 public class HdfFile {
     private final String fileName;
     private final StandardOpenOption[] openOptions;
-    private final AtomicLong datasetRecordCount;
     // initial setup without Dataset
     private final HdfSuperblock superblock;
     private final HdfGroup rootGroup;
@@ -99,20 +98,17 @@ public class HdfFile {
                 4, 16,
                 HdfFixedPoint.of(0),
                 HdfFixedPoint.undefined((short)8),
-                HdfFixedPoint.of(dataGroupAddress),
+                HdfFixedPoint.of(dataAddress),
                 HdfFixedPoint.undefined((short)8));
 
         HdfSymbolTableEntry symbolTableEntry = new HdfSymbolTableEntry(
                 HdfFixedPoint.of(0),
                 HdfFixedPoint.of(objectHeaderPrefixAddress),
-                1,
                 HdfFixedPoint.of(localHeapAddress),
                 HdfFixedPoint.of(localHeapContentsAddress)
         );
 
-        rootGroup = new HdfGroup("", symbolTableEntry);
-        datasetRecordCount = new AtomicLong();
-
+        rootGroup = new HdfGroup(this, "", symbolTableEntry);
     }
 
     /**
@@ -120,25 +116,23 @@ public class HdfFile {
      * @param datasetName String
      * @param hdfDatatype HdfDatatype
      * @param dataSpaceMessage DataspaceMessage
-     * @return
+     * @return HdfDataSet
      */
     public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
         return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage);
     }
 
-    public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
-        datasetRecordCount.set(0);
+    public long write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
-            long dataAddress = hdfDataSet.getDatasetAddress().getBigIntegerValue().longValue();
-            fileChannel.position(dataAddress);
+            fileChannel.position(getDataAddress());
             ByteBuffer buffer;
             while ((buffer = bufferSupplier.get()).hasRemaining()) {
-                datasetRecordCount.incrementAndGet();
                 while (buffer.hasRemaining()) {
                     fileChannel.write(buffer);
                 }
             }
         }
+        return getDataAddress();
     }
 //
 //    public <T> void closeDataset(HdfDataSet<T> hdfDataSet) throws IOException {

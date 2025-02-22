@@ -25,6 +25,11 @@ public class FloatingPointDatatype implements HdfDatatype {
     }
 
     @Override
+    public DatatypeClass getDatatypeClass() {
+        return DatatypeClass.FLOAT;
+    }
+
+    @Override
     public String toString() {
         return "FloatingPointDatatype{" +
                 "size=" + size +

@@ -16,12 +16,14 @@ import com.github.karlnicholas.hdf5javalib.utils.HdfFixedPointDatatypeSpliterato
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Spliterator;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -55,7 +57,7 @@ public class App {
     }
 
     public void tryHdfApiInts() {
-        final String FILE_NAME = "testone.h5";
+        final String FILE_NAME = "ransomints.h5";
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "temperature";
         final int NUM_RECORDS = 100;
@@ -64,27 +66,33 @@ public class App {
             // Create a new HDF5 file
             HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
 
-            BigInteger[] weatherData = new BigInteger[NUM_RECORDS];
-            for (int i = 0; i < NUM_RECORDS; i++) {
-                weatherData[i] = BigInteger.valueOf((long) (Math.random() *40.0 + 10.0));
-            }
-
-
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
             DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
 //            hsize_t dim[1] = { NUM_RECORDS };
 //            DataSpace space(1, dim);
 
-            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype((byte) 1, 8, false, false, false, false, (short)0, (short)64, (short)-1, new BitSet());
+            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype((byte) 1, 8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize(""), new BitSet());
 
             // Create dataset
 //            DataSet dataset = file.createDataSet(DATASET_NAME, compoundType, space);
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
 
-            dataset.write(weatherData, fixedPointDatatype);
-
-
+            AtomicInteger countHolder = new AtomicInteger(0);
+            FixedPointDataSource<TemperatureData> temperatureDataHdfDataSource = new FixedPointDataSource<>(fixedPointDatatype, "temperature", TemperatureData.class);
+            ByteBuffer temperatureBuffer = ByteBuffer.allocate(fixedPointDatatype.getSize());
+            // Write to dataset
+            dataset.write(() -> {
+                int count = countHolder.getAndIncrement();
+                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
+                TemperatureData instance = TemperatureData.builder()
+                        .temperature(BigInteger.valueOf((long) (Math.random() *40.0 + 10.0)))
+                        .build();
+                temperatureBuffer.clear();
+                temperatureDataHdfDataSource.writeToBuffer(instance, temperatureBuffer);
+                temperatureBuffer.flip();
+                return temperatureBuffer;
+            });
             dataset.close();
             file.close();
 
@@ -381,8 +389,12 @@ public class App {
 //    }
 
     public short computeFixedMessageDataSize(String name) {
-        int padding = (8 -  ((name.length()+1)% 8)) % 8;
-        return (short) (name.length()+1 + padding + 44);
+        if (name.length() > 0 ) {
+            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+            return (short) (name.length()+1 + padding + 44);
+        } else {
+            return 44;
+        }
     }
 
     public short computeStringMessageDataSize(String name) {

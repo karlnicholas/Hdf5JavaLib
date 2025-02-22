@@ -43,33 +43,17 @@ public class FixedPointDataSource<T> {
     /**
      * Writes the given instance of T into the provided ByteBuffer.
      */
-//    public void writeToBuffer(T instance, ByteBuffer buffer) {
-//        try {
-//            for (Map.Entry<Field, HdfCompoundDatatypeMember> entry : fieldToMemberMap.entrySet()) {
-//                Field field = entry.getKey();
-//                HdfCompoundDatatypeMember member = entry.getValue();
-//
-//                // Move to the correct offset
-//                buffer.position(member.getOffset());
-//
-//                Object value = field.get(instance);
-//
-//                if (value instanceof String strValue && member.getType() instanceof StringDatatype stringDatatype) {
-//                    // Convert string to bytes and write to buffer
-//                    ByteBuffer stringBuffer = ByteBuffer.allocate(stringDatatype.getSize());
-//                    HdfString s = new HdfString(strValue.getBytes(StandardCharsets.US_ASCII), false, false);
-//                    s.writeValueToByteBuffer(stringBuffer);
-//                    buffer.put(stringBuffer.array());
-//                } else if (value instanceof BigInteger bigIntValue && member.getType() instanceof FixedPointDatatype fixedPointDatatype) {
-//                    // Convert BigInteger to bytes and write to buffer
-//                    new HdfFixedPoint(bigIntValue, fixedPointDatatype.getSize(), fixedPointDatatype.isSigned(), fixedPointDatatype.isBigEndian())
-//                            .writeValueToByteBuffer(buffer);
-//                }
-//                // Add more type handling as needed
-//
-//            }
-//        } catch (Exception e) {
-//            throw new RuntimeException("Error writing instance of " + clazz.getName() + " to ByteBuffer", e);
-//        }
-//    }
+    public void writeToBuffer(T instance, ByteBuffer buffer) {
+        try {
+            BigInteger value = (BigInteger) field.get(instance);
+
+            // Convert BigInteger to bytes and write to buffer
+            new HdfFixedPoint(value, fixedPointDatatype.getSize(), fixedPointDatatype.isSigned(), fixedPointDatatype.isBigEndian())
+                    .writeValueToByteBuffer(buffer);
+            // Add more type handling as needed
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error writing instance of " + clazz.getName() + " to ByteBuffer", e);
+        }
+    }
 }

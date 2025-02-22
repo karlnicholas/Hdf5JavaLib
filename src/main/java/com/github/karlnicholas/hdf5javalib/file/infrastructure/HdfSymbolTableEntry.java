@@ -16,12 +16,20 @@ public class HdfSymbolTableEntry {
     private final HdfFixedPoint bTreeAddress;
     private final HdfFixedPoint localHeapAddress;
 
-    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfFixedPoint objectHeaderAddress, int cacheType, HdfFixedPoint bTreeAddress, HdfFixedPoint localHeapAddress) {
+    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfFixedPoint objectHeaderAddress, HdfFixedPoint bTreeAddress, HdfFixedPoint localHeapAddress) {
         this.linkNameOffset = linkNameOffset;
         this.objectHeaderAddress = objectHeaderAddress;
-        this.cacheType = cacheType;
+        this.cacheType = 1;
         this.bTreeAddress = bTreeAddress;
         this.localHeapAddress = localHeapAddress;
+    }
+
+    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfFixedPoint objectHeaderAddress) {
+        this.linkNameOffset = linkNameOffset;
+        this.objectHeaderAddress = objectHeaderAddress;
+        this.cacheType = 0;
+        this.bTreeAddress = null;
+        this.localHeapAddress = null;
     }
 
     public static HdfSymbolTableEntry fromFileChannel(FileChannel fileChannel, short offsetSize) throws IOException {
@@ -34,16 +42,14 @@ public class HdfSymbolTableEntry {
         HdfParseUtils.skipBytes(fileChannel, 4); // Skip reserved field
 
         // Initialize addresses for cacheType 1
-        HdfFixedPoint bTreeAddress = null;
-        HdfFixedPoint localHeapAddress = null;
         if (cacheType == 1) {
-            bTreeAddress = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, false);
-            localHeapAddress = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, false);
+            HdfFixedPoint bTreeAddress = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, false);
+            HdfFixedPoint localHeapAddress = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, false);
+            return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress, bTreeAddress, localHeapAddress);
         } else {
             HdfParseUtils.skipBytes(fileChannel, 16); // Skip 16 bytes for scratch-pad
+            return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress);
         }
-
-        return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress, cacheType, bTreeAddress, localHeapAddress);
     }
 
     public static HdfSymbolTableEntry fromByteBuffer(ByteBuffer buffer, short offsetSize) {
@@ -56,15 +62,13 @@ public class HdfSymbolTableEntry {
         buffer.position(buffer.position() + 4);
 
         // Initialize addresses for cacheType 1
-        HdfFixedPoint bTreeAddress = null;
-        HdfFixedPoint localHeapAddress = null;
         if (cacheType == 1) {
-            bTreeAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-            localHeapAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-            return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress, cacheType, bTreeAddress, localHeapAddress);
+            HdfFixedPoint bTreeAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
+            HdfFixedPoint localHeapAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
+            return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress, bTreeAddress, localHeapAddress);
         } else {
             buffer.position(buffer.position() + 16);
-            return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress, cacheType, null, null);
+            return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress);
         }
 
     }
@@ -93,12 +97,23 @@ public class HdfSymbolTableEntry {
 //    }
     @Override
     public String toString() {
-        return "HdfSymbolTableEntry{" +
-                "linkNameOffset=" + linkNameOffset +
-                ", objectHeaderAddress=" + objectHeaderAddress +
-                ", cacheType=" + cacheType +
-                ", bTreeAddress=" + bTreeAddress +
-                ", localHeapAddress=" + localHeapAddress +
-                "}";
+        StringBuilder sb = new StringBuilder("HdfSymbolTableEntry{");
+        sb.append("linkNameOffset=").append(linkNameOffset)
+                .append(", objectHeaderAddress=").append(objectHeaderAddress)
+                .append(", cacheType=").append(cacheType);
+
+        switch (cacheType) {
+            case 0:
+                break; // Base fields only
+            case 1:
+                sb.append(", bTreeAddress=").append(bTreeAddress)
+                        .append(", localHeapAddress=").append(localHeapAddress);
+                break;
+            default:
+                throw new IllegalStateException("Unknown cache type: " + cacheType);
+        }
+
+        sb.append("}");
+        return sb.toString();
     }
 }

@@ -119,6 +119,11 @@ public class CompoundDatatype implements HdfDatatype {
     }
 
     @Override
+    public HdfDatatype.DatatypeClass getDatatypeClass() {
+        return DatatypeClass.COMPOUND;
+    }
+
+    @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("CompoundDatatype {")

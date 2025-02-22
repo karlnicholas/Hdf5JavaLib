@@ -32,6 +32,11 @@ public class StringDatatype implements HdfDatatype {
     }
 
     @Override
+    public DatatypeClass getDatatypeClass() {
+        return DatatypeClass.STRING;
+    }
+
+    @Override
     public String toString() {
         return "StringDatatype{" +
                 "size=" + size +
