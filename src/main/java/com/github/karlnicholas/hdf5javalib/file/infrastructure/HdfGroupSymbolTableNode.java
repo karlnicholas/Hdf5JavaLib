@@ -57,6 +57,17 @@ public class HdfGroupSymbolTableNode {
         return new HdfGroupSymbolTableNode(signature, version, numberOfSymbols, new ArrayList<>());
     }
 
+    public void writeToBuffer(ByteBuffer buffer) {
+        buffer.put(signature.getBytes(StandardCharsets.US_ASCII));
+        buffer.putInt(version);
+        buffer.put((byte) 0);
+        buffer.putInt(numberOfSymbols);
+        buffer.position(0);
+        for (HdfSymbolTableEntry symbolTableEntry: symbolTableEntries) {
+            symbolTableEntry.writeToByteBuffer(buffer);
+        }
+    }
+
     @Override
     public String toString() {
         return "HdfGroupSymbolTableNode{" +

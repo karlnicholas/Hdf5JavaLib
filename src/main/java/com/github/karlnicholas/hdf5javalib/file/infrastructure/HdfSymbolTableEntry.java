@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
+
 @Getter
 public class HdfSymbolTableEntry {
     private final HdfFixedPoint linkNameOffset;
@@ -73,28 +75,29 @@ public class HdfSymbolTableEntry {
 
     }
 
-//    public void writeToByteBuffer(ByteBuffer buffer, int offsetSize) {
-//        // Write Link Name Offset (sizeOfOffsets bytes, little-endian)
-//        writeFixedPointToBuffer(buffer, linkNameOffset);
-//
-//        // Write Object Header Address (sizeOfOffsets bytes, little-endian)
-//        writeFixedPointToBuffer(buffer, objectHeaderAddress);
-//
-//        // Write Cache Type (4 bytes, little-endian)
-//        buffer.putInt(cacheType);
-//
-//        // Write Reserved Field (4 bytes, must be 0)
-//        buffer.putInt(0);
-//
-//        // If cacheType == 1, write B-tree Address and Local Heap Address
-//        if (cacheType == 1) {
-//            writeFixedPointToBuffer(buffer, bTreeAddress);
-//            writeFixedPointToBuffer(buffer, localHeapAddress);
-//        } else {
-//            // If cacheType != 1, write 16 bytes of reserved "scratch-pad" space
-//            buffer.put(new byte[16]);
-//        }
-//    }
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        // Write Link Name Offset (sizeOfOffsets bytes, little-endian)
+        writeFixedPointToBuffer(buffer, linkNameOffset);
+
+        // Write Object Header Address (sizeOfOffsets bytes, little-endian)
+        writeFixedPointToBuffer(buffer, objectHeaderAddress);
+
+        // Write Cache Type (4 bytes, little-endian)
+        buffer.putInt(cacheType);
+
+        // Write Reserved Field (4 bytes, must be 0)
+        buffer.putInt(0);
+
+        // If cacheType == 1, write B-tree Address and Local Heap Address
+        if (cacheType == 1) {
+            writeFixedPointToBuffer(buffer, bTreeAddress);
+            writeFixedPointToBuffer(buffer, localHeapAddress);
+        } else {
+            // If cacheType != 1, write 16 bytes of reserved "scratch-pad" space
+            buffer.put(new byte[16]);
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("HdfSymbolTableEntry{");

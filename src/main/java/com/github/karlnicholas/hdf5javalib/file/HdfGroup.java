@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @Getter
@@ -93,62 +94,65 @@ public class HdfGroup {
         symbolTableNode.addEntry(ste);
         return new HdfDataSet(this, datasetName, hdfDatatype, dataSpaceMessage);
     }
-//
-//    public ByteBuffer close(ByteBuffer buffer) {
-////        System.out.println(symbolTableEntry);
-//        // Write the root group symbol table entry immediately after the superblock
-////        symbolTableEntry.writeToByteBuffer(buffer, hdfFile.getSuperblock().getSizeOfOffsets());
-//
-//        System.out.println(objectHeader);
-//        // Write Object Header at position found in rootGroupEntry
-//        int objectHeaderAddress = hdfFile.getObjectHeaderPrefixAddress();
-//        buffer.position(objectHeaderAddress);
-//        objectHeader.writeToByteBuffer(buffer);
-//
-//        long localHeapPosition = -1;
-//        long bTreePosition = -1;
-//
-//        // Try getting the Local Heap Address from the Root Symbol Table Entry
-//        if (hdfFile.getLocalHeapAddress() > 0) {
-//            localHeapPosition = hdfFile.getLocalHeapAddress();
-//        }
-//
-//        // If not found or invalid, fallback to Object Header's SymbolTableMessage
-//        Optional<SymbolTableMessage> symbolTableMessageOpt = objectHeader.findHdfSymbolTableMessage(SymbolTableMessage.class);
-//        if (symbolTableMessageOpt.isPresent()) {
-//            SymbolTableMessage symbolTableMessage = symbolTableMessageOpt.get();
-//
-//            // Retrieve Local Heap Address if still not found
-//            if (localHeapPosition == -1 && symbolTableMessage.getLocalHeapAddress() != null && !symbolTableMessage.getLocalHeapAddress().isUndefined()) {
-//                localHeapPosition = symbolTableMessage.getLocalHeapAddress().getBigIntegerValue().longValue();
-//            }
-//
-//            // Retrieve B-Tree Address
-//            if (symbolTableMessage.getBTreeAddress() != null && !symbolTableMessage.getBTreeAddress().isUndefined()) {
-//                bTreePosition = symbolTableMessage.getBTreeAddress().getBigIntegerValue().longValue();
-//            }
-//        }
-//
-//        // Validate B-Tree Position and write it
-//        if (bTreePosition != -1) {
-//            System.out.println(bTree);
-//            buffer.position((int) bTreePosition); // Move to the correct position
-//            bTree.writeToByteBuffer(buffer);
-//        } else {
-//            throw new IllegalStateException("No valid B-Tree position found.");
-//        }
-//
-//        // Validate Local Heap Position and write it
-//        if (localHeapPosition != -1) {
-//            buffer.position((int) localHeapPosition); // Move to the correct position
-//            localHeap.writeToByteBuffer(buffer);
-//            buffer.position(localHeap.getDataSegmentAddress().getBigIntegerValue().intValue());
-//            localHeapContents.writeToByteBuffer(buffer);
-//        } else {
-//            throw new IllegalStateException("No valid Local Heap position found.");
-//        }
-//        return buffer.flip();
-//    }
+
+    public void writeToBuffer(ByteBuffer buffer) {
+        System.out.println(symbolTableEntry);
+        // Write the root group symbol table entry immediately after the superblock
+        symbolTableEntry.writeToByteBuffer(buffer);
+
+        System.out.println(objectHeader);
+        // Write Object Header at position found in rootGroupEntry
+        int objectHeaderAddress = hdfFile.getObjectHeaderPrefixAddress();
+        buffer.position(objectHeaderAddress);
+        objectHeader.writeToByteBuffer(buffer);
+
+        long localHeapPosition = -1;
+        long bTreePosition = -1;
+
+        // Try getting the Local Heap Address from the Root Symbol Table Entry
+        if (hdfFile.getLocalHeapAddress() > 0) {
+            localHeapPosition = hdfFile.getLocalHeapAddress();
+        }
+
+        // If not found or invalid, fallback to Object Header's SymbolTableMessage
+        Optional<SymbolTableMessage> symbolTableMessageOpt = objectHeader.findHdfSymbolTableMessage(SymbolTableMessage.class);
+        objectHeader.writeToByteBuffer(buffer);
+        if (symbolTableMessageOpt.isPresent()) {
+            SymbolTableMessage symbolTableMessage = symbolTableMessageOpt.get();
+
+            // Retrieve Local Heap Address if still not found
+            if (localHeapPosition == -1 && symbolTableMessage.getLocalHeapAddress() != null && !symbolTableMessage.getLocalHeapAddress().isUndefined()) {
+                localHeapPosition = symbolTableMessage.getLocalHeapAddress().getBigIntegerValue().longValue();
+            }
+
+            // Retrieve B-Tree Address
+            if (symbolTableMessage.getBTreeAddress() != null && !symbolTableMessage.getBTreeAddress().isUndefined()) {
+                bTreePosition = symbolTableMessage.getBTreeAddress().getBigIntegerValue().longValue();
+            }
+        }
+
+        // Validate B-Tree Position and write it
+        if (bTreePosition != -1) {
+            System.out.println(bTree);
+            buffer.position((int) bTreePosition); // Move to the correct position
+            bTree.writeToByteBuffer(buffer);
+        } else {
+            throw new IllegalStateException("No valid B-Tree position found.");
+        }
+
+        // Validate Local Heap Position and write it
+        if (localHeapPosition != -1) {
+            buffer.position((int) localHeapPosition); // Move to the correct position
+            localHeap.writeToByteBuffer(buffer);
+            buffer.position(localHeap.getDataSegmentAddress().getBigIntegerValue().intValue());
+            localHeapContents.writeToByteBuffer(buffer);
+        } else {
+            throw new IllegalStateException("No valid Local Heap position found.");
+        }
+
+        symbolTableNode.writeToBuffer(buffer);
+
+    }
 
     public long write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
         return hdfFile.write(bufferSupplier, hdfDataSet);
@@ -165,4 +169,5 @@ public class HdfGroup {
                 "\r\n\tsymbolTableNode=" + symbolTableNode +
                 "}";
     }
+
 }

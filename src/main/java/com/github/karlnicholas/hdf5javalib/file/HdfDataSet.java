@@ -64,7 +64,7 @@ public class HdfDataSet {
 
         DatatypeMessage dataTypeMessage = new DatatypeMessage((byte) 1, (byte) hdfDatatype.getDatatypeClass().getValue(),
                 BitSet.valueOf(new byte[]{0b10001}),
-                dataSpaceMessage.getDimensions()[0].getBigIntegerValue().intValue() * hdfDatatype.getSize(),
+                hdfDatatype.getSize(),
                 hdfDatatype);
 //        dataTypeMessage.setDataType(compoundType);
         headerMessages.add(dataTypeMessage);
@@ -75,7 +75,7 @@ public class HdfDataSet {
         // Add DataLayoutMessage (Storage format)
         HdfFixedPoint[] dimensions = dataSpaceMessage.getDimensions();
         long recordCount = dimensions[0].getBigIntegerValue().longValue();
-        HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(recordCount)};
+        HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(recordCount * hdfDatatype.getSize())};
         DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1,
                 HdfFixedPoint.of(hdfGroup.getHdfFile().getDataAddress()),
                 hdfDimensionSizes,
@@ -126,7 +126,8 @@ public class HdfDataSet {
             objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.undefined((short)8));
             objectHeaderContinuationMessage.setContinuationSize(HdfFixedPoint.of(continueSize));
         }
-        this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, objectHeaderSize, headerMessages);
+        this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, Math.max(objectHeaderSize, currentObjectHeaderSize), headerMessages);
+        System.out.println("HDF5 dataset message" + dataObjectHeaderPrefix);
 
     }
 //    public long updateForRecordCount(long l) {

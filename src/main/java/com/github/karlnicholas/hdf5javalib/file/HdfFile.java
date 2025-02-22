@@ -148,10 +148,17 @@ public class HdfFile {
 //            dataStart = superblock.getEndOfFileAddress().getBigIntegerValue().intValue();
 //        }
 
+        System.out.println("HDF5 file close: superblock "+superblock );
+        System.out.println("HDF5 file close: rootGroup "+rootGroup );
+
         // Allocate the buffer dynamically up to the data start location
         ByteBuffer buffer = ByteBuffer.allocate(dataStart).order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
-
+        buffer.position(superblockAddress);
         superblock.writeToByteBuffer(buffer);
+        buffer.position(rootSymbolTableEntryAddress);
+        rootGroup.writeToBuffer(buffer);
+
+        buffer.flip();
 //        rootGroup.close(buffer);
         Path path = Path.of(fileName);
         StandardOpenOption[] fileOptions = {StandardOpenOption.WRITE};

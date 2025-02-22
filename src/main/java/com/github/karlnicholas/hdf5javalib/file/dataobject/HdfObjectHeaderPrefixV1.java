@@ -10,6 +10,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfParseUtils.parseContinuationMessage;
 import static com.github.karlnicholas.hdf5javalib.utils.HdfParseUtils.parseDataObjectHeaderMessages;
@@ -131,14 +132,14 @@ public class HdfObjectHeaderPrefixV1 {
         return builder.toString();
     }
 
-//    public <T extends HdfMessage> Optional<T> findHdfSymbolTableMessage(Class<T> messageClass) {
-//        for (HdfMessage message : headerMessages) {
-//            if (messageClass.isInstance(message)) {
-//                return Optional.of(messageClass.cast(message)); // Avoids unchecked cast warning
-//            }
-//        }
-//        return Optional.empty();
-//    }
+    public <T extends HdfMessage> Optional<T> findHdfSymbolTableMessage(Class<T> messageClass) {
+        for (HdfMessage message : headerMessages) {
+            if (messageClass.isInstance(message)) {
+                return Optional.of(messageClass.cast(message)); // Avoids unchecked cast warning
+            }
+        }
+        return Optional.empty();
+    }
 
 
 }
