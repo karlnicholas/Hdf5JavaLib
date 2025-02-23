@@ -68,13 +68,14 @@ public class HdfFile {
     // This is the byte offset where the first group starts in the file.
     // It is calculated based on the sum of all preceding metadata structures.
     private final int dataGroupAddress = localHeapContentsAddress + localHeapContentsSize;
+    private final int dataGroupSize = 16;
     private final int dataGroupStorageSize = 256;  // Total size of the first group's metadata
 //    private int dataGroupStorageSize = 16 + 1064;  // Total size of the first group's metadata
 
     // **Symbol Table Node (SNOD)**
     // The SNOD (Symbol Table Node) organizes entries for objects within the group.
     // It manages links to datasets, other groups, and named datatypes.
-    private final int snodAddress = dataGroupAddress + dataGroupStorageSize;
+    private final int snodAddress = dataGroupAddress + dataGroupSize + dataGroupStorageSize;
     private final int snodSize = 8;  // Header or control structure for the SNOD
 
 
@@ -87,7 +88,7 @@ public class HdfFile {
     // **Dataset Storage (Where Raw Data Begins)**
     // The byte offset where actual dataset data is stored.
     // Everything before this is metadata.
-    private final int dataAddress = snodAddress + snodSize + snodEntryStorageSize;
+    private final int dataAddress = 2048;
 
     public HdfFile(String fileName, StandardOpenOption[] openOptions) {
         this.fileName = fileName;

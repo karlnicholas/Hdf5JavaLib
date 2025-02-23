@@ -91,6 +91,7 @@ public class HdfDataSet {
 //        DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
 //        headerMessages.add(dataSpaceMessage);
 
+        headerMessages.add(new NilMessage());
         headerMessages.addAll(attributes);
 
         // new long[]{1750}, new long[]{98000}

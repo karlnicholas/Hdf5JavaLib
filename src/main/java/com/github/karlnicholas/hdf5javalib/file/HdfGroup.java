@@ -156,6 +156,7 @@ public class HdfGroup {
             dataSet.writeToBuffer(buffer);
         }
 
+        buffer.position(hdfFile.getSnodAddress());
         symbolTableNode.writeToBuffer(buffer);
 
     }

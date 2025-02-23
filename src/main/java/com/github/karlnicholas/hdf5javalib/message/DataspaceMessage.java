@@ -124,7 +124,6 @@ public class DataspaceMessage extends HdfMessage {
         }
 
         // Check for maximum dimensions and write if present
-        HdfFixedPoint[] maxDimensions = null;
         if (maxDimensions != null) {
             for (HdfFixedPoint maxDimension: maxDimensions) {
                 writeFixedPointToBuffer(buffer, maxDimension);
