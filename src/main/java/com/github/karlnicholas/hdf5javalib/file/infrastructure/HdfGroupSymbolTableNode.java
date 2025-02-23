@@ -62,7 +62,6 @@ public class HdfGroupSymbolTableNode {
         buffer.putInt(version);
         buffer.put((byte) 0);
         buffer.putInt(numberOfSymbols);
-        buffer.position(0);
         for (HdfSymbolTableEntry symbolTableEntry: symbolTableEntries) {
             symbolTableEntry.writeToBuffer(buffer);
         }

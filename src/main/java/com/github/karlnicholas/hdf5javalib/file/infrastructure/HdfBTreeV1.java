@@ -112,7 +112,7 @@ public class HdfBTreeV1 {
                 ? HdfFixedPoint.undefined(buffer, offsetSize)
                 : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
 
-        // ✅ Corrected Buffer Allocation (Always allocate for keyZero + keys/childPointers)
+        // Corrected Buffer Allocation (Always allocate for keyZero + keys/childPointers)
         int keyPointerBufferSize = lengthSize + (entriesUsed * (offsetSize + lengthSize));
         buffer = ByteBuffer.allocate(keyPointerBufferSize).order(java.nio.ByteOrder.LITTLE_ENDIAN);
 
@@ -120,10 +120,10 @@ public class HdfBTreeV1 {
         fileChannel.read(buffer);
         buffer.flip();
 
-        // ✅ Always Read keyZero (first key)
+        // Always Read keyZero (first key)
         HdfFixedPoint keyZero = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
 
-        // ✅ Read remaining entries (Child Pointer first, then Key)
+        // Read remaining entries (Child Pointer first, then Key)
         List<BTreeEntry> entries = new ArrayList<>();
 
         for (int i = 0; i < entriesUsed; i++) {
@@ -168,8 +168,8 @@ public class HdfBTreeV1 {
 
         // Step 8: Write remaining entries (Keys and Child Pointers)
         for (BTreeEntry entry : entries) {
-            writeFixedPointToBuffer(buffer, entry.getKey());  // Write key
             writeFixedPointToBuffer(buffer, entry.getChildPointer());  // Write child pointer
+            writeFixedPointToBuffer(buffer, entry.getKey());  // Write key
         }
     }
 

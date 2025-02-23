@@ -130,6 +130,10 @@ public class HdfDataSet {
         System.out.println(datasetName + "@" + hdfGroup.getHdfFile().getDataGroupAddress() + " = " + dataObjectHeaderPrefix);
 
     }
+
+    public void writeToBuffer(ByteBuffer buffer) {
+        dataObjectHeaderPrefix.writeToByteBuffer(buffer);
+    }
 //    public long updateForRecordCount(long l) {
 //
 ////        dataObjectHeaderPrefix.findHdfSymbolTableMessage(DataLayoutMessage.class)

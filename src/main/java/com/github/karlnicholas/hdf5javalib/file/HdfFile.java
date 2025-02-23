@@ -77,6 +77,7 @@ public class HdfFile {
     private final int snodAddress = dataGroupAddress + dataGroupStorageSize;
     private final int snodSize = 8;  // Header or control structure for the SNOD
 
+
     // **SNOD Entry (Represents Objects in the Group)**
     // An SNOD entry describes individual datasets or subgroups within the group.
     // Each entry in the SNOD table includes the object name, address, and type.
@@ -159,7 +160,7 @@ public class HdfFile {
         buffer.position(objectHeaderPrefixAddress);
         rootGroup.writeToBuffer(buffer);
 
-        buffer.flip();
+        buffer.rewind();
 //        rootGroup.close(buffer);
         Path path = Path.of(fileName);
         StandardOpenOption[] fileOptions = {StandardOpenOption.WRITE};
