@@ -68,11 +68,11 @@ public class App {
 
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false);
 //            hsize_t dim[1] = { NUM_RECORDS };
 //            DataSpace space(1, dim);
 
-            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype((byte) 1, 8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize(""), new BitSet());
+            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype((byte) 1, 8, false, false, false, true, (short)0, (short)64, (short)8, BitSet.valueOf(new byte[]{0b01000}));
 
             // Create dataset
 //            DataSet dataset = file.createDataSet(DATASET_NAME, compoundType, space);

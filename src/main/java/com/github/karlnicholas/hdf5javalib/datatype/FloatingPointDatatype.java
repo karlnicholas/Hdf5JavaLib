@@ -3,6 +3,7 @@ package com.github.karlnicholas.hdf5javalib.datatype;
 import lombok.Getter;
 
 import java.nio.ByteBuffer;
+import java.util.BitSet;
 
 @Getter
 public class FloatingPointDatatype implements HdfDatatype {
@@ -27,6 +28,11 @@ public class FloatingPointDatatype implements HdfDatatype {
     @Override
     public DatatypeClass getDatatypeClass() {
         return DatatypeClass.FLOAT;
+    }
+
+    @Override
+    public BitSet getClassBitBytes() {
+        return new BitSet();
     }
 
     @Override

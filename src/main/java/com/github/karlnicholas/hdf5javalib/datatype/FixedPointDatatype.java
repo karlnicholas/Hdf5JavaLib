@@ -59,19 +59,26 @@ public class FixedPointDatatype implements HdfDatatype {
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
         // class and version
-        buffer.put((byte)(version << 4));
+        buffer.put((byte)(version << 4));   // 1
         byte[] classBits = new byte[3];
+        byte[] currentClassBits = classBitField.toByteArray();
+        System.arraycopy(currentClassBits, 0, classBits, 0, currentClassBits.length);
         buffer.put(classBits);
-        buffer.putInt(size);
+        buffer.putInt(size);                // 4
 
-        buffer.putShort(bitOffset);
-        buffer.putShort(bitPrecision);
+        buffer.putShort(bitOffset);         // 4
+        buffer.putShort(bitPrecision);      // 4
 
     }
 
     @Override
     public DatatypeClass getDatatypeClass() {
             return DatatypeClass.FIXED;
+    }
+
+    @Override
+    public BitSet getClassBitBytes() {
+        return classBitField;
     }
 
 }

@@ -162,7 +162,7 @@ public class HdfGroup {
     }
 
     public long write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
-        return hdfFile.write(bufferSupplier, hdfDataSet);
+        return hdfFile.write(bufferSupplier);
     }
     @Override
     public String toString() {

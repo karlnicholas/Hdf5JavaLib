@@ -22,7 +22,7 @@ public class DatatypeMessage extends HdfMessage {
     // Constructor to initialize all fields
     public DatatypeMessage(byte version, byte dataTypeClass, BitSet classBitField, int size, HdfDatatype hdfDatatype) {
         super(MessageType.DatatypeMessage, ()-> {
-            short sizeMessageData = 8+8;
+            short sizeMessageData = 8;
             sizeMessageData += hdfDatatype.getSizeMessageData();
             // to 8 byte boundary
             return (short) ((sizeMessageData + 7) & ~7);
@@ -152,7 +152,7 @@ public class DatatypeMessage extends HdfMessage {
 //        } else {
 //            messageDataSize = 44;
 //        }
-        short messageDataSize = 44;
+        short messageDataSize = 8;
 
         return new FixedPointDatatype(version, size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision, messageDataSize, classBitField);
     }
@@ -254,17 +254,17 @@ public class DatatypeMessage extends HdfMessage {
     @Override
     public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
-        byte classAndVersion = (byte) ((version << 4) + dataTypeClass);
-        buffer.put(classAndVersion);
-        // Parse Class Bit Field (24 bits)
-        byte[] bytes = classBitField.toByteArray();
-        byte[] result = new byte[3];
-        // Fill with 0s to ensure exactly 3 bytes
-        Arrays.fill(result, (byte) 0);
-        // Copy bytes in little-endian order
-        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
-        buffer.put(result);
-        buffer.putInt(size);
+//        byte classAndVersion = (byte) ((version << 4) + dataTypeClass);
+//        buffer.put(classAndVersion);    // 1
+//        // Parse Class Bit Field (24 bits)
+//        byte[] bytes = classBitField.toByteArray();
+//        byte[] result = new byte[3];
+//        // Fill with 0s to ensure exactly 3 bytes
+//        Arrays.fill(result, (byte) 0);
+//        // Copy bytes in little-endian order
+//        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
+//        buffer.put(result);         // 3
+//        buffer.putInt(size);        // 4
         hdfDatatype.writeDefinitionToByteBuffer(buffer);
     }
 }

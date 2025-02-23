@@ -62,8 +62,9 @@ public class HdfDataSet {
 //        headerMessages.add(new ObjectHeaderContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
 //        headerMessages.add(new NilMessage());
 
+
         DatatypeMessage dataTypeMessage = new DatatypeMessage((byte) 1, (byte) hdfDatatype.getDatatypeClass().getValue(),
-                BitSet.valueOf(new byte[]{0b10001}),
+                hdfDatatype.getClassBitBytes(),
                 hdfDatatype.getSize(),
                 hdfDatatype);
 //        dataTypeMessage.setDataType(compoundType);

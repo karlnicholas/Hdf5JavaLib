@@ -4,6 +4,7 @@ import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import lombok.Getter;
 
 import java.nio.ByteBuffer;
+import java.util.BitSet;
 
 @Getter
 public class StringDatatype implements HdfDatatype {
@@ -34,6 +35,11 @@ public class StringDatatype implements HdfDatatype {
     @Override
     public DatatypeClass getDatatypeClass() {
         return DatatypeClass.STRING;
+    }
+
+    @Override
+    public BitSet getClassBitBytes() {
+        return new BitSet();
     }
 
     @Override

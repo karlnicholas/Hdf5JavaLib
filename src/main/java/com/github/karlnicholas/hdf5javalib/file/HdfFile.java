@@ -5,6 +5,7 @@ import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
+import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -122,7 +123,7 @@ public class HdfFile {
         return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage, dataGroupAddress);
     }
 
-    public long write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
+    public long write(Supplier<ByteBuffer> bufferSupplier) throws IOException {
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
             fileChannel.position(getDataAddress());
             ByteBuffer buffer;
@@ -147,6 +148,15 @@ public class HdfFile {
 //        if ( bTree.getEntriesUsed() <= 0 ) {
 //            dataStart = superblock.getEndOfFileAddress().getBigIntegerValue().intValue();
 //        }
+        long records = rootGroup.getDataSet().getDataObjectHeaderPrefix()
+                .findHdfSymbolTableMessage(DataspaceMessage.class)
+                .orElseThrow()
+                .getDimensions()[0].getBigIntegerValue().longValue();
+        long recordSize = rootGroup.getDataSet().getDataObjectHeaderPrefix()
+                .findHdfSymbolTableMessage(DatatypeMessage.class)
+                .orElseThrow()
+                .getSize();
+        superblock.setEndOfFileAddress(HdfFixedPoint.of(dataAddress + recordSize * records));
 
         System.out.println(superblock);
         System.out.println(rootSymbolTableEntry);

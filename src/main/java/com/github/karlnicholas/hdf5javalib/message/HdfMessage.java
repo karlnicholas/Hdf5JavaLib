@@ -19,6 +19,14 @@ public abstract class HdfMessage {
         this.messageFlags = messageFlags;
     }
 
+    /**
+     * Header Message Type #1 (short)
+     * Size of Header Message Data #1 (short)
+     * Header Message #1 Flags (byte)
+     * Reserved (zero) (3 bytes)
+     *
+     * @param buffer ByteBuffer
+     */
     protected void writeMessageData(ByteBuffer buffer) {
         buffer.putShort(messageType.getValue());
         buffer.putShort(sizeMessageData);

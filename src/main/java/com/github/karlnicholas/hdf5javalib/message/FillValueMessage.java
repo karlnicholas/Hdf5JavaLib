@@ -24,7 +24,7 @@ public class FillValueMessage extends HdfMessage {
             HdfFixedPoint size,
             byte[] fillValue
     ) {
-        super(MessageType.FillValueMessage, ()-> (short) (8+8), (byte)1);
+        super(MessageType.FillValueMessage, ()-> (short) (8), (byte)1);
         this.version = version;
         this.spaceAllocationTime = spaceAllocationTime;
         this.fillValueWriteTime = fillValueWriteTime;

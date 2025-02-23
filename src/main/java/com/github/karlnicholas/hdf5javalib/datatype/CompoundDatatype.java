@@ -124,6 +124,11 @@ public class CompoundDatatype implements HdfDatatype {
     }
 
     @Override
+    public BitSet getClassBitBytes() {
+        return new BitSet();
+    }
+
+    @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("CompoundDatatype {")
