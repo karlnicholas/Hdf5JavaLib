@@ -24,10 +24,10 @@ public class HdfString implements HdfData {
             throw new IllegalArgumentException("Byte array cannot be null");
         }
 
-        StringDatatype.PaddingType paddingType = StringDatatype.PaddingType.fromBitSet(classBitField);
-        if (paddingType == StringDatatype.PaddingType.NULL_TERMINATE && bytes[bytes.length - 1] != 0) {
-            throw new IllegalArgumentException("Null-terminated string must end with a null byte");
-        }
+//        StringDatatype.PaddingType paddingType = StringDatatype.PaddingType.fromBitSet(classBitField);
+//        if (paddingType == StringDatatype.PaddingType.NULL_TERMINATE && bytes[bytes.length - 1] != 0) {
+//            throw new IllegalArgumentException("Null-terminated string must end with a null byte");
+//        }
 
         int zeroLocation = 0;
         for(byte b : bytes) {

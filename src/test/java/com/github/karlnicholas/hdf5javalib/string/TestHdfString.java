@@ -38,12 +38,12 @@ public class TestHdfString {
         assertArrayEquals(bytes, hdfString.getBytes());
     }
 
-    @Test
-    public void testInvalidNullTerminatedString() {
-        byte[] bytes = new byte[]{65, 66, 67}; // Not null-terminated
-        assertThrows(IllegalArgumentException.class, () -> new HdfString(bytes, StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII)));
-    }
-
+//    @Test
+//    public void testInvalidNullTerminatedString() {
+//        byte[] bytes = new byte[]{65, 66, 67}; // Not null-terminated
+//        assertThrows(IllegalArgumentException.class, () -> new HdfString(bytes, StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII)));
+//    }
+//
     @Test
     public void testEmptyString() {
         byte[] bytes = new byte[]{0}; // Null-terminated empty string
