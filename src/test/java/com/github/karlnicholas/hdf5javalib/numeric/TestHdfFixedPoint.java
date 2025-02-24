@@ -68,20 +68,4 @@ public class TestHdfFixedPoint {
         byte[] hdfBytes = fixedPoint.getHdfBytes(false); // Request big-endian bytes
         assertArrayEquals(new byte[]{(byte) 0xFF, (byte) 0xFE, (byte) 0xFF, (byte) 0xFF}, hdfBytes);
     }
-
-    @Test
-    public void testBigIntegerConstructorLittleEndian() {
-        HdfFixedPoint fixedPoint = new HdfFixedPoint(BigInteger.valueOf(123456), true);
-        assertEquals(new BigInteger("123456"), fixedPoint.getBigIntegerValue());
-        byte[] expectedLittleEndian = new byte[]{0x40, (byte) 0xE2, 0x01, 0x00}; // Little-endian bytes
-        assertArrayEquals(expectedLittleEndian, fixedPoint.getHdfBytes(true));
-    }
-
-    @Test
-    public void testBigIntegerConstructorBigEndian() {
-        HdfFixedPoint fixedPoint = new HdfFixedPoint(BigInteger.valueOf(123456), false);
-        assertEquals(new BigInteger("123456"), fixedPoint.getBigIntegerValue());
-        byte[] expectedBigEndian = new byte[]{0x00, 0x01, (byte) 0xE2, 0x40}; // Big-endian bytes
-        assertArrayEquals(expectedBigEndian, fixedPoint.getHdfBytes(false));
-    }
 }

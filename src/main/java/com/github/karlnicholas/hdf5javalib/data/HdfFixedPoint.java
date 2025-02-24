@@ -17,19 +17,6 @@ public class HdfFixedPoint implements HdfData {
     private final boolean littleEndian;
     private final boolean undefined;
 
-    // Constructor for BigInteger
-    public HdfFixedPoint(BigInteger value) {
-        this(value, true);
-    }
-
-    public HdfFixedPoint(BigInteger value, boolean littleEndian) {
-        this.size = determineSize(value);
-        this.signed = value.signum() < 0;
-        this.littleEndian = littleEndian;
-        this.bytes = toSizedByteArray(value, this.size, littleEndian);
-        this.undefined = false;
-    }
-
     public HdfFixedPoint(BigInteger value, int size, boolean signed, boolean bigEndian) {
         this.size = size;
         this.signed = signed;
@@ -78,9 +65,13 @@ public class HdfFixedPoint implements HdfData {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
 
         fileChannel.read(buffer);
-        if (littleEndian && buffer.order() != java.nio.ByteOrder.LITTLE_ENDIAN) {
+        return getHdfFixedPoint(size, signed, littleEndian, buffer, bytes);
+    }
+
+    private static HdfFixedPoint getHdfFixedPoint(int size, boolean signed, boolean littleEndian, ByteBuffer buffer, byte[] bytes) {
+        if (littleEndian && buffer.order() != ByteOrder.LITTLE_ENDIAN) {
             reverseBytesInPlace(bytes);
-        } else if (!littleEndian && buffer.order() == java.nio.ByteOrder.LITTLE_ENDIAN) {
+        } else if (!littleEndian && buffer.order() == ByteOrder.LITTLE_ENDIAN) {
             reverseBytesInPlace(bytes);
         }
         return new HdfFixedPoint(bytes, size, signed, littleEndian);
@@ -97,12 +88,7 @@ public class HdfFixedPoint implements HdfData {
         buffer.get(bytes);
 
         // Adjust byte order if needed
-        if (littleEndian && buffer.order() != java.nio.ByteOrder.LITTLE_ENDIAN) {
-            reverseBytesInPlace(bytes);
-        } else if (!littleEndian && buffer.order() == java.nio.ByteOrder.LITTLE_ENDIAN) {
-            reverseBytesInPlace(bytes);
-        }
-        return new HdfFixedPoint(bytes, size, signed, littleEndian);
+        return getHdfFixedPoint(size, signed, littleEndian, buffer, bytes);
     }
 
     // Factory method for undefined values
@@ -132,12 +118,6 @@ public class HdfFixedPoint implements HdfData {
         return true;
     }
 
-    // Determine size based on bit length
-    private short determineSize(BigInteger value) {
-        byte[] bArray = value.toByteArray();
-        return (short) bArray.length;
-    }
-
     // Validate size
     private static void validateSize(int size) {
         if (size <= 0 || size > 8) {
@@ -159,20 +139,6 @@ public class HdfFixedPoint implements HdfData {
             reverseBytesInPlace(result);
         }
         return result;
-    }
-
-    // Get HDF5 data type
-    public String getHdfType() {
-        if (isUndefined()) {
-            throw new IllegalStateException("FixedPoint undefined");
-        }
-        return switch (size) {
-            case 1 -> signed ? "HDF5_SIGNED_BYTE" : "HDF5_UNSIGNED_BYTE";
-            case 2 -> signed ? "HDF5_SIGNED_SHORT" : "HDF5_UNSIGNED_SHORT";
-            case 4 -> signed ? "HDF5_SIGNED_INT" : "HDF5_UNSIGNED_INT";
-            case 8 -> signed ? "HDF5_SIGNED_LONG" : "HDF5_UNSIGNED_LONG";
-            default -> throw new IllegalStateException("Unsupported type");
-        };
     }
 
     // Get BigInteger value
