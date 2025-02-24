@@ -92,15 +92,12 @@ public class HdfDataSet {
 //        DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
 //        headerMessages.add(dataSpaceMessage);
 
-        headerMessages.add(new NilMessage());
-        headerMessages.addAll(attributes);
-
         // new long[]{1750}, new long[]{98000}
         int objectReferenceCount = 1;
         int objectHeaderSize = 0;
         // 8, 1, 1064
         for( HdfMessage headerMessage: headerMessages ) {
-            objectHeaderSize += headerMessage.getSizeMessageData();
+            objectHeaderSize += headerMessage.getSizeMessageData() + 8;
         }
         if ( objectHeaderSize > currentObjectHeaderSize) {
             List<HdfMessage> newMessages = new ArrayList<>();
@@ -127,6 +124,10 @@ public class HdfDataSet {
 //            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(endOfData));
             objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.undefined((short)8));
             objectHeaderContinuationMessage.setContinuationSize(HdfFixedPoint.of(continueSize));
+        } else {
+            headerMessages.add(new NilMessage(currentObjectHeaderSize - 8 - objectHeaderSize));
+            headerMessages.addAll(attributes);
+
         }
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, Math.max(objectHeaderSize, currentObjectHeaderSize), headerMessages);
         System.out.println(datasetName + "@" + hdfGroup.getHdfFile().getDataGroupAddress() + " = " + dataObjectHeaderPrefix);

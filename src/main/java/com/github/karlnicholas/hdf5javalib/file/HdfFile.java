@@ -6,6 +6,7 @@ import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfSymbolTableEnt
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
 import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
+import com.github.karlnicholas.hdf5javalib.utils.HdfDebugUtils;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -171,7 +172,6 @@ public class HdfFile {
         buffer.position(objectHeaderPrefixAddress);
         rootGroup.writeToBuffer(buffer);
 
-        buffer.rewind();
 //        rootGroup.close(buffer);
         Path path = Path.of(fileName);
         StandardOpenOption[] fileOptions = {StandardOpenOption.WRITE};
