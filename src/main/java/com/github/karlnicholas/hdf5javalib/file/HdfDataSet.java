@@ -5,13 +5,11 @@ import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.message.*;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 import java.util.function.Supplier;
 
