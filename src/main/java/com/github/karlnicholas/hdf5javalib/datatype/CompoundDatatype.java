@@ -10,6 +10,10 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
+import static com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype.parseFixedPoint;
+import static com.github.karlnicholas.hdf5javalib.datatype.FloatingPointDatatype.parseFloatingPoint;
+import static com.github.karlnicholas.hdf5javalib.datatype.StringDatatype.parseString;
+
 @Getter
 public class CompoundDatatype implements HdfDatatype {
     private final int numberOfMembers; // Number of members in the compound datatype
@@ -23,12 +27,18 @@ public class CompoundDatatype implements HdfDatatype {
         this.members = new ArrayList<>(members); // Deep copy to avoid external modification
     }
 
-    public CompoundDatatype(BitSet classBitField, int size, byte[] data) {
+    public CompoundDatatype(BitSet classBitField, int size, ByteBuffer buffer) {
         this.numberOfMembers = extractNumberOfMembersFromBitSet(classBitField);
         this.size = size;
-        ByteBuffer cdtcBuffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        readFromByteBuffer(cdtcBuffer);
+        readFromByteBuffer(buffer);
     }
+
+//    public CompoundDatatype(BitSet classBitField, int size, byte[] data) {
+//        this.numberOfMembers = extractNumberOfMembersFromBitSet(classBitField);
+//        this.size = size;
+//        ByteBuffer cdtcBuffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+//        readFromByteBuffer(cdtcBuffer);
+//    }
 
     private short extractNumberOfMembersFromBitSet(BitSet classBitField) {
         short value = 0;
@@ -75,13 +85,22 @@ public class CompoundDatatype implements HdfDatatype {
             });
 
             int size = buffer.getInt();
-            HdfDatatype hdfDatatype = DatatypeMessage.parseCompoundDataType(version, dataTypeClass, classBitField, size, buffer);
+            HdfDatatype hdfDatatype = parseCompoundDataType(version, dataTypeClass, classBitField, size, buffer);
             HdfCompoundDatatypeMember hdfCompoundDatatypeMember = new HdfCompoundDatatypeMember(name, offset, dimensionality, dimensionPermutation, dimensionSizes, hdfDatatype);
 
             members.add(hdfCompoundDatatypeMember);
         }
     }
 
+    public static HdfDatatype parseCompoundDataType(byte version, byte dataTypeClass, BitSet classBitField, int size, ByteBuffer buffer) {
+         return switch (dataTypeClass) {
+            case 0 -> parseFixedPoint(version, classBitField, size, buffer);
+            case 1 -> parseFloatingPoint(version, classBitField, size, buffer );
+            case 3 -> parseString(version, classBitField, size);
+    //            case 6 -> parseCompoundDataType(version, size, classBitField, name, buffer);
+            default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
+        };
+    }
 
     private static String readNullTerminatedString(ByteBuffer buffer) {
         StringBuilder nameBuilder = new StringBuilder();

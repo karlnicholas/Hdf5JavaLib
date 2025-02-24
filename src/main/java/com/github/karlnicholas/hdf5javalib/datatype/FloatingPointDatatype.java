@@ -21,6 +21,13 @@ public class FloatingPointDatatype implements HdfDatatype {
         this.bigEndian = bigEndian;
     }
 
+    public static FloatingPointDatatype parseFloatingPoint(byte version, BitSet classBitField, int size, ByteBuffer buffer) {
+        boolean bigEndian = classBitField.get(0);
+        int exponentBits = buffer.getInt();
+        int mantissaBits = buffer.getInt();
+        return new FloatingPointDatatype(version, size, exponentBits, mantissaBits, bigEndian);
+    }
+
     public Object getInstance() {
         return new Object();
     }

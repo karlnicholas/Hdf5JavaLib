@@ -26,6 +26,41 @@ public class StringDatatype implements HdfDatatype {
         this.sizeMessageData = sizeMessageData;
     }
 
+
+    public static StringDatatype parseString(byte version, BitSet classBitField, int size) {
+        int paddingType = extractBits(classBitField, 0, 3);
+        int charSet = extractBits(classBitField, 4, 7);
+
+        String paddingDescription = switch (paddingType) {
+            case 0 -> "Null Terminate";
+            case 1 -> "Null Pad";
+            case 2 -> "Space Pad";
+            default -> "Reserved";
+        };
+
+        String charSetDescription = switch (charSet) {
+            case 0 -> "ASCII";
+            case 1 -> "UTF-8";
+            default -> "Reserved";
+        };
+
+//        int padding = (8 -  ((name.length()+1)% 8)) % 8;
+//        short messageDataSize = (short) (name.length()+1 + padding + 40);
+        short messageDataSize = (short) 40;
+
+        return new StringDatatype(version, size, paddingType, paddingDescription, charSet, charSetDescription, messageDataSize);
+    }
+
+    private static int extractBits(BitSet bitSet, int start, int end) {
+        int value = 0;
+        for (int i = start; i <= end; i++) {
+            if (bitSet.get(i)) {
+                value |= (1 << (i - start));
+            }
+        }
+        return value;
+    }
+
     public HdfString getInstance(ByteBuffer dataBuffer) {
         byte[] bytes = new byte[size];
         dataBuffer.get(bytes);

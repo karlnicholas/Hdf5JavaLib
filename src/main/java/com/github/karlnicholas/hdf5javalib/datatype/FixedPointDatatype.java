@@ -34,17 +34,25 @@ public class FixedPointDatatype implements HdfDatatype {
         this.classBitField = classBitField;
     }
 
-    @Override
-    public String toString() {
-        return "FixedPointDatatype{" +
-                "size=" + size +
-                ", bigEndian=" + bigEndian +
-                ", loPad=" + loPad +
-                ", hiPad=" + hiPad +
-                ", signed=" + signed +
-                ", bitOffset=" + bitOffset +
-                ", bitPrecision=" + bitPrecision +
-                '}';
+    public static FixedPointDatatype parseFixedPoint(byte version, BitSet classBitField, int size, ByteBuffer buffer) {
+        boolean bigEndian = classBitField.get(0);
+        boolean loPad = classBitField.get(1);
+        boolean hiPad = classBitField.get(2);
+        boolean signed = classBitField.get(3);
+
+        short bitOffset = buffer.getShort();
+        short bitPrecision = buffer.getShort();
+
+//        short messageDataSize;
+//        if ( name.length() > 0 ) {
+//            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+//            messageDataSize = (short) (name.length()+1 + padding + 44);
+//        } else {
+//            messageDataSize = 44;
+//        }
+        short messageDataSize = 8;
+
+        return new FixedPointDatatype(version, size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision, messageDataSize, classBitField);
     }
 
     public HdfFixedPoint getInstance(ByteBuffer dataBuffer) {
@@ -81,5 +89,17 @@ public class FixedPointDatatype implements HdfDatatype {
         return classBitField;
     }
 
+    @Override
+    public String toString() {
+        return "FixedPointDatatype{" +
+                "size=" + size +
+                ", bigEndian=" + bigEndian +
+                ", loPad=" + loPad +
+                ", hiPad=" + hiPad +
+                ", signed=" + signed +
+                ", bitOffset=" + bitOffset +
+                ", bitPrecision=" + bitPrecision +
+                '}';
+    }
 }
 

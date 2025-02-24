@@ -52,11 +52,6 @@ public class HdfParseUtils {
             case NilMessage -> NilMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case DataspaceMessage -> DataspaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case DatatypeMessage -> DatatypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, getDataTypeData.get());
-//            {
-//                DatatypeMessage dataTypeMessage = (DatatypeMessage)DatatypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-//                dataTypeMessage.addDataType(Arrays.copyOfRange(data, 8, data.length));
-//                yield dataTypeMessage;
-//            }
             case FillValueMessage -> FillValueMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case DataLayoutMessage -> DataLayoutMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case AttributeMessage -> AttributeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
