@@ -2,6 +2,7 @@ package com.github.karlnicholas.hdf5javalib.file.infrastructure;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
+import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -57,7 +58,7 @@ public class HdfLocalHeapContents {
         }
 
         // Extract the string
-        HdfString result = new HdfString(Arrays.copyOfRange(heapData, start, iOffset), false, false);
+        HdfString result = new HdfString(Arrays.copyOfRange(heapData, start, iOffset), StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII));
 
         return result;
     }

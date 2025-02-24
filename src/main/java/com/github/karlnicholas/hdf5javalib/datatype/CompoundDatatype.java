@@ -1,18 +1,16 @@
 package com.github.karlnicholas.hdf5javalib.datatype;
 
-import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
 import lombok.Getter;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import static com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype.parseFixedPoint;
-import static com.github.karlnicholas.hdf5javalib.datatype.FloatingPointDatatype.parseFloatingPoint;
-import static com.github.karlnicholas.hdf5javalib.datatype.StringDatatype.parseString;
+import static com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype.parseFixedPointType;
+import static com.github.karlnicholas.hdf5javalib.datatype.FloatingPointDatatype.parseFloatingPointType;
+import static com.github.karlnicholas.hdf5javalib.datatype.StringDatatype.parseStringType;
 
 @Getter
 public class CompoundDatatype implements HdfDatatype {
@@ -94,9 +92,9 @@ public class CompoundDatatype implements HdfDatatype {
 
     public static HdfDatatype parseCompoundDataType(byte version, byte dataTypeClass, BitSet classBitField, int size, ByteBuffer buffer) {
          return switch (dataTypeClass) {
-            case 0 -> parseFixedPoint(version, classBitField, size, buffer);
-            case 1 -> parseFloatingPoint(version, classBitField, size, buffer );
-            case 3 -> parseString(version, classBitField, size);
+            case 0 -> parseFixedPointType(version, classBitField, size, buffer);
+            case 1 -> parseFloatingPointType(version, classBitField, size, buffer );
+            case 3 -> parseStringType(version, classBitField, size);
     //            case 6 -> parseCompoundDataType(version, size, classBitField, name, buffer);
             default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
         };

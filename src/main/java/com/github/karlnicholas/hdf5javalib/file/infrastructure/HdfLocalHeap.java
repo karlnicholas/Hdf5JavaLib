@@ -33,7 +33,7 @@ public class HdfLocalHeap {
     }
 
     public int addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents) {
-        byte[] objectNameBytes = objectName.getHdfBytes();
+        byte[] objectNameBytes = objectName.getBytes();
         int freeListOffset = this.freeListOffset.getBigIntegerValue().intValue();
         byte[] heapData = localHeapContents.getHeapData();
 

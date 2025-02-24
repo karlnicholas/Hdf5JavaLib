@@ -7,9 +7,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
 
-import static com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype.parseFixedPoint;
-import static com.github.karlnicholas.hdf5javalib.datatype.FloatingPointDatatype.parseFloatingPoint;
-import static com.github.karlnicholas.hdf5javalib.datatype.StringDatatype.parseString;
+import static com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype.parseFixedPointType;
+import static com.github.karlnicholas.hdf5javalib.datatype.FloatingPointDatatype.parseFloatingPointType;
+import static com.github.karlnicholas.hdf5javalib.datatype.StringDatatype.parseStringType;
 
 @Getter
 public class DatatypeMessage extends HdfMessage {
@@ -89,9 +89,9 @@ public class DatatypeMessage extends HdfMessage {
 
     private static HdfDatatype parseMessageDataType(byte version, byte dataTypeClass, BitSet classBitField, int size, ByteBuffer buffer) {
         return switch (dataTypeClass) {
-            case 0 -> parseFixedPoint(version, classBitField, size, buffer);
-            case 1 -> parseFloatingPoint(version, classBitField, size, buffer);
-            case 3 -> parseString(version, classBitField, size);
+            case 0 -> parseFixedPointType(version, classBitField, size, buffer);
+            case 1 -> parseFloatingPointType(version, classBitField, size, buffer);
+            case 3 -> parseStringType(version, classBitField, size);
             case 6 -> new CompoundDatatype(classBitField, size, buffer);
             default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
         };

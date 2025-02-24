@@ -1,5 +1,6 @@
 package com.github.karlnicholas.hdf5javalib;
 
+import com.github.karlnicholas.hdf5javalib.data.CompoundDataSource;
 import com.github.karlnicholas.hdf5javalib.data.FixedPointDataSource;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
@@ -11,6 +12,7 @@ import com.github.karlnicholas.hdf5javalib.file.HdfDataSet;
 import com.github.karlnicholas.hdf5javalib.file.HdfFile;
 import com.github.karlnicholas.hdf5javalib.file.HdfReader;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
+import com.github.karlnicholas.hdf5javalib.utils.HdfCompoundDatatypeSpliterator;
 import com.github.karlnicholas.hdf5javalib.utils.HdfFixedPointDatatypeSpliterator;
 
 import java.io.FileInputStream;
@@ -46,7 +48,7 @@ public class App {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
 //                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
-//                trySpliterator(channel, reader);
+                tryVolumeSpliterator(channel, reader);
 //                new HdfConstruction().buildHfd();
             }
         } catch (IOException e) {
@@ -114,27 +116,27 @@ public class App {
         try {
             // Create a new HDF5 file
             HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
-
             // DatatypeMessage with CompoundDatatype
+            BitSet stringBitSet = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII);
             List<HdfCompoundDatatypeMember> shipment = List.of(
                     new HdfCompoundDatatypeMember("shipmentId", 0, 0, 0, new int[4],
                             new FixedPointDatatype((byte) 1, (short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"), new BitSet())),
                     new HdfCompoundDatatypeMember("origCountry", 8, 0, 0, new int[4],
-                            new StringDatatype((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origCountry"))),
+                            new StringDatatype((byte) 1, stringBitSet, (short)2, computeStringMessageDataSize("origCountry"))),
                     new HdfCompoundDatatypeMember("origSlic", 10, 0, 0, new int[4],
-                            new StringDatatype((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origSlic"))),
+                            new StringDatatype((byte) 1, stringBitSet, (short)5, computeStringMessageDataSize("origSlic"))),
                     new HdfCompoundDatatypeMember("origSort", 15, 0, 0, new int[4],
                             new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("origSort"), new BitSet())),
                     new HdfCompoundDatatypeMember("destCountry", 16, 0, 0, new int[4],
-                            new StringDatatype((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destCountry"))),
+                            new StringDatatype((byte) 1, stringBitSet, (short)2, computeStringMessageDataSize("destCountry"))),
                     new HdfCompoundDatatypeMember("destSlic", 18, 0, 0, new int[4],
-                            new StringDatatype((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destSlic"))),
+                            new StringDatatype((byte) 1, stringBitSet, (short)5, computeStringMessageDataSize("destSlic"))),
                     new HdfCompoundDatatypeMember("destIbi", 23, 0, 0, new int[4],
                             new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("destIbi"), new BitSet())),
                     new HdfCompoundDatatypeMember("destPostalCode", 40, 0, 0, new int[4],
-                            new StringDatatype((byte) 1, (short)9, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destPostalCode"))),
+                            new StringDatatype((byte) 1, stringBitSet, (short)9, computeStringMessageDataSize("destPostalCode"))),
                     new HdfCompoundDatatypeMember("shipper", 24, 0, 0, new int[4],
-                            new StringDatatype((byte) 1, (short)10, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("shipper"))),
+                            new StringDatatype((byte) 1, stringBitSet, (short)10, computeStringMessageDataSize("shipper"))),
                     new HdfCompoundDatatypeMember("service", 49, 0, 0, new int[4],
                             new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("service"), new BitSet())),
                     new HdfCompoundDatatypeMember("packageType", 50, 0, 0, new int[4],
@@ -254,7 +256,24 @@ public class App {
 
     }
 
-    public void trySpliterator(FileChannel fileChannel, HdfReader reader) {
+    public void tryVolumeSpliterator(FileChannel fileChannel, HdfReader reader) {
+
+        CompoundDataSource<VolumeData> dataSource = new CompoundDataSource<>((CompoundDatatype) reader.getDataType(), VolumeData.class);
+
+        Spliterator<VolumeData> spliterator = new HdfCompoundDatatypeSpliterator<>(fileChannel, reader.getDataAddress(), reader.getDataType().getSize(), reader.getDimension(), dataSource);
+
+        System.out.println("count = " + StreamSupport.stream(spliterator, false).map(VolumeData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
+
+
+        spliterator.forEachRemaining(buffer -> {
+            // Process each ByteBuffer (record) here
+            System.out.println("Record: " + buffer);
+        });
+
+    }
+
+
+    public void tryTemperatureSpliterator(FileChannel fileChannel, HdfReader reader) {
 
         FixedPointDataSource<TemperatureData> fixedPointDataSource = new FixedPointDataSource<>((FixedPointDatatype) reader.getDataType(), "temperature", TemperatureData.class);
 

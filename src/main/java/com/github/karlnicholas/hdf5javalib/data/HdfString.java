@@ -1,22 +1,31 @@
 package com.github.karlnicholas.hdf5javalib.data;
 
+import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.BitSet;
 
+/**
+ * HDFString. Stored bytes are not null terminated even if null termination is set in classBitField.
+ * Stored bytes only hold bytes, encoded if needed. Null termination is added if needed when bytes are retrieved.
+ * Java Strings are not null terminated and are UTF-8 encoded.
+ */
 public class HdfString implements HdfData {
     private final byte[] bytes;
     private final int length;
-    private final boolean nullTerminated;
-    private final boolean utf8Encoding;
+    private final BitSet classBitField;
 
     // Constructor for HDF metadata-based initialization (comprehensive parameters)
-    public HdfString(byte[] bytes, boolean nullTerminated, boolean utf8Encoding) {
+    public HdfString(byte[] bytes, BitSet classBitField) {
+        this.classBitField = classBitField;
         if (bytes == null) {
             throw new IllegalArgumentException("Byte array cannot be null");
         }
 
-        if (nullTerminated && bytes[bytes.length - 1] != 0) {
+        StringDatatype.PaddingType paddingType = StringDatatype.PaddingType.fromBitSet(classBitField);
+        if (paddingType == StringDatatype.PaddingType.NULL_TERMINATE && bytes[bytes.length - 1] != 0) {
             throw new IllegalArgumentException("Null-terminated string must end with a null byte");
         }
 
@@ -28,62 +37,40 @@ public class HdfString implements HdfData {
                 break;
             }
         }
-        if ( nullTerminated) zeroLocation++;
         this.bytes = Arrays.copyOf(bytes, Math.min(bytes.length, zeroLocation));
-        this.nullTerminated = nullTerminated;
-        this.utf8Encoding = utf8Encoding;
-        this.length = this.bytes.length;
+        // set length to original byte[] length
+        this.length = bytes.length;
     }
 
-    // Constructor without HDF metadata parameters, defaults based on HDF specification
-    public HdfString(byte[] bytes) {
-        this(bytes, true, true); // Defaults to null-terminated and UTF-8 encoding
-    }
-
-    // Java-specific value-based constructor
-    public HdfString(String value, boolean utf8Encoding) {
+    /**
+     * nul-padded UTF8 encoded from Java String
+     * @param value String
+     */
+    public HdfString(String value) {
         if (value == null) {
             throw new IllegalArgumentException("String value cannot be null");
         }
 
-        this.nullTerminated = true; // Always default to null-terminated
-        this.utf8Encoding = utf8Encoding;
+        this.classBitField = new BitSet(); // Default to null-pad
+        this.classBitField.set(1);
+        this.classBitField.set(4);
 
-        byte[] encodedBytes = utf8Encoding
-                ? value.getBytes(StandardCharsets.UTF_8)
-                : value.getBytes(StandardCharsets.US_ASCII);
-
-        this.length = encodedBytes.length + 1; // Include null terminator
-        this.bytes = new byte[length];
-        System.arraycopy(encodedBytes, 0, this.bytes, 0, encodedBytes.length);
-        this.bytes[encodedBytes.length] = 0; // Add null terminator
+        this.bytes = value.getBytes(StandardCharsets.UTF_8);
+        this.length = bytes.length;
     }
 
     // Get the string value for application use
     public String getValue() {
-        int effectiveLength = nullTerminated ? length - 1 : length;
-        byte[] effectiveBytes = Arrays.copyOf(bytes, effectiveLength);
-
-        return utf8Encoding
-                ? new String(effectiveBytes, StandardCharsets.UTF_8)
-                : new String(effectiveBytes, StandardCharsets.US_ASCII);
+        return StringDatatype.CharacterSet.fromBitSet(classBitField) == StringDatatype.CharacterSet.UTF8
+                ? new String(bytes, StandardCharsets.UTF_8)
+                : new String(bytes, StandardCharsets.US_ASCII);
     }
 
     // Get the HDF byte[] representation for storage, always returns a copy
-    public byte[] getHdfBytes() {
-        return Arrays.copyOf(bytes, bytes.length);
-    }
-
-    // Validation for any input values provided
-    private void validateStringInput(String value, boolean utf8Encoding) {
-        if (value == null || value.isEmpty()) {
-            throw new IllegalArgumentException("String value cannot be null or empty");
-        }
-    }
-
-    // Immutability: Ensure defensive copying and final fields
-    private byte[] defensiveCopy(byte[] input) {
-        return input == null ? null : Arrays.copyOf(input, input.length);
+    public byte[] getBytes() {
+        byte[] copy = new byte[length];
+        System.arraycopy(bytes, 0, copy, 0, bytes.length);
+        return copy;
     }
 
     // String representation for debugging and user-friendly output
@@ -94,22 +81,11 @@ public class HdfString implements HdfData {
 
     @Override
     public short getSizeMessageData() {
-        return (short) (nullTerminated ? length - 1 : length);
+        return (short) (StringDatatype.PaddingType.fromBitSet(classBitField) == StringDatatype.PaddingType.NULL_TERMINATE ? length - 1 : length);
     }
 
     @Override
     public void writeValueToByteBuffer(ByteBuffer buffer) {
-        buffer.put(bytes);
-        if ( nullTerminated ) {buffer.put((byte)0);}
+        buffer.put(getBytes());
     }
-
-//    @Override
-//    public String toString() {
-//        return "HdfString{" +
-//                "value='" + getValue() + '\'' +
-//                ", length=" + length +
-//                ", nullTerminated=" + nullTerminated +
-//                ", utf8Encoding=" + utf8Encoding +
-//                '}';
-//    }
 }

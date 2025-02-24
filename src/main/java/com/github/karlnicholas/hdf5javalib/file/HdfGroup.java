@@ -3,6 +3,7 @@ package com.github.karlnicholas.hdf5javalib.file;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
+import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
@@ -62,7 +63,7 @@ public class HdfGroup {
 
         localHeap = new HdfLocalHeap(HdfFixedPoint.of(localHeapContentsSize), HdfFixedPoint.of(hdfFile.getLocalHeapContentsAddress()));
         localHeapContents = new HdfLocalHeapContents(heapData);
-        localHeap.addToHeap(new HdfString(new byte[0], false, false), localHeapContents);
+        localHeap.addToHeap(new HdfString(new byte[0], StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII)), localHeapContents);
 
         // Define a B-Tree for group indexing
         bTree = new HdfBTreeV1("TREE", 0, 0, 0,
@@ -81,7 +82,7 @@ public class HdfGroup {
 
 
     public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage, long objectHeaderAddress) {
-        HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), false, false);
+        HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII));
         // real steps needed to add a group.
         // entry in btree = "Demand" + snodOffset (1880)
         // entry in locaheapcontents = "Demand" = datasetName

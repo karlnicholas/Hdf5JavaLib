@@ -8,6 +8,7 @@ import lombok.Getter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.BitSet;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfParseUtils.createMessageInstance;
 
@@ -56,7 +57,9 @@ public class AttributeMessage extends HdfMessage {
         // Read the name (variable size)
         byte[] nameBytes = new byte[nameSize];
         buffer.get(nameBytes);
-        HdfString name = new HdfString(nameBytes, true, false);
+        BitSet bitSet = new BitSet();
+        bitSet.set(0);
+        HdfString name = new HdfString(nameBytes, bitSet);
         // get padding bytes
         int padding = ((((nameSize + 1) / 8) + 1) * 8) - nameSize;
         byte[] paddingBytes = new byte[padding];
@@ -78,7 +81,7 @@ public class AttributeMessage extends HdfMessage {
             int dtDataSize = dt.getSize();
             byte[] dataBytes = new byte[dtDataSize];
             buffer.get(dataBytes);
-            value = new HdfString(dataBytes, false, false);
+            value = new HdfString(dataBytes, bitSet);
         }
         return new AttributeMessage(version, nameSize, datatypeSize, dataspaceSize, dt, ds, name, value);
     }
@@ -109,7 +112,7 @@ public class AttributeMessage extends HdfMessage {
         buffer.putShort((short) dataspaceSize);
 
         // Read the name (variable size)
-        buffer.put(name.getHdfBytes());
+        buffer.put(name.getBytes());
         buffer.put((byte) 0);
 
         // padding bytes
@@ -124,10 +127,10 @@ public class AttributeMessage extends HdfMessage {
 
     }
 
-    public void write(HdfFixedPoint attrType, String attributeValue) {
-        value = new HdfString(attributeValue, false);
-        int size = super.getSizeMessageData() + value.getSizeMessageData();
-        size = (short) ((size + 7) & ~7);
-        super.setSizeMessageData((short) size);
-    }
+//    public void write(HdfFixedPoint attrType, String attributeValue) {
+//        value = new HdfString(attributeValue);
+//        int size = super.getSizeMessageData() + value.getSizeMessageData();
+//        size = (short) ((size + 7) & ~7);
+//        super.setSizeMessageData((short) size);
+//    }
 }

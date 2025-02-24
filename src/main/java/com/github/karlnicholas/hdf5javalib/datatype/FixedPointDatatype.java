@@ -34,7 +34,7 @@ public class FixedPointDatatype implements HdfDatatype {
         this.classBitField = classBitField;
     }
 
-    public static FixedPointDatatype parseFixedPoint(byte version, BitSet classBitField, int size, ByteBuffer buffer) {
+    public static FixedPointDatatype parseFixedPointType(byte version, BitSet classBitField, int size, ByteBuffer buffer) {
         boolean bigEndian = classBitField.get(0);
         boolean loPad = classBitField.get(1);
         boolean hiPad = classBitField.get(2);

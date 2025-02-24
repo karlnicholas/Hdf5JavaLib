@@ -77,7 +77,7 @@ public class CompoundDataSource<T> {
                 if (value instanceof String strValue && member.getType() instanceof StringDatatype stringDatatype) {
                     // Convert string to bytes and write to buffer
                     ByteBuffer stringBuffer = ByteBuffer.allocate(stringDatatype.getSize());
-                    HdfString s = new HdfString(strValue.getBytes(StandardCharsets.US_ASCII), false, false);
+                    HdfString s = new HdfString(strValue.getBytes(StandardCharsets.US_ASCII), StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII));
                     s.writeValueToByteBuffer(stringBuffer);
                     buffer.put(stringBuffer.array());
                 } else if (value instanceof BigInteger bigIntValue && member.getType() instanceof FixedPointDatatype fixedPointDatatype) {
