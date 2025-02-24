@@ -99,6 +99,7 @@ public class HdfDataSet {
         for( HdfMessage headerMessage: headerMessages ) {
             objectHeaderSize += headerMessage.getSizeMessageData() + 8;
         }
+        //TODO: will need to expand in case even a 0 length NilMessage doesn't fit in extra space.
         if ( objectHeaderSize > currentObjectHeaderSize) {
             List<HdfMessage> newMessages = new ArrayList<>();
             ObjectHeaderContinuationMessage objectHeaderContinuationMessage = new ObjectHeaderContinuationMessage(HdfFixedPoint.of(0), HdfFixedPoint.of(0));
