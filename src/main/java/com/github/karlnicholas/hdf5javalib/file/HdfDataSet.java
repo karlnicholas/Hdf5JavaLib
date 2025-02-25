@@ -1,15 +1,20 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
+import com.github.karlnicholas.hdf5javalib.data.HdfData;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
+import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.message.*;
 import lombok.Getter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -42,13 +47,13 @@ public class HdfDataSet {
         dataAddress = hdfGroup.write(bufferSupplier, this);
     }
 
-//    public AttributeMessage createAttribute(String attributeName, HdfFixedPoint attrType, HdfFixedPoint[] attrSpace) {
-//        DatatypeMessage dt = new DatatypeMessage(1, 3, BitSet.valueOf(new byte[0]), attrType, new HdfString(attributeName, false));
-//        DataspaceMessage ds = new DataspaceMessage(1, 1, 1, attrSpace, null, false);
-//        AttributeMessage attributeMessage = new AttributeMessage(1, attributeName.length(), 8, 8, dt, ds, new HdfString(attributeName, false), null);
-//        attributes.add(attributeMessage);
-//        return attributeMessage;
-//    }
+    public AttributeMessage createAttribute(String name, DatatypeMessage dt, DataspaceMessage ds, HdfData value) {
+        AttributeMessage attributeMessage = new AttributeMessage(1,
+                new HdfString(name.getBytes(StandardCharsets.US_ASCII), StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII)),
+                dt, ds, value);
+        attributes.add(attributeMessage);
+        return attributeMessage;
+    }
 
     public void close() {
         // Initialize the localHeapContents heapData array

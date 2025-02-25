@@ -29,8 +29,10 @@ public class DataspaceMessage extends HdfMessage {
     ) {
         super(MessageType.DataspaceMessage, ()->{
             short size = 8;
-            for (HdfFixedPoint dimension : dimensions) {
-                size += dimension.getSizeMessageData();
+            if ( dimensions != null ) {
+                for (HdfFixedPoint dimension : dimensions) {
+                    size += dimension.getSizeMessageData();
+                }
             }
             if ( maxDimensions != null ) {
                 for (HdfFixedPoint maxDimension : maxDimensions) {
@@ -50,13 +52,13 @@ public class DataspaceMessage extends HdfMessage {
     /**
      * Parses the header message and returns a constructed instance.
      *
-     * @param flags      Flags associated with the message.
+     * @param ignoredFlags      ignored
      * @param data       Byte array containing the header message data.
-     * @param offsetSize Size of offsets in bytes.
+     * @param ignoredOffsetSize ignored
      * @param lengthSize Size of lengths in bytes.
      * @return A fully constructed `DataspaceMessage` instance.
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte ignoredFlags, byte[] data, short ignoredOffsetSize, short lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Read the version (1 byte)
@@ -97,8 +99,8 @@ public class DataspaceMessage extends HdfMessage {
                 "version=" + version +
                 ", dimensionality=" + dimensionality +
                 ", flags=" + flags +
-                ", dimensions=" + Arrays.toString(dimensions) +
-                ", maxDimensions=" + (hasMaxDimensions ? Arrays.toString(maxDimensions) : "Not Present") +
+                ", dimensions=" + (dimensions != null ? Arrays.toString(dimensions) : "Not Present") +
+                ", maxDimensions=" + (maxDimensions != null  ? Arrays.toString(maxDimensions) : "Not Present") +
                 ", hasMaxDimensions=" + hasMaxDimensions +
                 '}';
     }

@@ -3,15 +3,15 @@ package com.github.karlnicholas.hdf5javalib;
 import com.github.karlnicholas.hdf5javalib.data.CompoundDataSource;
 import com.github.karlnicholas.hdf5javalib.data.FixedPointDataSource;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
-import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfCompoundDatatypeMember;
-import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
+import com.github.karlnicholas.hdf5javalib.data.HdfString;
+import com.github.karlnicholas.hdf5javalib.datatype.*;
 import com.github.karlnicholas.hdf5javalib.file.HdfAllocator;
 import com.github.karlnicholas.hdf5javalib.file.HdfDataSet;
 import com.github.karlnicholas.hdf5javalib.file.HdfFile;
 import com.github.karlnicholas.hdf5javalib.file.HdfReader;
+import com.github.karlnicholas.hdf5javalib.message.AttributeMessage;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
+import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
 import com.github.karlnicholas.hdf5javalib.utils.HdfCompoundDatatypeSpliterator;
 import com.github.karlnicholas.hdf5javalib.utils.HdfFixedPointDatatypeSpliterator;
 
@@ -40,14 +40,15 @@ public class App {
     private void run() {
         try {
             HdfReader reader = new HdfReader();
-            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
+            String filePath = App.class.getResource("/randomints.h5").getFile();
+//            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
 //            String filePath = App.class.getResource("/ForecastedVolume_2025-01-10.h5").getFile();
 //            String filePath = App.class.getResource("/singleint.h5").getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
 //                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
-                tryVolumeSpliterator(channel, reader);
+//                tryVolumeSpliterator(channel, reader);
 //                new HdfConstruction().buildHfd();
             }
         } catch (IOException e) {
@@ -106,7 +107,7 @@ public class App {
     }
 
     public void tryHdfApiCompound() {
-        final String FILE_NAME = "testone.h5";
+        final String FILE_NAME = "testcompound.h5";
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "Demand";
         final String ATTRIBUTE_NAME = "GIT root revision";
@@ -171,10 +172,21 @@ public class App {
 
             // ADD ATTRIBUTE: "GIT root revision"
             String attributeValue = "Revision: , URL: ";
-            HdfFixedPoint attr_type = HdfFixedPoint.of(ATTRIBUTE_NAME.length()+1);
-            HdfFixedPoint[] attr_space = new HdfFixedPoint[] {HdfFixedPoint.of(1)};
-//            AttributeMessage attributeMessage = dataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
-//            attributeMessage.write(attr_type, attributeValue);
+            BitSet classBitField = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
+
+            // value
+            StringDatatype attributeType = new StringDatatype((byte) 1,
+                    classBitField, (short)attributeValue.length(), computeStringMessageDataSize(attributeValue));
+            // data type, String, DATASET_NAME.length
+            DatatypeMessage dt = new DatatypeMessage((byte)1,
+                    (byte) HdfDatatype.DatatypeClass.STRING.getValue(),
+                    classBitField,
+                    attributeType.getSize(),
+                    attributeType);
+            // scalar, 1 string
+            DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false);
+            HdfString hdfString = new HdfString(attributeValue.getBytes(), classBitField);
+            dataset.createAttribute(ATTRIBUTE_NAME, dt, ds, hdfString);
 
 //            AtomicInteger countHolder = new AtomicInteger(0);
 //            CompoundDataSource<VolumeData> volumeDataHdfDataSource = new CompoundDataSource<>(compoundType, VolumeData.class);
