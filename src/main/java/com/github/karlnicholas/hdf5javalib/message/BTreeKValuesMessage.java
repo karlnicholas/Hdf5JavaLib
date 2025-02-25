@@ -53,8 +53,7 @@ public class BTreeKValuesMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer) {
-        writeMessageData(buffer);
-
+    public void writeToByteBuffer(ByteBuffer buffer, boolean writeMessageData) {
+        writeMessageData(buffer, writeMessageData);
     }
 }

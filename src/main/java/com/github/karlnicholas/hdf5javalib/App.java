@@ -9,7 +9,6 @@ import com.github.karlnicholas.hdf5javalib.file.HdfAllocator;
 import com.github.karlnicholas.hdf5javalib.file.HdfDataSet;
 import com.github.karlnicholas.hdf5javalib.file.HdfFile;
 import com.github.karlnicholas.hdf5javalib.file.HdfReader;
-import com.github.karlnicholas.hdf5javalib.message.AttributeMessage;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
 import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
 import com.github.karlnicholas.hdf5javalib.utils.HdfCompoundDatatypeSpliterator;
@@ -23,7 +22,6 @@ import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.BitSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Spliterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -41,6 +39,7 @@ public class App {
         try {
             HdfReader reader = new HdfReader();
             String filePath = App.class.getResource("/randomints.h5").getFile();
+//            String filePath = App.class.getResource("/test.h5").getFile();
 //            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
 //            String filePath = App.class.getResource("/ForecastedVolume_2025-01-10.h5").getFile();
 //            String filePath = App.class.getResource("/singleint.h5").getFile();
@@ -55,7 +54,7 @@ public class App {
             e.printStackTrace();
         }
 //        tryHdfApiCompound();
-//        tryHdfApiInts();
+        tryHdfApiInts();
     }
 
     public void tryHdfApiInts() {
@@ -79,6 +78,8 @@ public class App {
             // Create dataset
 //            DataSet dataset = file.createDataSet(DATASET_NAME, compoundType, space);
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
+
+            writeVersionAttribute(dataset);
 
             AtomicInteger countHolder = new AtomicInteger(0);
             FixedPointDataSource<TemperatureData> temperatureDataHdfDataSource = new FixedPointDataSource<>(fixedPointDatatype, "temperature", TemperatureData.class);
@@ -104,6 +105,20 @@ public class App {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    private void writeVersionAttribute(HdfDataSet dataset) {
+        String ATTRIBUTE_NAME = "GIT root revision";
+        String ATTRIBUTE_VALUE = "Revision: , URL: ";
+        BitSet classBitField = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII);
+        // value
+        StringDatatype attributeType = new StringDatatype((byte) 1, classBitField, (short)ATTRIBUTE_VALUE.length(), computeStringMessageDataSize(ATTRIBUTE_VALUE));
+        // data type, String, DATASET_NAME.length
+        DatatypeMessage dt = new DatatypeMessage((byte)1, (byte) HdfDatatype.DatatypeClass.STRING.getValue(), classBitField, attributeType.getSize(), attributeType);
+        // scalar, 1 string
+        DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false);
+        HdfString hdfString = new HdfString(ATTRIBUTE_VALUE.getBytes(), classBitField);
+        dataset.createAttribute(ATTRIBUTE_NAME, dt, ds, hdfString);
     }
 
     public void tryHdfApiCompound() {
@@ -154,7 +169,7 @@ public class App {
                     new HdfCompoundDatatypeMember("committedDate", 55, 0, 0, new int[4],
                             new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedDate"), new BitSet()))
             );
-            short compoundSize = (short) shipment.stream().mapToInt(c->c.getType().getSizeMessageData()).sum();
+            short compoundSize = (short) shipment.stream().mapToInt(c->c.getType().getSize()).sum();
             // Define Compound DataType correctly
             CompoundDatatype compoundType = new CompoundDatatype(shipment.size(), compoundSize, shipment);
 //            DatatypeMessage dataTypeMessage = new DatatypeMessage((byte) 1, (byte) 6, BitSet.valueOf(new byte[]{0b10001}), 56, compoundType);
@@ -171,22 +186,7 @@ public class App {
 
 
             // ADD ATTRIBUTE: "GIT root revision"
-            String attributeValue = "Revision: , URL: ";
-            BitSet classBitField = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
-
-            // value
-            StringDatatype attributeType = new StringDatatype((byte) 1,
-                    classBitField, (short)attributeValue.length(), computeStringMessageDataSize(attributeValue));
-            // data type, String, DATASET_NAME.length
-            DatatypeMessage dt = new DatatypeMessage((byte)1,
-                    (byte) HdfDatatype.DatatypeClass.STRING.getValue(),
-                    classBitField,
-                    attributeType.getSize(),
-                    attributeType);
-            // scalar, 1 string
-            DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false);
-            HdfString hdfString = new HdfString(attributeValue.getBytes(), classBitField);
-            dataset.createAttribute(ATTRIBUTE_NAME, dt, ds, hdfString);
+            writeVersionAttribute(dataset);
 
 //            AtomicInteger countHolder = new AtomicInteger(0);
 //            CompoundDataSource<VolumeData> volumeDataHdfDataSource = new CompoundDataSource<>(compoundType, VolumeData.class);

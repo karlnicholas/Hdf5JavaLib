@@ -16,7 +16,7 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
     private HdfFixedPoint continuationSize;   // Size of the continuation block
 
     public ObjectHeaderContinuationMessage(final HdfFixedPoint continuationOffset, final HdfFixedPoint continuationSize) {
-        super(MessageType.ObjectHeaderContinuationMessage, ()-> (short) (8+16), (byte)0);
+        super(MessageType.ObjectHeaderContinuationMessage, ()-> (short) (8+8), (byte)0);
         this.continuationOffset = continuationOffset;
         this.continuationSize = continuationSize;
     }
@@ -38,8 +38,8 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer) {
-        writeMessageData(buffer);
+    public void writeToByteBuffer(ByteBuffer buffer, boolean writeMessageData) {
+        writeMessageData(buffer, writeMessageData);
         // Write B-tree address (sizeOfOffsets bytes, little-endian)
         writeFixedPointToBuffer(buffer, continuationOffset);
 

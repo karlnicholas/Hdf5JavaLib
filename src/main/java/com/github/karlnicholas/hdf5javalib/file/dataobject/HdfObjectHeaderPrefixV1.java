@@ -97,7 +97,7 @@ public class HdfObjectHeaderPrefixV1 {
 
         // Write the first message if it's a SymbolTableMessage
         for( HdfMessage hdfMessage: headerMessages) {
-            hdfMessage.writeToByteBuffer(buffer);
+            hdfMessage.writeToByteBuffer(buffer, true);
             // set position 8 byte boundary
             int position = buffer.position();
             buffer.position((position + 7) & ~7);

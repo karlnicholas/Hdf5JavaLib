@@ -9,6 +9,7 @@ import java.util.BitSet;
 
 /**
  * HDFString. Stored bytes are not null terminated even if null termination is set in classBitField.
+ * Length however includes the null terminator if it is defined.
  * Stored bytes only hold bytes, encoded if needed. Null termination is added if needed when bytes are retrieved.
  * Java Strings are not null terminated and are UTF-8 encoded.
  */
@@ -51,9 +52,7 @@ public class HdfString implements HdfData {
             throw new IllegalArgumentException("String value cannot be null");
         }
 
-        this.classBitField = new BitSet(); // Default to null-pad
-        this.classBitField.set(1);
-        this.classBitField.set(4);
+        classBitField = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.UTF8);
 
         this.bytes = value.getBytes(StandardCharsets.UTF_8);
         this.length = bytes.length;
@@ -81,7 +80,8 @@ public class HdfString implements HdfData {
 
     @Override
     public short getSizeMessageData() {
-        return (short) (StringDatatype.PaddingType.fromBitSet(classBitField) == StringDatatype.PaddingType.NULL_TERMINATE ? length - 1 : length);
+//        return (short) (StringDatatype.PaddingType.fromBitSet(classBitField) == StringDatatype.PaddingType.NULL_TERMINATE ? length + 1 : length);
+        return (short) length;
     }
 
     @Override

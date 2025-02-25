@@ -2,6 +2,7 @@ package com.github.karlnicholas.hdf5javalib.message;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfData;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
+import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
 import lombok.Getter;
 
 import java.nio.ByteBuffer;
@@ -23,11 +24,12 @@ public class AttributeMessage extends HdfMessage {
         super(MessageType.AttributeMessage, ()-> {
             short s = 8;
             int nameSize = name.getSizeMessageData();
-            int datatypeSize = datatypeMessage.getSizeMessageData();
-            int dataspaceSize = dataspaceMessage.getSizeMessageData();
-            s += (short) (1+1+2+2+2+nameSize+(((((nameSize + 1) / 8) + 1) * 8) - nameSize)+datatypeSize+dataspaceSize);
-            s += value != null ? value.getSizeMessageData() : 0;
-            s = (short) ((s + 7) & ~7);
+            nameSize = (short) ((nameSize + 7) & ~7);
+            int datatypeSize = 8; // datatypeMessage.getSizeMessageData();
+            int dataspaceSize = 8; // dataspaceMessage.getSizeMessageData();
+            int valueSize = value != null ? value.getSizeMessageData() : 0;
+            valueSize  = (short) ((valueSize + 7) & ~7);
+            s += nameSize + datatypeSize + dataspaceSize + valueSize;
             return s;
         }, (byte)0);
         this.version = version;
@@ -53,11 +55,10 @@ public class AttributeMessage extends HdfMessage {
         // Read the name (variable size)
         byte[] nameBytes = new byte[nameSize];
         buffer.get(nameBytes);
-        BitSet bitSet = new BitSet();
-        bitSet.set(0);
+        BitSet bitSet = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
         HdfString name = new HdfString(nameBytes, bitSet);
         // get padding bytes
-        int padding = ((((nameSize + 1) / 8) + 1) * 8) - nameSize;
+        int padding = (8 - (nameSize % 8)) % 8;
         byte[] paddingBytes = new byte[padding];
         buffer.get(paddingBytes);
 
@@ -92,8 +93,8 @@ public class AttributeMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer) {
-        writeMessageData(buffer);
+    public void writeToByteBuffer(ByteBuffer buffer, boolean writeMessageData) {
+        writeMessageData(buffer, writeMessageData);
         buffer.put((byte) version);
 
         // Skip the reserved byte (1 byte, should be zero)
@@ -102,19 +103,20 @@ public class AttributeMessage extends HdfMessage {
         // Write the sizes of name, datatype, and dataspace (2 bytes each)
         short nameSize = name.getSizeMessageData();
         buffer.putShort(nameSize);
-        buffer.putShort(datatypeMessage.getSizeMessageData());
-        buffer.putShort(dataspaceMessage.getSizeMessageData());
+//        buffer.putShort(datatypeMessage.getSizeMessageData());
+//        buffer.putShort(dataspaceMessage.getSizeMessageData());
+        buffer.putShort((short) 8);
+        buffer.putShort((short) 8);
 
         // Read the name (variable size)
         buffer.put(name.getBytes());
-        buffer.put((byte) 0);
 
         // padding bytes
-        buffer.put(new byte[((((nameSize + 1) / 8) + 1) * 8) - nameSize]);
+        buffer.put(new byte[(8 - (nameSize % 8)) % 8]);
 
-        datatypeMessage.writeToByteBuffer(buffer);
+        datatypeMessage.writeToByteBuffer(buffer, false);
 
-        dataspaceMessage.writeToByteBuffer(buffer);
+        dataspaceMessage.writeToByteBuffer(buffer, false);
 
         // not right
         value.writeValueToByteBuffer(buffer);

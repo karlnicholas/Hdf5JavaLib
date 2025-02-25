@@ -7,6 +7,7 @@ import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
 import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -70,7 +71,8 @@ public class HdfFile {
     // It is calculated based on the sum of all preceding metadata structures.
     private final int dataGroupAddress = localHeapContentsAddress + localHeapContentsSize;
     private final int dataGroupSize = 16;
-    private final int dataGroupStorageSize = 256;  // Total size of the first group's metadata
+    @Setter
+    private int dataGroupStorageSize = 256;  // Total size of the first group's metadata
 //    private int dataGroupStorageSize = 16 + 1064;  // Total size of the first group's metadata
 
     // **Symbol Table Node (SNOD)**
@@ -170,6 +172,7 @@ public class HdfFile {
         rootSymbolTableEntry.writeToBuffer(buffer);
         buffer.position(objectHeaderPrefixAddress);
         rootGroup.writeToBuffer(buffer);
+        buffer.position(0);
 
 //        rootGroup.close(buffer);
         Path path = Path.of(fileName);

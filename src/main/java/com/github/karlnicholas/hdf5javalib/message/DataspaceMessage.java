@@ -106,8 +106,8 @@ public class DataspaceMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer) {
-        writeMessageData(buffer);
+    public void writeToByteBuffer(ByteBuffer buffer, boolean writeMessageData) {
+        writeMessageData(buffer, writeMessageData);
         // Read the version (1 byte)
         buffer.put((byte) version);
 
@@ -121,8 +121,10 @@ public class DataspaceMessage extends HdfMessage {
         buffer.put(new byte[5]);
 
         // Read dimensions
-        for (HdfFixedPoint dimension: dimensions) {
-            writeFixedPointToBuffer(buffer, dimension);
+        if (dimensions != null) {
+            for (HdfFixedPoint dimension : dimensions) {
+                writeFixedPointToBuffer(buffer, dimension);
+            }
         }
 
         // Check for maximum dimensions and write if present

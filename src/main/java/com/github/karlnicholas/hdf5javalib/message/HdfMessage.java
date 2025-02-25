@@ -27,14 +27,16 @@ public abstract class HdfMessage {
      *
      * @param buffer ByteBuffer
      */
-    protected void writeMessageData(ByteBuffer buffer) {
-        buffer.putShort(messageType.getValue());
-        buffer.putShort(sizeMessageData);
-        buffer.put(messageFlags);
-        buffer.put((byte) 0);
-        buffer.put((byte) 0);
-        buffer.put((byte) 0);
+    protected void writeMessageData(ByteBuffer buffer, boolean writeMessageData) {
+        if (writeMessageData) {
+            buffer.putShort(messageType.getValue());
+            buffer.putShort(sizeMessageData);
+            buffer.put(messageFlags);
+            buffer.put((byte) 0);
+            buffer.put((byte) 0);
+            buffer.put((byte) 0);
+        }
     }
 
-    public abstract void writeToByteBuffer(ByteBuffer buffer);
+    public abstract void writeToByteBuffer(ByteBuffer buffer, boolean writeMessageData);
 }
