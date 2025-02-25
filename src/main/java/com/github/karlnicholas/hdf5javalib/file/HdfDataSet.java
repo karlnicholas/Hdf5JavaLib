@@ -14,7 +14,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -58,21 +57,14 @@ public class HdfDataSet {
     }
 
     public void close() {
-        // Initialize the localHeapContents heapData array
-        // System.arraycopy(hdfDataSet.getDatasetName().getBytes(StandardCharsets.US_ASCII), 0, hdfFile.getLocalHeapContents().getHeapData(), 8, hdfDataSet.getDatasetName().length());
-//        long recordCount = dataSpaceMessage.
         int currentObjectHeaderSize = hdfGroup.getHdfFile().getDataGroupStorageSize();
         List<HdfMessage> headerMessages = new ArrayList<>();
         headerMessages.add(dataSpaceMessage);
-//        headerMessages.add(new ObjectHeaderContinuationMessage(HdfFixedPoint.of(100208), HdfFixedPoint.of(112)));
-//        headerMessages.add(new NilMessage());
-
 
         DatatypeMessage dataTypeMessage = new DatatypeMessage((byte) 1, (byte) hdfDatatype.getDatatypeClass().getValue(),
                 hdfDatatype.getClassBitBytes(),
                 hdfDatatype.getSize(),
                 hdfDatatype);
-//        dataTypeMessage.setDataType(compoundType);
         headerMessages.add(dataTypeMessage);
 
         // Add FillValue message
@@ -95,25 +87,14 @@ public class HdfDataSet {
 
         // attribute messages at the end
         headerMessages.addAll(attributes);
-//        // Add DataspaceMessage (Handles dataset dimensionality)
-//        HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(recordCount)};
 
-//        DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
-//        headerMessages.add(dataSpaceMessage);
-
-        // new long[]{1750}, new long[]{98000}
         int objectReferenceCount = 1;
         int objectHeaderSize = 0;
-        // 8, 1, 1064
         for( HdfMessage headerMessage: headerMessages ) {
             objectHeaderSize += headerMessage.getSizeMessageData() + 8;
         }
         // Test whether there is space enough for a NilMessage of 0 length
         if ( objectHeaderSize + 8 > currentObjectHeaderSize) {
-            // how often does this happen?
-//            currentObjectHeaderSize = 1024;
-//            hdfGroup.getHdfFile().setDataGroupStorageSize(currentObjectHeaderSize);
-
             // restructure the messages
             headerMessages.clear();
             ObjectHeaderContinuationMessage objectHeaderContinuationMessage = new ObjectHeaderContinuationMessage(HdfFixedPoint.of(0), HdfFixedPoint.of(0));
@@ -127,24 +108,20 @@ public class HdfDataSet {
             headerMessages.add(dataSpaceMessage);
             headerMessages.addAll(attributes);
 
-            int breakPostion = headerMessages.size() - 2;
-//            int breakSize = 0;
-//            while (breakPostion < headerMessages.size()) {
-//                breakSize += headerMessages.get(breakPostion).getSizeMessageData() + 8;
-//                breakPostion++;
-//                if ( breakSize > 1024 ) {
-//                    break;
-//                }
-//            }
+            int breakPostion = 6;
             int continueSize = 0;
             while (breakPostion < headerMessages.size()) {
                 continueSize += headerMessages.get(breakPostion).getSizeMessageData() + 8;
                 breakPostion++;
             }
-//            long endOfData = (hdfFile.getDatasetRecordCount().get() * compoundDataType.getSize()) + hdfFile.getDataAddress();
-//            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(endOfData));
-            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.undefined((short)8));
+            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(hdfGroup.getHdfFile().getDataAddress()));
+            hdfGroup.getHdfFile().setDataAddress(hdfGroup.getHdfFile().getDataAddress() + continueSize);
             objectHeaderContinuationMessage.setContinuationSize(HdfFixedPoint.of(continueSize));
+            // set the object header size.
+            objectHeaderSize = 8;
+            for(int i=0; i < 6; ++i) {
+                objectHeaderSize += headerMessages.get(i).getSizeMessageData() + 8;
+            }
         } else {
             // add remaining space
             headerMessages.add(new NilMessage(currentObjectHeaderSize - 8 - objectHeaderSize));
@@ -158,11 +135,4 @@ public class HdfDataSet {
     public void writeToBuffer(ByteBuffer buffer) {
         dataObjectHeaderPrefix.writeToByteBuffer(buffer);
     }
-//    public long updateForRecordCount(long l) {
-//
-////        dataObjectHeaderPrefix.findHdfSymbolTableMessage(DataLayoutMessage.class)
-////                .orElseThrow()
-////                .getDimensionSizes()
-//        return hdfFile.getDatasetRecordCount().get() + l;
-//    }
 }

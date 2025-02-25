@@ -118,7 +118,7 @@ public class HdfGroup {
         }
 
         // If not found or invalid, fallback to Object Header's SymbolTableMessage
-        Optional<SymbolTableMessage> symbolTableMessageOpt = objectHeader.findHdfSymbolTableMessage(SymbolTableMessage.class);
+        Optional<SymbolTableMessage> symbolTableMessageOpt = objectHeader.findMessageByType(SymbolTableMessage.class);
         if (symbolTableMessageOpt.isPresent()) {
             SymbolTableMessage symbolTableMessage = symbolTableMessageOpt.get();
 

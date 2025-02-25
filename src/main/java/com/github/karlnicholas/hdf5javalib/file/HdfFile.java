@@ -91,7 +91,8 @@ public class HdfFile {
     // **Dataset Storage (Where Raw Data Begins)**
     // The byte offset where actual dataset data is stored.
     // Everything before this is metadata.
-    private final int dataAddress = 2048;
+    @Setter
+    private int dataAddress = 2048;
 
     public HdfFile(String fileName, StandardOpenOption[] openOptions) {
         this.fileName = fileName;
@@ -145,17 +146,12 @@ public class HdfFile {
 //    }
 
     public void close() throws IOException {
-//        int dataStart = 0;
-//        hdfGroup.writeToBuffer();
-//        if ( bTree.getEntriesUsed() <= 0 ) {
-//            dataStart = superblock.getEndOfFileAddress().getBigIntegerValue().intValue();
-//        }
         long records = rootGroup.getDataSet().getDataObjectHeaderPrefix()
-                .findHdfSymbolTableMessage(DataspaceMessage.class)
+                .findMessageByType(DataspaceMessage.class)
                 .orElseThrow()
                 .getDimensions()[0].getBigIntegerValue().longValue();
         long recordSize = rootGroup.getDataSet().getDataObjectHeaderPrefix()
-                .findHdfSymbolTableMessage(DatatypeMessage.class)
+                .findMessageByType(DatatypeMessage.class)
                 .orElseThrow()
                 .getSize();
         superblock.setEndOfFileAddress(HdfFixedPoint.of(dataAddress + recordSize * records));
@@ -174,29 +170,13 @@ public class HdfFile {
         rootGroup.writeToBuffer(buffer);
         buffer.position(0);
 
-//        rootGroup.close(buffer);
         Path path = Path.of(fileName);
         StandardOpenOption[] fileOptions = {StandardOpenOption.WRITE};
         if ( !Files.exists(path) ) {
             fileOptions =new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE};
         }
         try (FileChannel fileChannel = FileChannel.open(path, fileOptions)) {
-            // TODO: Implement actual serialization logic
-            //        System.out.println("Superblock: " + superblock);
-            // Allocate a buffer of size 2208
-            // Get the data address directly from the single dataObject
-//            HdfSuperblock superblock = hdfDataSet.getHdfFile().getSuperblock();
-//            Optional<HdfFixedPoint> optionalDataAddress = dataObjectHeaderPrefix.getDataAddress();
-
-//            // Extract the data start location dynamically
-//            long dataStart = optionalDataAddress
-//                    .map(HdfFixedPoint::getBigIntegerValue)
-//                    .map(BigInteger::longValue)
-//                    .orElseThrow(() -> new IllegalStateException("No Data Layout Message found"));
             fileChannel.position(0);
-            //        System.out.println(superblock);
-            // Write the superblock at position 0
-            buffer.position(0);
 
             while (buffer.hasRemaining()) {
                 fileChannel.write(buffer);

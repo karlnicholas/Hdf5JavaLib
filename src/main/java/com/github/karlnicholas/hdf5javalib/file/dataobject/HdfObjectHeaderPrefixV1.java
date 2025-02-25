@@ -95,12 +95,21 @@ public class HdfObjectHeaderPrefixV1 {
         // Write reserved field (must be 0) (4 bytes)
         buffer.putInt(0);
 
-        // Write the first message if it's a SymbolTableMessage
-        for( HdfMessage hdfMessage: headerMessages) {
+        // Write messages, handling continuation as first message but splitting at 6
+        Optional<ObjectHeaderContinuationMessage> optContinuationMessage = findMessageByType(ObjectHeaderContinuationMessage.class);
+
+        for (int i = 0; i < headerMessages.size(); i++) {
+            HdfMessage hdfMessage = headerMessages.get(i);
             hdfMessage.writeToByteBuffer(buffer, true);
-            // set position 8 byte boundary
+
+            // Pad to 8-byte boundary
             int position = buffer.position();
             buffer.position((position + 7) & ~7);
+
+            // After writing 6 messages, jump to continuation offset if present
+            if (i == 5 && optContinuationMessage.isPresent()) {
+                buffer.position(optContinuationMessage.get().getContinuationOffset().getBigIntegerValue().intValue());
+            }
         }
     }
 
@@ -132,7 +141,7 @@ public class HdfObjectHeaderPrefixV1 {
         return builder.toString();
     }
 
-    public <T extends HdfMessage> Optional<T> findHdfSymbolTableMessage(Class<T> messageClass) {
+    public <T extends HdfMessage> Optional<T> findMessageByType(Class<T> messageClass) {
         for (HdfMessage message : headerMessages) {
             if (messageClass.isInstance(message)) {
                 return Optional.of(messageClass.cast(message)); // Avoids unchecked cast warning

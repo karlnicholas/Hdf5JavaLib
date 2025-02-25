@@ -53,8 +53,8 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        tryHdfApiCompound();
-        tryHdfApiInts();
+        tryHdfApiCompound();
+//        tryHdfApiInts();
     }
 
     public void tryHdfApiInts() {
@@ -125,7 +125,6 @@ public class App {
         final String FILE_NAME = "testcompound.h5";
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "Demand";
-        final String ATTRIBUTE_NAME = "GIT root revision";
         final int NUM_RECORDS = 1750;
 
         try {
