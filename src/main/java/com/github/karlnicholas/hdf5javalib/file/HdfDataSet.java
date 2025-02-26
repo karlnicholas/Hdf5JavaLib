@@ -40,6 +40,7 @@ public class HdfDataSet {
         this.hdfDatatype = hdfDatatype;
         this.attributes = new ArrayList<>();
         this.dataSpaceMessage = dataSpaceMessage;
+        computeSpaceRequirements();
     }
 
     public void write(Supplier<ByteBuffer> bufferSupplier) throws IOException {
@@ -53,10 +54,11 @@ public class HdfDataSet {
                 new HdfString(nameBytes, StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII)),
                 dt, ds, value);
         attributes.add(attributeMessage);
+        computeSpaceRequirements();
         return attributeMessage;
     }
 
-    public void close() {
+    private void computeSpaceRequirements() {
         int currentObjectHeaderSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
         List<HdfMessage> headerMessages = new ArrayList<>();
         headerMessages.add(dataSpaceMessage);
@@ -114,8 +116,9 @@ public class HdfDataSet {
                 continueSize += headerMessages.get(breakPostion).getSizeMessageData() + 8;
                 breakPostion++;
             }
+
+            hdfGroup.getHdfFile().getBufferAllocation().addMessageContinuationSpace(continueSize);
             objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
-            hdfGroup.getHdfFile().getBufferAllocation().setDataAddress(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress() + continueSize);
             objectHeaderContinuationMessage.setContinuationSize(HdfFixedPoint.of(continueSize));
             // set the object header size.
             objectHeaderSize = 8;
@@ -131,7 +134,8 @@ public class HdfDataSet {
         System.out.println(datasetName + "@" + hdfGroup.getHdfFile().getBufferAllocation().getDataGroupAddress() + " = " + dataObjectHeaderPrefix);
 
     }
-
+    public void close() {
+    }
     public void writeToBuffer(ByteBuffer buffer) {
         dataObjectHeaderPrefix.writeToByteBuffer(buffer);
     }
