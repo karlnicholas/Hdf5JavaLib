@@ -57,7 +57,7 @@ public class HdfDataSet {
     }
 
     public void close() {
-        int currentObjectHeaderSize = hdfGroup.getHdfFile().getDataGroupStorageSize();
+        int currentObjectHeaderSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
         List<HdfMessage> headerMessages = new ArrayList<>();
         headerMessages.add(dataSpaceMessage);
 
@@ -76,7 +76,7 @@ public class HdfDataSet {
         long recordCount = dimensions[0].getBigIntegerValue().longValue();
         HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(recordCount * hdfDatatype.getSize())};
         DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1,
-                HdfFixedPoint.of(hdfGroup.getHdfFile().getDataAddress()),
+                HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()),
                 hdfDimensionSizes,
                 0, null, HdfFixedPoint.undefined((short)8));
         headerMessages.add(dataLayoutMessage);
@@ -114,8 +114,8 @@ public class HdfDataSet {
                 continueSize += headerMessages.get(breakPostion).getSizeMessageData() + 8;
                 breakPostion++;
             }
-            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(hdfGroup.getHdfFile().getDataAddress()));
-            hdfGroup.getHdfFile().setDataAddress(hdfGroup.getHdfFile().getDataAddress() + continueSize);
+            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
+            hdfGroup.getHdfFile().getBufferAllocation().setDataAddress(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress() + continueSize);
             objectHeaderContinuationMessage.setContinuationSize(HdfFixedPoint.of(continueSize));
             // set the object header size.
             objectHeaderSize = 8;
@@ -128,7 +128,7 @@ public class HdfDataSet {
 
         }
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, Math.max(objectHeaderSize, currentObjectHeaderSize), headerMessages);
-        System.out.println(datasetName + "@" + hdfGroup.getHdfFile().getDataGroupAddress() + " = " + dataObjectHeaderPrefix);
+        System.out.println(datasetName + "@" + hdfGroup.getHdfFile().getBufferAllocation().getDataGroupAddress() + " = " + dataObjectHeaderPrefix);
 
     }
 

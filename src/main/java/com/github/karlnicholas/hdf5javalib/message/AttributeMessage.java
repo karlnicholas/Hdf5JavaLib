@@ -16,11 +16,11 @@ import static com.github.karlnicholas.hdf5javalib.utils.HdfParseUtils.createMess
 public class AttributeMessage extends HdfMessage {
     private final int version;
     private final HdfString name;
-    private final HdfMessage datatypeMessage;
-    private final HdfMessage dataspaceMessage;
+    private final DatatypeMessage datatypeMessage;
+    private final DataspaceMessage dataspaceMessage;
     private final HdfData value;
 
-    public AttributeMessage(int version, HdfString name, HdfMessage datatypeMessage, HdfMessage dataspaceMessage, HdfData value) {
+    public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfData value) {
         super(MessageType.AttributeMessage, ()-> {
             short s = 8;
             int nameSize = name.getSizeMessageData();
@@ -93,8 +93,8 @@ public class AttributeMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer, boolean writeMessageData) {
-        writeMessageData(buffer, writeMessageData);
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        writeMessageData(buffer);
         buffer.put((byte) version);
 
         // Skip the reserved byte (1 byte, should be zero)
@@ -114,9 +114,9 @@ public class AttributeMessage extends HdfMessage {
         // padding bytes
         buffer.put(new byte[(8 - (nameSize % 8)) % 8]);
 
-        datatypeMessage.writeToByteBuffer(buffer, false);
+        DatatypeMessage.writeInfoToByteBuffer(datatypeMessage, buffer);
 
-        dataspaceMessage.writeToByteBuffer(buffer, false);
+        DataspaceMessage.writeInfoToByteBuffer(dataspaceMessage, buffer);
 
         // not right
         value.writeValueToByteBuffer(buffer);

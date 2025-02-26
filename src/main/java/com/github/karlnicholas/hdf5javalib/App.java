@@ -5,7 +5,7 @@ import com.github.karlnicholas.hdf5javalib.data.FixedPointDataSource;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import com.github.karlnicholas.hdf5javalib.datatype.*;
-import com.github.karlnicholas.hdf5javalib.file.HdfAllocator;
+import com.github.karlnicholas.hdf5javalib.file.HdfBufferAllocation;
 import com.github.karlnicholas.hdf5javalib.file.HdfDataSet;
 import com.github.karlnicholas.hdf5javalib.file.HdfFile;
 import com.github.karlnicholas.hdf5javalib.file.HdfReader;
@@ -227,43 +227,6 @@ public class App {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-    }
-
-    public void tryAllocator() {
-        HdfAllocator allocator = new HdfAllocator(0);
-
-        // Allocate Superblock
-        long superblockOffset = allocator.allocate(56, 8);
-        System.out.printf("Superblock at: %d\n", superblockOffset);
-
-        // Allocate Symbol Table Entry
-        long symbolTableEntryOffset = allocator.allocate(40, 8);
-        System.out.printf("Symbol Table Entry at: %d\n", symbolTableEntryOffset);
-
-        // Allocate Root Object Header
-        long rootObjectHeaderOffset = allocator.allocate(584, 8);
-        System.out.printf("Root Object Header at: %d\n", rootObjectHeaderOffset);
-
-        // Allocate Local Heap
-        long localHeapOffset = allocator.allocate(32, 8);
-        System.out.printf("Local Heap at: %d\n", localHeapOffset);
-
-        // Allocate Local Heap Contents
-        long localHeapContentsOffset = allocator.allocate(88, 8);
-        System.out.printf("Local Heap Contents at: %d\n", localHeapContentsOffset);
-
-        // Allocate Dataset Object Header
-        long datasetObjectHeaderOffset = allocator.allocate(1080, 8);
-        System.out.printf("Dataset Object Header at: %d\n", datasetObjectHeaderOffset);
-
-        // Allocate B-Trees
-        long btreeOffset = allocator.allocate(328, 8);
-        System.out.printf("B-Tree Structures at: %d\n", btreeOffset);
-
-        // Align Dataset Storage to 2208
-        long datasetStorageOffset = allocator.allocate(0, 2048); // Align to 2208 manually
-        System.out.printf("Dataset Storage starts at: %d\n", datasetStorageOffset);
-
     }
 
     public void tryVolumeSpliterator(FileChannel fileChannel, HdfReader reader) {

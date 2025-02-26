@@ -135,8 +135,8 @@ public class DatatypeMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer, boolean writeMessageData) {
-        writeMessageData(buffer, writeMessageData);
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        writeMessageData(buffer);
 //        byte classAndVersion = (byte) ((version << 4) + dataTypeClass);
 //        buffer.put(classAndVersion);    // 1
 //        // Parse Class Bit Field (24 bits)
@@ -148,6 +148,10 @@ public class DatatypeMessage extends HdfMessage {
 //        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
 //        buffer.put(result);         // 3
 //        buffer.putInt(size);        // 4
-        hdfDatatype.writeDefinitionToByteBuffer(buffer);
+        writeInfoToByteBuffer(this, buffer);
+    }
+
+    public static void writeInfoToByteBuffer(DatatypeMessage datatypeMessage, ByteBuffer buffer) {
+        datatypeMessage.hdfDatatype.writeDefinitionToByteBuffer(buffer);
     }
 }

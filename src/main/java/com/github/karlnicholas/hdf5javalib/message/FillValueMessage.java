@@ -83,8 +83,8 @@ public class FillValueMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer, boolean writeMessageData) {
-        writeMessageData(buffer, writeMessageData);
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        writeMessageData(buffer);
         // Parse the first 4 bytes
         buffer.put((byte) version);
         buffer.put((byte) spaceAllocationTime);

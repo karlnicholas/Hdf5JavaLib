@@ -130,8 +130,8 @@ public class DataLayoutMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer, boolean writeMessageData) {
-        writeMessageData(buffer, writeMessageData);
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        writeMessageData(buffer);
         // Read version (1 byte)
         buffer.put((byte) version);
         // Read layout class (1 byte)

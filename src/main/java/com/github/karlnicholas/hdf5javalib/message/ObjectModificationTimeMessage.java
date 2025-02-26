@@ -51,8 +51,8 @@ public class ObjectModificationTimeMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer, boolean writeMessageData) {
-        writeMessageData(buffer, writeMessageData);
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        writeMessageData(buffer);
         buffer.put((byte) version);
         // Skip reserved bytes
         buffer.position(buffer.position() + 3);

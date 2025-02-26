@@ -100,7 +100,7 @@ public class HdfObjectHeaderPrefixV1 {
 
         for (int i = 0; i < headerMessages.size(); i++) {
             HdfMessage hdfMessage = headerMessages.get(i);
-            hdfMessage.writeToByteBuffer(buffer, true);
+            hdfMessage.writeToByteBuffer(buffer);
 
             // Pad to 8-byte boundary
             int position = buffer.position();
