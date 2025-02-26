@@ -2,15 +2,13 @@ package com.github.karlnicholas.hdf5javalib.datatype;
 
 import lombok.Getter;
 
+@Getter
 public class HdfCompoundDatatypeMember {
-    @Getter
     private final String name;
-    @Getter
     private final int offset;
     protected final int dimensionality;
     protected final int dimensionPermutation;
     protected final int[] dimensionSizes;
-    @Getter
     protected final HdfDatatype type;
 
     public HdfCompoundDatatypeMember(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, HdfDatatype type) {

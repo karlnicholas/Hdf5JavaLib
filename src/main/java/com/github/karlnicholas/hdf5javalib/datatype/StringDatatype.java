@@ -4,7 +4,6 @@ import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import lombok.Getter;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.BitSet;
 
 @Getter
@@ -29,17 +28,7 @@ public class StringDatatype implements HdfDatatype {
     }
 
     public static BitSet getStringTypeBitSet(PaddingType paddingType, CharacterSet charSet) {
-        return BitSet.valueOf(new long[] {(charSet.value << 4) + paddingType.value});
-    }
-
-    private int extractBits(BitSet bitSet, int start, int end) {
-        int value = 0;
-        for (int i = start; i <= end; i++) {
-            if (bitSet.get(i)) {
-                value |= (1 << (i - start));
-            }
-        }
-        return value;
+        return BitSet.valueOf(new long[] {((long) charSet.value << 4) + paddingType.value});
     }
 
     public HdfString getInstance(ByteBuffer dataBuffer) {
@@ -60,18 +49,6 @@ public class StringDatatype implements HdfDatatype {
 
     @Override
     public String toString() {
-        String paddingDescription = switch (extractBits(classBitField, 0, 3)) {
-            case 0 -> "Null Terminate";
-            case 1 -> "Null Pad";
-            case 2 -> "Space Pad";
-            default -> "Reserved";
-        };
-
-        String charSetDescription = switch (extractBits(classBitField, 4, 7)) {
-            case 0 -> "ASCII";
-            case 1 -> "UTF-8";
-            default -> "Reserved";
-        };
         return "StringDatatype{" +
                 "size=" + size +
                 ", padding='" + getPaddingType().name + '\'' +
@@ -94,6 +71,7 @@ public class StringDatatype implements HdfDatatype {
     }
 
     // Inner Enum for Padding Type (Bits 0-3)
+    @Getter
     public enum PaddingType {
         NULL_TERMINATE(0, "Null Terminate",
                 "A zero byte marks the end of the string and is guaranteed to be present after converting a long string to a short string. " +
@@ -128,10 +106,6 @@ public class StringDatatype implements HdfDatatype {
             this.description = description;
         }
 
-        public int getValue() { return value; }
-        public String getName() { return name; }
-        public String getDescription() { return description; }
-
         public static PaddingType fromValue(int value) {
             for (PaddingType type : values()) {
                 if (type.value == value) return type;
@@ -147,6 +121,7 @@ public class StringDatatype implements HdfDatatype {
     }
 
     // Inner Enum for Character Set (Bits 4-7, assumed per HDF5 spec)
+    @Getter
     public enum CharacterSet {
         ASCII(0, "ASCII", "American Standard Code for Information Interchange"),
         UTF8(1, "UTF-8", "Unicode Transformation Format, 8-bit"),
@@ -174,10 +149,6 @@ public class StringDatatype implements HdfDatatype {
             this.name = name;
             this.description = description;
         }
-
-        public int getValue() { return value; }
-        public String getName() { return name; }
-        public String getDescription() { return description; }
 
         public static CharacterSet fromValue(int value) {
             for (CharacterSet set : values()) {

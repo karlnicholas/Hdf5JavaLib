@@ -10,26 +10,6 @@ public class HdfFloatPoint implements HdfData {
     private final short size;
     private final boolean littleEndian;
 
-    // Constructor for float
-    public HdfFloatPoint(float value, boolean littleEndian) {
-        this.size = 32;
-        this.littleEndian = littleEndian;
-        this.bytes = ByteBuffer.allocate(4)
-                .order(littleEndian ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN)
-                .putFloat(value)
-                .array();
-    }
-
-    // Constructor for double
-    public HdfFloatPoint(double value, boolean littleEndian) {
-        this.size = 64;
-        this.littleEndian = littleEndian;
-        this.bytes = ByteBuffer.allocate(8)
-                .order(littleEndian ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN)
-                .putDouble(value)
-                .array();
-    }
-
     public HdfFloatPoint(byte[] bytes, short size) {
         this(bytes, size, true); // Defaults to little-endian
     }

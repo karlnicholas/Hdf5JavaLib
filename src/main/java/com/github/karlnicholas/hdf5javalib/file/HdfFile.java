@@ -7,7 +7,6 @@ import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
 import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
