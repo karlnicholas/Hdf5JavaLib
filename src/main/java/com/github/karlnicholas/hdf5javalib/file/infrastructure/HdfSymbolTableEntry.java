@@ -16,14 +16,14 @@ public class HdfSymbolTableEntry {
     private final HdfFixedPoint objectHeaderAddress;
     private final int cacheType;
     private final HdfFixedPoint bTreeAddress;
-    private final HdfFixedPoint localHeapAddress;
+    private final HdfFixedPoint nameHeapAddress;
 
-    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfFixedPoint objectHeaderAddress, HdfFixedPoint bTreeAddress, HdfFixedPoint localHeapAddress) {
+    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfFixedPoint objectHeaderAddress, HdfFixedPoint bTreeAddress, HdfFixedPoint nameHeapAddress) {
         this.linkNameOffset = linkNameOffset;
         this.objectHeaderAddress = objectHeaderAddress;
         this.cacheType = 1;
         this.bTreeAddress = bTreeAddress;
-        this.localHeapAddress = localHeapAddress;
+        this.nameHeapAddress = nameHeapAddress;
     }
 
     public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfFixedPoint objectHeaderAddress) {
@@ -31,7 +31,7 @@ public class HdfSymbolTableEntry {
         this.objectHeaderAddress = objectHeaderAddress;
         this.cacheType = 0;
         this.bTreeAddress = null;
-        this.localHeapAddress = null;
+        this.nameHeapAddress = null;
     }
 
     public static HdfSymbolTableEntry fromFileChannel(FileChannel fileChannel, short offsetSize) throws IOException {
@@ -91,7 +91,7 @@ public class HdfSymbolTableEntry {
         // If cacheType == 1, write B-tree Address and Local Heap Address
         if (cacheType == 1) {
             writeFixedPointToBuffer(buffer, bTreeAddress);
-            writeFixedPointToBuffer(buffer, localHeapAddress);
+            writeFixedPointToBuffer(buffer, nameHeapAddress);
         } else {
             // If cacheType != 1, write 16 bytes of reserved "scratch-pad" space
             buffer.put(new byte[16]);
@@ -110,7 +110,7 @@ public class HdfSymbolTableEntry {
                 break; // Base fields only
             case 1:
                 sb.append(", bTreeAddress=").append(bTreeAddress)
-                        .append(", localHeapAddress=").append(localHeapAddress);
+                        .append(", nameHeapAddress=").append(nameHeapAddress);
                 break;
             default:
                 throw new IllegalStateException("Unknown cache type: " + cacheType);

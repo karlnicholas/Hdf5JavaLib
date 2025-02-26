@@ -1,6 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.file.metadata;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,6 +30,7 @@ public class HdfSuperblock {
     @Setter
     private HdfFixedPoint endOfFileAddress;
     private final HdfFixedPoint driverInformationAddress;
+    private final HdfSymbolTableEntry rootGroupSymbolTableEntry;
 
     public HdfSuperblock(
             int version,
@@ -42,7 +44,8 @@ public class HdfSuperblock {
             HdfFixedPoint baseAddress,
             HdfFixedPoint freeSpaceAddress,
             HdfFixedPoint endOfFileAddress,
-            HdfFixedPoint driverInformationAddress
+            HdfFixedPoint driverInformationAddress,
+            HdfSymbolTableEntry rootGroupSymbolTableEntry
     ) {
         this.version = version;
         this.freeSpaceVersion = freeSpaceVersion;
@@ -56,6 +59,7 @@ public class HdfSuperblock {
         this.freeSpaceAddress = freeSpaceAddress;
         this.endOfFileAddress = endOfFileAddress;
         this.driverInformationAddress = driverInformationAddress;
+        this.rootGroupSymbolTableEntry = rootGroupSymbolTableEntry;
     }
 
     public static HdfSuperblock readFromFileChannel(FileChannel fileChannel) throws IOException {
@@ -112,6 +116,8 @@ public class HdfSuperblock {
         int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
         buffer.getInt(); // Skip consistency flags
 
+        HdfSymbolTableEntry rootGroupSymbleTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, sizeOfOffsets);
+
         // Parse addresses using HdfFixedPoint
         HdfFixedPoint baseAddress = HdfFixedPoint.readFromByteBuffer(buffer, sizeOfOffsets, false);
         HdfFixedPoint freeSpaceAddress = HdfFixedPoint.checkUndefined(buffer, sizeOfOffsets) ? HdfFixedPoint.undefined(buffer, sizeOfOffsets) : HdfFixedPoint.readFromByteBuffer(buffer, sizeOfOffsets, false);
@@ -130,7 +136,8 @@ public class HdfSuperblock {
                 baseAddress,
                 freeSpaceAddress,
                 endOfFileAddress,
-                driverInformationAddress
+                driverInformationAddress,
+                rootGroupSymbleTableEntry
         );
     }
 
@@ -160,6 +167,8 @@ public class HdfSuperblock {
         writeFixedPointToBuffer(buffer, freeSpaceAddress);    // Free space address
         writeFixedPointToBuffer(buffer, endOfFileAddress);    // End-of-file address
         writeFixedPointToBuffer(buffer, driverInformationAddress); // Driver info block address
+
+        rootGroupSymbolTableEntry.writeToBuffer(buffer);
     }
 
     @Override
@@ -177,6 +186,7 @@ public class HdfSuperblock {
                 ", freeSpaceAddress=" + freeSpaceAddress +
                 ", endOfFileAddress=" + endOfFileAddress +
                 ", driverInformationAddress=" + driverInformationAddress +
+                "\r\n\trootGroupSymbolTableEntry=" + rootGroupSymbolTableEntry +
                 '}';
     }
 }

@@ -2,6 +2,7 @@ package com.github.karlnicholas.hdf5javalib.message;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -13,7 +14,8 @@ import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPoint
 public class DataLayoutMessage extends HdfMessage {
     private final int version;
     private final int layoutClass;
-    private final HdfFixedPoint dataAddress;
+    @Setter
+    private HdfFixedPoint dataAddress;
     private final HdfFixedPoint[] dimensionSizes;
     private final int compactDataSize;
     private final byte[] compactData;

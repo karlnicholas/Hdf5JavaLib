@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.BitSet;
 
 import static com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype.parseFixedPointType;
@@ -137,17 +138,18 @@ public class DatatypeMessage extends HdfMessage {
     @Override
     public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
-//        byte classAndVersion = (byte) ((version << 4) + dataTypeClass);
-//        buffer.put(classAndVersion);    // 1
-//        // Parse Class Bit Field (24 bits)
-//        byte[] bytes = classBitField.toByteArray();
-//        byte[] result = new byte[3];
-//        // Fill with 0s to ensure exactly 3 bytes
-//        Arrays.fill(result, (byte) 0);
-//        // Copy bytes in little-endian order
-//        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
-//        buffer.put(result);         // 3
-//        buffer.putInt(size);        // 4
+        // when in compound datadtype
+        byte classAndVersion = (byte) ((version << 4) + dataTypeClass);
+        buffer.put(classAndVersion);    // 1
+        // Parse Class Bit Field (24 bits)
+        byte[] bytes = classBitField.toByteArray();
+        byte[] result = new byte[3];
+        // Fill with 0s to ensure exactly 3 bytes
+        Arrays.fill(result, (byte) 0);
+        // Copy bytes in little-endian order
+        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
+        buffer.put(result);         // 3
+        buffer.putInt(size);        // 4
         writeInfoToByteBuffer(this, buffer);
     }
 

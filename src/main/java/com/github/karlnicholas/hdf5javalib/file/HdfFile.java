@@ -23,7 +23,6 @@ public class HdfFile {
     private final StandardOpenOption[] openOptions;
     // initial setup without Dataset
     private final HdfSuperblock superblock;
-    private final HdfSymbolTableEntry rootSymbolTableEntry;
     private final HdfGroup rootGroup;
     private final HdfBufferAllocation bufferAllocation;
 
@@ -39,12 +38,12 @@ public class HdfFile {
                 HdfFixedPoint.of(0),
                 HdfFixedPoint.undefined((short)8),
                 HdfFixedPoint.of(bufferAllocation.getDataAddress()),
-                HdfFixedPoint.undefined((short)8));
-        rootSymbolTableEntry = new HdfSymbolTableEntry(
-                HdfFixedPoint.of(0),
-                HdfFixedPoint.of(bufferAllocation.getObjectHeaderPrefixAddress()),
-                HdfFixedPoint.of(bufferAllocation.getBtreeAddress()),
-                HdfFixedPoint.of(bufferAllocation.getLocalHeapAddress()));
+                HdfFixedPoint.undefined((short)8),
+                new HdfSymbolTableEntry(
+                        HdfFixedPoint.of(0),
+                        HdfFixedPoint.of(bufferAllocation.getObjectHeaderPrefixAddress()),
+                        HdfFixedPoint.of(bufferAllocation.getBtreeAddress()),
+                        HdfFixedPoint.of(bufferAllocation.getLocalHeapAddress())));
 
         rootGroup = new HdfGroup(this, "", bufferAllocation.getBtreeAddress(), bufferAllocation.getLocalHeapAddress());
     }
@@ -91,15 +90,12 @@ public class HdfFile {
         superblock.setEndOfFileAddress(HdfFixedPoint.of(bufferAllocation.getDataAddress() + recordSize * records));
 
         System.out.println(superblock);
-        System.out.println(rootSymbolTableEntry);
         System.out.println(rootGroup);
 
         // Allocate the buffer dynamically up to the data start location
         ByteBuffer buffer = ByteBuffer.allocate(bufferAllocation.getDataAddress()).order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
         buffer.position(bufferAllocation.getSuperblockAddress());
         superblock.writeToByteBuffer(buffer);
-        buffer.position(bufferAllocation.getRootSymbolTableEntryAddress());
-        rootSymbolTableEntry.writeToBuffer(buffer);
         buffer.position(bufferAllocation.getObjectHeaderPrefixAddress());
         rootGroup.writeToBuffer(buffer);
         buffer.position(0);

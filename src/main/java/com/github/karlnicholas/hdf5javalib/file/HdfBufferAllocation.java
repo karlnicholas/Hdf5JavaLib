@@ -9,28 +9,23 @@ public class HdfBufferAllocation {
         recalc();
     }
     private void recalc() {
-        rootSymbolTableEntryAddress =  superblockAddress + superblockSize;
-        objectHeaderPrefixAddress = rootSymbolTableEntryAddress + rootSymbolTableEntrySize;
+        objectHeaderPrefixAddress = superblockAddress + superblockSize;
         btreeAddress = objectHeaderPrefixAddress + objectHeaderPrefixSize;
         localHeapAddress = btreeAddress + btreeSize + btreeStorageSize;
         localHeapContentsAddress = localHeapAddress + localHeapSize;
         dataGroupAddress = localHeapContentsAddress + localHeapContentsSize;
         snodAddress = dataGroupAddress + dataGroupSize + dataGroupStorageSize;
         int lastAddressUsed = snodAddress + snodSize + snodEntryStorageSize;
-        messageContinuationAddress = 2048;
-        dataAddress = 2048 + messageContinuationSpace;
-        if ( lastAddressUsed > dataAddress) {
-            throw new IllegalStateException("lastAddressUsed > dataAddress, " + lastAddressUsed + dataAddress);
-        }
+        messageContinuationAddress = lastAddressUsed;
+        dataAddress = Math.max(2048, lastAddressUsed + messageContinuationSpace);
+//        if ( lastAddressUsed > metaDataSize) {
+//            throw new IllegalStateException("lastAddressUsed > dataAddress, " + lastAddressUsed + dataAddress);
+//        }
     }
 
-    public void setDataGroupStorageSize(int dataGroupStorageSize) {
-        this.dataGroupStorageSize = dataGroupStorageSize;
-        recalc();
-    }
-
-    public void addMessageContinuationSpace(int messageContinuationSpace) {
-        this.messageContinuationSpace = messageContinuationSpace;
+    public void setDataGroupAndCOntinuationStorageSize(int objectHeaderSize, int continueSize) {
+        this.dataGroupStorageSize = objectHeaderSize;
+        this.messageContinuationSpace = continueSize;
         recalc();
     }
     /**
@@ -43,13 +38,7 @@ public class HdfBufferAllocation {
     // The superblock is the first structure in an HDF5 file and contains metadata
     // about file format versions, data storage, and offsets to key structures.
     private final int superblockAddress = 0;  // HDF5 file starts at byte 0
-    private final int superblockSize = 56;    // Superblock size (metadata about the file)
-
-    // **Root Group Symbol Table Entry**
-    // The root group symbol table entry stores metadata for the root group.
-    // It contains information about group structure, attributes, and dataset links.
-    private int rootSymbolTableEntryAddress;
-    private final int rootSymbolTableEntrySize = 40;
+    private final int superblockSize = 96;    // Superblock size (metadata about the file)
 
     // **Object Header Prefix (Metadata about the First Group)**
     // This section contains metadata for the first group, defining attributes,

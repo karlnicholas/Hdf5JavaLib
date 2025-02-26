@@ -110,21 +110,23 @@ public class HdfDataSet {
             headerMessages.add(dataSpaceMessage);
             headerMessages.addAll(attributes);
 
+            objectHeaderSize = 8;
             int breakPostion = 6;
+            for(int i=0; i < breakPostion; ++i) {
+                objectHeaderSize += headerMessages.get(i).getSizeMessageData() + 8;
+            }
             int continueSize = 0;
             while (breakPostion < headerMessages.size()) {
                 continueSize += headerMessages.get(breakPostion).getSizeMessageData() + 8;
                 breakPostion++;
             }
 
-            hdfGroup.getHdfFile().getBufferAllocation().addMessageContinuationSpace(continueSize);
-            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
+            hdfGroup.getHdfFile().getBufferAllocation().setDataGroupAndCOntinuationStorageSize(objectHeaderSize, continueSize);
+            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getMessageContinuationAddress()));
             objectHeaderContinuationMessage.setContinuationSize(HdfFixedPoint.of(continueSize));
+            // redo addresses already set.
+            dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
             // set the object header size.
-            objectHeaderSize = 8;
-            for(int i=0; i < 6; ++i) {
-                objectHeaderSize += headerMessages.get(i).getSizeMessageData() + 8;
-            }
         } else {
             // add remaining space
             headerMessages.add(new NilMessage(currentObjectHeaderSize - 8 - objectHeaderSize));
