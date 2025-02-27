@@ -16,7 +16,7 @@ public class HdfDebugUtils {
             ByteBuffer dataBuffer = ByteBuffer.allocate(compoundDataType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
             fileChannel.read(dataBuffer);
             dataBuffer.flip();
-            for ( int column = 0; column < compoundDataType.getNumberOfMembers(); ++column ) {
+            for ( int column = 0; column < compoundDataType.getMembers().size(); ++column ) {
                 HdfCompoundDatatypeMember member = compoundDataType.getMembers().get(column);
                 dataBuffer.position(member.getOffset());
                 if (member.getType() instanceof StringDatatype) {

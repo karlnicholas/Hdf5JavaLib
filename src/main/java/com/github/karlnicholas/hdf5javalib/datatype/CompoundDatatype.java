@@ -3,7 +3,6 @@ package com.github.karlnicholas.hdf5javalib.datatype;
 import lombok.Getter;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -14,19 +13,22 @@ import static com.github.karlnicholas.hdf5javalib.datatype.StringDatatype.parseS
 
 @Getter
 public class CompoundDatatype implements HdfDatatype {
-    private final int numberOfMembers; // Number of members in the compound datatype
+    private final byte classAndVersion;
+    private final BitSet classBitField; // Number of members in the compound datatype
     private final int size;
     private List<HdfCompoundDatatypeMember> members;     // Member definitions
 
     // New application-level constructor
-    public CompoundDatatype(int numberOfMembers, int size, List<HdfCompoundDatatypeMember> members) {
-        this.numberOfMembers = numberOfMembers;
+    public CompoundDatatype(byte classAndVersion, BitSet classBitField, int size, List<HdfCompoundDatatypeMember> members) {
+        this.classAndVersion = classAndVersion;
+        this.classBitField = classBitField;
         this.size = size;
         this.members = new ArrayList<>(members); // Deep copy to avoid external modification
     }
 
-    public CompoundDatatype(BitSet classBitField, int size, ByteBuffer buffer) {
-        this.numberOfMembers = extractNumberOfMembersFromBitSet(classBitField);
+    public CompoundDatatype(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+        this.classAndVersion = classAndVersion;
+        this.classBitField = classBitField;
         this.size = size;
         readFromByteBuffer(buffer);
     }
@@ -38,7 +40,25 @@ public class CompoundDatatype implements HdfDatatype {
 //        readFromByteBuffer(cdtcBuffer);
 //    }
 
-    private short extractNumberOfMembersFromBitSet(BitSet classBitField) {
+    public static BitSet createClassBitField(short numberOfMembers) {
+        // Create a BitSet with capacity for 16 bits (0-15)
+        BitSet bitSet = new BitSet(16);
+
+        // Treat the short as a 16-bit pattern and set corresponding bits
+        for (int i = 0; i < 16; i++) {
+            if ((numberOfMembers & (1 << i)) != 0) {
+                bitSet.set(i);
+            }
+        }
+
+        return bitSet;
+    }
+
+    public static byte createClassAndVersion() {
+        return 0x16;
+    }
+
+    private short extractNumberOfMembersFromBitSet() {
         short value = 0;
         for (int i = 0; i < classBitField.length(); i++) {
             if (classBitField.get(i)) {
@@ -51,7 +71,7 @@ public class CompoundDatatype implements HdfDatatype {
     private void readFromByteBuffer(ByteBuffer buffer) {
         this.members = new ArrayList<>();
 //        buffer.position(8);
-        for (int i = 0; i < numberOfMembers; i++) {
+        for (int i = 0; i < extractNumberOfMembersFromBitSet(); i++) {
             buffer.mark();
             String name = readNullTerminatedString(buffer);
 
@@ -94,7 +114,7 @@ public class CompoundDatatype implements HdfDatatype {
          return switch (dataTypeClass) {
             case 0 -> parseFixedPointType(version, classBitField, size, buffer);
             case 1 -> parseFloatingPointType(version, classBitField, size, buffer );
-            case 3 -> parseStringType(version, classBitField, size);
+            case 3 -> parseStringType(version, classBitField, size, buffer);
     //            case 6 -> parseCompoundDataType(version, size, classBitField, name, buffer);
             default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
         };
@@ -118,20 +138,7 @@ public class CompoundDatatype implements HdfDatatype {
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
         for (HdfCompoundDatatypeMember member: members) {
-            buffer.put(member.getName().getBytes(StandardCharsets.US_ASCII));
-            buffer.put((byte)0);
-            int paddingSize = (8 -  ((member.getName().length()+1)% 8)) % 8;
-            buffer.put(new byte[paddingSize]);
-            buffer.putInt(member.getOffset());
-            buffer.put((byte)member.dimensionality);
-            buffer.put(new byte[3]);
-            buffer.putInt(member.dimensionPermutation);
-            buffer.put(new byte[4]);
-            for( int ds: member.dimensionSizes) {
-                buffer.putInt(ds);
-            }
-            member.type.writeDefinitionToByteBuffer(buffer);
-
+            member.writeDefinitionToByteBuffer(buffer);
         }
     }
 
@@ -141,15 +148,10 @@ public class CompoundDatatype implements HdfDatatype {
     }
 
     @Override
-    public BitSet getClassBitBytes() {
-        return new BitSet();
-    }
-
-    @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("CompoundDatatype {")
-                .append(" numberOfMembers: ").append(numberOfMembers)
+                .append(" classBitField: ").append(classBitField)
                 .append(", size: ").append(size)
                 .append(", ");
         members.forEach(member->{

@@ -9,36 +9,22 @@ import java.util.BitSet;
 
 @Getter
 public class FixedPointDatatype implements HdfDatatype {
-    private final byte version;
+    private final byte classAndVersion;
     private final BitSet classBitField;
     private final int size;
-    private final boolean bigEndian;
-    private final boolean loPad;
-    private final boolean hiPad;
-    private final boolean signed;
     private final short bitOffset;
     private final short bitPrecision;
-    private final short sizeMessageData;
 
-    public FixedPointDatatype(byte version, int size, boolean bigEndian, boolean loPad, boolean hiPad, boolean signed, short bitOffset, short bitPrecision, short sizeMessageData, BitSet classBitField) {
+    public FixedPointDatatype(byte classAndVersion, BitSet classBitField, int size, short bitOffset, short bitPrecision) {
 
-        this.version = version;
+        this.classAndVersion = classAndVersion;
+        this.classBitField = classBitField;
         this.size = size;
-        this.bigEndian = bigEndian;
-        this.loPad = loPad;
-        this.hiPad = hiPad;
-        this.signed = signed;
         this.bitOffset = bitOffset;
         this.bitPrecision = bitPrecision;
-        this.sizeMessageData = sizeMessageData;
-        this.classBitField = classBitField;
     }
 
-    public static FixedPointDatatype parseFixedPointType(byte version, BitSet classBitField, int size, ByteBuffer buffer) {
-        boolean bigEndian = classBitField.get(0);
-        boolean loPad = classBitField.get(1);
-        boolean hiPad = classBitField.get(2);
-        boolean signed = classBitField.get(3);
+    public static FixedPointDatatype parseFixedPointType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
 
         short bitOffset = buffer.getShort();
         short bitPrecision = buffer.getShort();
@@ -50,33 +36,32 @@ public class FixedPointDatatype implements HdfDatatype {
 //        } else {
 //            messageDataSize = 44;
 //        }
-        short messageDataSize = 8;
+//        short messageDataSize = 8;
 
-        return new FixedPointDatatype(version, size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision, messageDataSize, classBitField);
+        return new FixedPointDatatype(classAndVersion, classBitField, size, bitOffset, bitPrecision);
+    }
+
+    public static BitSet createClassBitField(boolean bigEndian, boolean loPad, boolean hiPad, boolean signed) {
+        BitSet classBitField = new BitSet();
+        if (bigEndian) classBitField.set(0);
+        if (loPad) classBitField.set(1);
+        if (hiPad) classBitField.set(2);
+        if (signed) classBitField.set(3);
+        return classBitField;
+    }
+
+    public static byte createClassAndVersion() {
+        return 0x10;
     }
 
     public HdfFixedPoint getInstance(ByteBuffer dataBuffer) {
-        return HdfFixedPoint.readFromByteBuffer(dataBuffer, size, signed);
-    }
-
-    @Override
-    public short getSizeMessageData() {
-        return sizeMessageData;
+        return HdfFixedPoint.readFromByteBuffer(dataBuffer, size, classBitField.get(3));
     }
 
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        // class and version
-        buffer.put((byte)(version << 4));   // 1
-        byte[] classBits = new byte[3];
-        byte[] currentClassBits = classBitField.toByteArray();
-        System.arraycopy(currentClassBits, 0, classBits, 0, currentClassBits.length);
-        buffer.put(classBits);
-        buffer.putInt(size);                // 4
-
         buffer.putShort(bitOffset);         // 4
         buffer.putShort(bitPrecision);      // 4
-
     }
 
     @Override
@@ -85,21 +70,27 @@ public class FixedPointDatatype implements HdfDatatype {
     }
 
     @Override
-    public BitSet getClassBitBytes() {
-        return classBitField;
+    public short getSizeMessageData() {
+        return (short) size;
     }
 
     @Override
     public String toString() {
         return "FixedPointDatatype{" +
-                "size=" + size +
-                ", bigEndian=" + bigEndian +
-                ", loPad=" + loPad +
-                ", hiPad=" + hiPad +
-                ", signed=" + signed +
+                "classAndVersion=" + classAndVersion +
+                ", classBitField=" + classBitField +
+                ", size=" + size +
                 ", bitOffset=" + bitOffset +
                 ", bitPrecision=" + bitPrecision +
                 '}';
+    }
+
+    public boolean isSigned() {
+        return classBitField.get(3);
+    }
+
+    public boolean isBigEndian() {
+        return classBitField.get(0);
     }
 }
 

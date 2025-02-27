@@ -14,24 +14,16 @@ import static com.github.karlnicholas.hdf5javalib.datatype.StringDatatype.parseS
 
 @Getter
 public class DatatypeMessage extends HdfMessage {
-    private final byte version;                 // Version of the datatype message
-    private final byte dataTypeClass;           // Datatype class
-    private final BitSet classBitField;        // Class Bit Field (24 bits)
-    private final int size;          // Size of the datatype element
     private final HdfDatatype hdfDatatype;                 // Remaining raw data
 
     // Constructor to initialize all fields
-    public DatatypeMessage(byte version, byte dataTypeClass, BitSet classBitField, int size, HdfDatatype hdfDatatype) {
+    public DatatypeMessage(HdfDatatype hdfDatatype) {
         super(MessageType.DatatypeMessage, ()-> {
             short sizeMessageData = 8;
             sizeMessageData += hdfDatatype.getSizeMessageData();
             // to 8 byte boundary
             return (short) ((sizeMessageData + 7) & ~7);
         },(byte)1);
-        this.version = version;
-        this.dataTypeClass = dataTypeClass;
-        this.classBitField = classBitField;
-        this.size = size;
         this.hdfDatatype = hdfDatatype;
     }
 
@@ -50,8 +42,8 @@ public class DatatypeMessage extends HdfMessage {
 
         // Parse Version and Datatype Class (packed into a single byte)
         byte classAndVersion = buffer.get();
-        byte version = (byte) ((classAndVersion >> 4) & 0x0F); // Top 4 bits
-        byte dataTypeClass = (byte) (classAndVersion & 0x0F);  // Bottom 4 bits
+//        byte version = (byte) ((classAndVersion >> 4) & 0x0F); // Top 4 bits
+//        byte dataTypeClass = (byte) (classAndVersion & 0x0F);  // Bottom 4 bits
 
         // Parse Class Bit Field (24 bits)
         byte[] classBits = new byte[3];
@@ -62,8 +54,8 @@ public class DatatypeMessage extends HdfMessage {
 
         // Parse Size (unsigned 4 bytes)
         int size = buffer.getInt();
-        HdfDatatype hdfDatatype = parseMessageDataType(version, dataTypeClass, classBitField, size, buffer);
-        return new DatatypeMessage(version, dataTypeClass, classBitField, size, hdfDatatype);
+        HdfDatatype hdfDatatype = parseMessageDataType(classAndVersion, classBitField, size, buffer);
+        return new DatatypeMessage(hdfDatatype);
     }
 //    public static HdfCompoundDatatypeMember parseMember(ByteBuffer buffer) {
 //        buffer.mark();
@@ -88,24 +80,20 @@ public class DatatypeMessage extends HdfMessage {
 //
 //    }
 
-    private static HdfDatatype parseMessageDataType(byte version, byte dataTypeClass, BitSet classBitField, int size, ByteBuffer buffer) {
+    private static HdfDatatype parseMessageDataType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+        int dataTypeClass = classAndVersion & 0x0F;
         return switch (dataTypeClass) {
-            case 0 -> parseFixedPointType(version, classBitField, size, buffer);
-            case 1 -> parseFloatingPointType(version, classBitField, size, buffer);
-            case 3 -> parseStringType(version, classBitField, size);
-            case 6 -> new CompoundDatatype(classBitField, size, buffer);
+            case 0 -> parseFixedPointType(classAndVersion, classBitField, size, buffer);
+            case 1 -> parseFloatingPointType(classAndVersion, classBitField, size, buffer);
+            case 3 -> parseStringType(classAndVersion, classBitField, size, buffer);
+            case 6 -> new CompoundDatatype(classAndVersion, classBitField, size, buffer);
             default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
         };
     }
 
     @Override
     public String toString() {
-        return "DatatypeMessage{" + "version=" + version +
-                ", dataTypeClass=" + dataTypeClass + " (" + dataTypeClassToString(dataTypeClass) + ")" +
-                ", classBitField=" + bitSetToString(classBitField, 24) +
-                ", size=" + size +
-                ", hdfDatatype=" + hdfDatatype +
-                '}';
+        return "DatatypeMessage{hdfDatatype=" + hdfDatatype + '}';
     }
 
     // Helper method to convert the dataTypeClass to a human-readable string
@@ -138,18 +126,20 @@ public class DatatypeMessage extends HdfMessage {
     @Override
     public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
-        // when in compound datadtype
-        byte classAndVersion = (byte) ((version << 4) + dataTypeClass);
-        buffer.put(classAndVersion);    // 1
-        // Parse Class Bit Field (24 bits)
-        byte[] bytes = classBitField.toByteArray();
-        byte[] result = new byte[3];
-        // Fill with 0s to ensure exactly 3 bytes
-        Arrays.fill(result, (byte) 0);
-        // Copy bytes in little-endian order
-        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
-        buffer.put(result);         // 3
-        buffer.putInt(size);        // 4
+
+//        // needed for compoundtype but duplicate when fixedpoint type
+//        // Datatype general information
+//        byte classAndVersion = (byte) ((version << 4) + dataTypeClass);
+//        buffer.put(classAndVersion);    // 1
+//        // Parse Class Bit Field (24 bits)
+//        byte[] bytes = classBitField.toByteArray();
+//        byte[] result = new byte[3];
+//        // Copy bytes
+//        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
+//        buffer.put(result);         // 3
+//        buffer.putInt(size);        // 4
+//
+        // datatype specifics
         writeInfoToByteBuffer(this, buffer);
     }
 

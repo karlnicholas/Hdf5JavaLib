@@ -2,14 +2,18 @@ package com.github.karlnicholas.hdf5javalib.datatype;
 
 import lombok.Getter;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+
 @Getter
 public class HdfCompoundDatatypeMember {
     private final String name;
     private final int offset;
-    protected final int dimensionality;
-    protected final int dimensionPermutation;
-    protected final int[] dimensionSizes;
-    protected final HdfDatatype type;
+    private final int dimensionality;
+    private final int dimensionPermutation;
+    private final int[] dimensionSizes;
+    private final HdfDatatype type;
+    private short messageDataSize;
 
     public HdfCompoundDatatypeMember(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, HdfDatatype type) {
         this.name = name;
@@ -18,6 +22,25 @@ public class HdfCompoundDatatypeMember {
         this.dimensionPermutation = dimensionPermutation;
         this.dimensionSizes = dimensionSizes;
         this.type = type;
+        messageDataSize = switch(type.getDatatypeClass()) {
+            case STRING -> computeStringMessageDataSize(name);
+            case FIXED -> computeFixedMessageDataSize(name);
+            default -> throw new IllegalStateException("Unexpected datatype class: " + type.getDatatypeClass());
+        };
+    }
+
+    private short computeFixedMessageDataSize(String name) {
+        if (name.length() > 0 ) {
+            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+            return (short) (name.length()+1 + padding + 44);
+        } else {
+            return 44;
+        }
+    }
+
+    private short computeStringMessageDataSize(String name) {
+        int padding = (8 -  ((name.length()+1)% 8)) % 8;
+        return (short) (name.length()+1 + padding + 40);
     }
 
     @Override
@@ -30,6 +53,29 @@ public class HdfCompoundDatatypeMember {
                 ", dimensionSizes=" + java.util.Arrays.toString(dimensionSizes) +
                 ", type=" + type +
                 '}';
+    }
+    public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
+        buffer.put(name.getBytes(StandardCharsets.US_ASCII));
+        buffer.put((byte)0);
+        int paddingSize = (8 -  ((name.length()+1)% 8)) % 8;
+        buffer.put(new byte[paddingSize]);
+        buffer.putInt(offset);
+        buffer.put((byte)dimensionality);
+        buffer.put(new byte[3]);
+        buffer.putInt(dimensionPermutation);
+        buffer.put(new byte[4]);
+        for( int ds: dimensionSizes) {
+            buffer.putInt(ds);
+        }
+
+        // Datatype general information
+        buffer.put(type.getClassAndVersion());    // 1
+        // copy 3 bytes for ClassBitField
+        byte[] bytes = type.getClassBitField().toByteArray();
+        byte[] result = new byte[3];
+        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
+        buffer.put(result);         // 3
+        buffer.putInt(type.getSize());        // 4
     }
 
 }

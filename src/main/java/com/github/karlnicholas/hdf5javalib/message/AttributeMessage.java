@@ -2,6 +2,7 @@ package com.github.karlnicholas.hdf5javalib.message;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfData;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
+import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
 import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
 import lombok.Getter;
 
@@ -74,8 +75,8 @@ public class AttributeMessage extends HdfMessage {
         DataspaceMessage ds = (DataspaceMessage) hdfDataObjectHeaderDs;
 
         HdfData value = null;
-        if ( dt.getDataTypeClass() == 3 ) {
-            int dtDataSize = dt.getSize();
+        if ( dt.getHdfDatatype().getDatatypeClass() == HdfDatatype.DatatypeClass.STRING ) {
+            int dtDataSize = dt.getHdfDatatype().getSize();
             byte[] dataBytes = new byte[dtDataSize];
             buffer.get(dataBytes);
             value = new HdfString(dataBytes, bitSet);

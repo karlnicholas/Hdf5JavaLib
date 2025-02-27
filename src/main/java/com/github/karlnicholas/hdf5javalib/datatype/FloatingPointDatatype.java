@@ -7,14 +7,16 @@ import java.util.BitSet;
 
 @Getter
 public class FloatingPointDatatype implements HdfDatatype {
-    private final byte version;
+    private final byte classAndVersion;
+    private final BitSet classBitField;
     private final int size;
     private final int exponentBits;
     private final int mantissaBits;
     private final boolean bigEndian;
 
-    public FloatingPointDatatype(byte version, int size, int exponentBits, int mantissaBits, boolean bigEndian) {
-        this.version = version;
+    public FloatingPointDatatype(byte classAndVersion, BitSet classBitField, int size, int exponentBits, int mantissaBits, boolean bigEndian) {
+        this.classAndVersion = classAndVersion;
+        this.classBitField = classBitField;
         this.size = size;
         this.exponentBits = exponentBits;
         this.mantissaBits = mantissaBits;
@@ -25,7 +27,7 @@ public class FloatingPointDatatype implements HdfDatatype {
         boolean bigEndian = classBitField.get(0);
         int exponentBits = buffer.getInt();
         int mantissaBits = buffer.getInt();
-        return new FloatingPointDatatype(version, size, exponentBits, mantissaBits, bigEndian);
+        return new FloatingPointDatatype(version, classBitField, size, exponentBits, mantissaBits, bigEndian);
     }
 
     public Object getInstance() {
@@ -38,8 +40,8 @@ public class FloatingPointDatatype implements HdfDatatype {
     }
 
     @Override
-    public BitSet getClassBitBytes() {
-        return new BitSet();
+    public short getSizeMessageData() {
+        return (short) size;
     }
 
     @Override
@@ -50,11 +52,6 @@ public class FloatingPointDatatype implements HdfDatatype {
                 ", mantissaBits=" + mantissaBits +
                 ", bigEndian=" + bigEndian +
                 '}';
-    }
-
-    @Override
-    public short getSizeMessageData() {
-        return (short)size;
     }
 
     @Override

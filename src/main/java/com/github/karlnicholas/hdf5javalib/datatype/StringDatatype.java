@@ -8,23 +8,21 @@ import java.util.BitSet;
 
 @Getter
 public class StringDatatype implements HdfDatatype {
-    private final byte version;
-    private final int size;
+    private final byte classAndVersion;
     private final BitSet classBitField;
-    private final short sizeMessageData;
+    private final int size;
 
-    public StringDatatype(byte version, BitSet classBitField, int size, short sizeMessageData) {
-        this.version = version;
+    public StringDatatype(byte classAndVersion, BitSet classBitField, int size) {
+        this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
-        this.sizeMessageData = sizeMessageData;
     }
 
 
-    public static StringDatatype parseStringType(byte version, BitSet classBitField, int size) {
+    public static StringDatatype parseStringType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
         short messageDataSize = (short) 40;
 
-        return new StringDatatype(version, classBitField, size, messageDataSize);
+        return new StringDatatype(classAndVersion, classBitField, size);
     }
 
     public static BitSet getStringTypeBitSet(PaddingType paddingType, CharacterSet charSet) {
@@ -43,8 +41,13 @@ public class StringDatatype implements HdfDatatype {
     }
 
     @Override
-    public BitSet getClassBitBytes() {
+    public BitSet getClassBitField() {
         return classBitField;
+    }
+
+    @Override
+    public short getSizeMessageData() {
+        return 0;
     }
 
     @Override
@@ -57,17 +60,7 @@ public class StringDatatype implements HdfDatatype {
     }
 
     @Override
-    public short getSizeMessageData() {
-        return sizeMessageData;
-    }
-
-    @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        // class and version
-        buffer.put((byte)(version << 4 | 0b11));
-        byte[] classBits = new byte[3];
-        buffer.put(classBits);
-        buffer.putInt(size);
     }
 
     // Inner Enum for Padding Type (Bits 0-3)

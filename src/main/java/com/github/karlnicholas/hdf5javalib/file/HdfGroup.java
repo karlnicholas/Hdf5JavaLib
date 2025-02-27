@@ -162,6 +162,7 @@ public class HdfGroup {
                 "\r\n\tlocalHeap=" + localHeap +
                 "\r\n\tlocalHeapContents=" + localHeapContents +
                 "\r\n\tsymbolTableNode=" + symbolTableNode +
+                (dataSet != null ? "\r\n\tdataSet=" + dataSet.getDataObjectHeaderPrefix() : "") +
                 "}";
     }
 

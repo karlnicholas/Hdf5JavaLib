@@ -4,12 +4,13 @@ import java.nio.ByteBuffer;
 import java.util.BitSet;
 
 public interface HdfDatatype {
-    short getSizeMessageData();
     void writeDefinitionToByteBuffer(ByteBuffer buffer);
-    int getSize();
     DatatypeClass getDatatypeClass(); // Updated to return enum
+    byte getClassAndVersion();
+    BitSet getClassBitField();
+    int getSize();
 
-    BitSet getClassBitBytes();
+    short getSizeMessageData();
 
     // Enum defined within the interface
     enum DatatypeClass {

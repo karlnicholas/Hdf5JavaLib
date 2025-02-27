@@ -63,10 +63,7 @@ public class HdfDataSet {
         List<HdfMessage> headerMessages = new ArrayList<>();
         headerMessages.add(dataSpaceMessage);
 
-        DatatypeMessage dataTypeMessage = new DatatypeMessage((byte) 1, (byte) hdfDatatype.getDatatypeClass().getValue(),
-                hdfDatatype.getClassBitBytes(),
-                hdfDatatype.getSize(),
-                hdfDatatype);
+        DatatypeMessage dataTypeMessage = new DatatypeMessage(hdfDatatype);
         headerMessages.add(dataTypeMessage);
 
         // Add FillValue message
@@ -133,8 +130,6 @@ public class HdfDataSet {
 
         }
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, Math.max(objectHeaderSize, currentObjectHeaderSize), headerMessages);
-        System.out.println(datasetName + "@" + hdfGroup.getHdfFile().getBufferAllocation().getDataGroupAddress() + " = " + dataObjectHeaderPrefix);
-
     }
     public void close() {
     }

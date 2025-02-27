@@ -86,7 +86,7 @@ public class HdfFile {
         long recordSize = rootGroup.getDataSet().getDataObjectHeaderPrefix()
                 .findMessageByType(DatatypeMessage.class)
                 .orElseThrow()
-                .getSize();
+                .getHdfDatatype().getSize();
         superblock.setEndOfFileAddress(HdfFixedPoint.of(bufferAllocation.getDataAddress() + recordSize * records));
 
         System.out.println(superblock);

@@ -37,8 +37,8 @@ public class App {
     private void run() {
         try {
             HdfReader reader = new HdfReader();
-            String filePath = App.class.getResource("/randomints.h5").getFile();
-//            String filePath = App.class.getResource("/test.h5").getFile();
+//            String filePath = App.class.getResource("/randomints.h5").getFile();
+            String filePath = App.class.getResource("/test.h5").getFile();
 //            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
 //            String filePath = App.class.getResource("/ForecastedVolume_2025-01-10.h5").getFile();
 //            String filePath = App.class.getResource("/singleint.h5").getFile();
@@ -52,7 +52,7 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        tryHdfApiCompound();
+//        tryHdfApiCompound();
 //        tryHdfApiInts();
     }
 
@@ -72,7 +72,10 @@ public class App {
 //            hsize_t dim[1] = { NUM_RECORDS };
 //            DataSpace space(1, dim);
 
-            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype((byte) 1, 8, false, false, false, true, (short)0, (short)64, (short)8, BitSet.valueOf(new byte[]{0b01000}));
+            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
+                    FixedPointDatatype.createClassAndVersion(),
+                    FixedPointDatatype.createClassBitField( false, false, false, true),
+                    (short)8, (short)0, (short)64);
 
             // Create dataset
 //            DataSet dataset = file.createDataSet(DATASET_NAME, compoundType, space);
@@ -111,9 +114,9 @@ public class App {
         String ATTRIBUTE_VALUE = "Revision: , URL: ";
         BitSet classBitField = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII);
         // value
-        StringDatatype attributeType = new StringDatatype((byte) 1, classBitField, (short)ATTRIBUTE_VALUE.length(), computeStringMessageDataSize(ATTRIBUTE_VALUE));
+        StringDatatype attributeType = new StringDatatype((byte) 1, classBitField, (short)ATTRIBUTE_VALUE.length());
         // data type, String, DATASET_NAME.length
-        DatatypeMessage dt = new DatatypeMessage((byte)1, (byte) HdfDatatype.DatatypeClass.STRING.getValue(), classBitField, attributeType.getSize(), attributeType);
+        DatatypeMessage dt = new DatatypeMessage(attributeType);
         // scalar, 1 string
         DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false);
         HdfString hdfString = new HdfString(ATTRIBUTE_VALUE.getBytes(), classBitField);
@@ -133,43 +136,76 @@ public class App {
             BitSet stringBitSet = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII);
             List<HdfCompoundDatatypeMember> shipment = List.of(
                     new HdfCompoundDatatypeMember("shipmentId", 0, 0, 0, new int[4],
-                            new FixedPointDatatype((byte) 1, (short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"), new BitSet())),
+                            new FixedPointDatatype(
+                            FixedPointDatatype.createClassAndVersion(),
+                            FixedPointDatatype.createClassBitField( false, false, false, false),
+                            (short)8, (short)0, (short)64)),
                     new HdfCompoundDatatypeMember("origCountry", 8, 0, 0, new int[4],
-                            new StringDatatype((byte) 1, stringBitSet, (short)2, computeStringMessageDataSize("origCountry"))),
+                            new StringDatatype((byte) 1, stringBitSet, (short)2)),
                     new HdfCompoundDatatypeMember("origSlic", 10, 0, 0, new int[4],
-                            new StringDatatype((byte) 1, stringBitSet, (short)5, computeStringMessageDataSize("origSlic"))),
+                            new StringDatatype((byte) 1, stringBitSet, (short)5)),
                     new HdfCompoundDatatypeMember("origSort", 15, 0, 0, new int[4],
-                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("origSort"), new BitSet())),
+                            new FixedPointDatatype(
+                                    FixedPointDatatype.createClassAndVersion(),
+                                    FixedPointDatatype.createClassBitField( false, false, false, false),
+                                    (short)8, (short)0, (short)8)),
                     new HdfCompoundDatatypeMember("destCountry", 16, 0, 0, new int[4],
-                            new StringDatatype((byte) 1, stringBitSet, (short)2, computeStringMessageDataSize("destCountry"))),
+                            new StringDatatype((byte) 1, stringBitSet, (short)2)),
                     new HdfCompoundDatatypeMember("destSlic", 18, 0, 0, new int[4],
-                            new StringDatatype((byte) 1, stringBitSet, (short)5, computeStringMessageDataSize("destSlic"))),
+                            new StringDatatype((byte) 1, stringBitSet, (short)5)),
                     new HdfCompoundDatatypeMember("destIbi", 23, 0, 0, new int[4],
-                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("destIbi"), new BitSet())),
+                            new FixedPointDatatype(
+                                    FixedPointDatatype.createClassAndVersion(),
+                                    FixedPointDatatype.createClassBitField( false, false, false, false),
+                                    (short)8, (short)0, (short)8)),
                     new HdfCompoundDatatypeMember("destPostalCode", 40, 0, 0, new int[4],
-                            new StringDatatype((byte) 1, stringBitSet, (short)9, computeStringMessageDataSize("destPostalCode"))),
+                            new StringDatatype((byte) 1, stringBitSet, (short)9)),
                     new HdfCompoundDatatypeMember("shipper", 24, 0, 0, new int[4],
-                            new StringDatatype((byte) 1, stringBitSet, (short)10, computeStringMessageDataSize("shipper"))),
+                            new StringDatatype((byte) 1, stringBitSet, (short)10)),
                     new HdfCompoundDatatypeMember("service", 49, 0, 0, new int[4],
-                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("service"), new BitSet())),
+                            new FixedPointDatatype(
+                                    FixedPointDatatype.createClassAndVersion(),
+                                    FixedPointDatatype.createClassBitField( false, false, false, false),
+                                    (short)8, (short)0, (short)8)),
                     new HdfCompoundDatatypeMember("packageType", 50, 0, 0, new int[4],
-                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("packageType"), new BitSet())),
+                            new FixedPointDatatype(
+                                    FixedPointDatatype.createClassAndVersion(),
+                                    FixedPointDatatype.createClassBitField( false, false, false, false),
+                                    (short)8, (short)0, (short)8)),
                     new HdfCompoundDatatypeMember("accessorials", 51, 0, 0, new int[4],
-                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("accessorials"), new BitSet())),
+                            new FixedPointDatatype(
+                                    FixedPointDatatype.createClassAndVersion(),
+                                    FixedPointDatatype.createClassBitField( false, false, false, false),
+                                    (short)8, (short)0, (short)8)),
                     new HdfCompoundDatatypeMember("pieces", 52, 0, 0, new int[4],
-                            new FixedPointDatatype((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("pieces"), new BitSet())),
+                            new FixedPointDatatype(
+                                    FixedPointDatatype.createClassAndVersion(),
+                                    FixedPointDatatype.createClassBitField( false, false, false, false),
+                                    (short)8, (short)0, (short)16)),
                     new HdfCompoundDatatypeMember("weight", 34, 0, 0, new int[4],
-                            new FixedPointDatatype((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("weight"), new BitSet())),
+                            new FixedPointDatatype(
+                                    FixedPointDatatype.createClassAndVersion(),
+                                    FixedPointDatatype.createClassBitField( false, false, false, false),
+                                    (short)8, (short)0, (short)16)),
                     new HdfCompoundDatatypeMember("cube", 36, 0, 0, new int[4],
-                            new FixedPointDatatype((byte) 1, (short)4, false, false, false, false, (short)0, (short)32, computeFixedMessageDataSize("cube"), new BitSet())),
+                            new FixedPointDatatype(
+                                    FixedPointDatatype.createClassAndVersion(),
+                                    FixedPointDatatype.createClassBitField( false, false, false, false),
+                                    (short)8, (short)0, (short)32)),
                     new HdfCompoundDatatypeMember("committedTnt", 54, 0, 0, new int[4],
-                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedTnt"), new BitSet())),
+                            new FixedPointDatatype(
+                                    FixedPointDatatype.createClassAndVersion(),
+                                    FixedPointDatatype.createClassBitField( false, false, false, false),
+                                    (short)8, (short)0, (short)8)),
                     new HdfCompoundDatatypeMember("committedDate", 55, 0, 0, new int[4],
-                            new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedDate"), new BitSet()))
+                            new FixedPointDatatype(
+                                    FixedPointDatatype.createClassAndVersion(),
+                                    FixedPointDatatype.createClassBitField( false, false, false, false),
+                                    (short)8, (short)0, (short)8))
             );
             short compoundSize = (short) shipment.stream().mapToInt(c->c.getType().getSize()).sum();
             // Define Compound DataType correctly
-            CompoundDatatype compoundType = new CompoundDatatype(shipment.size(), compoundSize, shipment);
+            CompoundDatatype compoundType = new CompoundDatatype(CompoundDatatype.createClassAndVersion(), CompoundDatatype.createClassBitField((short) shipment.size()), compoundSize, shipment);
 //            DatatypeMessage dataTypeMessage = new DatatypeMessage((byte) 1, (byte) 6, BitSet.valueOf(new byte[]{0b10001}), 56, compoundType);
 
             // Create data space
@@ -378,19 +414,5 @@ public class App {
 //        builder.writeToFile(null);
 //
 //    }
-
-    public short computeFixedMessageDataSize(String name) {
-        if (name.length() > 0 ) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 44);
-        } else {
-            return 44;
-        }
-    }
-
-    public short computeStringMessageDataSize(String name) {
-        int padding = (8 -  ((name.length()+1)% 8)) % 8;
-        return (short) (name.length()+1 + padding + 40);
-    }
 
 }
