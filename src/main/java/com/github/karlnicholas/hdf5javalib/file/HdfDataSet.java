@@ -107,7 +107,7 @@ public class HdfDataSet {
             headerMessages.add(dataSpaceMessage);
             headerMessages.addAll(attributes);
 
-            objectHeaderSize = 8;
+            objectHeaderSize = 0;
             int breakPostion = 6;
             for(int i=0; i < breakPostion; ++i) {
                 objectHeaderSize += headerMessages.get(i).getSizeMessageData() + 8;

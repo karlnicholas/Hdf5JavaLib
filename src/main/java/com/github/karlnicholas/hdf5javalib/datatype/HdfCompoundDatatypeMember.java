@@ -13,7 +13,7 @@ public class HdfCompoundDatatypeMember {
     private final int dimensionPermutation;
     private final int[] dimensionSizes;
     private final HdfDatatype type;
-    private short messageDataSize;
+    private short sizeMessageData;
 
     public HdfCompoundDatatypeMember(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, HdfDatatype type) {
         this.name = name;
@@ -22,7 +22,7 @@ public class HdfCompoundDatatypeMember {
         this.dimensionPermutation = dimensionPermutation;
         this.dimensionSizes = dimensionSizes;
         this.type = type;
-        messageDataSize = switch(type.getDatatypeClass()) {
+        sizeMessageData = switch(type.getDatatypeClass()) {
             case STRING -> computeStringMessageDataSize(name);
             case FIXED -> computeFixedMessageDataSize(name);
             default -> throw new IllegalStateException("Unexpected datatype class: " + type.getDatatypeClass());
@@ -76,6 +76,6 @@ public class HdfCompoundDatatypeMember {
         System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
         buffer.put(result);         // 3
         buffer.putInt(type.getSize());        // 4
+        type.writeDefinitionToByteBuffer(buffer);
     }
-
 }
