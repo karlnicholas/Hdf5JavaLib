@@ -20,13 +20,15 @@ public class StringDatatype implements HdfDatatype {
 
 
     public static StringDatatype parseStringType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
-        short messageDataSize = (short) 40;
-
         return new StringDatatype(classAndVersion, classBitField, size);
     }
 
     public static BitSet getStringTypeBitSet(PaddingType paddingType, CharacterSet charSet) {
         return BitSet.valueOf(new long[] {((long) charSet.value << 4) + paddingType.value});
+    }
+
+    public static byte createClassAndVersion() {
+        return 0x13;
     }
 
     public HdfString getInstance(ByteBuffer dataBuffer) {

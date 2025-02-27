@@ -127,23 +127,22 @@ public class DatatypeMessage extends HdfMessage {
     public void writeToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
 
-//        // needed for compoundtype but duplicate when fixedpoint type
-//        // Datatype general information
-//        byte classAndVersion = (byte) ((version << 4) + dataTypeClass);
-//        buffer.put(classAndVersion);    // 1
-//        // Parse Class Bit Field (24 bits)
-//        byte[] bytes = classBitField.toByteArray();
-//        byte[] result = new byte[3];
-//        // Copy bytes
-//        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
-//        buffer.put(result);         // 3
-//        buffer.putInt(size);        // 4
-//
         // datatype specifics
-        writeInfoToByteBuffer(this, buffer);
+        writeInfoToByteBuffer(buffer);
     }
 
-    public static void writeInfoToByteBuffer(DatatypeMessage datatypeMessage, ByteBuffer buffer) {
-        datatypeMessage.hdfDatatype.writeDefinitionToByteBuffer(buffer);
+    public void writeInfoToByteBuffer(ByteBuffer buffer) {
+        // needed for compoundtype but duplicate when fixedpoint type
+        // Datatype general information
+        buffer.put(hdfDatatype.getClassAndVersion());    // 1
+        // Parse Class Bit Field (24 bits)
+        byte[] bytes = hdfDatatype.getClassBitField().toByteArray();
+        byte[] result = new byte[3];
+        // Copy bytes
+        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
+        buffer.put(result);         // 3
+        buffer.putInt(hdfDatatype.getSize());        // 4
+
+        hdfDatatype.writeDefinitionToByteBuffer(buffer);
     }
 }

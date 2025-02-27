@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.time.Instant;
 
 @Getter
 public class ObjectModificationTimeMessage extends HdfMessage {
@@ -46,7 +47,7 @@ public class ObjectModificationTimeMessage extends HdfMessage {
     public String toString() {
         return "ObjectModificationTimeMessage{" +
                 "version=" + version +
-                ", secondsAfterEpoch=" + secondsAfterEpoch +
+                ", secondsAfterEpoch=" + Instant.ofEpochSecond(secondsAfterEpoch).toString() +
                 '}';
     }
 

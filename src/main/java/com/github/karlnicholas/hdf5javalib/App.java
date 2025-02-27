@@ -37,8 +37,8 @@ public class App {
     private void run() {
         try {
             HdfReader reader = new HdfReader();
-//            String filePath = App.class.getResource("/randomints.h5").getFile();
-            String filePath = App.class.getResource("/test.h5").getFile();
+            String filePath = App.class.getResource("/randomints.h5").getFile();
+//            String filePath = App.class.getResource("/test.h5").getFile();
 //            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
 //            String filePath = App.class.getResource("/ForecastedVolume_2025-01-10.h5").getFile();
 //            String filePath = App.class.getResource("/singleint.h5").getFile();
@@ -53,7 +53,7 @@ public class App {
             e.printStackTrace();
         }
 //        tryHdfApiCompound();
-//        tryHdfApiInts();
+        tryHdfApiInts();
     }
 
     public void tryHdfApiInts() {
@@ -112,9 +112,9 @@ public class App {
     private void writeVersionAttribute(HdfDataSet dataset) {
         String ATTRIBUTE_NAME = "GIT root revision";
         String ATTRIBUTE_VALUE = "Revision: , URL: ";
-        BitSet classBitField = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII);
+        BitSet classBitField = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
         // value
-        StringDatatype attributeType = new StringDatatype((byte) 1, classBitField, (short)ATTRIBUTE_VALUE.length());
+        StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(), classBitField, (short)ATTRIBUTE_VALUE.length());
         // data type, String, DATASET_NAME.length
         DatatypeMessage dt = new DatatypeMessage(attributeType);
         // scalar, 1 string
