@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.BitSet;
 
 @Getter
 public class FillValueMessage extends HdfMessage {
@@ -58,7 +59,7 @@ public class FillValueMessage extends HdfMessage {
         // Handle Version 2+ behavior and fillValueDefined flag
         if (version >= 2 && fillValueDefined == 1) {
             // Parse Size (unsigned 4 bytes, using HdfFixedPoint)
-            size = HdfFixedPoint.readFromByteBuffer(buffer, (short) 4, false);
+            size = HdfFixedPoint.readFromByteBuffer(buffer, (short) 4, new BitSet(), (short)0, (short)(4*8));
 
             // Parse Fill Value
             int sizeValue = size.toBigInteger().intValue();

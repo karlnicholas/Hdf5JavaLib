@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.BitSet;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
 
@@ -24,8 +25,9 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
     public static ObjectHeaderContinuationMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Parse the continuation offset and size
-        HdfFixedPoint continuationOffset = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
-        HdfFixedPoint continuationSize = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
+        BitSet emptyBitSet = new BitSet();
+        HdfFixedPoint continuationOffset = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint continuationSize = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(lengthSize*8));
         return new ObjectHeaderContinuationMessage(continuationOffset, continuationSize);
     }
 

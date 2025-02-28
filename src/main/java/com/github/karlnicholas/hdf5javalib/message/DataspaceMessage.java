@@ -6,6 +6,7 @@ import lombok.Getter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.BitSet;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
 
@@ -74,9 +75,10 @@ public class DataspaceMessage extends HdfMessage {
         buffer.position(buffer.position() + 5);
 
         // Read dimensions
+        BitSet emptyBitSet = new BitSet();
         HdfFixedPoint[] dimensions = new HdfFixedPoint[dimensionality];
         for (int i = 0; i < dimensionality; i++) {
-            dimensions[i] = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
+            dimensions[i] = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(lengthSize*8));
         }
 
         // Check for maximum dimensions flag and read if present
@@ -85,7 +87,7 @@ public class DataspaceMessage extends HdfMessage {
         if (hasMaxDimensions) {
             maxDimensions = new HdfFixedPoint[dimensionality];
             for (int i = 0; i < dimensionality; i++) {
-                maxDimensions[i] = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
+                maxDimensions[i] = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(lengthSize*8));
             }
         }
 

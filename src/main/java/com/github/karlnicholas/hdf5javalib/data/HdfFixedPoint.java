@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
+import java.util.BitSet;
 
 @Getter
 public class HdfFixedPoint implements HdfData {
@@ -72,53 +73,43 @@ public class HdfFixedPoint implements HdfData {
      */
     public static HdfFixedPoint of(long value) {
         byte[] bArray = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(value).array();
-        return new HdfFixedPoint(bArray, (short)8, true, false, false, false, (short)0, (short)0);
+        return new HdfFixedPoint(bArray, (short)8, true, false, false, false, (short)0, (short)64);
     }
 
-    // Constructor for FileChannel
-    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, int size, boolean signed) throws IOException {
-        return readFromFileChannel(fileChannel, size, signed, true); // Default to little-endian
-    }
-
-    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, int size, boolean signed, boolean littleEndian) throws IOException {
+    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, int size, BitSet classBitField, short bitOffset, short bitPrecision) throws IOException {
         validateSize(size);
         byte[] bytes = new byte[size];
-        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(littleEndian ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);
+        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(classBitField.get(0) ? ByteOrder.BIG_ENDIAN: ByteOrder.LITTLE_ENDIAN );
 
         fileChannel.read(buffer);
-        return getHdfFixedPoint(size, signed, littleEndian, bytes);
+        return getHdfFixedPoint(buffer.array(), size, classBitField, bitOffset, bitPrecision);
     }
 
-    private static HdfFixedPoint getHdfFixedPoint(int size, boolean signed, boolean littleEndian, byte[] bytes) {
-        return new HdfFixedPoint(bytes, size, littleEndian, false, false,  signed, (short) 0, (short) 0);
+    private static HdfFixedPoint getHdfFixedPoint(byte[] bytes, int size, BitSet classBitField, short bitOffset, short bitPrecision) {
+        return new HdfFixedPoint(bytes, size, !classBitField.get(0), classBitField.get(1), classBitField.get(2),  classBitField.get(3), bitOffset, bitPrecision);
     }
 
-    // Constructor for ByteBuffer
-    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, int size, boolean signed) {
-        return readFromByteBuffer(buffer, size, signed, buffer.order() == ByteOrder.LITTLE_ENDIAN);
-    }
-
-    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, int size, boolean signed, boolean littleEndian) {
+    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, int size, BitSet classBitField, short bitOffset, short bitPrecision) {
         validateSize(size);
         byte[] bytes = new byte[size];
         buffer.get(bytes);
 
         // Adjust byte order if needed
-        return getHdfFixedPoint(size, signed, littleEndian, bytes);
+        return getHdfFixedPoint(bytes, size, classBitField, bitOffset, bitPrecision);
     }
 
     // Factory method for undefined values
     public static HdfFixedPoint undefined(int size) {
         byte[] undefinedBytes = new byte[size];
         Arrays.fill(undefinedBytes, (byte) 0xFF);
-        return new HdfFixedPoint(undefinedBytes, size, false, false, false, true, (short)0, (short)0);
+        return new HdfFixedPoint(undefinedBytes, size, false, false, false, true, (short)0, (short)(size*8));
     }
 
     // Factory method for undefined values
     public static HdfFixedPoint undefined(ByteBuffer buffer, int size) {
         byte[] undefinedBytes = new byte[size];
         buffer.get(undefinedBytes);
-        return new HdfFixedPoint(undefinedBytes, size, false, false, false, true, (short)0, (short)0);
+        return new HdfFixedPoint(undefinedBytes, size, false, false, false, true, (short)0, (short)(size*8));
     }
 
     public static boolean checkUndefined(ByteBuffer buffer, int sizeOfOffsets) {
@@ -240,21 +231,6 @@ public class HdfFixedPoint implements HdfData {
     public BigDecimal toBigDecimal() {
         BigInteger intValue = toBigInteger();
         return new BigDecimal(intValue, bitOffset);
-    }
-
-    // Get bytes for HDF storage
-    public byte[] getHdfBytes(boolean desiredLittleEndian) {
-        if (desiredLittleEndian == littleEndian) {
-            return Arrays.copyOf(bytes, bytes.length);
-        }
-        return reverseBytes(bytes);
-    }
-
-    // Reverse bytes for endianness
-    private byte[] reverseBytes(byte[] input) {
-        byte[] reversed = Arrays.copyOf(input, input.length);
-        reverseBytesInPlace(reversed);
-        return reversed;
     }
 
     // Reverse bytes in place

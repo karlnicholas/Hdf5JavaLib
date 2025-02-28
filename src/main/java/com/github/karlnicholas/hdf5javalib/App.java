@@ -1,9 +1,6 @@
 package com.github.karlnicholas.hdf5javalib;
 
-import com.github.karlnicholas.hdf5javalib.data.CompoundDataSource;
-import com.github.karlnicholas.hdf5javalib.data.FixedPointDataSource;
-import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.data.HdfString;
+import com.github.karlnicholas.hdf5javalib.data.*;
 import com.github.karlnicholas.hdf5javalib.file.HdfDataSet;
 import com.github.karlnicholas.hdf5javalib.file.HdfFile;
 import com.github.karlnicholas.hdf5javalib.file.HdfReader;
@@ -14,10 +11,12 @@ import com.github.karlnicholas.hdf5javalib.message.datatype.FixedPointDatatype;
 import com.github.karlnicholas.hdf5javalib.message.datatype.HdfCompoundDatatypeMember;
 import com.github.karlnicholas.hdf5javalib.message.datatype.StringDatatype;
 import com.github.karlnicholas.hdf5javalib.utils.HdfCompoundDatatypeSpliterator;
-import com.github.karlnicholas.hdf5javalib.utils.HdfFixedPointDatatypeSpliterator;
+import com.github.karlnicholas.hdf5javalib.utils.HdfFixedPointMatrixSpliterator;
+import com.github.karlnicholas.hdf5javalib.utils.HdfFixedPointVectorSpliterator;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -40,17 +39,18 @@ public class App {
     private void run() {
         try {
             HdfReader reader = new HdfReader();
-            String filePath = App.class.getResource("/randomints.h5").getFile();
-//            String filePath = App.class.getResource("/weather_data.h5").getFile();
+//            String filePath = App.class.getResource("/test.h5").getFile();
+            String filePath = App.class.getResource("/weather_data.h5").getFile();
 //            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
 //            String filePath = App.class.getResource("/ForecastedVolume_2025-01-10.h5").getFile();
 //            String filePath = App.class.getResource("/singleint.h5").getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                tryTemperatureSpliterator(channel, reader);
+//                tryTemperatureSpliterator(channel, reader);
 //                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
 //                tryVolumeSpliterator(channel, reader);
+                tryWeatherSpliterator(channel, reader);
 //                new HdfConstruction().buildHfd();
             }
         } catch (IOException e) {
@@ -88,7 +88,7 @@ public class App {
             writeVersionAttribute(dataset);
 
             AtomicInteger countHolder = new AtomicInteger(0);
-            FixedPointDataSource<TemperatureData> temperatureDataHdfDataSource = new FixedPointDataSource<>(fixedPointDatatype, "temperature", TemperatureData.class);
+            FixedPointVectorSource<TemperatureData> temperatureDataHdfDataSource = new FixedPointVectorSource<>(fixedPointDatatype, "temperature", TemperatureData.class);
             ByteBuffer temperatureBuffer = ByteBuffer.allocate(fixedPointDatatype.getSize());
             // Write to dataset
             dataset.write(() -> {
@@ -284,12 +284,20 @@ public class App {
 
     }
 
+    private void tryWeatherSpliterator(FileChannel fileChannel, HdfReader reader) {
+        FixedPointMatrixSource<WeatherData> dataSource = new FixedPointMatrixSource<>(reader.getDataObjectHeaderPrefix(), "data", WeatherData.class);
+
+        Spliterator<WeatherData> spliterator = new HdfFixedPointMatrixSpliterator<>(fileChannel, reader.getDataAddress(), dataSource);
+
+        StreamSupport.stream(spliterator, false).forEach(System.out::println);
+
+    }
 
     public void tryTemperatureSpliterator(FileChannel fileChannel, HdfReader reader) {
 
-        FixedPointDataSource<TemperatureData> fixedPointDataSource = new FixedPointDataSource<>((FixedPointDatatype) reader.getDataType(), "temperature", TemperatureData.class);
+        FixedPointVectorSource<TemperatureData> fixedPointVectorSource = new FixedPointVectorSource<>((FixedPointDatatype) reader.getDataType(), "temperature", TemperatureData.class);
 
-        Spliterator<TemperatureData> spliterator = new HdfFixedPointDatatypeSpliterator<>(fileChannel, reader.getDataAddress(), reader.getDataType().getSize(), reader.getDimension(), fixedPointDataSource);
+        Spliterator<TemperatureData> spliterator = new HdfFixedPointVectorSpliterator<>(fileChannel, reader.getDataAddress(), reader.getDataType().getSize(), reader.getDimension(), fixedPointVectorSource);
 
         System.out.println("count = " + StreamSupport.stream(spliterator, false).map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
 

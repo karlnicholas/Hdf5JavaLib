@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.util.BitSet;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
 
@@ -20,8 +21,8 @@ public class HdfSuperblock {
     private final int freeSpaceVersion;
     private final int rootGroupVersion;
     private final int sharedHeaderVersion;
-    private final short sizeOfOffsets;
-    private final short sizeOfLengths;
+    private final short offsetSize;
+    private final short lengthSize;
     private final int groupLeafNodeK;
     private final int groupInternalNodeK;
 
@@ -37,8 +38,8 @@ public class HdfSuperblock {
             int freeSpaceVersion,
             int rootGroupVersion,
             int sharedHeaderVersion,
-            short sizeOfOffsets,
-            short sizeOfLengths,
+            short offsetSize,
+            short lengthSize,
             int groupLeafNodeK,
             int groupInternalNodeK,
             HdfFixedPoint baseAddress,
@@ -51,8 +52,8 @@ public class HdfSuperblock {
         this.freeSpaceVersion = freeSpaceVersion;
         this.rootGroupVersion = rootGroupVersion;
         this.sharedHeaderVersion = sharedHeaderVersion;
-        this.sizeOfOffsets = sizeOfOffsets;
-        this.sizeOfLengths = sizeOfLengths;
+        this.offsetSize = offsetSize;
+        this.lengthSize = lengthSize;
         this.groupLeafNodeK = groupLeafNodeK;
         this.groupInternalNodeK = groupInternalNodeK;
         this.baseAddress = baseAddress;
@@ -108,29 +109,30 @@ public class HdfSuperblock {
         int rootGroupVersion = Byte.toUnsignedInt(buffer.get());
         buffer.get(); // Skip reserved
         int sharedHeaderVersion = Byte.toUnsignedInt(buffer.get());
-        short sizeOfOffsets = (short) Byte.toUnsignedInt(buffer.get());
-        short sizeOfLengths = (short) Byte.toUnsignedInt(buffer.get());
+        short offsetSize = (short) Byte.toUnsignedInt(buffer.get());
+        short lengthSize = (short) Byte.toUnsignedInt(buffer.get());
         buffer.get(); // Skip reserved
 
         int groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
         int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
         buffer.getInt(); // Skip consistency flags
 
-        HdfSymbolTableEntry rootGroupSymbleTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, sizeOfOffsets);
+        HdfSymbolTableEntry rootGroupSymbleTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
 
         // Parse addresses using HdfFixedPoint
-        HdfFixedPoint baseAddress = HdfFixedPoint.readFromByteBuffer(buffer, sizeOfOffsets, false);
-        HdfFixedPoint freeSpaceAddress = HdfFixedPoint.checkUndefined(buffer, sizeOfOffsets) ? HdfFixedPoint.undefined(buffer, sizeOfOffsets) : HdfFixedPoint.readFromByteBuffer(buffer, sizeOfOffsets, false);
-        HdfFixedPoint endOfFileAddress = HdfFixedPoint.checkUndefined(buffer, sizeOfOffsets) ? HdfFixedPoint.undefined(buffer, sizeOfOffsets) : HdfFixedPoint.readFromByteBuffer(buffer, sizeOfOffsets, false);
-        HdfFixedPoint driverInformationAddress = HdfFixedPoint.checkUndefined(buffer, sizeOfOffsets) ? HdfFixedPoint.undefined(buffer, sizeOfOffsets) : HdfFixedPoint.readFromByteBuffer(buffer, sizeOfOffsets, false);
+        BitSet emptyBitSet = new BitSet();
+        HdfFixedPoint baseAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint freeSpaceAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint endOfFileAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint driverInformationAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
 
         return new HdfSuperblock(
                 version,
                 freeSpaceVersion,
                 rootGroupVersion,
                 sharedHeaderVersion,
-                sizeOfOffsets,
-                sizeOfLengths,
+                offsetSize,
+                lengthSize,
                 groupLeafNodeK,
                 groupInternalNodeK,
                 baseAddress,
@@ -153,8 +155,8 @@ public class HdfSuperblock {
         buffer.put((byte) rootGroupVersion);     // Root group symbol table entry version (1 byte)
         buffer.put((byte) 0);                    // Reserved (must be 0) (1 byte)
         buffer.put((byte) sharedHeaderVersion);  // Shared object header format version (1 byte)
-        buffer.put((byte) sizeOfOffsets);        // Size of offsets (1 byte)
-        buffer.put((byte) sizeOfLengths);        // Size of lengths (1 byte)
+        buffer.put((byte) offsetSize);        // Size of offsets (1 byte)
+        buffer.put((byte) lengthSize);        // Size of lengths (1 byte)
         buffer.put((byte) 0);                    // Reserved (must be 0) (1 byte)
 
         // Step 3: B-tree settings & consistency flags
@@ -178,8 +180,8 @@ public class HdfSuperblock {
                 ", freeSpaceVersion=" + freeSpaceVersion +
                 ", rootGroupVersion=" + rootGroupVersion +
                 ", sharedHeaderVersion=" + sharedHeaderVersion +
-                ", sizeOfOffsets=" + sizeOfOffsets +
-                ", sizeOfLengths=" + sizeOfLengths +
+                ", sizeOfOffsets=" + offsetSize +
+                ", sizeOfLengths=" + lengthSize +
                 ", groupLeafNodeK=" + groupLeafNodeK +
                 ", groupInternalNodeK=" + groupInternalNodeK +
                 ", baseAddress=" + baseAddress +

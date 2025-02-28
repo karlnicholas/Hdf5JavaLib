@@ -6,12 +6,12 @@ import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
-public class FixedPointDataSource<T> {
+public class FixedPointVectorSource<T> {
     private final Class<T> clazz;
     private final FixedPointDatatype fixedPointDatatype;
     private final Field field;
 
-    public FixedPointDataSource(FixedPointDatatype fixedPointDatatype, String name, Class<T> clazz) {
+    public FixedPointVectorSource(FixedPointDatatype fixedPointDatatype, String name, Class<T> clazz) {
         this.clazz = clazz;
         this.fixedPointDatatype = fixedPointDatatype;
         // Parse fields and map them to CompoundDatatype members

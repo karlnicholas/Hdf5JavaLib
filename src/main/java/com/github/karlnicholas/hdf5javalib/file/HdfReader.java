@@ -34,8 +34,8 @@ public class HdfReader {
         superblock = HdfSuperblock.readFromFileChannel(fileChannel);
         System.out.println(superblock);
 
-        short offsetSize = superblock.getSizeOfOffsets();
-        short lengthSize = superblock.getSizeOfLengths();
+        short offsetSize = superblock.getOffsetSize();
+        short lengthSize = superblock.getLengthSize();
 //
 //        rootSymbolTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
 //
@@ -49,7 +49,7 @@ public class HdfReader {
         // Read data from file channel starting at the specified position
         long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getNameHeapAddress().toBigInteger().longValue();
         fileChannel.position(localHeapAddress);
-        HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
+        HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
 
         int dataSize = localHeap.getDataSegmentSize().toBigInteger().intValue();
         long dataSegmentAddress = localHeap.getDataSegmentAddress().toBigInteger().longValue();
@@ -58,7 +58,7 @@ public class HdfReader {
 
         long bTreeAddress = superblock.getRootGroupSymbolTableEntry().getBTreeAddress().toBigInteger().longValue();
         fileChannel.position(bTreeAddress);
-        HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
+        HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
 
         // get datasets?
         if ( bTree.getEntriesUsed() != 1) {

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 import static com.github.karlnicholas.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
@@ -103,14 +104,15 @@ public class HdfBTreeV1 {
         int nodeLevel = Byte.toUnsignedInt(buffer.get());
         int entriesUsed = Short.toUnsignedInt(buffer.getShort());
 
+        BitSet emptyBitset = new BitSet();
         // Read sibling addresses
         HdfFixedPoint leftSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize)
                 ? HdfFixedPoint.undefined(buffer, offsetSize)
-                : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
+                : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
 
         HdfFixedPoint rightSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize)
                 ? HdfFixedPoint.undefined(buffer, offsetSize)
-                : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false);
+                : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
 
         // Corrected Buffer Allocation (Always allocate for keyZero + keys/childPointers)
         int keyPointerBufferSize = lengthSize + (entriesUsed * (offsetSize + lengthSize));
@@ -121,14 +123,14 @@ public class HdfBTreeV1 {
         buffer.flip();
 
         // Always Read keyZero (first key)
-        HdfFixedPoint keyZero = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false);
+        HdfFixedPoint keyZero = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
 
         // Read remaining entries (Child Pointer first, then Key)
         List<BTreeEntry> entries = new ArrayList<>();
 
         for (int i = 0; i < entriesUsed; i++) {
-            HdfFixedPoint childPointer = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, false); // Read childPointer first
-            HdfFixedPoint key = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, false); // Read key after childPointer
+            HdfFixedPoint childPointer = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8)); // Read childPointer first
+            HdfFixedPoint key = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8)); // Read key after childPointer
             entries.add(new BTreeEntry(key, childPointer));
         }
 

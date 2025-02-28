@@ -55,7 +55,7 @@ public class FixedPointDatatype implements HdfDatatype {
     }
 
     public HdfFixedPoint getInstance(ByteBuffer dataBuffer) {
-        return HdfFixedPoint.readFromByteBuffer(dataBuffer, size, classBitField.get(3));
+        return HdfFixedPoint.readFromByteBuffer(dataBuffer, size, classBitField, bitOffset, bitPrecision);
     }
 
     @Override
