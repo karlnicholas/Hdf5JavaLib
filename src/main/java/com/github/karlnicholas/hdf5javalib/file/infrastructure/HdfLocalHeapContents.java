@@ -2,7 +2,7 @@ package com.github.karlnicholas.hdf5javalib.file.infrastructure;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
-import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.StringDatatype;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class HdfLocalHeapContents {
      * @return The next string, or null if no more strings are available.
      */
     public HdfString parseStringAtOffset(HdfFixedPoint offset) {
-        int iOffset = offset.getBigIntegerValue().intValue();
+        int iOffset = offset.toBigInteger().intValue();
         if (iOffset >= heapData.length) {
             return null; // End of heap data
         }

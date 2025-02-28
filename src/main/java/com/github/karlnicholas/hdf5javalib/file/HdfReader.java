@@ -1,7 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.HdfDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
@@ -41,22 +41,22 @@ public class HdfReader {
 //
         // Get the object header address from the superblock
         // Parse the object header from the file using the superblock information
-        long objectHeaderAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeaderAddress().getBigIntegerValue().longValue();
+        long objectHeaderAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeaderAddress().toBigInteger().longValue();
         fileChannel.position(objectHeaderAddress);
         HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
 
         // Parse the local heap using the file channel
         // Read data from file channel starting at the specified position
-        long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getNameHeapAddress().getBigIntegerValue().longValue();
+        long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getNameHeapAddress().toBigInteger().longValue();
         fileChannel.position(localHeapAddress);
         HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
 
-        int dataSize = localHeap.getDataSegmentSize().getBigIntegerValue().intValue();
-        long dataSegmentAddress = localHeap.getDataSegmentAddress().getBigIntegerValue().longValue();
+        int dataSize = localHeap.getDataSegmentSize().toBigInteger().intValue();
+        long dataSegmentAddress = localHeap.getDataSegmentAddress().toBigInteger().longValue();
         fileChannel.position(dataSegmentAddress);
         HdfLocalHeapContents localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, dataSize);
 
-        long bTreeAddress = superblock.getRootGroupSymbolTableEntry().getBTreeAddress().getBigIntegerValue().longValue();
+        long bTreeAddress = superblock.getRootGroupSymbolTableEntry().getBTreeAddress().toBigInteger().longValue();
         fileChannel.position(bTreeAddress);
         HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getSizeOfOffsets(), superblock.getSizeOfLengths());
 
@@ -65,7 +65,7 @@ public class HdfReader {
             throw new UnsupportedEncodingException("Only one btree entry is currently supported");
         }
         BTreeEntry bTreeEntry = bTree.getEntries().get(0);
-        long snodAddress = bTreeEntry.getChildPointer().getBigIntegerValue().longValue();
+        long snodAddress = bTreeEntry.getChildPointer().toBigInteger().longValue();
         fileChannel.position(snodAddress);
         HdfGroupSymbolTableNode symbolTableNode = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
         int entriesToRead = symbolTableNode.getNumberOfSymbols();
@@ -92,8 +92,8 @@ public class HdfReader {
             HdfSymbolTableEntry ste = symbolTableNode.getSymbolTableEntries().get(i);
             HdfString datasetName = localHeapContents.parseStringAtOffset(ste.getLinkNameOffset());
             // Parse the Data Object Header Prefix next in line
-//        fileChannel.position(fileOffsets.getObjectHeaderAddress().getBigIntegerValue().longValue());
-            long dataLObjectHeaderAddress = ste.getObjectHeaderAddress().getBigIntegerValue().longValue();
+//        fileChannel.position(fileOffsets.getObjectHeaderAddress().toBigInteger().longValue());
+            long dataLObjectHeaderAddress = ste.getObjectHeaderAddress().toBigInteger().longValue();
             fileChannel.position(dataLObjectHeaderAddress);
             dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
             System.out.println(datasetName + "@" + dataLObjectHeaderAddress + " = " + dataObjectHeaderPrefix);
@@ -102,10 +102,10 @@ public class HdfReader {
                 if (message instanceof DatatypeMessage dataTypeMessage) {
                     dataType = dataTypeMessage.getHdfDatatype();
                 } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
-                    dataAddress = dataLayoutMessage.getDataAddress().getBigIntegerValue().longValue();
-                    dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getBigIntegerValue().longValue();
+                    dataAddress = dataLayoutMessage.getDataAddress().toBigInteger().longValue();
+                    dimensionSize = dataLayoutMessage.getDimensionSizes()[0].toBigInteger().longValue();
                 } else if (message instanceof DataspaceMessage dataSpaceMessage) {
-                    dimension = dataSpaceMessage.getDimensions()[0].getBigIntegerValue().longValue();
+                    dimension = dataSpaceMessage.getDimensions()[0].toBigInteger().longValue();
                 }
             }
 

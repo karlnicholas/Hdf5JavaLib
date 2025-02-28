@@ -4,12 +4,15 @@ import com.github.karlnicholas.hdf5javalib.data.CompoundDataSource;
 import com.github.karlnicholas.hdf5javalib.data.FixedPointDataSource;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
-import com.github.karlnicholas.hdf5javalib.datatype.*;
 import com.github.karlnicholas.hdf5javalib.file.HdfDataSet;
 import com.github.karlnicholas.hdf5javalib.file.HdfFile;
 import com.github.karlnicholas.hdf5javalib.file.HdfReader;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
 import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
+import com.github.karlnicholas.hdf5javalib.message.datatype.CompoundDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.FixedPointDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.HdfCompoundDatatypeMember;
+import com.github.karlnicholas.hdf5javalib.message.datatype.StringDatatype;
 import com.github.karlnicholas.hdf5javalib.utils.HdfCompoundDatatypeSpliterator;
 import com.github.karlnicholas.hdf5javalib.utils.HdfFixedPointDatatypeSpliterator;
 
@@ -37,14 +40,15 @@ public class App {
     private void run() {
         try {
             HdfReader reader = new HdfReader();
-//            String filePath = App.class.getResource("/randomints.h5").getFile();
-            String filePath = App.class.getResource("/test.h5").getFile();
+            String filePath = App.class.getResource("/randomints.h5").getFile();
+//            String filePath = App.class.getResource("/weather_data.h5").getFile();
 //            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
 //            String filePath = App.class.getResource("/ForecastedVolume_2025-01-10.h5").getFile();
 //            String filePath = App.class.getResource("/singleint.h5").getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
+                tryTemperatureSpliterator(channel, reader);
 //                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
 //                tryVolumeSpliterator(channel, reader);
 //                new HdfConstruction().buildHfd();
@@ -52,7 +56,7 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        tryHdfApiCompound();
+//        tryHdfApiCompound();
 //        tryHdfApiInts();
     }
 

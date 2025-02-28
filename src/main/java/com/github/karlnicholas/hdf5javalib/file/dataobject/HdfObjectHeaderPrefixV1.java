@@ -108,7 +108,7 @@ public class HdfObjectHeaderPrefixV1 {
 
             // After writing 6 messages, jump to continuation offset if present
             if (i == 5 && optContinuationMessage.isPresent()) {
-                buffer.position(optContinuationMessage.get().getContinuationOffset().getBigIntegerValue().intValue());
+                buffer.position(optContinuationMessage.get().getContinuationOffset().toBigInteger().intValue());
             }
         }
     }

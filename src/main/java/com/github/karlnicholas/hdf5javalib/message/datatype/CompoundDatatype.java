@@ -1,4 +1,4 @@
-package com.github.karlnicholas.hdf5javalib.datatype;
+package com.github.karlnicholas.hdf5javalib.message.datatype;
 
 import lombok.Getter;
 
@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import static com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype.parseFixedPointType;
-import static com.github.karlnicholas.hdf5javalib.datatype.FloatingPointDatatype.parseFloatingPointType;
-import static com.github.karlnicholas.hdf5javalib.datatype.StringDatatype.parseStringType;
+import static com.github.karlnicholas.hdf5javalib.message.datatype.FixedPointDatatype.parseFixedPointType;
+import static com.github.karlnicholas.hdf5javalib.message.datatype.FloatingPointDatatype.parseFloatingPointType;
+import static com.github.karlnicholas.hdf5javalib.message.datatype.StringDatatype.parseStringType;
 
 @Getter
 public class CompoundDatatype implements HdfDatatype {

@@ -1,7 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.file;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.HdfDatatype;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
@@ -82,7 +82,7 @@ public class HdfFile {
         long records = rootGroup.getDataSet().getDataObjectHeaderPrefix()
                 .findMessageByType(DataspaceMessage.class)
                 .orElseThrow()
-                .getDimensions()[0].getBigIntegerValue().longValue();
+                .getDimensions()[0].toBigInteger().longValue();
         long recordSize = rootGroup.getDataSet().getDataObjectHeaderPrefix()
                 .findMessageByType(DatatypeMessage.class)
                 .orElseThrow()

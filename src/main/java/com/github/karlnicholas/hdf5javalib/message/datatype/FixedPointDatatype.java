@@ -1,4 +1,4 @@
-package com.github.karlnicholas.hdf5javalib.datatype;
+package com.github.karlnicholas.hdf5javalib.message.datatype;
 
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
@@ -78,19 +78,38 @@ public class FixedPointDatatype implements HdfDatatype {
     public String toString() {
         return "FixedPointDatatype{" +
                 "classAndVersion=" + classAndVersion +
-                ", classBitField=" + classBitField +
+                ", littleEndian=" + !isBigEndian() +
+                ", loPad=" + isLopad() +
+                ", hiPad=" + isHipad() +
+                ", signed=" + isSigned() +
                 ", size=" + size +
                 ", bitOffset=" + bitOffset +
                 ", bitPrecision=" + bitPrecision +
                 '}';
     }
 
+    public boolean isBigEndian() {
+        return classBitField.get(0);
+    }
+
+    public boolean isLopad() {
+        return classBitField.get(1);
+    }
+
+    public boolean isHipad() {
+        return classBitField.get(2);
+    }
+
     public boolean isSigned() {
         return classBitField.get(3);
     }
 
-    public boolean isBigEndian() {
-        return classBitField.get(0);
+    public short getBitOffset() {
+        return bitOffset;
+    }
+
+    public short getBitPrecision() {
+        return bitPrecision;
     }
 }
 

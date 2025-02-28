@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.data;
 
-import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.FixedPointDatatype;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
@@ -33,7 +33,7 @@ public class FixedPointDataSource<T> {
         try {
             // Create an instance of T
             T instance = clazz.getDeclaredConstructor().newInstance();
-            BigInteger value = fixedPointDatatype.getInstance(buffer).getBigIntegerValue();
+            BigInteger value = fixedPointDatatype.getInstance(buffer).toBigInteger();
             field.set(instance, value);
             return instance;
         } catch (Exception e) {
@@ -45,10 +45,10 @@ public class FixedPointDataSource<T> {
      */
     public void writeToBuffer(T instance, ByteBuffer buffer) {
         try {
-            BigInteger value = (BigInteger) field.get(instance);
+            BigInteger bigIntValue = (BigInteger) field.get(instance);
 
             // Convert BigInteger to bytes and write to buffer
-            new HdfFixedPoint(value, fixedPointDatatype.getSize(), fixedPointDatatype.isSigned(), fixedPointDatatype.isBigEndian())
+            new HdfFixedPoint(bigIntValue.toByteArray(), fixedPointDatatype.getSize(), fixedPointDatatype.isBigEndian(), fixedPointDatatype.isLopad(), fixedPointDatatype.isHipad(), fixedPointDatatype.isSigned(), fixedPointDatatype.getBitOffset(), fixedPointDatatype.getBitPrecision())
                     .writeValueToByteBuffer(buffer);
             // Add more type handling as needed
 

@@ -1,7 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.string;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
-import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.StringDatatype;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;

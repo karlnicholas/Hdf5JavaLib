@@ -2,8 +2,8 @@ package com.github.karlnicholas.hdf5javalib.file;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
-import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.HdfDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.StringDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
 import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
@@ -112,12 +112,12 @@ public class HdfGroup {
 
             // Retrieve Local Heap Address if still not found
             if (localHeapPosition == -1 && symbolTableMessage.getLocalHeapAddress() != null && !symbolTableMessage.getLocalHeapAddress().isUndefined()) {
-                localHeapPosition = symbolTableMessage.getLocalHeapAddress().getBigIntegerValue().longValue();
+                localHeapPosition = symbolTableMessage.getLocalHeapAddress().toBigInteger().longValue();
             }
 
             // Retrieve B-Tree Address
             if (symbolTableMessage.getBTreeAddress() != null && !symbolTableMessage.getBTreeAddress().isUndefined()) {
-                bTreePosition = symbolTableMessage.getBTreeAddress().getBigIntegerValue().longValue();
+                bTreePosition = symbolTableMessage.getBTreeAddress().toBigInteger().longValue();
             }
         }
 
@@ -133,7 +133,7 @@ public class HdfGroup {
         if (localHeapPosition != -1) {
             buffer.position((int) localHeapPosition); // Move to the correct position
             localHeap.writeToByteBuffer(buffer);
-            buffer.position(localHeap.getDataSegmentAddress().getBigIntegerValue().intValue());
+            buffer.position(localHeap.getDataSegmentAddress().toBigInteger().intValue());
             localHeapContents.writeToByteBuffer(buffer);
         } else {
             throw new IllegalStateException("No valid Local Heap position found.");

@@ -3,8 +3,8 @@ package com.github.karlnicholas.hdf5javalib.file;
 import com.github.karlnicholas.hdf5javalib.data.HdfData;
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfDatatype;
-import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.HdfDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.StringDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.message.*;
 import lombok.Getter;
@@ -72,7 +72,7 @@ public class HdfDataSet {
 
         // Add DataLayoutMessage (Storage format)
         HdfFixedPoint[] dimensions = dataSpaceMessage.getDimensions();
-        long recordCount = dimensions[0].getBigIntegerValue().longValue();
+        long recordCount = dimensions[0].toBigInteger().longValue();
         HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(recordCount * hdfDatatype.getSize())};
         DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1,
                 HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()),

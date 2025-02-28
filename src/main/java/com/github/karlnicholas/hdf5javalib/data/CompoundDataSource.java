@@ -1,9 +1,9 @@
 package com.github.karlnicholas.hdf5javalib.data;
 
-import com.github.karlnicholas.hdf5javalib.datatype.CompoundDatatype;
-import com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype;
-import com.github.karlnicholas.hdf5javalib.datatype.HdfCompoundDatatypeMember;
-import com.github.karlnicholas.hdf5javalib.datatype.StringDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.CompoundDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.FixedPointDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.HdfCompoundDatatypeMember;
+import com.github.karlnicholas.hdf5javalib.message.datatype.StringDatatype;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
@@ -49,7 +49,7 @@ public class CompoundDataSource<T> {
                     String value = ((StringDatatype) member.getType()).getInstance(buffer).getValue();
                     field.set(instance, value);
                 } else if (field.getType() == BigInteger.class && member.getType() instanceof FixedPointDatatype) {
-                    BigInteger value = ((FixedPointDatatype) member.getType()).getInstance(buffer).getBigIntegerValue();
+                    BigInteger value = ((FixedPointDatatype) member.getType()).getInstance(buffer).toBigInteger();
                     field.set(instance, value);
                 }
                 // Add more type handling as needed
@@ -82,7 +82,7 @@ public class CompoundDataSource<T> {
                     buffer.put(stringBuffer.array());
                 } else if (value instanceof BigInteger bigIntValue && member.getType() instanceof FixedPointDatatype fixedPointDatatype) {
                     // Convert BigInteger to bytes and write to buffer
-                    new HdfFixedPoint(bigIntValue, fixedPointDatatype.getSize(), fixedPointDatatype.isSigned(), fixedPointDatatype.isBigEndian())
+                    new HdfFixedPoint(bigIntValue.toByteArray(), fixedPointDatatype.getSize(), fixedPointDatatype.isBigEndian(), fixedPointDatatype.isLopad(), fixedPointDatatype.isHipad(), fixedPointDatatype.isSigned(), fixedPointDatatype.getBitOffset(), fixedPointDatatype.getBitPrecision())
                             .writeValueToByteBuffer(buffer);
                 }
                 // Add more type handling as needed

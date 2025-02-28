@@ -196,7 +196,7 @@ public class DataLayoutMessage extends HdfMessage {
                     "version=" + version +
                     ", rank=" + rank +
                     ", chunkSizes=" + Arrays.toString(chunkSizes) +
-                    ", address=" + (address != null ? address.getBigIntegerValue() : "null") +
+                    ", address=" + (address != null ? address.toBigInteger() : "null") +
                     '}';
         }
 
@@ -225,8 +225,8 @@ public class DataLayoutMessage extends HdfMessage {
         public String toString() {
             return "ContiguousStorage{" +
                     "version=" + version +
-                    ", address=" + (address != null ? address.getBigIntegerValue() : "null") +
-                    ", size=" + (size != null ? size.getBigIntegerValue() : "null") +
+                    ", address=" + (address != null ? address.toBigInteger() : "null") +
+                    ", size=" + (size != null ? size.toBigInteger() : "null") +
                     '}';
         }
 

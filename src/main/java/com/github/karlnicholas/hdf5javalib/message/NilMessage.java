@@ -15,7 +15,7 @@ public class NilMessage extends HdfMessage {
 
     @Override
     public String toString() {
-        return "NilMessage{}";
+        return "NilMessage{" + super.getSizeMessageData() + "}";
     }
 
     @Override

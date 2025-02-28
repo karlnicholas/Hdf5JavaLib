@@ -66,8 +66,8 @@ public class HdfParseUtils {
     // TODO: fix recursion
     public static void parseContinuationMessage(FileChannel fileChannel, ObjectHeaderContinuationMessage objectHeaderContinuationMessage, short offsetSize, short lengthSize, List<HdfMessage> headerMessages) throws IOException {
 
-        long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().getBigIntegerValue().longValue();
-        short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getBigIntegerValue().shortValueExact();
+        long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().toBigInteger().longValue();
+        short continuationSize = objectHeaderContinuationMessage.getContinuationSize().toBigInteger().shortValueExact();
 
         // Move to the continuation block offset
         fileChannel.position(continuationOffset);

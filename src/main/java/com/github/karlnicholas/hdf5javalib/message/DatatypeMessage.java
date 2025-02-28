@@ -1,16 +1,16 @@
 package com.github.karlnicholas.hdf5javalib.message;
 
-import com.github.karlnicholas.hdf5javalib.datatype.*;
+import com.github.karlnicholas.hdf5javalib.message.datatype.CompoundDatatype;
+import com.github.karlnicholas.hdf5javalib.message.datatype.HdfDatatype;
 import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 import java.util.BitSet;
 
-import static com.github.karlnicholas.hdf5javalib.datatype.FixedPointDatatype.parseFixedPointType;
-import static com.github.karlnicholas.hdf5javalib.datatype.FloatingPointDatatype.parseFloatingPointType;
-import static com.github.karlnicholas.hdf5javalib.datatype.StringDatatype.parseStringType;
+import static com.github.karlnicholas.hdf5javalib.message.datatype.FixedPointDatatype.parseFixedPointType;
+import static com.github.karlnicholas.hdf5javalib.message.datatype.FloatingPointDatatype.parseFloatingPointType;
+import static com.github.karlnicholas.hdf5javalib.message.datatype.StringDatatype.parseStringType;
 
 @Getter
 public class DatatypeMessage extends HdfMessage {
