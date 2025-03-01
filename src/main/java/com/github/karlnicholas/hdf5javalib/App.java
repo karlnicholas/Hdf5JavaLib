@@ -19,6 +19,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Spliterator;
@@ -276,10 +277,15 @@ public class App {
         FixedPointDataSource<Scalar> dataSource = new FixedPointDataSource<>(reader.getDataObjectHeaderPrefix(), "data", 0, Scalar.class, fileChannel, reader.getDataAddress());
         dataSource.stream().forEach(System.out::println);
     }
-    public void tryTemperatureSpliterator(FileChannel fileChannel, HdfReader reader) {
+
+    public void tryTemperatureSpliterator(FileChannel fileChannel, HdfReader reader) throws IOException {
         FixedPointDataSource<TemperatureData> dataSource = new FixedPointDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class, fileChannel, reader.getDataAddress());
-        System.out.println("count = " + dataSource.stream().map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
+        System.out.println("count = " + dataSource.parallelStream().map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
+//        FixedPointRawDataSource rawSource = new FixedPointRawDataSource(reader.getDataObjectHeaderPrefix(), "temperature", 0, fileChannel, reader.getDataAddress());
+//        HdfFixedPoint[] rawData = rawSource.readAllRaw();
+//        System.out.println("Raw count = " + Arrays.stream(rawData).map(HdfFixedPoint::toBigInteger).collect(Collectors.summarizingInt(BigInteger::intValue)));
     }
+
     private void tryWeatherSpliterator(FileChannel fileChannel, HdfReader reader) {
         FixedPointDataSource<WeatherData> dataSource = new FixedPointDataSource<>(reader.getDataObjectHeaderPrefix(), "data", 2, WeatherData.class, fileChannel, reader.getDataAddress());
         dataSource.stream().forEach(System.out::println);
