@@ -280,7 +280,7 @@ public class App {
 
     public void tryTemperatureSpliterator(FileChannel fileChannel, HdfReader reader) throws IOException {
         FixedPointDataSource<TemperatureData> dataSource = new FixedPointDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class, fileChannel, reader.getDataAddress());
-        System.out.println("count = " + dataSource.parallelStream().map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
+        System.out.println("count = " + dataSource.stream().map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
 //        FixedPointRawDataSource rawSource = new FixedPointRawDataSource(reader.getDataObjectHeaderPrefix(), "temperature", 0, fileChannel, reader.getDataAddress());
 //        HdfFixedPoint[] rawData = rawSource.readAllRaw();
 //        System.out.println("Raw count = " + Arrays.stream(rawData).map(HdfFixedPoint::toBigInteger).collect(Collectors.summarizingInt(BigInteger::intValue)));
