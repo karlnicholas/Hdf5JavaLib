@@ -228,11 +228,36 @@ public class HdfFixedPoint implements HdfData {
         return value;
     }
 
-    public BigDecimal toBigDecimal() {
-        BigInteger intValue = toBigInteger();
-        return new BigDecimal(intValue, bitOffset);
-    }
+    public BigDecimal toBigDecimal(int scale) {
+        // Create raw BigInteger from bytes, respecting signed and littleEndian
+        byte[] workingBytes = new byte[size];
+        System.arraycopy(bytes, 0, workingBytes, 0, size);
 
+        if (littleEndian) {
+            for (int i = 0; i < size / 2; i++) {
+                byte temp = workingBytes[i];
+                workingBytes[i] = workingBytes[size - 1 - i];
+                workingBytes[size - 1 - i] = temp;
+            }
+        }
+
+        BigInteger rawValue;
+        if (!signed && workingBytes.length > 0 && (workingBytes[0] & 0x80) != 0) {
+            byte[] unsignedBytes = new byte[workingBytes.length + 1];
+            System.arraycopy(workingBytes, 0, unsignedBytes, 1, workingBytes.length);
+            unsignedBytes[0] = 0;
+            rawValue = new BigInteger(unsignedBytes);
+        } else {
+            rawValue = new BigInteger(workingBytes);
+        }
+
+        // Scale by 2^bitOffset to reflect HDF5 fixed-point fractional part
+        return new BigDecimal(rawValue).divide(new BigDecimal(BigInteger.ONE.shiftLeft(bitOffset)), scale, BigDecimal.ROUND_HALF_UP);
+    }
+//    public BigDecimal toBigDecimal() {
+//        BigInteger intValue = toBigInteger();
+//        return new BigDecimal(intValue).divide(new BigDecimal(1 << bitOffset), 10, BigDecimal.ROUND_HALF_UP);
+//    }
     // Reverse bytes in place
     private static void reverseBytesInPlace(byte[] input) {
         int i = 0, j = input.length - 1;
@@ -247,7 +272,7 @@ public class HdfFixedPoint implements HdfData {
 
     @Override
     public String toString() {
-        return toBigDecimal().toString();
+        return toBigInteger().toString();
     }
 
     @Override

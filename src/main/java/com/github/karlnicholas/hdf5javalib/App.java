@@ -285,7 +285,7 @@ public class App {
     }
 
     private void tryWeatherSpliterator(FileChannel fileChannel, HdfReader reader) {
-        FixedPointMatrixSource<WeatherData> dataSource = new FixedPointMatrixSource<>(reader.getDataObjectHeaderPrefix(), "data", WeatherData.class);
+        FixedPointMatrixSource<WeatherData> dataSource = new FixedPointMatrixSource<>(reader.getDataObjectHeaderPrefix(), "data", 2, WeatherData.class);
 
         Spliterator<WeatherData> spliterator = new HdfFixedPointMatrixSpliterator<>(fileChannel, reader.getDataAddress(), dataSource);
 

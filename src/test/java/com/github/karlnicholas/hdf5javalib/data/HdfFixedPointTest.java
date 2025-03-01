@@ -27,52 +27,59 @@ public class HdfFixedPointTest {
     }
 
     @Test
+    public void testSpecific() {
+        byte[] bytes = {0x00, (byte) 0x34, 0x7F, (byte) 0x9A};
+        HdfFixedPoint myValue = createFixedPoint(bytes, 4, false, true, (short) 7, (short) 25, false, false);
+        Assertions.assertEquals(new BigDecimal("20250216.00"), myValue.toBigDecimal(2).setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    @Test
     public void testZero() {
         HdfFixedPoint fp = fromByteBuffer(0, 4, true, false);
         Assertions.assertEquals(BigInteger.ZERO, fp.toBigInteger());
-        Assertions.assertEquals(BigDecimal.ZERO, fp.toBigDecimal());
+        Assertions.assertEquals(BigDecimal.ZERO.setScale(10), fp.toBigDecimal(10));
     }
 
     @Test
     public void testMaxSigned32BitBigEndian() {
         HdfFixedPoint fp = fromByteBuffer(0x7FFFFFFF, 4, true, false);
         Assertions.assertEquals(new BigInteger("2147483647"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("2147483647"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("2147483647.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
     public void testMinSigned32BitBigEndian() {
         HdfFixedPoint fp = fromByteBuffer(0x80000000, 4, true, false);
         Assertions.assertEquals(new BigInteger("-2147483648"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("-2147483648"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("-2147483648.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
     public void testMaxUnsigned32BitBigEndian() {
         HdfFixedPoint fp = fromByteBuffer(-1, 4, false, false);
         Assertions.assertEquals(new BigInteger("4294967295"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("4294967295"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("4294967295.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
     public void testMaxSigned32BitLittleEndian() {
         HdfFixedPoint fp = fromByteBuffer(0x7FFFFFFF, 4, true, true);
         Assertions.assertEquals(new BigInteger("2147483647"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("2147483647"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("2147483647.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
     public void testMinSigned32BitLittleEndian() {
         HdfFixedPoint fp = fromByteBuffer(0x80000000, 4, true, true);
         Assertions.assertEquals(new BigInteger("-2147483648"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("-2147483648"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("-2147483648.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
     public void testMaxUnsigned32BitLittleEndian() {
         HdfFixedPoint fp = fromByteBuffer(-1, 4, false, true);
         Assertions.assertEquals(new BigInteger("4294967295"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("4294967295"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("4294967295.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
@@ -80,7 +87,7 @@ public class HdfFixedPointTest {
         byte[] bytes = {(byte) 0x12, (byte) 0x34, (byte) 0x56, (byte) 0x78};
         HdfFixedPoint fp = createFixedPoint(bytes, 4, true, false, (short) 0, (short) 8, false, false);
         Assertions.assertEquals(new BigInteger("18"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("18"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("18.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
@@ -88,7 +95,7 @@ public class HdfFixedPointTest {
         byte[] bytes = {(byte) 0xFF, (byte) 0x34, (byte) 0x56, (byte) 0x78};
         HdfFixedPoint fp = createFixedPoint(bytes, 4, false, false, (short) 0, (short) 8, false, false);
         Assertions.assertEquals(new BigInteger("255"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("255"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("255.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
@@ -96,7 +103,7 @@ public class HdfFixedPointTest {
         HdfFixedPoint fpTemp = fromByteBuffer(0x12345678, 4, true, false);
         HdfFixedPoint fp = createFixedPoint(fpTemp.getBytes(), 4, true, false, (short) 8, (short) 0, false, false);
         Assertions.assertEquals(new BigInteger("305419896"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("1193046"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("1193046.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
@@ -104,15 +111,15 @@ public class HdfFixedPointTest {
         HdfFixedPoint fpTemp = fromByteBuffer(-1, 4, false, false);
         HdfFixedPoint fp = createFixedPoint(fpTemp.getBytes(), 4, false, false, (short) 8, (short) 0, false, false);
         Assertions.assertEquals(new BigInteger("4294967295"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("16777215.99609375"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("16777215.9960937500"), fp.toBigDecimal(10));
     }
 
     @Test
     public void testHiPadSigned() {
         byte[] bytes = {(byte) 0x12, (byte) 0x34};
         HdfFixedPoint fp = createFixedPoint(bytes, 2, true, false, (short) 0, (short) 8, true, false);
-        Assertions.assertEquals(new BigInteger("-238"), fp.toBigInteger()); // 0xFF12 signed
-        Assertions.assertEquals(new BigDecimal("-238"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigInteger("-238"), fp.toBigInteger());
+        Assertions.assertEquals(new BigDecimal("-238.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
@@ -120,7 +127,7 @@ public class HdfFixedPointTest {
         byte[] bytes = {(byte) 0x12, (byte) 0x34};
         HdfFixedPoint fp = createFixedPoint(bytes, 2, true, false, (short) 0, (short) 8, false, true);
         Assertions.assertEquals(new BigInteger("-409"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("-409"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("-409.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
@@ -128,37 +135,37 @@ public class HdfFixedPointTest {
         byte[] bytes = {(byte) 0x12, (byte) 0x34};
         HdfFixedPoint fp = createFixedPoint(bytes, 2, false, false, (short) 0, (short) 8, true, true);
         Assertions.assertEquals(new BigInteger("65535"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("65535"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("65535.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
-    public void testAllFFUnsigned() { // Replaced testUndefinedUnsigned
+    public void testAllFFUnsigned() {
         byte[] bytes = {(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF};
         HdfFixedPoint fp = createFixedPoint(bytes, 4, false, false, (short) 0, (short) 0, false, false);
         Assertions.assertEquals(new BigInteger("4294967295"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("4294967295"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("4294967295.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
-    public void testAllFFSigned() { // Replaced testUndefinedSigned
+    public void testAllFFSigned() {
         byte[] bytes = {(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF};
         HdfFixedPoint fp = createFixedPoint(bytes, 4, true, false, (short) 0, (short) 0, false, false);
         Assertions.assertEquals(new BigInteger("-1"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("-1"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("-1.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
     public void testSmallSizeSigned() {
         HdfFixedPoint fp = fromByteBuffer(0xFF, 1, true, false);
         Assertions.assertEquals(new BigInteger("-1"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("-1"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("-1.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test
     public void testSmallSizeUnsigned() {
         HdfFixedPoint fp = fromByteBuffer(0xFF, 1, false, false);
         Assertions.assertEquals(new BigInteger("255"), fp.toBigInteger());
-        Assertions.assertEquals(new BigDecimal("255"), fp.toBigDecimal());
+        Assertions.assertEquals(new BigDecimal("255.0000000000"), fp.toBigDecimal(10));
     }
 
     @Test

@@ -109,7 +109,7 @@ public class DataLayoutMessage extends HdfMessage {
                 for (int i = 0; i < numDimensions; i++) {
                     dimensionSizes[i] = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short)0, (short)(offsetSize*8)); // Dimension sizes
                 }
-                datasetElementSize = HdfFixedPoint.readFromByteBuffer(buffer, (short)4, emptyBitSet, (short)0, (short)(lengthSize*8)); // Dataset element size (4 bytes)
+                datasetElementSize = HdfFixedPoint.readFromByteBuffer(buffer, (short)4, emptyBitSet, (short)0, (short)(4*8)); // Dataset element size (4 bytes)
                 break;
 
             default:

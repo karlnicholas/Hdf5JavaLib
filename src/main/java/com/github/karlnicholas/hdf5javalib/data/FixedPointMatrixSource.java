@@ -18,8 +18,9 @@ public class FixedPointMatrixSource<T> {
     private final int readsAvailable;
     private final int dimension;
     private final FixedPointDatatype fixedPointDatatype;
+    private final int scale;
 
-    public FixedPointMatrixSource(HdfObjectHeaderPrefixV1 headerPrefixV1, String name, Class<T> clazz) {
+    public FixedPointMatrixSource(HdfObjectHeaderPrefixV1 headerPrefixV1, String name, int scale, Class<T> clazz) {
         this.clazz = clazz;
         this.headerPrefixV1 = headerPrefixV1;
         recordSize = headerPrefixV1.findMessageByType(DatatypeMessage.class).orElseThrow().getHdfDatatype().getSize();
@@ -27,6 +28,7 @@ public class FixedPointMatrixSource<T> {
         readsAvailable = dimensions[0].toBigInteger().intValue();
         dimension = dimensions[1].toBigInteger().intValue();
         fixedPointDatatype = (FixedPointDatatype) headerPrefixV1.findMessageByType(DatatypeMessage.class).orElseThrow().getHdfDatatype();
+        this.scale = scale;
         // Parse fields and map them to CompoundDatatype members
         Field fieldToSet = null;
         for (Field field : clazz.getDeclaredFields()) {
@@ -46,12 +48,21 @@ public class FixedPointMatrixSource<T> {
         try {
             // Create an instance of T
             T instance = clazz.getDeclaredConstructor().newInstance();
-            BigDecimal[] data = new BigDecimal[dimension];
-            for(int i = 0; i < dimension; i++) {
-                HdfFixedPoint fp = fixedPointDatatype.getInstance(buffer);
-                data[i] = fp.toBigDecimal();
+            if ( scale > 0 ) {
+                BigDecimal[] data = new BigDecimal[dimension];
+                for(int i = 0; i < dimension; i++) {
+                    HdfFixedPoint fp = fixedPointDatatype.getInstance(buffer);
+                    data[i] = fp.toBigDecimal(scale);
+                }
+                field.set(instance, data);
+            } else {
+                BigInteger[] data = new BigInteger[dimension];
+                for(int i = 0; i < dimension; i++) {
+                    HdfFixedPoint fp = fixedPointDatatype.getInstance(buffer);
+                    data[i] = fp.toBigInteger();
+                }
+                field.set(instance, data);
             }
-            field.set(instance, data);
             return instance;
         } catch (Exception e) {
             throw new RuntimeException("Error creating and populating instance of " + clazz.getName(), e);
