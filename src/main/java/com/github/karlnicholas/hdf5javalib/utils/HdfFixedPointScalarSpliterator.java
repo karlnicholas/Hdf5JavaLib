@@ -1,7 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.utils;
 
 import com.github.karlnicholas.hdf5javalib.data.FixedPointMatrixSource;
-import com.github.karlnicholas.hdf5javalib.data.FixedPointVectorSource;
+import com.github.karlnicholas.hdf5javalib.data.FixedPointScalarSource;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -9,19 +9,19 @@ import java.nio.channels.FileChannel;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
-public class HdfFixedPointVectorSpliterator<T> implements Spliterator<T> {
+public class HdfFixedPointScalarSpliterator<T> implements Spliterator<T> {
     private final FileChannel fileChannel;
     private final long sizeForReadBuffer;
     private final long endOffset;
     private long currentOffset;
-    private final FixedPointVectorSource<T> fixedPointVectorSource;
+    private final FixedPointScalarSource<T> fixedPointScalarSource;
 
-    public HdfFixedPointVectorSpliterator(FileChannel fileChannel, long startOffset, FixedPointVectorSource<T> fixedPointVectorSource) {
+    public HdfFixedPointScalarSpliterator(FileChannel fileChannel, long startOffset, FixedPointScalarSource<T> fixedPointScalarSource) {
         this.fileChannel = fileChannel;
-        this.sizeForReadBuffer = fixedPointVectorSource.getSizeForReadBuffer();
+        this.sizeForReadBuffer = fixedPointScalarSource.getSizeForReadBuffer();
         this.currentOffset = startOffset;
-        this.endOffset = startOffset + sizeForReadBuffer * fixedPointVectorSource.getNumberOfReadsAvailable();
-        this.fixedPointVectorSource = fixedPointVectorSource;
+        this.endOffset = startOffset + sizeForReadBuffer * fixedPointScalarSource.getNumberOfReadsAvailable();
+        this.fixedPointScalarSource = fixedPointScalarSource;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class HdfFixedPointVectorSpliterator<T> implements Spliterator<T> {
             buffer.flip();
 
             // Use the prototype to populate a new instance
-            T dataSource = fixedPointVectorSource.populateFromBuffer(buffer);
+            T dataSource = fixedPointScalarSource.populateFromBuffer(buffer);
 
             action.accept(dataSource);
 
@@ -61,8 +61,8 @@ public class HdfFixedPointVectorSpliterator<T> implements Spliterator<T> {
 //        }
 //
 //        long midpoint = currentOffset + (remainingRecords / 2) * sizeForReadBuffer;
-//        Spliterator<T> newSpliterator = new HdfFixedPointVectorSpliterator<>(
-//                fileChannel, currentOffset, sizeForReadBuffer, (midpoint - currentOffset) / sizeForReadBuffer, fixedPointVectorSource
+//        Spliterator<T> newSpliterator = new HdfFixedPointMatrixSpliterator<>(
+//                fileChannel, currentOffset, sizeForReadBuffer, (midpoint - currentOffset) / sizeForReadBuffer, fixedPointMatrixSource
 //        );
 //        currentOffset = midpoint;
 //        return newSpliterator;
@@ -75,10 +75,10 @@ public class HdfFixedPointVectorSpliterator<T> implements Spliterator<T> {
     }
 
     @Override
-//    public int characteristics() {
-//        return NONNULL | ORDERED | IMMUTABLE | SIZED | SUBSIZED;
-//    }
     public int characteristics() {
         return NONNULL | ORDERED | IMMUTABLE | SIZED;
     }
+//    public int characteristics() {
+//        return NONNULL | ORDERED | IMMUTABLE | SIZED | SUBSIZED;
+//    }
 }

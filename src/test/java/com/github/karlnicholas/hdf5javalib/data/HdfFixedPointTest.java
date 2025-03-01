@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -30,7 +31,7 @@ public class HdfFixedPointTest {
     public void testSpecific() {
         byte[] bytes = {0x00, (byte) 0x34, 0x7F, (byte) 0x9A};
         HdfFixedPoint myValue = createFixedPoint(bytes, 4, false, true, (short) 7, (short) 25, false, false);
-        Assertions.assertEquals(new BigDecimal("20250216.00"), myValue.toBigDecimal(2).setScale(2, BigDecimal.ROUND_HALF_UP));
+        Assertions.assertEquals(new BigDecimal("20250216.00"), myValue.toBigDecimal(2).setScale(2, RoundingMode.HALF_UP));
     }
 
     @Test

@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
-public class FixedPointVectorSource<T> {
+public class FixedPointScalarSource<T> {
     private final Class<T> clazz;
     private final HdfObjectHeaderPrefixV1 headerPrefixV1;
     private final Field field;
@@ -19,7 +19,7 @@ public class FixedPointVectorSource<T> {
     private final FixedPointDatatype fixedPointDatatype;
     private final int scale;
 
-    public FixedPointVectorSource(HdfObjectHeaderPrefixV1 headerPrefixV1, String name, int scale, Class<T> clazz) {
+    public FixedPointScalarSource(HdfObjectHeaderPrefixV1 headerPrefixV1, String name, int scale, Class<T> clazz) {
         this.clazz = clazz;
         this.headerPrefixV1 = headerPrefixV1;
         recordSize = headerPrefixV1.findMessageByType(DatatypeMessage.class).orElseThrow().getHdfDatatype().getSize();

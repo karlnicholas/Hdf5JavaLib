@@ -5,6 +5,7 @@ import lombok.Getter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -252,7 +253,7 @@ public class HdfFixedPoint implements HdfData {
         }
 
         // Scale by 2^bitOffset to reflect HDF5 fixed-point fractional part
-        return new BigDecimal(rawValue).divide(new BigDecimal(BigInteger.ONE.shiftLeft(bitOffset)), scale, BigDecimal.ROUND_HALF_UP);
+        return new BigDecimal(rawValue).divide(new BigDecimal(BigInteger.ONE.shiftLeft(bitOffset)), scale, RoundingMode.HALF_UP);
     }
 //    public BigDecimal toBigDecimal() {
 //        BigInteger intValue = toBigInteger();
