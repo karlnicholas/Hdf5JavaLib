@@ -5,7 +5,6 @@ import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
-import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.SymbolTableMessage;
 import lombok.Getter;

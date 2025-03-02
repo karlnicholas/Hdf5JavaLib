@@ -4,7 +4,6 @@ import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfGroup;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
-import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
 import org.hdf5javalib.file.infrastructure.*;
 import org.hdf5javalib.file.metadata.HdfSuperblock;
 import org.hdf5javalib.file.dataobject.message.DataLayoutMessage;

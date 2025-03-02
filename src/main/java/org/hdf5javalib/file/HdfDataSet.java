@@ -3,7 +3,7 @@ package org.hdf5javalib.file;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
-import com.github.karlnicholas.hdf5javalib.file.dataobject.message.*;
+import org.hdf5javalib.file.dataobject.message.*;
 import org.hdf5javalib.file.dataobject.message.*;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;

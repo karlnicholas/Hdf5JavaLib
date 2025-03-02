@@ -6,7 +6,6 @@ import org.hdf5javalib.datasource.CompoundDataSource;
 import org.hdf5javalib.datasource.FixedPointTypedDataSource;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.HdfFileReader;
-import com.github.karlnicholas.hdf5javalib.dataclass.*;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
