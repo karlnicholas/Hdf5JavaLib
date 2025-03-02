@@ -17,7 +17,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 
 @Getter
-public class HdfReader {
+public class HdfFileReader {
     // level 0
     private HdfSuperblock superblock;
     // level 1

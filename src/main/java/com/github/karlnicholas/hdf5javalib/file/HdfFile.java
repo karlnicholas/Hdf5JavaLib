@@ -1,8 +1,6 @@
-package com.github.karlnicholas.hdf5javalib;
+package com.github.karlnicholas.hdf5javalib.file;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.file.HdfDataSet;
-import com.github.karlnicholas.hdf5javalib.file.HdfGroup;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import com.github.karlnicholas.hdf5javalib.file.metadata.HdfSuperblock;
