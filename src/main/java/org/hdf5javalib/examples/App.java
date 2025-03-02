@@ -49,7 +49,7 @@ public class App {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
 //                tryScalarDataSpliterator(channel, reader);
-                tryTemperatureSpliterator(channel, reader);
+//                tryTemperatureSpliterator(channel, reader);
 //                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
 //                tryVolumeSpliterator(channel, reader);
 //                tryWeatherSpliterator(channel, reader);
@@ -59,7 +59,7 @@ public class App {
             e.printStackTrace();
         }
 //        tryHdfApiCompound();
-//        tryHdfApiInts();
+        tryHdfApiInts();
     }
 
     public void tryHdfApiInts() {

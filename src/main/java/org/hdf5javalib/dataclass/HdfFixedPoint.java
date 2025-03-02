@@ -23,6 +23,9 @@ public class HdfFixedPoint implements HdfData {
     private final int bitOffset;     // Bits to the right of value (0-7)
     private final int bitPrecision;  // Number of significant bits
 
+    // this is actually for writing since -1 unsigned is not the same as all 0xFF bytes
+    private final boolean undefined;
+
     public HdfFixedPoint(byte[] bytes, int size,
                          boolean littleEndian, boolean lopad, boolean hipad, boolean signed,
                          short bitOffset, short bitPrecision) {
@@ -34,6 +37,7 @@ public class HdfFixedPoint implements HdfData {
         this.bitPrecision = bitPrecision;
         this.hipad = hipad;
         this.lopad = lopad;
+        this.undefined = isUndefined();
     }
 
     public byte[] getBytes() {
