@@ -1,6 +1,4 @@
-package com.github.karlnicholas.hdf5javalib.utils;
-
-import com.github.karlnicholas.hdf5javalib.datasource.CompoundDataSource;
+package com.github.karlnicholas.hdf5javalib.datasource;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -8,14 +6,14 @@ import java.nio.channels.FileChannel;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
-public class HdfCompoundDatatypeSpliterator<T> implements Spliterator<T> {
+public class CompoundDatatypeSpliterator<T> implements Spliterator<T> {
     private final FileChannel fileChannel;
     private final long recordSize;
     private final long endOffset;
     private long currentOffset;
     private final CompoundDataSource<T> compoundDataSource;
 
-    public HdfCompoundDatatypeSpliterator(FileChannel fileChannel, long startOffset, long recordSize, long numberOfRecords, CompoundDataSource<T> compoundDataSource) {
+    public CompoundDatatypeSpliterator(FileChannel fileChannel, long startOffset, long recordSize, long numberOfRecords, CompoundDataSource<T> compoundDataSource) {
         this.fileChannel = fileChannel;
         this.recordSize = recordSize;
         this.currentOffset = startOffset;
@@ -60,7 +58,7 @@ public class HdfCompoundDatatypeSpliterator<T> implements Spliterator<T> {
         }
 
         long midpoint = currentOffset + (remainingRecords / 2) * recordSize;
-        Spliterator<T> newSpliterator = new HdfCompoundDatatypeSpliterator<>(
+        Spliterator<T> newSpliterator = new CompoundDatatypeSpliterator<>(
                 fileChannel, currentOffset, recordSize, (midpoint - currentOffset) / recordSize, compoundDataSource
         );
         currentOffset = midpoint;

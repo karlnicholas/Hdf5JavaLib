@@ -12,7 +12,7 @@ import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.Comp
 import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.HdfCompoundDatatypeMember;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
-import com.github.karlnicholas.hdf5javalib.utils.HdfCompoundDatatypeSpliterator;
+import com.github.karlnicholas.hdf5javalib.datasource.CompoundDatatypeSpliterator;
 import lombok.Data;
 
 import java.io.FileInputStream;
@@ -295,7 +295,7 @@ public class App {
 
     public void tryVolumeSpliterator(FileChannel fileChannel, HdfFileReader reader) {
         CompoundDataSource<VolumeData> dataSource = new CompoundDataSource<>((CompoundDatatype) reader.getDataType(), VolumeData.class);
-        Spliterator<VolumeData> spliterator = new HdfCompoundDatatypeSpliterator<>(fileChannel, reader.getDataAddress(), reader.getDataType().getSize(), reader.getDimension(), dataSource);
+        Spliterator<VolumeData> spliterator = new CompoundDatatypeSpliterator<>(fileChannel, reader.getDataAddress(), reader.getDataType().getSize(), reader.getDimension(), dataSource);
         System.out.println("count = " + StreamSupport.stream(spliterator, false).map(VolumeData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
     }
 
