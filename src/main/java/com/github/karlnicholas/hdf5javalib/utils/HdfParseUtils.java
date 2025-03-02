@@ -32,7 +32,7 @@ public class HdfParseUtils {
 
         while (buffer.hasRemaining()) {
             // Header Message Type (2 bytes, little-endian)
-            MessageType type = MessageType.fromValue(buffer.getShort());
+            HdfMessage.MessageType type = HdfMessage.MessageType.fromValue(buffer.getShort());
             int size = Short.toUnsignedInt(buffer.getShort());
             byte flags = buffer.get();
             buffer.position(buffer.position() + 3); // Skip 3 reserved bytes
@@ -47,7 +47,7 @@ public class HdfParseUtils {
         }
     }
 
-    public static HdfMessage createMessageInstance(MessageType type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData) {
+    public static HdfMessage createMessageInstance(HdfMessage.MessageType type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData) {
         return switch (type) {
             case NilMessage -> NilMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case DataspaceMessage -> DataspaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
