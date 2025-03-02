@@ -1,0 +1,48 @@
+package org.hdf5javalib.file.dataobject.message;
+
+import org.hdf5javalib.dataclass.HdfFixedPoint;
+import lombok.Getter;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.BitSet;
+
+import static org.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
+
+@Getter
+public class SymbolTableMessage extends HdfMessage {
+    private final HdfFixedPoint bTreeAddress;
+    private final HdfFixedPoint localHeapAddress;
+
+    // Constructor to create SymbolTableMessage directly with values
+    public SymbolTableMessage(HdfFixedPoint bTreeAddress, HdfFixedPoint localHeapAddress) {
+        super(MessageType.SymbolTableMessage, ()-> (short) (bTreeAddress.getSizeMessageData() + localHeapAddress.getSizeMessageData()), (byte)0);
+        this.bTreeAddress = bTreeAddress;
+        this.localHeapAddress = localHeapAddress;
+    }
+
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
+        ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+        HdfFixedPoint bTreeAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
+        HdfFixedPoint localHeapAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
+        return new SymbolTableMessage(bTreeAddress, localHeapAddress);
+    }
+
+    @Override
+    public void writeToByteBuffer(ByteBuffer buffer) {
+        writeMessageData(buffer);
+        // Write B-tree address (sizeOfOffsets bytes, little-endian)
+        writeFixedPointToBuffer(buffer, bTreeAddress);
+
+        // Write Local Heap address (sizeOfOffsets bytes, little-endian)
+        writeFixedPointToBuffer(buffer, localHeapAddress);
+    }
+
+    @Override
+    public String toString() {
+        return "SymbolTableMessage{" +
+                "bTreeAddress=" + bTreeAddress.toBigInteger() +
+                ", localHeapAddress=" + localHeapAddress.toBigInteger() +
+                '}';
+    }
+}
