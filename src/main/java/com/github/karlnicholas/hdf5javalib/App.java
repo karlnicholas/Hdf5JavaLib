@@ -88,7 +88,7 @@ public class App {
             writeVersionAttribute(dataset);
 
             AtomicInteger countHolder = new AtomicInteger(0);
-            FixedPointDataSource<TemperatureData> temperatureDataHdfDataSource = new FixedPointDataSource<>(dataset.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class);
+            FixedPointTypedDataSource<TemperatureData> temperatureDataHdfDataSource = new FixedPointTypedDataSource<>(dataset.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class);
             ByteBuffer temperatureBuffer = ByteBuffer.allocate(fixedPointDatatype.getSize());
             // Write to dataset
             dataset.write(() -> {
@@ -274,20 +274,20 @@ public class App {
     }
 
     private void tryScalarDataSpliterator(FileChannel fileChannel, HdfReader reader) {
-        FixedPointDataSource<Scalar> dataSource = new FixedPointDataSource<>(reader.getDataObjectHeaderPrefix(), "data", 0, Scalar.class, fileChannel, reader.getDataAddress());
+        FixedPointTypedDataSource<Scalar> dataSource = new FixedPointTypedDataSource<>(reader.getDataObjectHeaderPrefix(), "data", 0, Scalar.class, fileChannel, reader.getDataAddress());
         dataSource.stream().forEach(System.out::println);
     }
 
     public void tryTemperatureSpliterator(FileChannel fileChannel, HdfReader reader) throws IOException {
-        FixedPointDataSource<TemperatureData> dataSource = new FixedPointDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class, fileChannel, reader.getDataAddress());
+        FixedPointTypedDataSource<TemperatureData> dataSource = new FixedPointTypedDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class, fileChannel, reader.getDataAddress());
         System.out.println("count = " + dataSource.stream().map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
-//        FixedPointRawDataSource rawSource = new FixedPointRawDataSource(reader.getDataObjectHeaderPrefix(), "temperature", 0, fileChannel, reader.getDataAddress());
-//        HdfFixedPoint[] rawData = rawSource.readAllRaw();
+//        FixedPointDataSource rawSource = new FixedPointDataSource(reader.getDataObjectHeaderPrefix(), "temperature", 0, fileChannel, reader.getDataAddress());
+//        HdfFixedPoint[] rawData = rawSource.readAll();
 //        System.out.println("Raw count = " + Arrays.stream(rawData).map(HdfFixedPoint::toBigInteger).collect(Collectors.summarizingInt(BigInteger::intValue)));
     }
 
     private void tryWeatherSpliterator(FileChannel fileChannel, HdfReader reader) {
-        FixedPointDataSource<WeatherData> dataSource = new FixedPointDataSource<>(reader.getDataObjectHeaderPrefix(), "data", 2, WeatherData.class, fileChannel, reader.getDataAddress());
+        FixedPointTypedDataSource<WeatherData> dataSource = new FixedPointTypedDataSource<>(reader.getDataObjectHeaderPrefix(), "data", 2, WeatherData.class, fileChannel, reader.getDataAddress());
         dataSource.stream().forEach(System.out::println);
     }
 

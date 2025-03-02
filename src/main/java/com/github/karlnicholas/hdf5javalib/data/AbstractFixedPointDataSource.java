@@ -34,14 +34,13 @@ public abstract class AbstractFixedPointDataSource<T> {
      * Constructs the base data source with HDF5 metadata and optional FileChannel for streaming.
      *
      * @param headerPrefixV1 the HDF5 object header prefix containing datatype and dataspace metadata
-     * @param name the name of the dataset field (used by subclasses for mapping)
      * @param scale the scale for BigDecimal values (number of decimal places); use 0 for BigInteger
      * @param fileChannel the FileChannel to read the HDF5 file data from, or null if not streaming
      * @param startOffset the byte offset in the file where the dataset begins
      * @throws IllegalStateException if required metadata (DatatypeMessage or DataspaceMessage) is missing
      * @throws IllegalArgumentException if dataset dimensionality is unsupported
      */
-    public AbstractFixedPointDataSource(HdfObjectHeaderPrefixV1 headerPrefixV1, String name, int scale, FileChannel fileChannel, long startOffset) {
+    public AbstractFixedPointDataSource(HdfObjectHeaderPrefixV1 headerPrefixV1, int scale, FileChannel fileChannel, long startOffset) {
         this.fileChannel = fileChannel;
         this.startOffset = startOffset;
         this.scale = scale;
