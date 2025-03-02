@@ -1,6 +1,7 @@
-package com.github.karlnicholas.hdf5javalib.file;
+package com.github.karlnicholas.hdf5javalib;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
+import com.github.karlnicholas.hdf5javalib.file.HdfGroup;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
@@ -64,8 +65,8 @@ public class HdfReader {
         if ( bTree.getEntriesUsed() != 1) {
             throw new UnsupportedEncodingException("Only one btree entry is currently supported");
         }
-        BTreeEntry bTreeEntry = bTree.getEntries().get(0);
-        long snodAddress = bTreeEntry.getChildPointer().toBigInteger().longValue();
+        HdfBTreeEntry hdfBTreeEntry = bTree.getEntries().get(0);
+        long snodAddress = hdfBTreeEntry.getChildPointer().toBigInteger().longValue();
         fileChannel.position(snodAddress);
         HdfGroupSymbolTableNode symbolTableNode = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
         int entriesToRead = symbolTableNode.getNumberOfSymbols();

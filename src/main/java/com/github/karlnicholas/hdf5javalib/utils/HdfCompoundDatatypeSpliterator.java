@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.utils;
 
-import com.github.karlnicholas.hdf5javalib.data.CompoundDataSource;
+import com.github.karlnicholas.hdf5javalib.CompoundDataSource;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

@@ -1,5 +1,6 @@
-package com.github.karlnicholas.hdf5javalib.data;
+package com.github.karlnicholas.hdf5javalib;
 
+import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import java.io.IOException;
 import java.nio.ByteBuffer;

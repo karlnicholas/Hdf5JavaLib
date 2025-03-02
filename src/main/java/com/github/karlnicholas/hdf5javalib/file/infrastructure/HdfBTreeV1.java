@@ -22,7 +22,7 @@ public class HdfBTreeV1 {
     private final HdfFixedPoint leftSiblingAddress;
     private final HdfFixedPoint rightSiblingAddress;
     private final HdfFixedPoint keyZero; // Key 0 (predefined)
-    private final List<BTreeEntry> entries;
+    private final List<HdfBTreeEntry> entries;
 
     public HdfBTreeV1(
             String signature,
@@ -32,7 +32,7 @@ public class HdfBTreeV1 {
             HdfFixedPoint leftSiblingAddress,
             HdfFixedPoint rightSiblingAddress,
             HdfFixedPoint keyZero,
-            List<BTreeEntry> entries
+            List<HdfBTreeEntry> entries
     ) {
         this.signature = signature;
         this.nodeType = nodeType;
@@ -72,8 +72,8 @@ public class HdfBTreeV1 {
         int linkNameOffset = localHeap.addToHeap(objectName, localHeapContents);
 //        HdfFixedPoint localHeapOffset = localHeap.getFreeListOffset();
 
-        // Insert `BTreeEntry` for the new group
-        BTreeEntry newEntry = new BTreeEntry(HdfFixedPoint.of(linkNameOffset), objectAddress);
+        // Insert `HdfBTreeEntry` for the new group
+        HdfBTreeEntry newEntry = new HdfBTreeEntry(HdfFixedPoint.of(linkNameOffset), objectAddress);
         entries.add(newEntry);
 
         // Increment entriesUsed (since we successfully added an entry)
@@ -126,12 +126,12 @@ public class HdfBTreeV1 {
         HdfFixedPoint keyZero = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
 
         // Read remaining entries (Child Pointer first, then Key)
-        List<BTreeEntry> entries = new ArrayList<>();
+        List<HdfBTreeEntry> entries = new ArrayList<>();
 
         for (int i = 0; i < entriesUsed; i++) {
             HdfFixedPoint childPointer = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8)); // Read childPointer first
             HdfFixedPoint key = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8)); // Read key after childPointer
-            entries.add(new BTreeEntry(key, childPointer));
+            entries.add(new HdfBTreeEntry(key, childPointer));
         }
 
         return new HdfBTreeV1(
@@ -169,7 +169,7 @@ public class HdfBTreeV1 {
         writeFixedPointToBuffer(buffer, keyZero);
 
         // Step 8: Write remaining entries (Keys and Child Pointers)
-        for (BTreeEntry entry : entries) {
+        for (HdfBTreeEntry entry : entries) {
             writeFixedPointToBuffer(buffer, entry.getChildPointer());  // Write child pointer
             writeFixedPointToBuffer(buffer, entry.getKey());  // Write key
         }

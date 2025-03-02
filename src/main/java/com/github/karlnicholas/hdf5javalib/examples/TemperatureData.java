@@ -1,16 +1,16 @@
-package com.github.karlnicholas.hdf5javalib;
+package com.github.karlnicholas.hdf5javalib.examples;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
+import java.math.BigInteger;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class WeatherData {
-    private BigDecimal[] data;
+public class TemperatureData {
+    private BigInteger temperature;
 }

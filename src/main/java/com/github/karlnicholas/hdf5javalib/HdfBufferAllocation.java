@@ -1,7 +1,6 @@
-package com.github.karlnicholas.hdf5javalib.file;
+package com.github.karlnicholas.hdf5javalib;
 
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 public class HdfBufferAllocation {

@@ -1,9 +1,11 @@
-package com.github.karlnicholas.hdf5javalib;
+package com.github.karlnicholas.hdf5javalib.examples;
 
+import com.github.karlnicholas.hdf5javalib.CompoundDataSource;
+import com.github.karlnicholas.hdf5javalib.FixedPointTypedDataSource;
+import com.github.karlnicholas.hdf5javalib.HdfFile;
+import com.github.karlnicholas.hdf5javalib.HdfReader;
 import com.github.karlnicholas.hdf5javalib.data.*;
 import com.github.karlnicholas.hdf5javalib.file.HdfDataSet;
-import com.github.karlnicholas.hdf5javalib.file.HdfFile;
-import com.github.karlnicholas.hdf5javalib.file.HdfReader;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
