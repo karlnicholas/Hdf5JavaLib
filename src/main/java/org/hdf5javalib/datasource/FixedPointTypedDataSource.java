@@ -135,11 +135,11 @@ public class FixedPointTypedDataSource<T> extends AbstractFixedPointDataSource<T
                 if (scale > 0) {
                     BigDecimal value = (BigDecimal) field.get(instance);
                     new HdfFixedPoint(
-                            value.unscaledValue().toByteArray(),
+                            HdfFixedPoint.toSizedByteArray(value.unscaledValue(),fixedPointDatatype.getSize(), fixedPointDatatype.isBigEndian()),
                             fixedPointDatatype.getSize(),
                             fixedPointDatatype.isBigEndian(),
-                            fixedPointDatatype.isLopad(),
-                            fixedPointDatatype.isHipad(),
+                            fixedPointDatatype.isLoPad(),
+                            fixedPointDatatype.isHiPad(),
                             fixedPointDatatype.isSigned(),
                             fixedPointDatatype.getBitOffset(),
                             fixedPointDatatype.getBitPrecision()
@@ -147,14 +147,10 @@ public class FixedPointTypedDataSource<T> extends AbstractFixedPointDataSource<T
                 } else {
                     BigInteger value = (BigInteger) field.get(instance);
                     new HdfFixedPoint(
-                            value.toByteArray(),
+                            value,
                             fixedPointDatatype.getSize(),
-                            fixedPointDatatype.isBigEndian(),
-                            fixedPointDatatype.isLopad(),
-                            fixedPointDatatype.isHipad(),
                             fixedPointDatatype.isSigned(),
-                            fixedPointDatatype.getBitOffset(),
-                            fixedPointDatatype.getBitPrecision()
+                            fixedPointDatatype.isBigEndian()
                     ).writeValueToByteBuffer(buffer);
                 }
             } else {
@@ -166,11 +162,11 @@ public class FixedPointTypedDataSource<T> extends AbstractFixedPointDataSource<T
                     }
                     for (BigDecimal v : value) {
                         new HdfFixedPoint(
-                                v.unscaledValue().toByteArray(),
+                                HdfFixedPoint.toSizedByteArray(v.unscaledValue(), fixedPointDatatype.getSize(), fixedPointDatatype.isBigEndian()),
                                 fixedPointDatatype.getSize(),
                                 fixedPointDatatype.isBigEndian(),
-                                fixedPointDatatype.isLopad(),
-                                fixedPointDatatype.isHipad(),
+                                fixedPointDatatype.isLoPad(),
+                                fixedPointDatatype.isHiPad(),
                                 fixedPointDatatype.isSigned(),
                                 fixedPointDatatype.getBitOffset(),
                                 fixedPointDatatype.getBitPrecision()
@@ -183,14 +179,10 @@ public class FixedPointTypedDataSource<T> extends AbstractFixedPointDataSource<T
                     }
                     for (BigInteger v : value) {
                         new HdfFixedPoint(
-                                v.toByteArray(),
+                                v,
                                 fixedPointDatatype.getSize(),
-                                fixedPointDatatype.isBigEndian(),
-                                fixedPointDatatype.isLopad(),
-                                fixedPointDatatype.isHipad(),
                                 fixedPointDatatype.isSigned(),
-                                fixedPointDatatype.getBitOffset(),
-                                fixedPointDatatype.getBitPrecision()
+                                fixedPointDatatype.isBigEndian()
                         ).writeValueToByteBuffer(writeBuffer);
                     }
                 }

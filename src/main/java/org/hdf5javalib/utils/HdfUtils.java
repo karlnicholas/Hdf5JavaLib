@@ -8,7 +8,7 @@ import java.util.Arrays;
 public class HdfUtils {
 
     /**
-     * Writes an `HdfFixedPoint` value to the `ByteBuffer` in **little-endian format**.
+     * Writes an `HdfFixedPoint` value to the `ByteBuffer' accounting for endian-ness.
      * If undefined, fills with 0xFF.
      */
     public static void writeFixedPointToBuffer(ByteBuffer buffer, HdfFixedPoint value) {
@@ -22,8 +22,14 @@ public class HdfUtils {
             int copySize = Math.min(valueBytes.length, size);
 
             // Store in **little-endian format** by reversing byte order
-            for (int i = 0; i < copySize; i++) {
-                bytesToWrite[i] = valueBytes[copySize - 1 - i];
+            if ( value.isBigEndian()) {
+                for (int i = 0; i < copySize; i++) {
+                    bytesToWrite[i] = valueBytes[i];
+                }
+            } else {
+                for (int i = 0; i < copySize; i++) {
+                    bytesToWrite[i] = valueBytes[copySize - 1 - i];
+                }
             }
         }
 

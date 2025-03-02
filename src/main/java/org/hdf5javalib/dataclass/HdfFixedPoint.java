@@ -1,6 +1,7 @@
 package org.hdf5javalib.dataclass;
 
 import lombok.Getter;
+import org.hdf5javalib.utils.HdfUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -16,41 +17,39 @@ import java.util.BitSet;
 public class HdfFixedPoint implements HdfData {
     private final byte[] bytes;
     private final int size;          // Size in bytes
-    private final boolean littleEndian; // Byte order (false = big-endian)
-    private final boolean lopad;     // Low padding (true = 1s, false = 0s)
-    private final boolean hipad;     // High padding (true = 1s, false = 0s)
+    private final boolean bigEndian; // Byte order (false = big-endian)
+    private final boolean loPad;     // Low padding (true = 1s, false = 0s)
+    private final boolean hiPad;     // High padding (true = 1s, false = 0s)
     private final boolean signed;    // 2's complement if true
     private final int bitOffset;     // Bits to the right of value (0-7)
     private final int bitPrecision;  // Number of significant bits
 
-    // this is actually for writing since -1 unsigned is not the same as all 0xFF bytes
-    private final boolean undefined;
-
     public HdfFixedPoint(byte[] bytes, int size,
-                         boolean littleEndian, boolean lopad, boolean hipad, boolean signed,
+                         boolean bigEndian, boolean loPad, boolean hiPad, boolean signed,
                          short bitOffset, short bitPrecision) {
+        if (bytes == null || bytes.length < size) {
+            throw new IllegalArgumentException("Byte array too small for specified size");
+        }
+        if (bitOffset < 0) {
+            throw new IllegalArgumentException("Invalid bitOffset");
+        }
         this.bytes = bytes.clone();
         this.size = size;
         this.signed = signed;
-        this.littleEndian = littleEndian;
+        this.bigEndian = bigEndian;
         this.bitOffset = bitOffset;
         this.bitPrecision = bitPrecision;
-        this.hipad = hipad;
-        this.lopad = lopad;
-        this.undefined = isUndefined();
+        this.hiPad = hiPad;
+        this.loPad = loPad;
     }
 
     public byte[] getBytes() {
         return bytes.clone();
     }
 
-//    public HdfFixedPoint(BigInteger value, int size, boolean signed, boolean bigEndian) {
-//        this.size = size;
-//        this.signed = signed;
-//        this.littleEndian = !bigEndian;
-//        this.bytes = toSizedByteArray(value, this.size, littleEndian);
-//        this.undefined = false;
-//    }
+    public HdfFixedPoint(BigInteger value, int size, boolean signed, boolean bigEndian) {
+        this(toSizedByteArray(value, size, bigEndian), size, bigEndian, false, false, signed, (short) 0, (short) (size*8));
+    }
 //
 //    public HdfFixedPoint(boolean undefined, byte[] bytes, int size) {
 //        validateSize(size);
@@ -78,7 +77,7 @@ public class HdfFixedPoint implements HdfData {
      */
     public static HdfFixedPoint of(long value) {
         byte[] bArray = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(value).array();
-        return new HdfFixedPoint(bArray, (short)8, true, false, false, false, (short)0, (short)64);
+        return new HdfFixedPoint(bArray, (short)8, false, false, false, false, (short)0, (short)64);
     }
 
     public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, int size, BitSet classBitField, short bitOffset, short bitPrecision) throws IOException {
@@ -91,7 +90,7 @@ public class HdfFixedPoint implements HdfData {
     }
 
     private static HdfFixedPoint getHdfFixedPoint(byte[] bytes, int size, BitSet classBitField, short bitOffset, short bitPrecision) {
-        return new HdfFixedPoint(bytes, size, !classBitField.get(0), classBitField.get(1), classBitField.get(2),  classBitField.get(3), bitOffset, bitPrecision);
+        return new HdfFixedPoint(bytes, size, classBitField.get(0), classBitField.get(1), classBitField.get(2),  classBitField.get(3), bitOffset, bitPrecision);
     }
 
     public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, int size, BitSet classBitField, short bitOffset, short bitPrecision) {
@@ -147,7 +146,7 @@ public class HdfFixedPoint implements HdfData {
     }
 
     // Convert BigInteger to a sized byte array
-    private byte[] toSizedByteArray(BigInteger value, int byteSize, boolean littleEndian) {
+    public static byte[] toSizedByteArray(BigInteger value, int byteSize, boolean bigEndian) {
         byte[] fullBytes = value.toByteArray();
         byte[] result = new byte[byteSize];
 
@@ -156,7 +155,7 @@ public class HdfFixedPoint implements HdfData {
         System.arraycopy(fullBytes, fullBytes.length - copyLength, result, byteSize - copyLength, copyLength);
 
         // Reverse for little-endian if needed
-        if (littleEndian) {
+        if (!bigEndian) {
             reverseBytesInPlace(result);
         }
         return result;
@@ -177,7 +176,7 @@ public class HdfFixedPoint implements HdfData {
         byte[] workingBytes = new byte[size];
         System.arraycopy(bytes, 0, workingBytes, 0, size);
 
-        if (littleEndian) {
+        if (!bigEndian) {
             for (int i = 0; i < size / 2; i++) {
                 byte temp = workingBytes[i];
                 workingBytes[i] = workingBytes[size - 1 - i];
@@ -205,23 +204,23 @@ public class HdfFixedPoint implements HdfData {
             precisionValue = precisionValue.and(mask);
 
             // Apply signedness only if no padding
-            if (signed && !hipad && !lopad && precisionValue.testBit(effectivePrecision - 1)) {
+            if (signed && !hiPad && !loPad && precisionValue.testBit(effectivePrecision - 1)) {
                 precisionValue = precisionValue.subtract(BigInteger.ONE.shiftLeft(effectivePrecision));
             }
 
             // Build value with padding only if hipad or lopad is true
             value = precisionValue;
-            if (hipad && startBit > 0) {
+            if (hiPad && startBit > 0) {
                 BigInteger hiMask = BigInteger.ONE.shiftLeft(startBit).subtract(BigInteger.ONE).shiftLeft(effectivePrecision);
                 value = value.or(hiMask);
             }
-            if (lopad && startBit > 0) {
+            if (loPad && startBit > 0) {
                 BigInteger loMask = BigInteger.ONE.shiftLeft(startBit).subtract(BigInteger.ONE);
                 value = value.or(loMask);
             }
 
             // Apply signedness to final value if padded
-            if (signed && (hipad || lopad)) {
+            if (signed && (hiPad || loPad)) {
                 BigInteger totalMask = BigInteger.ONE.shiftLeft(totalBits).subtract(BigInteger.ONE);
                 value = value.and(totalMask);
                 if (value.testBit(totalBits - 1)) {
@@ -238,7 +237,7 @@ public class HdfFixedPoint implements HdfData {
         byte[] workingBytes = new byte[size];
         System.arraycopy(bytes, 0, workingBytes, 0, size);
 
-        if (littleEndian) {
+        if (!bigEndian) {
             for (int i = 0; i < size / 2; i++) {
                 byte temp = workingBytes[i];
                 workingBytes[i] = workingBytes[size - 1 - i];
@@ -287,6 +286,6 @@ public class HdfFixedPoint implements HdfData {
 
     @Override
     public void writeValueToByteBuffer(ByteBuffer buffer) {
-        buffer.put(bytes);
+        HdfUtils.writeFixedPointToBuffer(buffer, this);
     }
 }

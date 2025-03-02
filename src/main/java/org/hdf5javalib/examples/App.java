@@ -40,8 +40,8 @@ public class App {
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
-//            String filePath = App.class.getResource("/test.h5").getFile();
-            String filePath = App.class.getResource("/randomints.h5").getFile();
+            String filePath = App.class.getResource("/test.h5").getFile();
+//            String filePath = App.class.getResource("/randomints.h5").getFile();
 //            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
 //            String filePath = App.class.getResource("/ForecastedVolume_2025-01-10.h5").getFile();
 //            String filePath = App.class.getResource("/singleint.h5").getFile();
@@ -58,8 +58,8 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        tryHdfApiCompound();
-        tryHdfApiInts();
+        tryHdfApiCompound();
+//        tryHdfApiInts();
     }
 
     public void tryHdfApiInts() {
@@ -216,7 +216,7 @@ public class App {
 
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false);
 //            hsize_t dim[1] = { NUM_RECORDS };
 //            DataSpace space(1, dim);
 
@@ -228,36 +228,37 @@ public class App {
             // ADD ATTRIBUTE: "GIT root revision"
             writeVersionAttribute(dataset);
 
-//            AtomicInteger countHolder = new AtomicInteger(0);
-//            CompoundDataSource<VolumeData> volumeDataHdfDataSource = new CompoundDataSource<>(compoundType, VolumeData.class);
-//            ByteBuffer volumeBuffer = ByteBuffer.allocate(compoundType.getSize());
-//            // Write to dataset
-//            dataset.write(() -> {
-//                int count = countHolder.getAndIncrement();
-//                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
-//                VolumeData instance = VolumeData.builder()
-//                        .shipmentId(BigInteger.valueOf(count + 1000))
-//                        .origCountry("US")
-//                        .origSlic("1234")
-//                        .origSort(BigInteger.valueOf(4))
-//                        .destCountry("US")
-//                        .destSlic("4321")
-//                        .destIbi(BigInteger.ZERO)
-//                        .destPostalCode("94211")
-//                        .shipper("DexEf")
-//                        .packageType(BigInteger.ONE)
-//                        .accessorials(BigInteger.ZERO)
-//                        .pieces(BigInteger.valueOf(10))
-//                        .pieces(BigInteger.valueOf(50))
-//                        .cube(BigInteger.valueOf(1200))
-//                        .committedTnt(BigInteger.ZERO)
-//                        .committedDate(BigInteger.ZERO)
-//                        .build();
-//                volumeBuffer.clear();
-//                volumeDataHdfDataSource.writeToBuffer(instance, volumeBuffer);
-//                volumeBuffer.flip();
-//                return volumeBuffer;
-//            });
+            AtomicInteger countHolder = new AtomicInteger(0);
+            CompoundDataSource<VolumeData> volumeDataHdfDataSource = new CompoundDataSource<>(compoundType, VolumeData.class);
+            ByteBuffer volumeBuffer = ByteBuffer.allocate(compoundType.getSize());
+            // Write to dataset
+            dataset.write(() -> {
+                int count = countHolder.getAndIncrement();
+                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
+                VolumeData instance = VolumeData.builder()
+                        .shipmentId(BigInteger.valueOf(count + 1000))
+                        .origCountry("US")
+                        .origSlic("12345")
+                        .origSort(BigInteger.valueOf(4))
+                        .destCountry("CA")
+                        .destSlic("67890")
+                        .destIbi(BigInteger.ZERO)
+                        .destPostalCode("A1B2C3")
+                        .shipper("FedEx")
+                        .service(BigInteger.ZERO)
+                        .packageType(BigInteger.valueOf(3))
+                        .accessorials(BigInteger.ZERO)
+                        .pieces(BigInteger.valueOf(2))
+                        .weight(BigInteger.valueOf(50))
+                        .cube(BigInteger.valueOf(1200))
+                        .committedTnt(BigInteger.valueOf(255))
+                        .committedDate(BigInteger.valueOf(3))
+                        .build();
+                volumeBuffer.clear();
+                volumeDataHdfDataSource.writeToBuffer(instance, volumeBuffer);
+                volumeBuffer.position(0);
+                return volumeBuffer;
+            });
 
             dataset.close();
             file.close();

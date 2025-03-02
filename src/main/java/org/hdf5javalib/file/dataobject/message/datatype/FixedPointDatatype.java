@@ -79,8 +79,8 @@ public class FixedPointDatatype implements HdfDatatype {
         return "FixedPointDatatype{" +
                 "classAndVersion=" + classAndVersion +
                 ", littleEndian=" + !isBigEndian() +
-                ", loPad=" + isLopad() +
-                ", hiPad=" + isHipad() +
+                ", loPad=" + isLoPad() +
+                ", hiPad=" + isHiPad() +
                 ", signed=" + isSigned() +
                 ", size=" + size +
                 ", bitOffset=" + bitOffset +
@@ -92,11 +92,11 @@ public class FixedPointDatatype implements HdfDatatype {
         return classBitField.get(0);
     }
 
-    public boolean isLopad() {
+    public boolean isLoPad() {
         return classBitField.get(1);
     }
 
-    public boolean isHipad() {
+    public boolean isHiPad() {
         return classBitField.get(2);
     }
 

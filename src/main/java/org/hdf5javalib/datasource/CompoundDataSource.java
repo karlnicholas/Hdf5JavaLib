@@ -84,14 +84,14 @@ public class CompoundDataSource<T> {
                     buffer.put(stringBuffer.array());
                 } else if (value instanceof BigInteger bigIntValue && member.getType() instanceof FixedPointDatatype fixedPointDatatype) {
                     // Convert BigInteger to bytes and write to buffer
-                    new HdfFixedPoint(bigIntValue.toByteArray(), fixedPointDatatype.getSize(), fixedPointDatatype.isBigEndian(), fixedPointDatatype.isLopad(), fixedPointDatatype.isHipad(), fixedPointDatatype.isSigned(), fixedPointDatatype.getBitOffset(), fixedPointDatatype.getBitPrecision())
+                    new HdfFixedPoint(bigIntValue, fixedPointDatatype.getSize(), fixedPointDatatype.isSigned(), fixedPointDatatype.isBigEndian())
                             .writeValueToByteBuffer(buffer);
                 }
                 // Add more type handling as needed
 
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error writing instance of " + clazz.getName() + " to ByteBuffer", e);
+            throw new RuntimeException("Error " + e.getMessage() + " writing instance of " + clazz.getName() + " to ByteBuffer", e);
         }
     }
 }

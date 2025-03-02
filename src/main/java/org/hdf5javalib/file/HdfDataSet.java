@@ -50,7 +50,7 @@ public class HdfDataSet {
 
     public AttributeMessage createAttribute(String name, DatatypeMessage dt, DataspaceMessage ds, HdfData value) {
         byte[] nameBytes = new byte[name.length()+1];
-        System.arraycopy(name.getBytes(StandardCharsets.UTF_8), 0, nameBytes, 0, name.length());
+        System.arraycopy(name.getBytes(StandardCharsets.US_ASCII), 0, nameBytes, 0, name.length());
         AttributeMessage attributeMessage = new AttributeMessage(1,
                 new HdfString(nameBytes, StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII)),
                 dt, ds, value);
