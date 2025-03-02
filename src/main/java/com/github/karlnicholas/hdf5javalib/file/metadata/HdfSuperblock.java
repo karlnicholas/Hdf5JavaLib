@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.file.metadata;
 
-import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.dataclass.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import lombok.Getter;
 import lombok.Setter;

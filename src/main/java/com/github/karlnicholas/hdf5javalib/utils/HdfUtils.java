@@ -1,9 +1,8 @@
 package com.github.karlnicholas.hdf5javalib.utils;
 
-import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.dataclass.HdfFixedPoint;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 public class HdfUtils {
 

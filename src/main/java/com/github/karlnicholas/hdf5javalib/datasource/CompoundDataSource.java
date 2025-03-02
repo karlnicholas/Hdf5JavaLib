@@ -1,7 +1,7 @@
 package com.github.karlnicholas.hdf5javalib.datasource;
 
-import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
-import com.github.karlnicholas.hdf5javalib.data.HdfString;
+import com.github.karlnicholas.hdf5javalib.dataclass.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.dataclass.HdfString;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.HdfCompoundDatatypeMember;

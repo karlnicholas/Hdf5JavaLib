@@ -1,4 +1,4 @@
-package com.github.karlnicholas.hdf5javalib.data;
+package com.github.karlnicholas.hdf5javalib.dataclass;
 
 import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 

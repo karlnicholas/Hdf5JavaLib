@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.datasource;
 
-import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
+import com.github.karlnicholas.hdf5javalib.dataclass.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
