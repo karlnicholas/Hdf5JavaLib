@@ -2,12 +2,12 @@ package com.github.karlnicholas.hdf5javalib.file;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
-import com.github.karlnicholas.hdf5javalib.message.datatype.HdfDatatype;
-import com.github.karlnicholas.hdf5javalib.message.datatype.StringDatatype;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import com.github.karlnicholas.hdf5javalib.file.infrastructure.*;
-import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
-import com.github.karlnicholas.hdf5javalib.message.SymbolTableMessage;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.DataspaceMessage;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.SymbolTableMessage;
 import lombok.Getter;
 
 import java.io.IOException;

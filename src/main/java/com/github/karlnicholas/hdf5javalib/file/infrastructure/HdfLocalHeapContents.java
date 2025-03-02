@@ -2,7 +2,7 @@ package com.github.karlnicholas.hdf5javalib.file.infrastructure;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfFixedPoint;
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
-import com.github.karlnicholas.hdf5javalib.message.datatype.StringDatatype;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import lombok.Getter;
 
 import java.io.IOException;

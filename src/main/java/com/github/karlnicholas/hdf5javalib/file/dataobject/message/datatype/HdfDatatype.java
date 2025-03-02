@@ -1,4 +1,4 @@
-package com.github.karlnicholas.hdf5javalib.message.datatype;
+package com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;

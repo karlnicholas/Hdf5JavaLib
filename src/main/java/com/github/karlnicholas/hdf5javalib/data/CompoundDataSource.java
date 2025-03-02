@@ -1,9 +1,9 @@
 package com.github.karlnicholas.hdf5javalib.data;
 
-import com.github.karlnicholas.hdf5javalib.message.datatype.CompoundDatatype;
-import com.github.karlnicholas.hdf5javalib.message.datatype.FixedPointDatatype;
-import com.github.karlnicholas.hdf5javalib.message.datatype.HdfCompoundDatatypeMember;
-import com.github.karlnicholas.hdf5javalib.message.datatype.StringDatatype;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.HdfCompoundDatatypeMember;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;

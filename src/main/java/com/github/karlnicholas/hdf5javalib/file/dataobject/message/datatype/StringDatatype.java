@@ -1,4 +1,4 @@
-package com.github.karlnicholas.hdf5javalib.message.datatype;
+package com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype;
 
 import com.github.karlnicholas.hdf5javalib.data.HdfString;
 import lombok.Getter;

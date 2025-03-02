@@ -1,4 +1,4 @@
-package com.github.karlnicholas.hdf5javalib.message;
+package com.github.karlnicholas.hdf5javalib.file.dataobject.message;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.data;
 
-import com.github.karlnicholas.hdf5javalib.message.datatype.StringDatatype;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;

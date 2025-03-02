@@ -1,6 +1,6 @@
 package com.github.karlnicholas.hdf5javalib.utils;
 
-import com.github.karlnicholas.hdf5javalib.message.*;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

@@ -1,9 +1,9 @@
 package com.github.karlnicholas.hdf5javalib.data;
 
 import com.github.karlnicholas.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
-import com.github.karlnicholas.hdf5javalib.message.DataspaceMessage;
-import com.github.karlnicholas.hdf5javalib.message.DatatypeMessage;
-import com.github.karlnicholas.hdf5javalib.message.datatype.FixedPointDatatype;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.DataspaceMessage;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.DatatypeMessage;
+import com.github.karlnicholas.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
