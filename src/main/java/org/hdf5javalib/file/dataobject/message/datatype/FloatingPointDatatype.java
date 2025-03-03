@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfData;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;
@@ -42,6 +43,11 @@ public class FloatingPointDatatype implements HdfDatatype {
     @Override
     public short getSizeMessageData() {
         return (short) size;
+    }
+
+    @Override
+    public HdfData getInstance(ByteBuffer buffer) {
+        return null;
     }
 
     @Override

@@ -1,9 +1,9 @@
 package org.hdf5javalib.examples;
 
+import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
-import org.hdf5javalib.datasource.CompoundDataSource;
-import org.hdf5javalib.datasource.FixedPointTypedDataSource;
+import org.hdf5javalib.datasource.*;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.file.HdfDataSet;
@@ -13,7 +13,6 @@ import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfCompoundDatatypeMember;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
-import org.hdf5javalib.datasource.CompoundDatatypeSpliterator;
 import lombok.Data;
 
 import java.io.FileInputStream;
@@ -22,6 +21,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Spliterator;
@@ -40,8 +40,8 @@ public class App {
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = App.class.getResource("/test.h5").getFile();
-//            String filePath = App.class.getResource("/randomints.h5").getFile();
+//            String filePath = App.class.getResource("/test.h5").getFile();
+            String filePath = App.class.getResource("/weather_data.h5").getFile();
 //            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
 //            String filePath = App.class.getResource("/ForecastedVolume_2025-01-10.h5").getFile();
 //            String filePath = App.class.getResource("/singleint.h5").getFile();
@@ -53,13 +53,34 @@ public class App {
 //                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
 //                tryVolumeSpliterator(channel, reader);
 //                tryWeatherSpliterator(channel, reader);
+                tryWeatherLabelSpliterator(channel, reader);
 //                new HdfConstruction().buildHfd();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        tryHdfApiCompound();
+//        tryHdfApiCompound();
 //        tryHdfApiInts();
+    }
+
+    private void tryWeatherLabelSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
+//        FixedPointTypedDataSource<a> dataSource = new FixedPointTypedDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class, fileChannel, reader.getDataAddress());
+//        System.out.println("count = " + dataSource.stream().map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
+//        FixedPointDataSource rawSource = new FixedPointDataSource(reader.getDataObjectHeaderPrefix(), "temperature", 0, fileChannel, reader.getDataAddress());
+//        HdfFixedPoint[] rawData = rawSource.readAll();
+//        System.out.println("Raw count = " + Arrays.stream(rawData).map(HdfFixedPoint::toBigInteger).collect(Collectors.summarizingInt(BigInteger::intValue)));
+
+//        DataClassDataSource<HdfString> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfString.class);
+//        dataSource.stream().forEach(System.out::println);
+
+        TypedDataSource<LabelsData> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), "label", 0, LabelsData.class, fileChannel, reader.getDataAddress());
+        dataSource.stream().forEach(System.out::println);
+
+//        HdfString[] rawData = rawSource.readAll();
+//        Arrays.stream(rawData).forEach(System.out::println);
+
+//        FixedPointTypedDataSource<WeatherData> dataSource = new FixedPointTypedDataSource<>(reader.getDataObjectHeaderPrefix(), "data", 2, WeatherData.class, fileChannel, reader.getDataAddress());
+//        dataSource.stream().forEach(System.out::println);
     }
 
     public void tryHdfApiInts() {
@@ -282,11 +303,14 @@ public class App {
     }
 
     public void tryTemperatureSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        FixedPointTypedDataSource<TemperatureData> dataSource = new FixedPointTypedDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class, fileChannel, reader.getDataAddress());
-        System.out.println("count = " + dataSource.stream().map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
+//        FixedPointTypedDataSource<TemperatureData> dataSource = new FixedPointTypedDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class, fileChannel, reader.getDataAddress());
+//        System.out.println("count = " + dataSource.stream().map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
 //        FixedPointDataSource rawSource = new FixedPointDataSource(reader.getDataObjectHeaderPrefix(), "temperature", 0, fileChannel, reader.getDataAddress());
 //        HdfFixedPoint[] rawData = rawSource.readAll();
 //        System.out.println("Raw count = " + Arrays.stream(rawData).map(HdfFixedPoint::toBigInteger).collect(Collectors.summarizingInt(BigInteger::intValue)));
+        DataClassDataSource<HdfFixedPoint> rawSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfFixedPoint.class);
+        HdfFixedPoint[] rawData = rawSource.readAll();
+        System.out.println("Raw count = " + Arrays.stream(rawData).map(HdfFixedPoint::toBigInteger).collect(Collectors.summarizingInt(BigInteger::intValue)));
     }
 
     private void tryWeatherSpliterator(FileChannel fileChannel, HdfFileReader reader) {
@@ -395,7 +419,7 @@ public class App {
 //
 //        // Add DataspaceMessage (Handles dataset dimensionality)
 //        HdfFixedPoint[] hdfDimensions = Arrays.stream(new long[]{1750}).mapToObj(HdfFixedPoint::of).toArray(HdfFixedPoint[]::new);
-//        DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, true);
+//        DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false);
 //        headerMessages.add(dataSpaceMessage);
 //
 //        String attributeName = "GIT root revision";

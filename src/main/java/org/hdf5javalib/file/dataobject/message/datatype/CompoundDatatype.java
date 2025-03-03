@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfData;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -168,6 +169,11 @@ public class CompoundDatatype implements HdfDatatype {
             size += member.getSizeMessageData();
         }
         return size;
+    }
+
+    @Override
+    public HdfData getInstance(ByteBuffer buffer) {
+        return null;
     }
 
 }
