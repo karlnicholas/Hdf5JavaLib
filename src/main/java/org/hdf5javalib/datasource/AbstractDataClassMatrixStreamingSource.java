@@ -4,7 +4,7 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
-import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
+import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -20,28 +20,18 @@ import java.util.stream.Stream;
  *
  * @param <T> the type of object returned by streaming or bulk reading operations
  */
-public abstract class AbstractFixedPointDataSource<T> {
+public abstract class AbstractDataClassMatrixStreamingSource<T> {
     protected final FileChannel fileChannel;
     protected final long startOffset;
     protected final int recordSize;
     protected final int readsAvailable;
     protected final int elementsPerRecord;
-    protected final FixedPointDatatype fixedPointDatatype;
+    protected final HdfDatatype datatype;
     protected final int scale;
     protected final long sizeForReadBuffer;
     protected final long endOffset;
 
-    /**
-     * Constructs the base data source with HDF5 metadata and optional FileChannel for streaming.
-     *
-     * @param headerPrefixV1 the HDF5 object header prefix containing datatype and dataspace metadata
-     * @param scale the scale for BigDecimal values (number of decimal places); use 0 for BigInteger
-     * @param fileChannel the FileChannel to read the HDF5 file data from, or null if not streaming
-     * @param startOffset the byte offset in the file where the dataset begins
-     * @throws IllegalStateException if required metadata (DatatypeMessage or DataspaceMessage) is missing
-     * @throws IllegalArgumentException if dataset dimensionality is unsupported
-     */
-    public AbstractFixedPointDataSource(HdfObjectHeaderPrefixV1 headerPrefixV1, int scale, FileChannel fileChannel, long startOffset) {
+    public AbstractDataClassMatrixStreamingSource(HdfObjectHeaderPrefixV1 headerPrefixV1, int scale, FileChannel fileChannel, long startOffset) {
         this.fileChannel = fileChannel;
         this.startOffset = startOffset;
         this.scale = scale;
@@ -56,7 +46,7 @@ public abstract class AbstractFixedPointDataSource<T> {
                 .getDimensions();
 
         this.readsAvailable = dimensions[0].toBigInteger().intValue();
-        this.fixedPointDatatype = (FixedPointDatatype) headerPrefixV1.findMessageByType(DatatypeMessage.class)
+        this.datatype = headerPrefixV1.findMessageByType(DatatypeMessage.class)
                 .orElseThrow()
                 .getHdfDatatype();
 
@@ -72,67 +62,31 @@ public abstract class AbstractFixedPointDataSource<T> {
         this.endOffset = fileChannel != null ? startOffset + sizeForReadBuffer * readsAvailable : 0;
     }
 
-    /**
-     * Returns the size in bytes of one record in the HDF5 dataset.
-     * For vectors (1D), this is the size of a single fixed-point value. For matrices (2D),
-     * this is the size of one row (element size times number of elements per row).
-     *
-     * @return the size in bytes of one record
-     */
     public long getSizeForReadBuffer() {
         return sizeForReadBuffer;
     }
 
-    /**
-     * Returns the number of records available to read from the HDF5 dataset.
-     * This corresponds to the first dimension of the dataset (e.g., number of scalars for vectors,
-     * number of rows for matrices), as defined in the HDF5 metadata.
-     *
-     * @return the number of records available
-     */
     public long getNumberOfReadsAvailable() {
         return readsAvailable;
     }
 
-    /**
-     * Populates an object of type T from the provided ByteBuffer.
-     * Subclasses must implement this to define how data is mapped from the buffer to T.
-     *
-     * @param buffer the ByteBuffer containing the HDF5 dataset data
-     * @return an object of type T populated from the buffer
-     */
-    protected abstract T populateFromBufferRaw(ByteBuffer buffer);
+    protected abstract T[] populateFromBufferRaw(ByteBuffer buffer);
 
-    /**
-     * Returns a sequential Stream for reading data from the associated FileChannel.
-     *
-     * @return a sequential Stream of T
-     * @throws IllegalStateException if no FileChannel was provided in the constructor
-     */
-    public abstract Stream<T> stream();
+    public abstract Stream<T[]> stream();
 
-    /**
-     * Returns a parallel Stream for reading data from the associated FileChannel.
-     *
-     * @return a parallel Stream of T
-     * @throws IllegalStateException if no FileChannel was provided in the constructor
-     */
-    public abstract Stream<T> parallelStream();
+    public abstract Stream<T[]> parallelStream();
 
-    /**
-     * Base Spliterator for streaming data from the FileChannel.
-     */
-    protected class FixedPointSpliterator implements Spliterator<T> {
+    protected class DataClassSpliterator implements Spliterator<T[]> {
         private final long endOffset;
         private long currentOffset;
 
-        public FixedPointSpliterator(long startOffset, long endOffset) {
+        public DataClassSpliterator(long startOffset, long endOffset) {
             this.currentOffset = startOffset;
             this.endOffset = endOffset;
         }
 
         @Override
-        public boolean tryAdvance(Consumer<? super T> action) {
+        public boolean tryAdvance(Consumer<? super T[]> action) {
             if (currentOffset >= endOffset) {
                 return false;
             }
@@ -157,7 +111,7 @@ public abstract class AbstractFixedPointDataSource<T> {
                     }
                 }
                 buffer.flip();
-                T dataSource = populateFromBufferRaw(buffer);
+                T[] dataSource = populateFromBufferRaw(buffer);
                 action.accept(dataSource);
                 currentOffset += sizeForReadBuffer;
                 return true;
@@ -167,7 +121,7 @@ public abstract class AbstractFixedPointDataSource<T> {
         }
 
         @Override
-        public Spliterator<T> trySplit() {
+        public Spliterator<T[]> trySplit() {
             long remainingRecords = (endOffset - currentOffset) / sizeForReadBuffer;
             if (remainingRecords <= 1) {
                 return null;
@@ -176,7 +130,7 @@ public abstract class AbstractFixedPointDataSource<T> {
             long splitSize = remainingRecords / 2;
             long splitOffset = currentOffset + splitSize * sizeForReadBuffer;
 
-            Spliterator<T> newSpliterator = new FixedPointSpliterator(currentOffset, splitOffset);
+            Spliterator<T[]> newSpliterator = new DataClassSpliterator(currentOffset, splitOffset);
             currentOffset = splitOffset;
             return newSpliterator;
         }

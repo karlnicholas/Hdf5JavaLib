@@ -1,7 +1,6 @@
 package org.hdf5javalib.examples;
 
 import org.hdf5javalib.dataclass.HdfCompound;
-import org.hdf5javalib.dataclass.HdfCompoundMember;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.*;
@@ -14,42 +13,37 @@ import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.CompoundMemberDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
-import lombok.Data;
-import org.hdf5javalib.utils.HdfTypeUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
  * Hello world!
  *
  */
-public class App {
+public class HdfCompoundApp {
     public static void main(String[] args) {
-        new App().run();
+        new HdfCompoundApp().run();
     }
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
-//            String filePath = App.class.getResource("/weather_data.h5").getFile();
-            String filePath = App.class.getResource("/randomints.h5").getFile();
-//            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
-//            String filePath = App.class.getResource("/ForecastedVolume_2025-01-10.h5").getFile();
-//            String filePath = App.class.getResource("/singleint.h5").getFile();
+//            String filePath = HdfCompoundApp.class.getResource("/weather_data.h5").getFile();
+            String filePath = HdfCompoundApp.class.getResource("/randomints.h5").getFile();
+//            String filePath = HdfCompoundApp.class.getResource("/ExportedNodeShips.h5").getFile();
+//            String filePath = HdfCompoundApp.class.getResource("/ForecastedVolume_2025-01-10.h5").getFile();
+//            String filePath = HdfCompoundApp.class.getResource("/singleint.h5").getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
 //                tryScalarDataSpliterator(channel, reader);
-                tryTemperatureSpliterator(channel, reader);
+//                tryTemperatureSpliterator(channel, reader);
 //                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
 //                tryVolumeSpliterator(channel, reader);
 //                tryWeatherSpliterator(channel, reader);
@@ -78,59 +72,6 @@ public class App {
 
 //        FixedPointTypedDataSource<WeatherData> dataSource = new FixedPointTypedDataSource<>(reader.getDataObjectHeaderPrefix(), "data", 2, WeatherData.class, fileChannel, reader.getDataAddress());
 //        dataSource.stream().forEach(System.out::println);
-    }
-
-    public void tryHdfApiInts() {
-        final String FILE_NAME = "randomints.h5";
-        final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
-        final String DATASET_NAME = "temperature";
-        final int NUM_RECORDS = 100;
-
-        try {
-            // Create a new HDF5 file
-            HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
-
-            // Create data space
-            HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false);
-//            hsize_t dim[1] = { NUM_RECORDS };
-//            DataSpace space(1, dim);
-
-            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
-                    FixedPointDatatype.createClassAndVersion(),
-                    FixedPointDatatype.createClassBitField( false, false, false, true),
-                    (short)8, (short)0, (short)64);
-
-            // Create dataset
-//            DataSet dataset = file.createDataSet(DATASET_NAME, compoundType, space);
-            HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
-
-            writeVersionAttribute(dataset);
-
-            AtomicInteger countHolder = new AtomicInteger(0);
-            FixedPointTypedDataSource<TemperatureData> temperatureDataHdfDataSource = new FixedPointTypedDataSource<>(dataset.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class);
-            ByteBuffer temperatureBuffer = ByteBuffer.allocate(fixedPointDatatype.getSize());
-            // Write to dataset
-            dataset.write(() -> {
-                int count = countHolder.getAndIncrement();
-                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
-                TemperatureData instance = TemperatureData.builder()
-                        .temperature(BigInteger.valueOf((long) (Math.random() *40.0 + 10.0)))
-                        .build();
-                temperatureBuffer.clear();
-                temperatureDataHdfDataSource.writeToBuffer(instance, temperatureBuffer);
-                temperatureBuffer.flip();
-                return temperatureBuffer;
-            });
-            dataset.close();
-            file.close();
-
-            // auto close
-
-            System.out.println("HDF5 file created and written successfully!");
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
     }
 
     private void writeVersionAttribute(HdfDataSet dataset) {
@@ -287,36 +228,6 @@ public class App {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-    }
-
-    @Data
-    public static class Scalar {
-        private BigInteger data;
-    }
-
-    private void tryScalarDataSpliterator(FileChannel fileChannel, HdfFileReader reader) {
-        FixedPointTypedDataSource<Scalar> dataSource = new FixedPointTypedDataSource<>(reader.getDataObjectHeaderPrefix(), "data", 0, Scalar.class, fileChannel, reader.getDataAddress());
-        dataSource.stream().forEach(System.out::println);
-    }
-
-    public void tryTemperatureSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-//        FixedPointTypedDataSource<TemperatureData> dataSource = new FixedPointTypedDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class, fileChannel, reader.getDataAddress());
-//        System.out.println("count = " + dataSource.stream().map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
-//        TypedDataClassDataSource<TemperatureData> dataSource = new TypedDataClassDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class, fileChannel, reader.getDataAddress());
-//        System.out.println("count = " + dataSource.stream().map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
-//        FixedPointDataSource rawSource = new FixedPointDataSource(reader.getDataObjectHeaderPrefix(), "temperature", 0, fileChannel, reader.getDataAddress());
-//        HdfFixedPoint[] rawData = rawSource.readAll();
-//        System.out.println("Raw count = " + Arrays.stream(rawData).map(HdfFixedPoint::toBigInteger).collect(Collectors.summarizingInt(BigInteger::intValue)));
-        DataClassDataSource<HdfFixedPoint> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfFixedPoint.class);
-        HdfFixedPoint[] allData = dataSource.readAll();
-        System.out.println("Raw count = " + Arrays.stream(allData).map(HdfFixedPoint::toBigInteger).collect(Collectors.summarizingInt(BigInteger::intValue)));
-        List<TemperatureData> temperatureData = dataSource.stream().map(fp->HdfTypeUtils.populateFromFixedPoint(TemperatureData.class, "temperature", fp, 0)).toList();
-        System.out.println("temperatureData = " + temperatureData);
-    }
-
-    private void tryWeatherSpliterator(FileChannel fileChannel, HdfFileReader reader) {
-        FixedPointTypedDataSource<WeatherData> dataSource = new FixedPointTypedDataSource<>(reader.getDataObjectHeaderPrefix(), "data", 2, WeatherData.class, fileChannel, reader.getDataAddress());
-        dataSource.stream().forEach(System.out::println);
     }
 
 
