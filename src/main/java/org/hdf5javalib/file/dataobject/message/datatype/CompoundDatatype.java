@@ -1,6 +1,8 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfCompound;
+import org.hdf5javalib.dataclass.HdfCompoundMember;
 import org.hdf5javalib.dataclass.HdfData;
 
 import java.nio.ByteBuffer;
@@ -17,10 +19,10 @@ public class CompoundDatatype implements HdfDatatype {
     private final byte classAndVersion;
     private final BitSet classBitField; // Number of members in the compound datatype
     private final int size;
-    private List<HdfCompoundDatatypeMember> members;     // Member definitions
+    private List<CompoundMemberDatatype> members;     // Member definitions
 
     // New application-level constructor
-    public CompoundDatatype(byte classAndVersion, BitSet classBitField, int size, List<HdfCompoundDatatypeMember> members) {
+    public CompoundDatatype(byte classAndVersion, BitSet classBitField, int size, List<CompoundMemberDatatype> members) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
@@ -105,9 +107,9 @@ public class CompoundDatatype implements HdfDatatype {
 
             int size = buffer.getInt();
             HdfDatatype hdfDatatype = parseCompoundDataType(version, dataTypeClass, classBitField, size, buffer);
-            HdfCompoundDatatypeMember hdfCompoundDatatypeMember = new HdfCompoundDatatypeMember(name, offset, dimensionality, dimensionPermutation, dimensionSizes, hdfDatatype);
+            CompoundMemberDatatype compoundMemberDatatype = new CompoundMemberDatatype(name, offset, dimensionality, dimensionPermutation, dimensionSizes, hdfDatatype);
 
-            members.add(hdfCompoundDatatypeMember);
+            members.add(compoundMemberDatatype);
         }
     }
 
@@ -138,7 +140,7 @@ public class CompoundDatatype implements HdfDatatype {
 
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        for (HdfCompoundDatatypeMember member: members) {
+        for (CompoundMemberDatatype member: members) {
             member.writeDefinitionToByteBuffer(buffer);
         }
     }
@@ -165,7 +167,7 @@ public class CompoundDatatype implements HdfDatatype {
     @Override
     public short getSizeMessageData() {
         short size = 0;
-        for(HdfCompoundDatatypeMember member: members) {
+        for(CompoundMemberDatatype member: members) {
             size += member.getSizeMessageData();
         }
         return size;
@@ -173,7 +175,8 @@ public class CompoundDatatype implements HdfDatatype {
 
     @Override
     public HdfData getInstance(ByteBuffer buffer) {
-        return null;
+        return new HdfCompound(members.stream().map(member->
+            new HdfCompoundMember(member.getName(), member.getInstance(buffer))).toList());
     }
 
 }

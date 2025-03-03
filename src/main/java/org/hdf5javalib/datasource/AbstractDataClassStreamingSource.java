@@ -20,7 +20,7 @@ import java.util.stream.Stream;
  *
  * @param <T> the type of object returned by streaming or bulk reading operations
  */
-public abstract class AbstractDataClassDataSource<T> {
+public abstract class AbstractDataClassStreamingSource<T> {
     protected final FileChannel fileChannel;
     protected final long startOffset;
     protected final int recordSize;
@@ -31,7 +31,7 @@ public abstract class AbstractDataClassDataSource<T> {
     protected final long sizeForReadBuffer;
     protected final long endOffset;
 
-    public AbstractDataClassDataSource(HdfObjectHeaderPrefixV1 headerPrefixV1, int scale, FileChannel fileChannel, long startOffset) {
+    public AbstractDataClassStreamingSource(HdfObjectHeaderPrefixV1 headerPrefixV1, int scale, FileChannel fileChannel, long startOffset) {
         this.fileChannel = fileChannel;
         this.startOffset = startOffset;
         this.scale = scale;

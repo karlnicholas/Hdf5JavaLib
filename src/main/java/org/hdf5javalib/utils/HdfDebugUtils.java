@@ -17,7 +17,7 @@ public class HdfDebugUtils {
             fileChannel.read(dataBuffer);
             dataBuffer.flip();
             for ( int column = 0; column < compoundDataType.getMembers().size(); ++column ) {
-                HdfCompoundDatatypeMember member = compoundDataType.getMembers().get(column);
+                CompoundMemberDatatype member = compoundDataType.getMembers().get(column);
                 dataBuffer.position(member.getOffset());
                 if (member.getType() instanceof StringDatatype) {
                     data[column] = ((StringDatatype) member.getType()).getInstance(dataBuffer);

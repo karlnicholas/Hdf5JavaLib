@@ -57,7 +57,7 @@ public class DatatypeMessage extends HdfMessage {
         HdfDatatype hdfDatatype = parseMessageDataType(classAndVersion, classBitField, size, buffer);
         return new DatatypeMessage(hdfDatatype);
     }
-//    public static HdfCompoundDatatypeMember parseMember(ByteBuffer buffer) {
+//    public static CompoundMemberDatatype parseMember(ByteBuffer buffer) {
 //        buffer.mark();
 //        String name = readNullTerminatedString(buffer);
 //
@@ -76,7 +76,7 @@ public class DatatypeMessage extends HdfMessage {
 //        }
 //
 //        HdfDatatype type = parseMessageDataType(buffer, name);
-//        return new HdfCompoundDatatypeMember(name, offset, dimensionality, dimensionPermutation, dimensionSizes, type);
+//        return new CompoundMemberDatatype(name, offset, dimensionality, dimensionPermutation, dimensionSizes, type);
 //
 //    }
 

@@ -1,6 +1,7 @@
 package org.hdf5javalib.examples;
 
-import org.hdf5javalib.dataclass.HdfData;
+import org.hdf5javalib.dataclass.HdfCompound;
+import org.hdf5javalib.dataclass.HdfCompoundMember;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.*;
@@ -10,10 +11,11 @@ import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
+import org.hdf5javalib.file.dataobject.message.datatype.CompoundMemberDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
-import org.hdf5javalib.file.dataobject.message.datatype.HdfCompoundDatatypeMember;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import lombok.Data;
+import org.hdf5javalib.utils.HdfTypeUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,10 +26,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
-import java.util.Spliterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Hello world!
@@ -40,8 +40,8 @@ public class App {
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
-//            String filePath = App.class.getResource("/test.h5").getFile();
-            String filePath = App.class.getResource("/weather_data.h5").getFile();
+//            String filePath = App.class.getResource("/weather_data.h5").getFile();
+            String filePath = App.class.getResource("/randomints.h5").getFile();
 //            String filePath = App.class.getResource("/ExportedNodeShips.h5").getFile();
 //            String filePath = App.class.getResource("/ForecastedVolume_2025-01-10.h5").getFile();
 //            String filePath = App.class.getResource("/singleint.h5").getFile();
@@ -49,11 +49,11 @@ public class App {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
 //                tryScalarDataSpliterator(channel, reader);
-//                tryTemperatureSpliterator(channel, reader);
+                tryTemperatureSpliterator(channel, reader);
 //                printData(channel, reader.getCompoundDataType(), reader.getDataAddress(), reader.getDimension());
 //                tryVolumeSpliterator(channel, reader);
 //                tryWeatherSpliterator(channel, reader);
-                tryWeatherLabelSpliterator(channel, reader);
+//                tryWeatherLabelSpliterator(channel, reader);
 //                new HdfConstruction().buildHfd();
             }
         } catch (IOException e) {
@@ -72,9 +72,6 @@ public class App {
 
 //        DataClassDataSource<HdfString> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfString.class);
 //        dataSource.stream().forEach(System.out::println);
-
-        TypedDataSource<LabelsData> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), "label", 0, LabelsData.class, fileChannel, reader.getDataAddress());
-        dataSource.stream().forEach(System.out::println);
 
 //        HdfString[] rawData = rawSource.readAll();
 //        Arrays.stream(rawData).forEach(System.out::println);
@@ -161,70 +158,70 @@ public class App {
             HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
             // DatatypeMessage with CompoundDatatype
             BitSet stringBitSet = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
-            List<HdfCompoundDatatypeMember> shipment = List.of(
-                    new HdfCompoundDatatypeMember("shipmentId", 0, 0, 0, new int[4],
+            List<CompoundMemberDatatype> shipment = List.of(
+                    new CompoundMemberDatatype("shipmentId", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
                             FixedPointDatatype.createClassAndVersion(),
                             FixedPointDatatype.createClassBitField( false, false, false, false),
                             (short)8, (short)0, (short)64)),
-                    new HdfCompoundDatatypeMember("origCountry", 8, 0, 0, new int[4],
+                    new CompoundMemberDatatype("origCountry", 8, 0, 0, new int[4],
                             new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short)2)),
-                    new HdfCompoundDatatypeMember("origSlic", 10, 0, 0, new int[4],
+                    new CompoundMemberDatatype("origSlic", 10, 0, 0, new int[4],
                             new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short)5)),
-                    new HdfCompoundDatatypeMember("origSort", 15, 0, 0, new int[4],
+                    new CompoundMemberDatatype("origSort", 15, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField( false, false, false, false),
                                     (short)1, (short)0, (short)8)),
-                    new HdfCompoundDatatypeMember("destCountry", 16, 0, 0, new int[4],
+                    new CompoundMemberDatatype("destCountry", 16, 0, 0, new int[4],
                             new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short)2)),
-                    new HdfCompoundDatatypeMember("destSlic", 18, 0, 0, new int[4],
+                    new CompoundMemberDatatype("destSlic", 18, 0, 0, new int[4],
                             new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short)5)),
-                    new HdfCompoundDatatypeMember("destIbi", 23, 0, 0, new int[4],
+                    new CompoundMemberDatatype("destIbi", 23, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField( false, false, false, false),
                                     (short)1, (short)0, (short)8)),
-                    new HdfCompoundDatatypeMember("destPostalCode", 24, 0, 0, new int[4],
+                    new CompoundMemberDatatype("destPostalCode", 24, 0, 0, new int[4],
                             new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short)9)),
-                    new HdfCompoundDatatypeMember("shipper", 33, 0, 0, new int[4],
+                    new CompoundMemberDatatype("shipper", 33, 0, 0, new int[4],
                             new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short)10)),
-                    new HdfCompoundDatatypeMember("service", 43, 0, 0, new int[4],
+                    new CompoundMemberDatatype("service", 43, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField( false, false, false, false),
                                     (short)1, (short)0, (short)8)),
-                    new HdfCompoundDatatypeMember("packageType", 44, 0, 0, new int[4],
+                    new CompoundMemberDatatype("packageType", 44, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField( false, false, false, false),
                                     (short)1, (short)0, (short)8)),
-                    new HdfCompoundDatatypeMember("accessorials", 45, 0, 0, new int[4],
+                    new CompoundMemberDatatype("accessorials", 45, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField( false, false, false, false),
                                     (short)1, (short)0, (short)8)),
-                    new HdfCompoundDatatypeMember("pieces", 46, 0, 0, new int[4],
+                    new CompoundMemberDatatype("pieces", 46, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField( false, false, false, false),
                                     (short)2, (short)0, (short)16)),
-                    new HdfCompoundDatatypeMember("weight", 48, 0, 0, new int[4],
+                    new CompoundMemberDatatype("weight", 48, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField( false, false, false, false),
                                     (short)2, (short)0, (short)16)),
-                    new HdfCompoundDatatypeMember("cube", 50, 0, 0, new int[4],
+                    new CompoundMemberDatatype("cube", 50, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField( false, false, false, false),
                                     (short)4, (short)0, (short)32)),
-                    new HdfCompoundDatatypeMember("committedTnt", 54, 0, 0, new int[4],
+                    new CompoundMemberDatatype("committedTnt", 54, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField( false, false, false, false),
                                     (short)1, (short)0, (short)8)),
-                    new HdfCompoundDatatypeMember("committedDate", 55, 0, 0, new int[4],
+                    new CompoundMemberDatatype("committedDate", 55, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField( false, false, false, false),
@@ -249,37 +246,37 @@ public class App {
             // ADD ATTRIBUTE: "GIT root revision"
             writeVersionAttribute(dataset);
 
-            AtomicInteger countHolder = new AtomicInteger(0);
-            CompoundDataSource<VolumeData> volumeDataHdfDataSource = new CompoundDataSource<>(compoundType, VolumeData.class);
-            ByteBuffer volumeBuffer = ByteBuffer.allocate(compoundType.getSize());
-            // Write to dataset
-            dataset.write(() -> {
-                int count = countHolder.getAndIncrement();
-                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
-                VolumeData instance = VolumeData.builder()
-                        .shipmentId(BigInteger.valueOf(count + 1000))
-                        .origCountry("US")
-                        .origSlic("12345")
-                        .origSort(BigInteger.valueOf(4))
-                        .destCountry("CA")
-                        .destSlic("67890")
-                        .destIbi(BigInteger.ZERO)
-                        .destPostalCode("A1B2C3")
-                        .shipper("FedEx")
-                        .service(BigInteger.ZERO)
-                        .packageType(BigInteger.valueOf(3))
-                        .accessorials(BigInteger.ZERO)
-                        .pieces(BigInteger.valueOf(2))
-                        .weight(BigInteger.valueOf(50))
-                        .cube(BigInteger.valueOf(1200))
-                        .committedTnt(BigInteger.valueOf(255))
-                        .committedDate(BigInteger.valueOf(3))
-                        .build();
-                volumeBuffer.clear();
-                volumeDataHdfDataSource.writeToBuffer(instance, volumeBuffer);
-                volumeBuffer.position(0);
-                return volumeBuffer;
-            });
+//            AtomicInteger countHolder = new AtomicInteger(0);
+//            TypedCompoundDataSource<VolumeData> volumeDataHdfDataSource = new TypedCompoundDataSource<>(compoundType, VolumeData.class);
+//            ByteBuffer volumeBuffer = ByteBuffer.allocate(compoundType.getSize());
+//            // Write to dataset
+//            dataset.write(() -> {
+//                int count = countHolder.getAndIncrement();
+//                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
+//                VolumeData instance = VolumeData.builder()
+//                        .shipmentId(BigInteger.valueOf(count + 1000))
+//                        .origCountry("US")
+//                        .origSlic("12345")
+//                        .origSort(BigInteger.valueOf(4))
+//                        .destCountry("CA")
+//                        .destSlic("67890")
+//                        .destIbi(BigInteger.ZERO)
+//                        .destPostalCode("A1B2C3")
+//                        .shipper("FedEx")
+//                        .service(BigInteger.ZERO)
+//                        .packageType(BigInteger.valueOf(3))
+//                        .accessorials(BigInteger.ZERO)
+//                        .pieces(BigInteger.valueOf(2))
+//                        .weight(BigInteger.valueOf(50))
+//                        .cube(BigInteger.valueOf(1200))
+//                        .committedTnt(BigInteger.valueOf(255))
+//                        .committedDate(BigInteger.valueOf(3))
+//                        .build();
+//                volumeBuffer.clear();
+//                volumeDataHdfDataSource.writeToBuffer(instance, volumeBuffer);
+//                volumeBuffer.position(0);
+//                return volumeBuffer;
+//            });
 
             dataset.close();
             file.close();
@@ -305,12 +302,16 @@ public class App {
     public void tryTemperatureSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
 //        FixedPointTypedDataSource<TemperatureData> dataSource = new FixedPointTypedDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class, fileChannel, reader.getDataAddress());
 //        System.out.println("count = " + dataSource.stream().map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
+//        TypedDataClassDataSource<TemperatureData> dataSource = new TypedDataClassDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class, fileChannel, reader.getDataAddress());
+//        System.out.println("count = " + dataSource.stream().map(TemperatureData::getTemperature).collect(Collectors.summarizingInt(BigInteger::intValue)));
 //        FixedPointDataSource rawSource = new FixedPointDataSource(reader.getDataObjectHeaderPrefix(), "temperature", 0, fileChannel, reader.getDataAddress());
 //        HdfFixedPoint[] rawData = rawSource.readAll();
 //        System.out.println("Raw count = " + Arrays.stream(rawData).map(HdfFixedPoint::toBigInteger).collect(Collectors.summarizingInt(BigInteger::intValue)));
-        DataClassDataSource<HdfFixedPoint> rawSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfFixedPoint.class);
-        HdfFixedPoint[] rawData = rawSource.readAll();
-        System.out.println("Raw count = " + Arrays.stream(rawData).map(HdfFixedPoint::toBigInteger).collect(Collectors.summarizingInt(BigInteger::intValue)));
+        DataClassDataSource<HdfFixedPoint> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfFixedPoint.class);
+        HdfFixedPoint[] allData = dataSource.readAll();
+        System.out.println("Raw count = " + Arrays.stream(allData).map(HdfFixedPoint::toBigInteger).collect(Collectors.summarizingInt(BigInteger::intValue)));
+        List<TemperatureData> temperatureData = dataSource.stream().map(fp->HdfTypeUtils.populateFromFixedPoint(TemperatureData.class, "temperature", fp, 0)).toList();
+        System.out.println("temperatureData = " + temperatureData);
     }
 
     private void tryWeatherSpliterator(FileChannel fileChannel, HdfFileReader reader) {
@@ -320,9 +321,17 @@ public class App {
 
 
     public void tryVolumeSpliterator(FileChannel fileChannel, HdfFileReader reader) {
-        CompoundDataSource<VolumeData> dataSource = new CompoundDataSource<>((CompoundDatatype) reader.getDataType(), VolumeData.class);
-        Spliterator<VolumeData> spliterator = new CompoundDatatypeSpliterator<>(fileChannel, reader.getDataAddress(), reader.getDataType().getSize(), reader.getDimension(), dataSource);
-        System.out.println("count = " + StreamSupport.stream(spliterator, false).map(VolumeData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
+//        TypedCompoundDataSource<VolumeData> dataSource = new TypedCompoundDataSource<>((CompoundDatatype) reader.getDataType(), VolumeData.class);
+//        Spliterator<VolumeData> spliterator = new CompoundDatatypeSpliterator<>(fileChannel, reader.getDataAddress(), reader.getDataType().getSize(), reader.getDimension(), dataSource);
+//        System.out.println("count = " + StreamSupport.stream(spliterator, false).map(VolumeData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
+//        TypedDataClassDataSource<VolumeData> dataSource = new TypedDataClassDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, VolumeData.class, fileChannel, reader.getDataAddress());
+//        System.out.println("count = " + dataSource.stream().map(VolumeData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
+        DataClassDataSource<HdfCompound> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class);
+        System.out.println("count = " + dataSource.stream()
+                .map(c->c.getMembers().stream()
+                        .filter(m->m.getName().equalsIgnoreCase("pieces")).findFirst().orElseThrow())
+                .map(cm->((HdfFixedPoint)cm.getData()).toBigInteger())
+                .collect(Collectors.summarizingInt(BigInteger::intValue)));
     }
 
 //    public void tryHdfFileBuilder() throws IOException {
@@ -356,40 +365,40 @@ public class App {
 //
 //        // Define a dataset with correct CompoundDatatype members
 //        // DatatypeMessage with CompoundDatatype
-//        List<HdfCompoundDatatypeMember> members = List.of(
-//                new HdfCompoundDatatypeMember("shipmentId", 0, 0, 0, new int[4],
+//        List<CompoundMemberDatatype> members = List.of(
+//                new CompoundMemberDatatype("shipmentId", 0, 0, 0, new int[4],
 //                        new FixedPointDatatype((byte) 1, (short)8, false, false, false, false, (short)0, (short)64, computeFixedMessageDataSize("shipmentId"), new BitSet())),
-//                new HdfCompoundDatatypeMember("origCountry", 8, 0, 0, new int[4],
+//                new CompoundMemberDatatype("origCountry", 8, 0, 0, new int[4],
 //                        new StringDatatype((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origCountry"))),
-//                new HdfCompoundDatatypeMember("origSlic", 10, 0, 0, new int[4],
+//                new CompoundMemberDatatype("origSlic", 10, 0, 0, new int[4],
 //                        new StringDatatype((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("origSlic"))),
-//                new HdfCompoundDatatypeMember("origSort", 15, 0, 0, new int[4],
+//                new CompoundMemberDatatype("origSort", 15, 0, 0, new int[4],
 //                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("origSort"), new BitSet())),
-//                new HdfCompoundDatatypeMember("destCountry", 16, 0, 0, new int[4],
+//                new CompoundMemberDatatype("destCountry", 16, 0, 0, new int[4],
 //                        new StringDatatype((byte) 1, (short)2, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destCountry"))),
-//                new HdfCompoundDatatypeMember("destSlic", 18, 0, 0, new int[4],
+//                new CompoundMemberDatatype("destSlic", 18, 0, 0, new int[4],
 //                        new StringDatatype((byte) 1, (short)5, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destSlic"))),
-//                new HdfCompoundDatatypeMember("destIbi", 23, 0, 0, new int[4],
+//                new CompoundMemberDatatype("destIbi", 23, 0, 0, new int[4],
 //                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("destIbi"), new BitSet())),
-//                new HdfCompoundDatatypeMember("destPostalCode", 40, 0, 0, new int[4],
+//                new CompoundMemberDatatype("destPostalCode", 40, 0, 0, new int[4],
 //                        new StringDatatype((byte) 1, (short)9, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("destPostalCode"))),
-//                new HdfCompoundDatatypeMember("shipper", 24, 0, 0, new int[4],
+//                new CompoundMemberDatatype("shipper", 24, 0, 0, new int[4],
 //                        new StringDatatype((byte) 1, (short)10, 0, "Null Terminate", 0, "ASCII", computeStringMessageDataSize("shipper"))),
-//                new HdfCompoundDatatypeMember("service", 49, 0, 0, new int[4],
+//                new CompoundMemberDatatype("service", 49, 0, 0, new int[4],
 //                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("service"), new BitSet())),
-//                new HdfCompoundDatatypeMember("packageType", 50, 0, 0, new int[4],
+//                new CompoundMemberDatatype("packageType", 50, 0, 0, new int[4],
 //                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("packageType"), new BitSet())),
-//                new HdfCompoundDatatypeMember("accessorials", 51, 0, 0, new int[4],
+//                new CompoundMemberDatatype("accessorials", 51, 0, 0, new int[4],
 //                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("accessorials"), new BitSet())),
-//                new HdfCompoundDatatypeMember("pieces", 52, 0, 0, new int[4],
+//                new CompoundMemberDatatype("pieces", 52, 0, 0, new int[4],
 //                        new FixedPointDatatype((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("pieces"), new BitSet())),
-//                new HdfCompoundDatatypeMember("weight", 34, 0, 0, new int[4],
+//                new CompoundMemberDatatype("weight", 34, 0, 0, new int[4],
 //                        new FixedPointDatatype((byte) 1, (short)2, false, false, false, false, (short)0, (short)16, computeFixedMessageDataSize("weight"), new BitSet())),
-//                new HdfCompoundDatatypeMember("cube", 36, 0, 0, new int[4],
+//                new CompoundMemberDatatype("cube", 36, 0, 0, new int[4],
 //                        new FixedPointDatatype((byte) 1, (short)4, false, false, false, false, (short)0, (short)32, computeFixedMessageDataSize("cube"), new BitSet())),
-//                new HdfCompoundDatatypeMember("committedTnt", 54, 0, 0, new int[4],
+//                new CompoundMemberDatatype("committedTnt", 54, 0, 0, new int[4],
 //                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedTnt"), new BitSet())),
-//                new HdfCompoundDatatypeMember("committedDate", 55, 0, 0, new int[4],
+//                new CompoundMemberDatatype("committedDate", 55, 0, 0, new int[4],
 //                        new FixedPointDatatype((byte) 1, (short)1, false, false, false, false, (short)0, (short)8, computeFixedMessageDataSize("committedDate"), new BitSet()))
 //        );
 //

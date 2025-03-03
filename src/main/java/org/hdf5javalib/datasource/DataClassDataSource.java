@@ -17,7 +17,7 @@ import java.util.stream.StreamSupport;
  *
  * @param <T> the type of object returned by streaming or bulk reading operations
  */
-public class DataClassDataSource<T extends HdfData> extends AbstractDataClassDataSource<T> {
+public class DataClassDataSource<T extends HdfData> extends AbstractDataClassStreamingSource<T> {
     private final Class<T> dataClass;
 
     /**

@@ -1,12 +1,14 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfData;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.BitSet;
 
 @Getter
-public class HdfCompoundDatatypeMember {
+public class CompoundMemberDatatype implements HdfDatatype {
     private final String name;
     private final int offset;
     private final int dimensionality;
@@ -15,7 +17,7 @@ public class HdfCompoundDatatypeMember {
     private final HdfDatatype type;
     private short sizeMessageData;
 
-    public HdfCompoundDatatypeMember(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, HdfDatatype type) {
+    public CompoundMemberDatatype(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, HdfDatatype type) {
         this.name = name;
         this.offset = offset;
         this.dimensionality = dimensionality;
@@ -77,5 +79,30 @@ public class HdfCompoundDatatypeMember {
         buffer.put(result);         // 3
         buffer.putInt(type.getSize());        // 4
         type.writeDefinitionToByteBuffer(buffer);
+    }
+
+    @Override
+    public DatatypeClass getDatatypeClass() {
+        return type.getDatatypeClass();
+    }
+
+    @Override
+    public byte getClassAndVersion() {
+        return type.getClassAndVersion();
+    }
+
+    @Override
+    public BitSet getClassBitField() {
+        return type.getClassBitField();
+    }
+
+    @Override
+    public int getSize() {
+        return type.getSize();
+    }
+
+    @Override
+    public HdfData getInstance(ByteBuffer buffer) {
+        return type.getInstance(buffer);
     }
 }
