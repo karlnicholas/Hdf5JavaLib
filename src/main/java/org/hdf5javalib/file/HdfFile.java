@@ -71,6 +71,17 @@ public class HdfFile {
         }
         return bufferAllocation.getDataAddress();
     }
+
+    public long write(ByteBuffer buffer, HdfDataSet hdfDataSet) throws IOException {
+        try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
+            fileChannel.position(bufferAllocation.getDataAddress());
+            while (buffer.hasRemaining()) {
+                fileChannel.write(buffer);
+            }
+        }
+        return bufferAllocation.getDataAddress();
+    }
+
 //
 //    public <T> void closeDataset(HdfDataSet<T> hdfDataSet) throws IOException {
 //        long dataSize = hdfDataSet.updateForRecordCount(datasetRecordCount.get());
@@ -114,4 +125,5 @@ public class HdfFile {
 
         }
     }
+
 }

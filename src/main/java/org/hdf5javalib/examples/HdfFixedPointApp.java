@@ -1,26 +1,30 @@
 package org.hdf5javalib.examples;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.DataClassDataSource;
 import org.hdf5javalib.datasource.DataClassMatrixDataSource;
 import org.hdf5javalib.file.HdfDataSet;
+import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
+import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.utils.HdfTypeUtils;
+import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,10 +33,10 @@ import java.util.stream.Stream;
  *
  */
 public class HdfFixedPointApp {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         new HdfFixedPointApp().run();
     }
-    private void run() {
+    private void run() throws IOException {
         try {
             HdfFileReader reader = new HdfFileReader();
             String filePath = HdfCompoundApp.class.getResource("/singleint.h5").getFile();
@@ -68,61 +72,84 @@ public class HdfFixedPointApp {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        tryHdfApiInts();
+        tryHdfApiInts("randomintseach.h5", this::writeEach);
+        tryHdfApiInts("randomintsall.h5", this::writeAll);
     }
 
-//    public void tryHdfApiInts() {
-//        final String FILE_NAME = "randomints.h5";
-//        final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
-//        final String DATASET_NAME = "temperature";
-//        final int NUM_RECORDS = 100;
-//
-//        try {
-//            // Create a new HDF5 file
-//            HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
-//
-//            // Create data space
-//            HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
-//            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false);
-////            hsize_t dim[1] = { NUM_RECORDS };
-////            DataSpace space(1, dim);
-//
-//            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
-//                    FixedPointDatatype.createClassAndVersion(),
-//                    FixedPointDatatype.createClassBitField( false, false, false, true),
-//                    (short)8, (short)0, (short)64);
-//
-//            // Create dataset
-////            DataSet dataset = file.createDataSet(DATASET_NAME, compoundType, space);
-//            HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
-//
-//            writeVersionAttribute(dataset);
-//
-//            AtomicInteger countHolder = new AtomicInteger(0);
-//            FixedPointTypedDataSource<TemperatureData> temperatureDataHdfDataSource = new FixedPointTypedDataSource<>(dataset.getDataObjectHeaderPrefix(), "temperature", 0, TemperatureData.class);
-//            ByteBuffer temperatureBuffer = ByteBuffer.allocate(fixedPointDatatype.getSize());
-//            // Write to dataset
-//            dataset.write(() -> {
-//                int count = countHolder.getAndIncrement();
-//                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
-//                TemperatureData instance = TemperatureData.builder()
-//                        .temperature(BigInteger.valueOf((long) (Math.random() *40.0 + 10.0)))
-//                        .build();
-//                temperatureBuffer.clear();
-//                temperatureDataHdfDataSource.writeToBuffer(instance, temperatureBuffer);
-//                temperatureBuffer.flip();
-//                return temperatureBuffer;
-//            });
-//            dataset.close();
-//            file.close();
-//
-//            // auto close
-//
-//            System.out.println("HDF5 file created and written successfully!");
-//        } catch (Exception e) {
-//            System.out.println(e.getMessage());
-//        }
-//    }
+    @SneakyThrows
+    private void writeEach(WriterParams writerParams) {
+        AtomicInteger countHolder = new AtomicInteger(0);
+//            DataClassDataSource<HdfFixedPoint> dataSource = new DataClassDataSource<>(dataset.getDataObjectHeaderPrefix(), 0, null, 0, HdfFixedPoint.class);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize());
+        // Write to dataset
+        writerParams.dataset.write(() -> {
+            int count = countHolder.getAndIncrement();
+            if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
+            byteBuffer.clear();
+            HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) (Math.random() *40.0 + 10.0)), writerParams.fixedPointDatatype, byteBuffer);
+            byteBuffer.flip();
+            return byteBuffer;
+        });
+    }
+
+    @SneakyThrows
+    private void writeAll(WriterParams writerParams) {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_RECORDS);
+        for(int i=0; i<writerParams.NUM_RECORDS; i++) {
+            HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) (Math.random() *40.0 + 10.0)), writerParams.fixedPointDatatype, byteBuffer);
+        }
+        byteBuffer.flip();
+        // Write to dataset
+        writerParams.dataset.write(byteBuffer);
+    }
+
+    @AllArgsConstructor
+    class WriterParams {
+        int NUM_RECORDS;
+        FixedPointDatatype fixedPointDatatype;
+        HdfDataSet dataset;
+    }
+
+    public void tryHdfApiInts(String FILE_NAME, Consumer<WriterParams> writer) throws IOException {
+//        final String FILE_NAME = "randomintseach.h5";
+        final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
+        final String DATASET_NAME = "temperature";
+        final int NUM_RECORDS = 100;
+
+        try {
+            // Create a new HDF5 file
+            HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
+
+            // Create data space
+            HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false);
+//            hsize_t dim[1] = { NUM_RECORDS };
+//            DataSpace space(1, dim);
+
+            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
+                    FixedPointDatatype.createClassAndVersion(),
+                    FixedPointDatatype.createClassBitField( false, false, false, true),
+                    (short)8, (short)0, (short)64);
+
+            // Create dataset
+//            DataSet dataset = file.createDataSet(DATASET_NAME, compoundType, space);
+            HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
+
+            writeVersionAttribute(dataset);
+
+            writer.accept(new WriterParams(NUM_RECORDS, fixedPointDatatype, dataset));
+
+            dataset.close();
+            file.close();
+
+            // auto close
+
+            System.out.println("HDF5 file " + FILE_NAME + " created and written successfully!");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
 
     private void writeVersionAttribute(HdfDataSet dataset) {
         String ATTRIBUTE_NAME = "GIT root revision";

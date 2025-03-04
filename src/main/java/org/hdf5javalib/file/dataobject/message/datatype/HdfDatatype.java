@@ -2,6 +2,7 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 
 import org.hdf5javalib.dataclass.HdfData;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 
@@ -14,7 +15,6 @@ public interface HdfDatatype {
 
     short getSizeMessageData();
     HdfData getInstance(ByteBuffer buffer);
-
 
     // Enum defined within the interface
     enum DatatypeClass {

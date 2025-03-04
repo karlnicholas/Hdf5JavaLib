@@ -1,7 +1,11 @@
 package org.hdf5javalib.utils;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
+import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -36,4 +40,15 @@ public class HdfWriteUtils {
         buffer.put(bytesToWrite);
     }
 
+    public static void writeBigIntegerAsHdfFixedPoint(BigInteger value, HdfDatatype datatype, ByteBuffer buffer) {
+        FixedPointDatatype fixedPointDatatype = (FixedPointDatatype)datatype;
+        HdfFixedPoint fixedPoint = new HdfFixedPoint(value, fixedPointDatatype.getSize(), fixedPointDatatype.isSigned(), fixedPointDatatype.isBigEndian());
+        fixedPoint.writeValueToByteBuffer(buffer);
+    }
+
+    public static void writeBigDecimalAsHdfFixedPoint(BigDecimal value, HdfDatatype datatype, ByteBuffer buffer) {
+        FixedPointDatatype fixedPointDatatype = (FixedPointDatatype)datatype;
+        HdfFixedPoint fixedPoint = new HdfFixedPoint(value.unscaledValue(), fixedPointDatatype.getSize(), fixedPointDatatype.isSigned(), fixedPointDatatype.isBigEndian());
+        fixedPoint.writeValueToByteBuffer(buffer);
+    }
 }

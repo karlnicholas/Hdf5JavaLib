@@ -47,6 +47,10 @@ public class HdfDataSet {
         dataAddress = hdfGroup.write(bufferSupplier, this);
     }
 
+    public void write(ByteBuffer byteBuffer) throws IOException {
+        dataAddress = hdfGroup.write(byteBuffer, this);
+    }
+
     public AttributeMessage createAttribute(String name, DatatypeMessage dt, DataspaceMessage ds, HdfData value) {
         byte[] nameBytes = new byte[name.length()+1];
         System.arraycopy(name.getBytes(StandardCharsets.US_ASCII), 0, nameBytes, 0, name.length());
@@ -136,4 +140,5 @@ public class HdfDataSet {
     public void writeToBuffer(ByteBuffer buffer) {
         dataObjectHeaderPrefix.writeToByteBuffer(buffer);
     }
+
 }
