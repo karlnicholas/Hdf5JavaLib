@@ -1,17 +1,17 @@
 package org.hdf5javalib.file.dataobject.message;
 
+import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
-import lombok.Getter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.BitSet;
 
-import static org.hdf5javalib.utils.HdfParseUtils.createMessageInstance;
+import static org.hdf5javalib.utils.HdfReadUtils.createMessageInstance;
 
 @Getter
 public class AttributeMessage extends HdfMessage {

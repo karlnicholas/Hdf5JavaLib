@@ -1,9 +1,9 @@
 package org.hdf5javalib.file.infrastructure;
 
+import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
-import lombok.Getter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

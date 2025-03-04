@@ -1,8 +1,8 @@
 package org.hdf5javalib.file.infrastructure;
 
+import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
-import lombok.Getter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import static org.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
+import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 @Getter
 public class HdfBTreeV1 {

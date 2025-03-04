@@ -5,7 +5,7 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class HdfUtils {
+public class HdfWriteUtils {
 
     /**
      * Writes an `HdfFixedPoint` value to the `ByteBuffer' accounting for endian-ness.

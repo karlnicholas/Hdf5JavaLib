@@ -1,13 +1,13 @@
 package org.hdf5javalib.file.dataobject.message;
 
-import org.hdf5javalib.dataclass.HdfFixedPoint;
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
 
-import static org.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
+import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 @Getter
 public class SymbolTableMessage extends HdfMessage {

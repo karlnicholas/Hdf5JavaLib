@@ -1,9 +1,9 @@
 package org.hdf5javalib.file.metadata;
 
-import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import lombok.Getter;
 import lombok.Setter;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -11,7 +11,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.BitSet;
 
-import static org.hdf5javalib.utils.HdfUtils.writeFixedPointToBuffer;
+import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 @Getter
 public class HdfSuperblock {

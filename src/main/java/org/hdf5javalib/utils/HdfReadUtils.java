@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class HdfParseUtils {
+public class HdfReadUtils {
     public static int readIntFromFileChannel(FileChannel fileChannel) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
         buffer.order(ByteOrder.LITTLE_ENDIAN); // Assume little-endian as per HDF5 spec

@@ -1,7 +1,7 @@
 package org.hdf5javalib.dataclass;
 
 import lombok.Getter;
-import org.hdf5javalib.utils.HdfUtils;
+import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -286,6 +286,6 @@ public class HdfFixedPoint implements HdfData {
 
     @Override
     public void writeValueToByteBuffer(ByteBuffer buffer) {
-        HdfUtils.writeFixedPointToBuffer(buffer, this);
+        HdfWriteUtils.writeFixedPointToBuffer(buffer, this);
     }
 }

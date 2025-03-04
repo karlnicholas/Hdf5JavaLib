@@ -10,23 +10,17 @@ import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.DataClassDataSource;
 import org.hdf5javalib.datasource.DataClassMatrixDataSource;
 import org.hdf5javalib.file.HdfDataSet;
-import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
-import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.utils.HdfTypeUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

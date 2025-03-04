@@ -1,7 +1,7 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
-import org.hdf5javalib.dataclass.HdfString;
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfString;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;

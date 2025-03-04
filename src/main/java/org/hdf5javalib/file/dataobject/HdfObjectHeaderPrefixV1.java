@@ -1,8 +1,8 @@
 package org.hdf5javalib.file.dataobject;
 
+import lombok.Getter;
 import org.hdf5javalib.file.dataobject.message.HdfMessage;
 import org.hdf5javalib.file.dataobject.message.ObjectHeaderContinuationMessage;
-import lombok.Getter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hdf5javalib.utils.HdfParseUtils.parseContinuationMessage;
-import static org.hdf5javalib.utils.HdfParseUtils.parseDataObjectHeaderMessages;
+import static org.hdf5javalib.utils.HdfReadUtils.parseContinuationMessage;
+import static org.hdf5javalib.utils.HdfReadUtils.parseDataObjectHeaderMessages;
 
 @Getter
 public class HdfObjectHeaderPrefixV1 {

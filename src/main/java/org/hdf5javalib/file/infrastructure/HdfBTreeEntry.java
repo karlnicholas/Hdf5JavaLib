@@ -1,7 +1,7 @@
 package org.hdf5javalib.file.infrastructure;
 
-import org.hdf5javalib.dataclass.HdfFixedPoint;
 import lombok.Data;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
 
 @Data
 public class HdfBTreeEntry {

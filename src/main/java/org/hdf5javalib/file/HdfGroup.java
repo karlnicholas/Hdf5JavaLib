@@ -1,13 +1,13 @@
 package org.hdf5javalib.file;
 
+import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
-import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
-import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.SymbolTableMessage;
-import lombok.Getter;
+import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
+import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.file.infrastructure.*;
 
 import java.io.IOException;

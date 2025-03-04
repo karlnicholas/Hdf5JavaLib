@@ -1,12 +1,12 @@
 package org.hdf5javalib.examples;
 
+import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
-import org.hdf5javalib.datasource.*;
-import org.hdf5javalib.file.HdfFile;
-import org.hdf5javalib.HdfFileReader;
+import org.hdf5javalib.datasource.DataClassDataSource;
 import org.hdf5javalib.file.HdfDataSet;
+import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
