@@ -2,6 +2,7 @@ package org.hdf5javalib.file;
 
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.file.dataobject.message.DataLayoutMessage;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
@@ -82,27 +83,17 @@ public class HdfFile {
         return bufferAllocation.getDataAddress();
     }
 
-//
-//    public <T> void closeDataset(HdfDataSet<T> hdfDataSet) throws IOException {
-//        long dataSize = hdfDataSet.updateForRecordCount(datasetRecordCount.get());
-//        long endOfFile = dataAddress + dataSize;
-//        superblock.setEndOfFileAddress(HdfFixedPoint.of(endOfFile));
-//    }
-
     public void close() throws IOException {
-        long dataSize = rootGroup.getDataSet().getDataObjectHeaderPrefix()
-                .findMessageByType(DatatypeMessage.class)
+        long endOfFileAddress = bufferAllocation.getDataAddress();
+        HdfFixedPoint[] dimensionSizes = rootGroup.getDataSet().getDataObjectHeaderPrefix()
+                .findMessageByType(DataLayoutMessage.class)
                 .orElseThrow()
-                .getHdfDatatype().getSize();
-        HdfFixedPoint[] dimensions = rootGroup.getDataSet().getDataObjectHeaderPrefix()
-                .findMessageByType(DataspaceMessage.class)
-                .orElseThrow()
-                .getDimensions();
-        for( HdfFixedPoint fixedPoint : dimensions) {
-            dataSize *= fixedPoint.toBigInteger().longValue();
+                .getDimensionSizes();
+        for(HdfFixedPoint fixedPoint : dimensionSizes) {
+            endOfFileAddress += fixedPoint.toBigInteger().longValue();
         }
 
-        superblock.setEndOfFileAddress(HdfFixedPoint.of(bufferAllocation.getDataAddress() + dataSize));
+        superblock.setEndOfFileAddress(HdfFixedPoint.of(endOfFileAddress));
 
         System.out.println(superblock);
         System.out.println(rootGroup);
