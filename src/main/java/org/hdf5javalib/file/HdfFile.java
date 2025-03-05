@@ -4,7 +4,6 @@ import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.dataobject.message.DataLayoutMessage;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
-import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import org.hdf5javalib.file.metadata.HdfSuperblock;
