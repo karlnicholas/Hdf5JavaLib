@@ -90,10 +90,6 @@ public class HdfFile {
 //    }
 
     public void close() throws IOException {
-//        long records = rootGroup.getDataSet().getDataObjectHeaderPrefix()
-//                .findMessageByType(DataspaceMessage.class)
-//                .orElseThrow()
-//                .getDimensions()[0].toBigInteger().longValue();
         long dataSize = rootGroup.getDataSet().getDataObjectHeaderPrefix()
                 .findMessageByType(DatatypeMessage.class)
                 .orElseThrow()
