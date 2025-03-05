@@ -7,6 +7,7 @@ import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 
 public class HdfWriteUtils {
@@ -22,11 +23,12 @@ public class HdfWriteUtils {
         if (value.isUndefined()) {
             Arrays.fill(bytesToWrite, (byte) 0xFF); // Undefined value → fill with 0xFF
         } else {
-            byte[] valueBytes = value.toBigInteger().toByteArray();
+            byte[] valueBytes = value.getBytes();
             int copySize = Math.min(valueBytes.length, size);
 
             // Store in **little-endian format** by reversing byte order
-            if ( value.isBigEndian()) {
+            if ( value.isBigEndian() && buffer.order() == ByteOrder.BIG_ENDIAN
+            || !value.isBigEndian() && buffer.order() == ByteOrder.LITTLE_ENDIAN) {
                 for (int i = 0; i < copySize; i++) {
                     bytesToWrite[i] = valueBytes[i];
                 }

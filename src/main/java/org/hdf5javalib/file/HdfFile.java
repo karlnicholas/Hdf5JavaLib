@@ -90,15 +90,23 @@ public class HdfFile {
 //    }
 
     public void close() throws IOException {
-        long records = rootGroup.getDataSet().getDataObjectHeaderPrefix()
-                .findMessageByType(DataspaceMessage.class)
-                .orElseThrow()
-                .getDimensions()[0].toBigInteger().longValue();
-        long recordSize = rootGroup.getDataSet().getDataObjectHeaderPrefix()
+//        long records = rootGroup.getDataSet().getDataObjectHeaderPrefix()
+//                .findMessageByType(DataspaceMessage.class)
+//                .orElseThrow()
+//                .getDimensions()[0].toBigInteger().longValue();
+        long dataSize = rootGroup.getDataSet().getDataObjectHeaderPrefix()
                 .findMessageByType(DatatypeMessage.class)
                 .orElseThrow()
                 .getHdfDatatype().getSize();
-        superblock.setEndOfFileAddress(HdfFixedPoint.of(bufferAllocation.getDataAddress() + recordSize * records));
+        HdfFixedPoint[] dimensions = rootGroup.getDataSet().getDataObjectHeaderPrefix()
+                .findMessageByType(DataspaceMessage.class)
+                .orElseThrow()
+                .getDimensions();
+        for( HdfFixedPoint fixedPoint : dimensions) {
+            dataSize *= fixedPoint.toBigInteger().longValue();
+        }
+
+        superblock.setEndOfFileAddress(HdfFixedPoint.of(bufferAllocation.getDataAddress() + dataSize));
 
         System.out.println(superblock);
         System.out.println(rootGroup);

@@ -76,8 +76,12 @@ public class HdfDataSet {
 
         // Add DataLayoutMessage (Storage format)
         HdfFixedPoint[] dimensions = dataSpaceMessage.getDimensions();
-        long recordCount = dimensions[0].toBigInteger().longValue();
-        HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(recordCount * hdfDatatype.getSize())};
+//        long recordCount = dimensions[dimensions.length-1].toBigInteger().longValue();
+        long dimensionSizes = hdfDatatype.getSize();
+        for(HdfFixedPoint fixedPoint : dimensions) {
+            dimensionSizes *= fixedPoint.toBigInteger().longValue();
+        }
+        HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(dimensionSizes)};
         DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1,
                 HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()),
                 hdfDimensionSizes,
@@ -131,7 +135,6 @@ public class HdfDataSet {
         } else {
             // add remaining space
             headerMessages.add(new NilMessage(currentObjectHeaderSize - 8 - objectHeaderSize));
-
         }
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, Math.max(objectHeaderSize, currentObjectHeaderSize), headerMessages);
     }

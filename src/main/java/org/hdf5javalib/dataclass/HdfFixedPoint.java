@@ -47,6 +47,12 @@ public class HdfFixedPoint implements HdfData {
         return bytes.clone();
     }
 
+    public HdfFixedPoint(BigInteger value, int size,
+                         boolean bigEndian, boolean loPad, boolean hiPad, boolean signed,
+                         short bitOffset, short bitPrecision) {
+        this(toSizedByteArray(value, size, bigEndian), size, bigEndian, loPad, hiPad, signed, bitOffset, bitPrecision);
+    }
+
     public HdfFixedPoint(BigInteger value, int size, boolean signed, boolean bigEndian) {
         this(toSizedByteArray(value, size, bigEndian), size, bigEndian, false, false, signed, (short) 0, (short) (size*8));
     }
