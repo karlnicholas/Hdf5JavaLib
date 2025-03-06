@@ -176,8 +176,14 @@ public class CompoundDatatype implements HdfDatatype {
 
     @Override
     public HdfData getInstance(ByteBuffer buffer) {
-        return new HdfCompound(members.stream().map(member->
-            new HdfCompoundMember(member.getName(), member.getInstance(buffer))).toList());
+        // make sure the buffer advances the correct amount, in case the struct is padded
+        int startPos = buffer.position();
+        List<HdfCompoundMember> compoundMembers = new ArrayList<>();
+        for (CompoundMemberDatatype member: members) {
+            compoundMembers.add(new HdfCompoundMember(member.getName(), member.getInstance(buffer)));
+        }
+        buffer.position(startPos + size);
+        return new HdfCompound(compoundMembers);
     }
 
 }

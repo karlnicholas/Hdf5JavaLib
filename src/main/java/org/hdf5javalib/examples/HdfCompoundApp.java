@@ -213,11 +213,11 @@ public class HdfCompoundApp {
 //        System.out.println("count = " + dataSource.stream().map(ShipperData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
         DataClassDataSource<HdfCompound> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class);
         HdfCompound[] allData = dataSource.readAll();
-        System.out.println("readAll = " + Arrays.asList(allData));
+        System.out.println("*** readAll: \r\n" + Arrays.asList(allData).stream().map(Object::toString).collect(Collectors.joining("\n")));
 
-        System.out.println("stream = " + dataSource.stream().toList());
+        System.out.println("*** stream: \r\n" + dataSource.stream().map(Object::toString).collect(Collectors.joining("\n")));
 
-        System.out.println("parallelStream = " + dataSource.parallelStream().toList());
+        System.out.println("\"*** parallelStream: \r\n" + dataSource.parallelStream().map(Object::toString).collect(Collectors.joining("\n")));
     }
 }
 
