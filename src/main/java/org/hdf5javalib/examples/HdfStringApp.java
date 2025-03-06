@@ -10,7 +10,6 @@ import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
-import org.hdf5javalib.utils.HdfTestUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -72,7 +71,7 @@ public class HdfStringApp {
 
     private void tryHdfApiStrings(String FILE_NAME, Consumer<WriterParams> writer, BitSet classBitField, int size) {
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
-        final String DATASET_NAME = "ascii_strings";
+        final String DATASET_NAME = "strings";
         final int NUM_RECORDS = 10;
 
         try {
@@ -112,8 +111,7 @@ public class HdfStringApp {
             int count = countHolder.getAndIncrement();
             if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
             byteBuffer.clear();
-            // this one UTF-8
-            writerParams.stringDatatype.getInstance(ByteBuffer.wrap(("\uA9A0\uA9A4\uA9C0" + " " + (count+1)).getBytes()))
+            writerParams.stringDatatype.getInstance(ByteBuffer.wrap(("ꦠꦤ꧀" + " " + (count+1)).getBytes()))
                     .writeValueToByteBuffer(byteBuffer);
             byteBuffer.flip();
             return byteBuffer;
