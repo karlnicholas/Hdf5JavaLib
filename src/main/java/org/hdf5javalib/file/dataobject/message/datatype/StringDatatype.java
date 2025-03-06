@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfString;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.BitSet;
 
 @Getter
@@ -23,7 +24,7 @@ public class StringDatatype implements HdfDatatype {
         return new StringDatatype(classAndVersion, classBitField, size);
     }
 
-    public static BitSet getStringTypeBitSet(PaddingType paddingType, CharacterSet charSet) {
+    public static BitSet createClassBitField(PaddingType paddingType, CharacterSet charSet) {
         return BitSet.valueOf(new long[] {((long) charSet.value << 4) + paddingType.value});
     }
 
@@ -33,7 +34,11 @@ public class StringDatatype implements HdfDatatype {
 
     public HdfString getInstance(ByteBuffer dataBuffer) {
         byte[] bytes = new byte[size];
-        dataBuffer.get(bytes);
+        byte[] workingInputBytes = new byte[Math.min(size, dataBuffer.remaining())];
+        dataBuffer.get(workingInputBytes);
+        System.arraycopy(workingInputBytes, 0, bytes, 0, workingInputBytes.length);
+        char paddingChar = getPaddingType() == PaddingType.SPACE_PAD ? ' ' : 0x00;
+        Arrays.fill(bytes, workingInputBytes.length, bytes.length, (byte) paddingChar);
         return new HdfString(bytes, classBitField);
     }
 

@@ -59,7 +59,7 @@ public class HdfGroup {
 
         localHeap = new HdfLocalHeap(HdfFixedPoint.of(localHeapContentsSize), HdfFixedPoint.of(hdfFile.getBufferAllocation().getLocalHeapContentsAddress()));
         localHeapContents = new HdfLocalHeapContents(heapData);
-        localHeap.addToHeap(new HdfString(new byte[0], StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII)), localHeapContents);
+        localHeap.addToHeap(new HdfString(new byte[0], StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII)), localHeapContents);
 
         // Define a B-Tree for group indexing
         bTree = new HdfBTreeV1("TREE", 0, 0, 0,
@@ -77,7 +77,7 @@ public class HdfGroup {
 
 
     public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage, long objectHeaderAddress) {
-        HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII));
+        HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII));
         // this poosibly changes addresses for anything after the dataGroupAddress, which includes the SNOD address.
         dataSet = new HdfDataSet(this, datasetName, hdfDatatype, dataSpaceMessage);
         int linkNameOffset = bTree.addGroup(hdfDatasetName, HdfFixedPoint.of(hdfFile.getBufferAllocation().getSnodAddress()),

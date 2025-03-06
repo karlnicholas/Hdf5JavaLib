@@ -39,7 +39,7 @@ public class HdfCompoundApp {
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                tryVolumeSpliterator(channel, reader);
+                tryCompoundSpliterator(channel, reader);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -51,7 +51,7 @@ public class HdfCompoundApp {
     private void writeVersionAttribute(HdfDataSet dataset) {
         String ATTRIBUTE_NAME = "GIT root revision";
         String ATTRIBUTE_VALUE = "Revision: , URL: ";
-        BitSet classBitField = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
+        BitSet classBitField = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
         // value
         StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(), classBitField, (short)ATTRIBUTE_VALUE.length());
         // data type, String, DATASET_NAME.length
@@ -72,7 +72,7 @@ public class HdfCompoundApp {
             // Create a new HDF5 file
             HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
             // DatatypeMessage with CompoundDatatype
-            BitSet stringBitSet = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
+            BitSet stringBitSet = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
             List<CompoundMemberDatatype> shipment = List.of(
                     new CompoundMemberDatatype("shipmentId", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
@@ -162,13 +162,13 @@ public class HdfCompoundApp {
             writeVersionAttribute(dataset);
 
 //            AtomicInteger countHolder = new AtomicInteger(0);
-//            TypedCompoundDataSource<VolumeData> volumeDataHdfDataSource = new TypedCompoundDataSource<>(compoundType, VolumeData.class);
+//            TypedCompoundDataSource<ShipperData> volumeDataHdfDataSource = new TypedCompoundDataSource<>(compoundType, ShipperData.class);
 //            ByteBuffer volumeBuffer = ByteBuffer.allocate(compoundType.getSize());
 //            // Write to dataset
 //            dataset.write(() -> {
 //                int count = countHolder.getAndIncrement();
 //                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
-//                VolumeData instance = VolumeData.builder()
+//                ShipperData instance = ShipperData.builder()
 //                        .shipmentId(BigInteger.valueOf(count + 1000))
 //                        .origCountry("US")
 //                        .origSlic("12345")
@@ -205,12 +205,12 @@ public class HdfCompoundApp {
     }
 
 
-    public void tryVolumeSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-//        TypedCompoundDataSource<VolumeData> dataSource = new TypedCompoundDataSource<>((CompoundDatatype) reader.getDataType(), VolumeData.class);
-//        Spliterator<VolumeData> spliterator = new CompoundDatatypeSpliterator<>(fileChannel, reader.getDataAddress(), reader.getDataType().getSize(), reader.getDimension(), dataSource);
-//        System.out.println("count = " + StreamSupport.stream(spliterator, false).map(VolumeData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
-//        TypedDataClassDataSource<VolumeData> dataSource = new TypedDataClassDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, VolumeData.class, fileChannel, reader.getDataAddress());
-//        System.out.println("count = " + dataSource.stream().map(VolumeData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
+    public void tryCompoundSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
+//        TypedCompoundDataSource<ShipperData> dataSource = new TypedCompoundDataSource<>((CompoundDatatype) reader.getDataType(), ShipperData.class);
+//        Spliterator<ShipperData> spliterator = new CompoundDatatypeSpliterator<>(fileChannel, reader.getDataAddress(), reader.getDataType().getSize(), reader.getDimension(), dataSource);
+//        System.out.println("count = " + StreamSupport.stream(spliterator, false).map(ShipperData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
+//        TypedDataClassDataSource<ShipperData> dataSource = new TypedDataClassDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, ShipperData.class, fileChannel, reader.getDataAddress());
+//        System.out.println("count = " + dataSource.stream().map(ShipperData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
         DataClassDataSource<HdfCompound> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class);
         HdfCompound[] allData = dataSource.readAll();
         System.out.println("readAll stats = " + Arrays.stream(allData)

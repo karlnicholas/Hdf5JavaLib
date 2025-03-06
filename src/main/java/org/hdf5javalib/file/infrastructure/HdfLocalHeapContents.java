@@ -58,7 +58,7 @@ public class HdfLocalHeapContents {
         }
 
         // Extract the string
-        HdfString result = new HdfString(Arrays.copyOfRange(heapData, start, iOffset), StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII));
+        HdfString result = new HdfString(Arrays.copyOfRange(heapData, start, iOffset), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII));
 
         return result;
     }

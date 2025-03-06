@@ -9,7 +9,7 @@ import java.math.BigInteger;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class VolumeData {
+public class ShipperData {
     private BigInteger shipmentId;
     private String origCountry;
     private String origSlic;

@@ -12,7 +12,7 @@ public class HdfTestUtils {
     public static void writeVersionAttribute(HdfDataSet dataset) {
         String ATTRIBUTE_NAME = "GIT root revision";
         String ATTRIBUTE_VALUE = "Revision: , URL: ";
-        BitSet classBitField = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
+        BitSet classBitField = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
         // value
         StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(), classBitField, (short)ATTRIBUTE_VALUE.length());
         // data type, String, DATASET_NAME.length

@@ -47,7 +47,7 @@ public class HdfString implements HdfData {
             throw new IllegalArgumentException("String value cannot be null");
         }
 
-        classBitField = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.UTF8);
+        classBitField = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.UTF8);
 
         this.bytes = value.getBytes(StandardCharsets.UTF_8);
         this.length = bytes.length;
