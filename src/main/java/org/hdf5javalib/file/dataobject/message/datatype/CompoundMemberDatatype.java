@@ -25,10 +25,20 @@ public class CompoundMemberDatatype implements HdfDatatype {
         this.dimensionSizes = dimensionSizes;
         this.type = type;
         sizeMessageData = switch(type.getDatatypeClass()) {
-            case STRING -> computeStringMessageDataSize(name);
             case FIXED -> computeFixedMessageDataSize(name);
+            case FLOAT -> computeFloatMessageDataSize(name);
+            case STRING -> computeStringMessageDataSize(name);
             default -> throw new IllegalStateException("Unexpected datatype class: " + type.getDatatypeClass());
         };
+    }
+
+    private short computeFloatMessageDataSize(String name) {
+        if (name.length() > 0 ) {
+            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+            return (short) (name.length()+1 + padding + 44);
+        } else {
+            return 44;
+        }
     }
 
     private short computeFixedMessageDataSize(String name) {

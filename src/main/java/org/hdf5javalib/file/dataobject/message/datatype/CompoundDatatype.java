@@ -74,7 +74,8 @@ public class CompoundDatatype implements HdfDatatype {
     private void readFromByteBuffer(ByteBuffer buffer) {
         this.members = new ArrayList<>();
 //        buffer.position(8);
-        for (int i = 0; i < extractNumberOfMembersFromBitSet(); i++) {
+        int numberOfMembers = extractNumberOfMembersFromBitSet();
+        for (int i = 0; i < numberOfMembers; i++) {
             buffer.mark();
             String name = readNullTerminatedString(buffer);
 

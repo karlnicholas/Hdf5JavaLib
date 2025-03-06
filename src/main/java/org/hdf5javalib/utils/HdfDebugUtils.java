@@ -24,7 +24,7 @@ public class HdfDebugUtils {
                 } else if (member.getType() instanceof FixedPointDatatype) {
                     data[column] = ((FixedPointDatatype) member.getType()).getInstance(dataBuffer);
                 } else if (member.getType() instanceof FloatingPointDatatype) {
-                    data[column] = ((FloatingPointDatatype) member.getType()).getInstance();
+                    data[column] = ((FloatingPointDatatype) member.getType()).getInstance(dataBuffer);
                 } else {
                     throw new UnsupportedOperationException("Member type " + member.getType() + " not yet implemented.");
                 }

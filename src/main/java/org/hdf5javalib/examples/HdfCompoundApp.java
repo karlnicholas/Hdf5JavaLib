@@ -35,7 +35,7 @@ public class HdfCompoundApp {
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = HdfCompoundApp.class.getResource("/test.h5").getFile();
+            String filePath = HdfCompoundApp.class.getResource("/env_monitoring.h5").getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
@@ -213,22 +213,30 @@ public class HdfCompoundApp {
 //        System.out.println("count = " + dataSource.stream().map(ShipperData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
         DataClassDataSource<HdfCompound> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class);
         HdfCompound[] allData = dataSource.readAll();
-        System.out.println("readAll stats = " + Arrays.stream(allData)
-                .map(c->c.getMembers().stream()
-                        .filter(m->m.getName().equalsIgnoreCase("pieces")).findFirst().orElseThrow())
-                .map(cm->((HdfFixedPoint)cm.getData()).toBigInteger())
-                .collect(Collectors.summarizingInt(BigInteger::intValue)));
+        System.out.println("readAll = " + Arrays.asList(allData));
 
-        System.out.println("stream stats = " + dataSource.stream()
-                .map(c->c.getMembers().stream()
-                        .filter(m->m.getName().equalsIgnoreCase("pieces")).findFirst().orElseThrow())
-                .map(cm->((HdfFixedPoint)cm.getData()).toBigInteger())
-                .collect(Collectors.summarizingInt(BigInteger::intValue)));
+        System.out.println("stream = " + dataSource.stream().toList());
 
-        System.out.println("parallelStream stats = " + dataSource.parallelStream()
-                .map(c->c.getMembers().stream()
-                        .filter(m->m.getName().equalsIgnoreCase("pieces")).findFirst().orElseThrow())
-                .map(cm->((HdfFixedPoint)cm.getData()).toBigInteger())
-                .collect(Collectors.summarizingInt(BigInteger::intValue)));
+        System.out.println("parallelStream = " + dataSource.parallelStream().toList());
     }
 }
+
+//DataClassDataSource<HdfCompound> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class);
+//HdfCompound[] allData = dataSource.readAll();
+//        System.out.println("readAll = " + Arrays.stream(allData)
+//                .map(c->c.getMembers().stream()
+//                        .filter(m->m.getName().equalsIgnoreCase("pieces")).findFirst().orElseThrow())
+//        .map(cm->((HdfFixedPoint)cm.getData()).toBigInteger())
+//        .collect(Collectors.summarizingInt(BigInteger::intValue)));
+//
+//        System.out.println("stream = " + dataSource.stream()
+//                .map(c->c.getMembers().stream()
+//                        .filter(m->m.getName().equalsIgnoreCase("pieces")).findFirst().orElseThrow())
+//        .map(cm->((HdfFixedPoint)cm.getData()).toBigInteger())
+//        .collect(Collectors.summarizingInt(BigInteger::intValue)));
+//
+//        System.out.println("parallelStream = " + dataSource.parallelStream()
+//                .map(c->c.getMembers().stream()
+//                        .filter(m->m.getName().equalsIgnoreCase("pieces")).findFirst().orElseThrow())
+//        .map(cm->((HdfFixedPoint)cm.getData()).toBigInteger())
+//        .collect(Collectors.summarizingInt(BigInteger::intValue)));

@@ -13,7 +13,7 @@ public class TestHdfString {
     @Test
     public void testHdfMetadataConstructor() {
         byte[] bytes = new byte[]{65, 66, 67, 0}; // "ABC\0" in UTF-8
-        HdfString hdfString = new HdfString(bytes, StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.UTF8));
+        HdfString hdfString = new HdfString(bytes, StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.UTF8));
 
         assertEquals("ABC", hdfString.getValue());
         byte[] newBytes = hdfString.getBytes();
@@ -23,7 +23,7 @@ public class TestHdfString {
 
     @Test
     public void testJavaValueConstructorAscii() {
-        HdfString hdfString = new HdfString("Hello".getBytes(StandardCharsets.US_ASCII), StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII));
+        HdfString hdfString = new HdfString("Hello".getBytes(StandardCharsets.US_ASCII), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII));
 
         assertEquals("Hello", hdfString.getValue());
         assertArrayEquals("Hello".getBytes(StandardCharsets.US_ASCII), hdfString.getBytes());
@@ -32,7 +32,7 @@ public class TestHdfString {
     @Test
     public void testNonNullTerminatedString() {
         byte[] bytes = new byte[]{65, 66, 67}; // "ABC" without null-termination
-        HdfString hdfString = new HdfString(bytes, StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII));
+        HdfString hdfString = new HdfString(bytes, StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII));
 
         assertEquals("ABC", hdfString.getValue());
         assertArrayEquals(bytes, hdfString.getBytes());
@@ -47,7 +47,7 @@ public class TestHdfString {
     @Test
     public void testEmptyString() {
         byte[] bytes = new byte[]{0}; // Null-terminated empty string
-        HdfString hdfString = new HdfString(bytes, StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII));
+        HdfString hdfString = new HdfString(bytes, StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII));
 
         assertEquals("", hdfString.getValue());
         assertArrayEquals(bytes, hdfString.getBytes());
@@ -56,7 +56,7 @@ public class TestHdfString {
     @Test
     public void testToStringOutput() {
         byte[] bytes = new byte[]{65, 66, 67, 0}; // "ABC\0"
-        HdfString hdfString = new HdfString(bytes, StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII));
+        HdfString hdfString = new HdfString(bytes, StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII));
 
         String toString = hdfString.toString();
         assertTrue(toString.contains("ABC"));
@@ -65,7 +65,7 @@ public class TestHdfString {
     @Test
     public void testImmutability() {
         byte[] bytes = new byte[]{65, 66, 67, 0}; // "ABC\0"
-        HdfString hdfString = new HdfString(bytes, StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII));
+        HdfString hdfString = new HdfString(bytes, StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII));
 
         bytes[0] = 0; // Attempt to mutate original array
         assertEquals("ABC", hdfString.getValue()); // Value should remain unchanged
