@@ -3,16 +3,12 @@ package org.hdf5javalib.examples;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.DataClassDataSource;
-import org.hdf5javalib.file.HdfDataSet;
-import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
-import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
-import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
-import java.util.BitSet;
+import java.util.Objects;
 
 /**
  * Hello world!
@@ -22,30 +18,31 @@ public class HdStringApp {
     public static void main(String[] args) {
         new HdStringApp().run();
     }
+
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = HdfCompoundApp.class.getResource("/ascii_dataset.h5").getFile();
-            try(FileInputStream fis = new FileInputStream(filePath)) {
+            String filePath = Objects.requireNonNull(HdfCompoundApp.class.getResource("/ascii_dataset.h5")).getFile();
+            try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
                 tryStringSpliterator(channel, reader);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 //        tryHdfApiCompound();
 //        tryHdfApiInts();
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = HdfCompoundApp.class.getResource("/utf8_dataset.h5").getFile();
-            try(FileInputStream fis = new FileInputStream(filePath)) {
+            String filePath = Objects.requireNonNull(HdfCompoundApp.class.getResource("/utf8_dataset.h5")).getFile();
+            try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
                 tryStringSpliterator(channel, reader);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 //        tryHdfApiCompound();
 //        tryHdfApiInts();
@@ -113,19 +110,5 @@ public class HdStringApp {
 //            System.out.println(e.getMessage());
 //        }
 //    }
-
-    private void writeVersionAttribute(HdfDataSet dataset) {
-        String ATTRIBUTE_NAME = "GIT root revision";
-        String ATTRIBUTE_VALUE = "Revision: , URL: ";
-        BitSet classBitField = StringDatatype.getStringTypeBitSet(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
-        // value
-        StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(), classBitField, (short)ATTRIBUTE_VALUE.length());
-        // data type, String, DATASET_NAME.length
-        DatatypeMessage dt = new DatatypeMessage(attributeType);
-        // scalar, 1 string
-        DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false);
-        HdfString hdfString = new HdfString(ATTRIBUTE_VALUE.getBytes(), classBitField);
-        dataset.createAttribute(ATTRIBUTE_NAME, dt, ds, hdfString);
-    }
 
 }
