@@ -42,22 +42,22 @@ public class HdfFileReader {
 //
         // Get the object header address from the superblock
         // Parse the object header from the file using the superblock information
-        long objectHeaderAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeaderAddress().toBigInteger().longValue();
+        long objectHeaderAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeaderAddress().getInstance().longValue();
         fileChannel.position(objectHeaderAddress);
         HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
 
         // Parse the local heap using the file channel
         // Read data from file channel starting at the specified position
-        long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getNameHeapAddress().toBigInteger().longValue();
+        long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getNameHeapAddress().getInstance().longValue();
         fileChannel.position(localHeapAddress);
         HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
 
-        int dataSize = localHeap.getDataSegmentSize().toBigInteger().intValue();
-        long dataSegmentAddress = localHeap.getDataSegmentAddress().toBigInteger().longValue();
+        int dataSize = localHeap.getDataSegmentSize().getInstance().intValue();
+        long dataSegmentAddress = localHeap.getDataSegmentAddress().getInstance().longValue();
         fileChannel.position(dataSegmentAddress);
         HdfLocalHeapContents localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, dataSize);
 
-        long bTreeAddress = superblock.getRootGroupSymbolTableEntry().getBTreeAddress().toBigInteger().longValue();
+        long bTreeAddress = superblock.getRootGroupSymbolTableEntry().getBTreeAddress().getInstance().longValue();
         fileChannel.position(bTreeAddress);
         HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
 
@@ -66,7 +66,7 @@ public class HdfFileReader {
             throw new UnsupportedEncodingException("Only one btree entry is currently supported");
         }
         HdfBTreeEntry hdfBTreeEntry = bTree.getEntries().get(0);
-        long snodAddress = hdfBTreeEntry.getChildPointer().toBigInteger().longValue();
+        long snodAddress = hdfBTreeEntry.getChildPointer().getInstance().longValue();
         fileChannel.position(snodAddress);
         HdfGroupSymbolTableNode symbolTableNode = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
         int entriesToRead = symbolTableNode.getNumberOfSymbols();
@@ -94,7 +94,7 @@ public class HdfFileReader {
             HdfString datasetName = localHeapContents.parseStringAtOffset(ste.getLinkNameOffset());
             // Parse the Data Object Header Prefix next in line
 //        fileChannel.position(fileOffsets.getObjectHeaderAddress().toBigInteger().longValue());
-            long dataLObjectHeaderAddress = ste.getObjectHeaderAddress().toBigInteger().longValue();
+            long dataLObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance().longValue();
             fileChannel.position(dataLObjectHeaderAddress);
             dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
             System.out.println(datasetName + "@" + dataLObjectHeaderAddress + " = " + dataObjectHeaderPrefix);
@@ -103,10 +103,10 @@ public class HdfFileReader {
                 if (message instanceof DatatypeMessage dataTypeMessage) {
                     dataType = dataTypeMessage.getHdfDatatype();
                 } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
-                    dataAddress = dataLayoutMessage.getDataAddress().toBigInteger().longValue();
-                    dimensionSize = dataLayoutMessage.getDimensionSizes()[0].toBigInteger().longValue();
+                    dataAddress = dataLayoutMessage.getDataAddress().getInstance().longValue();
+                    dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getInstance().longValue();
                 } else if (message instanceof DataspaceMessage dataSpaceMessage) {
-                    dimension = dataSpaceMessage.getDimensions()[0].toBigInteger().longValue();
+                    dimension = dataSpaceMessage.getDimensions()[0].getInstance().longValue();
                 }
             }
 

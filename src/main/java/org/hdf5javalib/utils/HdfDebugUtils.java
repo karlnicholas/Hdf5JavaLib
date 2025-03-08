@@ -9,30 +9,30 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
 public class HdfDebugUtils {
-    public static void printData(FileChannel fileChannel, CompoundDatatype compoundDataType, long dataAddress, long dimension ) throws IOException {
-        Object[] data = new Object[17];
-        fileChannel.position(dataAddress);
-        for ( int i=0; i <dimension; ++i) {
-            ByteBuffer dataBuffer = ByteBuffer.allocate(compoundDataType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
-            fileChannel.read(dataBuffer);
-            dataBuffer.flip();
-            for ( int column = 0; column < compoundDataType.getMembers().size(); ++column ) {
-                CompoundMemberDatatype member = compoundDataType.getMembers().get(column);
-                dataBuffer.position(member.getOffset());
-                if (member.getType() instanceof StringDatatype) {
-                    data[column] = ((StringDatatype) member.getType()).getInstance(dataBuffer);
-                } else if (member.getType() instanceof FixedPointDatatype) {
-                    data[column] = ((FixedPointDatatype) member.getType()).getInstance(dataBuffer);
-                } else if (member.getType() instanceof FloatingPointDatatype) {
-                    data[column] = ((FloatingPointDatatype) member.getType()).getInstance(dataBuffer);
-                } else {
-                    throw new UnsupportedOperationException("Member type " + member.getType() + " not yet implemented.");
-                }
-            }
-            System.out.println(Arrays.toString(data));
-        }
-
-    }
+//    public static void printData(FileChannel fileChannel, CompoundDatatype compoundDataType, long dataAddress, long dimension ) throws IOException {
+//        Object[] data = new Object[17];
+//        fileChannel.position(dataAddress);
+//        for ( int i=0; i <dimension; ++i) {
+//            ByteBuffer dataBuffer = ByteBuffer.allocate(compoundDataType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
+//            fileChannel.read(dataBuffer);
+//            dataBuffer.flip();
+//            for ( int column = 0; column < compoundDataType.getMembers().size(); ++column ) {
+//                CompoundMemberDatatype member = compoundDataType.getMembers().get(column);
+//                dataBuffer.position(member.getOffset());
+//                if (member.getType() instanceof StringDatatype) {
+//                    data[column] = ((StringDatatype) member.getType()).getInstance(dataBuffer);
+//                } else if (member.getType() instanceof FixedPointDatatype) {
+//                    data[column] = ((FixedPointDatatype) member.getType()).getInstance(dataBuffer);
+//                } else if (member.getType() instanceof FloatingPointDatatype) {
+//                    data[column] = ((FloatingPointDatatype) member.getType()).getInstance(dataBuffer);
+//                } else {
+//                    throw new UnsupportedOperationException("Member type " + member.getType() + " not yet implemented.");
+//                }
+//            }
+//            System.out.println(Arrays.toString(data));
+//        }
+//
+//    }
 
     public static void dumpByteBuffer(ByteBuffer buffer) {
         int bytesPerLine = 16; // 16 bytes per row

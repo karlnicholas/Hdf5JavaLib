@@ -2,8 +2,11 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 
 
 import lombok.Getter;
-import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.utils.HdfReadUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 
@@ -54,10 +57,6 @@ public class FixedPointDatatype implements HdfDatatype {
         return 0x10;
     }
 
-    public HdfFixedPoint getInstance(ByteBuffer dataBuffer) {
-        return HdfFixedPoint.readFromByteBuffer(dataBuffer, size, classBitField, bitOffset, bitPrecision);
-    }
-
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
         buffer.putShort(bitOffset);         // 4
@@ -104,12 +103,109 @@ public class FixedPointDatatype implements HdfDatatype {
         return classBitField.get(3);
     }
 
-    public short getBitOffset() {
-        return bitOffset;
+    public BigInteger toBigInteger(byte[] bytes) {
+        if (bytes.length < size) {
+            throw new IllegalArgumentException("Byte array too small for specified size");
+        }
+        if (bitOffset < 0) {
+            throw new IllegalArgumentException("Invalid bitOffset");
+        }
+        boolean isBigEndian = isBigEndian();
+        boolean isLoPad = isLoPad();
+        boolean isHiPad = isHiPad();
+        boolean isSigned = isSigned();
+        int effectivePrecision = (bitPrecision <= 0) ? size * 8 : bitPrecision;
+        if (effectivePrecision > size * 8) {
+            throw new IllegalArgumentException("Bit precision exceeds available bits");
+        }
+
+        byte[] workingBytes = bytes.clone();
+        if (!isBigEndian) {
+            HdfReadUtils.reverseBytesInPlace(workingBytes);
+        }
+
+        BigInteger value;
+        if (!isSigned && workingBytes.length > 0 && (workingBytes[0] & 0x80) != 0) {
+            byte[] unsignedBytes = new byte[workingBytes.length + 1];
+            System.arraycopy(workingBytes, 0, unsignedBytes, 1, workingBytes.length);
+            unsignedBytes[0] = 0;
+            value = new BigInteger(unsignedBytes);
+        } else {
+            value = new BigInteger(workingBytes);
+        }
+
+        if (bitPrecision > 0) {
+            int totalBits = size * 8;
+            int startBit = totalBits - effectivePrecision;
+
+            BigInteger precisionValue = value.shiftRight(startBit);
+            BigInteger mask = BigInteger.ONE.shiftLeft(effectivePrecision).subtract(BigInteger.ONE);
+            precisionValue = precisionValue.and(mask);
+
+            if (isSigned && !isHiPad && !isLoPad && precisionValue.testBit(effectivePrecision - 1)) {
+                precisionValue = precisionValue.subtract(BigInteger.ONE.shiftLeft(effectivePrecision));
+            }
+
+            value = precisionValue;
+            if (isHiPad && startBit > 0) {
+                BigInteger hiMask = BigInteger.ONE.shiftLeft(startBit).subtract(BigInteger.ONE).shiftLeft(effectivePrecision);
+                value = value.or(hiMask);
+            }
+            if (isLoPad && startBit > 0) {
+                BigInteger loMask = BigInteger.ONE.shiftLeft(startBit).subtract(BigInteger.ONE);
+                value = value.or(loMask);
+            }
+
+            if (isSigned && (isHiPad || isLoPad)) {
+                BigInteger totalMask = BigInteger.ONE.shiftLeft(totalBits).subtract(BigInteger.ONE);
+                value = value.and(totalMask);
+                if (value.testBit(totalBits - 1)) {
+                    value = value.subtract(BigInteger.ONE.shiftLeft(totalBits));
+                }
+            }
+        }
+
+        return value;
     }
 
-    public short getBitPrecision() {
-        return bitPrecision;
+    public BigDecimal toBigDecimal(byte[] bytes, int scale) {
+        boolean isBigEndian = isBigEndian();
+        boolean isSigned = isSigned();
+        byte[] workingBytes = bytes.clone();
+        if (!isBigEndian) {
+            HdfReadUtils.reverseBytesInPlace(workingBytes);
+        }
+
+        BigInteger rawValue;
+        if (!isSigned && workingBytes.length > 0 && (workingBytes[0] & 0x80) != 0) {
+            byte[] unsignedBytes = new byte[workingBytes.length + 1];
+            System.arraycopy(workingBytes, 0, unsignedBytes, 1, workingBytes.length);
+            unsignedBytes[0] = 0;
+            rawValue = new BigInteger(unsignedBytes);
+        } else {
+            rawValue = new BigInteger(workingBytes);
+        }
+
+        return new BigDecimal(rawValue)
+                .divide(new BigDecimal(BigInteger.ONE.shiftLeft(bitOffset)), scale, RoundingMode.HALF_UP);
+    }
+
+    @Override
+    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+        if (clazz.isAssignableFrom(BigDecimal.class)) {  // Can accept BigDecimal
+            return clazz.cast(toBigDecimal(bytes, 0));
+        } else if (clazz.isAssignableFrom(BigInteger.class)) {  // Can accept BigInteger
+            return clazz.cast(toBigInteger(bytes));
+        } else {
+            throw new UnsupportedOperationException("Unknown type: " + clazz);
+        }
+    }
+
+    @Override
+    public <T> T getInstance(Class<T> clazz, ByteBuffer buffer) {
+        byte[] bytes = new byte[size];
+        buffer.get(bytes);
+        return getInstance(clazz, bytes);
     }
 }
 

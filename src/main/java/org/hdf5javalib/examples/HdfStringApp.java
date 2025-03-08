@@ -111,8 +111,9 @@ public class HdfStringApp {
             int count = countHolder.getAndIncrement();
             if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
             byteBuffer.clear();
-            writerParams.stringDatatype.getInstance(ByteBuffer.wrap(("ꦠꦤ꧀" + " " + (count+1)).getBytes()))
-                    .writeValueToByteBuffer(byteBuffer);
+            byte[] bytes = ("ꦠꦤ꧀" + " " + (count+1)).getBytes();
+            HdfString<String> value = new HdfString<>(String.class, bytes, writerParams.stringDatatype);
+            value.writeValueToByteBuffer(byteBuffer);
             byteBuffer.flip();
             return byteBuffer;
         });
@@ -122,8 +123,9 @@ public class HdfStringApp {
     private void writeAll(HdfStringApp.WriterParams writerParams) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.stringDatatype.getSize() * writerParams.NUM_RECORDS);
         for(int i=0; i<writerParams.NUM_RECORDS; i++) {
-            writerParams.stringDatatype.getInstance(ByteBuffer.wrap(("label " + (i+1)).getBytes(StandardCharsets.US_ASCII))
-            ).writeValueToByteBuffer(byteBuffer);
+            byte[] bytes = ("label " + (i + 1)).getBytes(StandardCharsets.US_ASCII);
+            HdfString<String> value = new HdfString<>(String.class, bytes, writerParams.stringDatatype);
+            value.writeValueToByteBuffer(byteBuffer);
         }
         byteBuffer.flip();
         // Write to dataset

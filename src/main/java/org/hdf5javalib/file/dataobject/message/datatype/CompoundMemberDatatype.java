@@ -1,7 +1,6 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
-import org.hdf5javalib.dataclass.HdfData;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -15,7 +14,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
     private final int dimensionPermutation;
     private final int[] dimensionSizes;
     private final HdfDatatype type;
-    private short sizeMessageData;
+    private final short sizeMessageData;
 
     public CompoundMemberDatatype(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, HdfDatatype type) {
         this.name = name;
@@ -112,7 +111,13 @@ public class CompoundMemberDatatype implements HdfDatatype {
     }
 
     @Override
-    public HdfData getInstance(ByteBuffer buffer) {
-        return type.getInstance(buffer);
+    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+        return type.getInstance(clazz, bytes);
+    }
+    @Override
+    public <T> T getInstance(Class<T> clazz, ByteBuffer buffer) {
+        byte[] bytes = new byte[sizeMessageData];
+        buffer.get(bytes);
+        return getInstance(clazz, bytes);
     }
 }

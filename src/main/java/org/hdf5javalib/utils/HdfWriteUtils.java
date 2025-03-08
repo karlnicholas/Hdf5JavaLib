@@ -17,7 +17,7 @@ public class HdfWriteUtils {
      * If undefined, fills with 0xFF.
      */
     public static void writeFixedPointToBuffer(ByteBuffer buffer, HdfFixedPoint value) {
-        short size = value.getSizeMessageData();
+        int size = value.getSizeMessageData();
         byte[] bytesToWrite = new byte[size];
 
         if (value.isUndefined()) {
@@ -27,8 +27,8 @@ public class HdfWriteUtils {
             int copySize = Math.min(valueBytes.length, size);
 
             // Store in **little-endian format** by reversing byte order
-            if ( value.isBigEndian() && buffer.order() == ByteOrder.BIG_ENDIAN
-            || !value.isBigEndian() && buffer.order() == ByteOrder.LITTLE_ENDIAN) {
+            if ( value.getDatatype().isBigEndian() && buffer.order() == ByteOrder.BIG_ENDIAN
+            || !value.getDatatype().isBigEndian() && buffer.order() == ByteOrder.LITTLE_ENDIAN) {
                 for (int i = 0; i < copySize; i++) {
                     bytesToWrite[i] = valueBytes[i];
                 }
@@ -42,15 +42,40 @@ public class HdfWriteUtils {
         buffer.put(bytesToWrite);
     }
 
+    public static void writeFixedPointToBuffer(ByteBuffer buffer, BigInteger value, int size) {
+//        short size = value.getSizeMessageData();
+        byte[] bytesToWrite = new byte[size];
+
+//        if (value.isUndefined()) {
+//            Arrays.fill(bytesToWrite, (byte) 0xFF); // Undefined value → fill with 0xFF
+//        } else {
+            byte[] valueBytes = value.toByteArray();
+            int copySize = Math.min(valueBytes.length, size);
+
+            // Store in **little-endian format** by reversing byte order
+            if ( buffer.order() == ByteOrder.BIG_ENDIAN ) {
+                for (int i = 0; i < copySize; i++) {
+                    bytesToWrite[i] = valueBytes[i];
+                }
+            } else {
+                for (int i = 0; i < copySize; i++) {
+                    bytesToWrite[i] = valueBytes[copySize - 1 - i];
+                }
+            }
+//        }
+
+        buffer.put(bytesToWrite);
+    }
+
     public static void writeBigIntegerAsHdfFixedPoint(BigInteger value, HdfDatatype datatype, ByteBuffer buffer) {
         FixedPointDatatype fixedPointDatatype = (FixedPointDatatype)datatype;
-        HdfFixedPoint fixedPoint = new HdfFixedPoint(value, fixedPointDatatype.getSize(), fixedPointDatatype.isSigned(), fixedPointDatatype.isBigEndian());
+        HdfFixedPoint<BigInteger> fixedPoint = new HdfFixedPoint<BigInteger>(BigInteger.class, value.toByteArray(), fixedPointDatatype);
         fixedPoint.writeValueToByteBuffer(buffer);
     }
 
     public static void writeBigDecimalAsHdfFixedPoint(BigDecimal value, HdfDatatype datatype, ByteBuffer buffer) {
         FixedPointDatatype fixedPointDatatype = (FixedPointDatatype)datatype;
-        HdfFixedPoint fixedPoint = new HdfFixedPoint(value.unscaledValue(), fixedPointDatatype.getSize(), fixedPointDatatype.isSigned(), fixedPointDatatype.isBigEndian());
+        HdfFixedPoint<BigDecimal> fixedPoint = new HdfFixedPoint<BigDecimal>(BigDecimal.class, value.unscaledValue().toByteArray(), fixedPointDatatype);
         fixedPoint.writeValueToByteBuffer(buffer);
     }
 }

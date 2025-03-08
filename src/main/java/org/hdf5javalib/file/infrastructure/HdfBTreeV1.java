@@ -5,6 +5,7 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -19,9 +20,9 @@ public class HdfBTreeV1 {
     private final int nodeType;
     private final int nodeLevel;
     private int entriesUsed;
-    private final HdfFixedPoint leftSiblingAddress;
-    private final HdfFixedPoint rightSiblingAddress;
-    private final HdfFixedPoint keyZero; // Key 0 (predefined)
+    private final HdfFixedPoint<BigInteger> leftSiblingAddress;
+    private final HdfFixedPoint<BigInteger> rightSiblingAddress;
+    private final HdfFixedPoint<BigInteger> keyZero; // Key 0 (predefined)
     private final List<HdfBTreeEntry> entries;
 
     public HdfBTreeV1(
@@ -29,9 +30,9 @@ public class HdfBTreeV1 {
             int nodeType,
             int nodeLevel,
             int entriesUsed,
-            HdfFixedPoint leftSiblingAddress,
-            HdfFixedPoint rightSiblingAddress,
-            HdfFixedPoint keyZero,
+            HdfFixedPoint<BigInteger> leftSiblingAddress,
+            HdfFixedPoint<BigInteger> rightSiblingAddress,
+            HdfFixedPoint<BigInteger> keyZero,
             List<HdfBTreeEntry> entries
     ) {
         this.signature = signature;
@@ -49,8 +50,8 @@ public class HdfBTreeV1 {
         int nodeType,
         int nodeLevel,
         int entriesUsed,
-        HdfFixedPoint leftSiblingAddress,
-        HdfFixedPoint rightSiblingAddress
+        HdfFixedPoint<BigInteger> leftSiblingAddress,
+        HdfFixedPoint<BigInteger> rightSiblingAddress
     ) {
         this.signature = signature;
         this.nodeType = nodeType;
@@ -62,7 +63,7 @@ public class HdfBTreeV1 {
         this.entries = new ArrayList<>();
     }
 
-    public int addGroup(HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents) {
+    public int addGroup(HdfString<String> objectName, HdfFixedPoint<BigInteger> objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents) {
         // Ensure we do not exceed the max number of entries (groupLeafNodeK = 4)
         if (entriesUsed >= 4) {
             throw new IllegalStateException("Cannot add more than 4 groups to this B-tree node.");
@@ -106,13 +107,13 @@ public class HdfBTreeV1 {
 
         BitSet emptyBitset = new BitSet();
         // Read sibling addresses
-        HdfFixedPoint leftSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize)
+        HdfFixedPoint<BigInteger> leftSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize)
                 ? HdfFixedPoint.undefined(buffer, offsetSize)
-                : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
+                : HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
 
-        HdfFixedPoint rightSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize)
+        HdfFixedPoint<BigInteger> rightSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize)
                 ? HdfFixedPoint.undefined(buffer, offsetSize)
-                : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
+                : HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
 
         // Corrected Buffer Allocation (Always allocate for keyZero + keys/childPointers)
         int keyPointerBufferSize = lengthSize + (entriesUsed * (offsetSize + lengthSize));
@@ -123,14 +124,14 @@ public class HdfBTreeV1 {
         buffer.flip();
 
         // Always Read keyZero (first key)
-        HdfFixedPoint keyZero = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
+        HdfFixedPoint<BigInteger> keyZero = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
 
         // Read remaining entries (Child Pointer first, then Key)
         List<HdfBTreeEntry> entries = new ArrayList<>();
 
         for (int i = 0; i < entriesUsed; i++) {
-            HdfFixedPoint childPointer = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8)); // Read childPointer first
-            HdfFixedPoint key = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8)); // Read key after childPointer
+            HdfFixedPoint<BigInteger> childPointer = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8)); // Read childPointer first
+            HdfFixedPoint<BigInteger> key = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8)); // Read key after childPointer
             entries.add(new HdfBTreeEntry(key, childPointer));
         }
 

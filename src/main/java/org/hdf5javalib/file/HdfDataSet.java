@@ -10,6 +10,8 @@ import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -55,7 +57,7 @@ public class HdfDataSet {
         byte[] nameBytes = new byte[name.length()+1];
         System.arraycopy(name.getBytes(StandardCharsets.US_ASCII), 0, nameBytes, 0, name.length());
         AttributeMessage attributeMessage = new AttributeMessage(1,
-                new HdfString(nameBytes, StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII)),
+                new HdfString<>(String.class, nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII), name.length())),
                 dt, ds, value);
         attributes.add(attributeMessage);
         computeSpaceRequirements();
@@ -71,17 +73,19 @@ public class HdfDataSet {
         headerMessages.add(dataTypeMessage);
 
         // Add FillValue message
-        FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 2, 1, HdfFixedPoint.of(0), new byte[0]);
+        FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 2, 1,
+                0,
+                new byte[0]);
         headerMessages.add(fillValueMessage);
 
         // Add DataLayoutMessage (Storage format)
-        HdfFixedPoint[] dimensions = dataSpaceMessage.getDimensions();
+        HdfFixedPoint<BigInteger>[] dimensions = dataSpaceMessage.getDimensions();
 //        long recordCount = dimensions[dimensions.length-1].toBigInteger().longValue();
         long dimensionSizes = hdfDatatype.getSize();
-        for(HdfFixedPoint fixedPoint : dimensions) {
-            dimensionSizes *= fixedPoint.toBigInteger().longValue();
+        for(HdfFixedPoint<BigInteger> fixedPoint : dimensions) {
+            dimensionSizes *= fixedPoint.getInstance().longValue();
         }
-        HdfFixedPoint[] hdfDimensionSizes = { HdfFixedPoint.of(dimensionSizes)};
+        HdfFixedPoint<BigInteger>[] hdfDimensionSizes = (HdfFixedPoint<BigInteger>[]) Array.newInstance(HdfFixedPoint.class, 1);
         DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1,
                 HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()),
                 hdfDimensionSizes,

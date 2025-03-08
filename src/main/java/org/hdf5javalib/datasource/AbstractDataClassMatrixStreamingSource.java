@@ -6,6 +6,7 @@ import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -41,11 +42,11 @@ public abstract class AbstractDataClassMatrixStreamingSource<T> {
                 .getHdfDatatype()
                 .getSize();
 
-        HdfFixedPoint[] dimensions = headerPrefixV1.findMessageByType(DataspaceMessage.class)
+        HdfFixedPoint<BigInteger>[] dimensions = headerPrefixV1.findMessageByType(DataspaceMessage.class)
                 .orElseThrow(() -> new IllegalStateException("DataspaceMessage not found"))
                 .getDimensions();
 
-        this.readsAvailable = dimensions[0].toBigInteger().intValue();
+        this.readsAvailable = dimensions[0].getInstance().intValue();
         this.datatype = headerPrefixV1.findMessageByType(DatatypeMessage.class)
                 .orElseThrow()
                 .getHdfDatatype();
@@ -53,7 +54,7 @@ public abstract class AbstractDataClassMatrixStreamingSource<T> {
         if (dimensions.length == 1) {
             this.elementsPerRecord = 1;
         } else if (dimensions.length == 2) {
-            this.elementsPerRecord = dimensions[1].toBigInteger().intValue();
+            this.elementsPerRecord = dimensions[1].getInstance().intValue();
         } else {
             throw new IllegalArgumentException("Unsupported dimensionality: " + dimensions.length);
         }

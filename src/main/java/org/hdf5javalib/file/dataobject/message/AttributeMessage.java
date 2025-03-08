@@ -57,7 +57,7 @@ public class AttributeMessage extends HdfMessage {
         byte[] nameBytes = new byte[nameSize];
         buffer.get(nameBytes);
         BitSet bitSet = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
-        HdfString name = new HdfString(nameBytes, bitSet);
+        HdfString<String> name = new HdfString<>(String.class, nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, nameSize));
         // get padding bytes
         int padding = (8 - (nameSize % 8)) % 8;
         byte[] paddingBytes = new byte[padding];
@@ -79,7 +79,7 @@ public class AttributeMessage extends HdfMessage {
             int dtDataSize = dt.getHdfDatatype().getSize();
             byte[] dataBytes = new byte[dtDataSize];
             buffer.get(dataBytes);
-            value = new HdfString(dataBytes, bitSet);
+            value = new HdfString<>(String.class, dataBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, dataBytes.length));
         }
         return new AttributeMessage(version, name, dt, ds, value);
     }
@@ -102,8 +102,8 @@ public class AttributeMessage extends HdfMessage {
         buffer.put((byte) 0);
 
         // Write the sizes of name, datatype, and dataspace (2 bytes each)
-        short nameSize = name.getSizeMessageData();
-        buffer.putShort(nameSize);
+        int nameSize = name.getSizeMessageData();
+        buffer.putShort((short) nameSize);
 //        buffer.putShort(datatypeMessage.getSizeMessageData());
 //        buffer.putShort(dataspaceMessage.getSizeMessageData());
         buffer.putShort((short) 8);

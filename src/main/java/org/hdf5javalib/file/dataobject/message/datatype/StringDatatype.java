@@ -1,9 +1,9 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
-import org.hdf5javalib.dataclass.HdfString;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -20,7 +20,7 @@ public class StringDatatype implements HdfDatatype {
     }
 
 
-    public static StringDatatype parseStringType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+    public static StringDatatype parseStringType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer ignoredBuffer) {
         return new StringDatatype(classAndVersion, classBitField, size);
     }
 
@@ -32,14 +32,52 @@ public class StringDatatype implements HdfDatatype {
         return 0x13;
     }
 
-    public HdfString getInstance(ByteBuffer dataBuffer) {
+    @Override
+    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+        if (clazz.isAssignableFrom(String.class)) {  // Can accept String
+            return clazz.cast(toString(bytes));
+        } else {
+            throw new UnsupportedOperationException("Unknown type: " + clazz);
+        }
+    }
+
+    @Override
+    public <T> T getInstance(Class<T> clazz, ByteBuffer buffer) {
         byte[] bytes = new byte[size];
-        byte[] workingInputBytes = new byte[Math.min(size, dataBuffer.remaining())];
-        dataBuffer.get(workingInputBytes);
-        System.arraycopy(workingInputBytes, 0, bytes, 0, workingInputBytes.length);
-        char paddingChar = getPaddingType() == PaddingType.SPACE_PAD ? ' ' : 0x00;
-        Arrays.fill(bytes, workingInputBytes.length, bytes.length, (byte) paddingChar);
-        return new HdfString(bytes, classBitField);
+        buffer.get(bytes);
+        return getInstance(clazz, bytes);
+    }
+
+    public String toString(byte[] bytes) {
+        byte[] workingBytes = new byte[size];
+        int workingEnd = Math.min(size, bytes.length);
+        System.arraycopy(bytes, 0, workingBytes, 0, workingEnd);
+
+        // Pad with spaces if SPACE_PAD and bytes is shorter than size
+        if (getPaddingType() == PaddingType.SPACE_PAD && workingEnd < size) {
+            Arrays.fill(workingBytes, workingEnd, size, (byte) ' ');
+        }
+
+        // Count non-0x00 bytes
+        int validLength = 0;
+        for (int i = 0; i < size; i++) {
+            if (workingBytes[i] != 0x00) {
+                validLength++;
+            }
+        }
+
+        // Build array without 0x00
+        byte[] cleanBytes = new byte[validLength];
+        int pos = 0;
+        for (int i = 0; i < size; i++) {
+            if (workingBytes[i] != 0x00) {
+                cleanBytes[pos++] = workingBytes[i];
+            }
+        }
+
+        return new String(cleanBytes,
+                getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
+
     }
 
     @Override
@@ -56,6 +94,7 @@ public class StringDatatype implements HdfDatatype {
     public short getSizeMessageData() {
         return 0;
     }
+
 
     @Override
     public String toString() {

@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  *
  * @param <T> the type of object returned by streaming or bulk reading operations
  */
-public abstract class AbstractDataClassStreamingSource<T> {
+public abstract class AbstractDataConverterStreamingSource<T> {
     protected final FileChannel fileChannel;
     protected final long startOffset;
     protected final int recordSize;
@@ -32,7 +32,7 @@ public abstract class AbstractDataClassStreamingSource<T> {
     protected final long sizeForReadBuffer;
     protected final long endOffset;
 
-    public AbstractDataClassStreamingSource(HdfObjectHeaderPrefixV1 headerPrefixV1, int scale, FileChannel fileChannel, long startOffset) {
+    public AbstractDataConverterStreamingSource(HdfObjectHeaderPrefixV1 headerPrefixV1, int scale, FileChannel fileChannel, long startOffset) {
         this.fileChannel = fileChannel;
         this.startOffset = startOffset;
         this.scale = scale;
@@ -71,7 +71,7 @@ public abstract class AbstractDataClassStreamingSource<T> {
         return readsAvailable;
     }
 
-    protected abstract T populateFromBufferRaw(ByteBuffer buffer);
+    public abstract T populateFromByteBuffer(ByteBuffer buffer);
 
     public abstract Stream<T> stream();
 
@@ -112,7 +112,7 @@ public abstract class AbstractDataClassStreamingSource<T> {
                     }
                 }
                 buffer.flip();
-                T dataSource = populateFromBufferRaw(buffer);
+                T dataSource = (T) populateFromByteBuffer(buffer);
                 action.accept(dataSource);
                 currentOffset += sizeForReadBuffer;
                 return true;

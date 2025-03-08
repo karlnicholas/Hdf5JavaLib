@@ -3,6 +3,7 @@ package org.hdf5javalib.file.dataobject.message;
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -15,8 +16,8 @@ public class DataspaceMessage extends HdfMessage {
     private final int version; // Version of the dataspace message
     private final int dimensionality; // Number of dimensions (rank)
     private final int flags;
-    private final HdfFixedPoint[] dimensions; // Sizes of each dimension
-    private final HdfFixedPoint[] maxDimensions; // Maximum sizes of each dimension, if specified
+    private final HdfFixedPoint<BigInteger>[] dimensions; // Sizes of each dimension
+    private final HdfFixedPoint<BigInteger>[] maxDimensions; // Maximum sizes of each dimension, if specified
     private final boolean hasMaxDimensions; // Indicates if max dimensions are included
 
     // Constructor to initialize all fields
@@ -24,19 +25,19 @@ public class DataspaceMessage extends HdfMessage {
             int version,
             int dimensionality,
             int flags,
-            HdfFixedPoint[] dimensions,
-            HdfFixedPoint[] maxDimensions,
+            HdfFixedPoint<BigInteger>[] dimensions,
+            HdfFixedPoint<BigInteger>[] maxDimensions,
             boolean hasMaxDimensions
     ) {
         super(MessageType.DataspaceMessage, ()->{
             short size = 8;
             if ( dimensions != null ) {
-                for (HdfFixedPoint dimension : dimensions) {
+                for (HdfFixedPoint<BigInteger> dimension : dimensions) {
                     size += dimension.getSizeMessageData();
                 }
             }
             if ( maxDimensions != null ) {
-                for (HdfFixedPoint maxDimension : maxDimensions) {
+                for (HdfFixedPoint<BigInteger> maxDimension : maxDimensions) {
                     size += maxDimension.getSizeMessageData();
                 }
             }
@@ -76,18 +77,18 @@ public class DataspaceMessage extends HdfMessage {
 
         // Read dimensions
         BitSet emptyBitSet = new BitSet();
-        HdfFixedPoint[] dimensions = new HdfFixedPoint[dimensionality];
+        HdfFixedPoint<BigInteger>[] dimensions = new HdfFixedPoint[dimensionality];
         for (int i = 0; i < dimensionality; i++) {
-            dimensions[i] = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(lengthSize*8));
+            dimensions[i] = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, lengthSize, emptyBitSet, (short) 0, (short)(lengthSize*8));
         }
 
         // Check for maximum dimensions flag and read if present
         boolean hasMaxDimensions = (parsedFlags & 0x01) != 0; // Bit 0 of flags indicates max dimensions
-        HdfFixedPoint[] maxDimensions = null;
+        HdfFixedPoint<BigInteger>[] maxDimensions = null;
         if (hasMaxDimensions) {
             maxDimensions = new HdfFixedPoint[dimensionality];
             for (int i = 0; i < dimensionality; i++) {
-                maxDimensions[i] = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(lengthSize*8));
+                maxDimensions[i] = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, lengthSize, emptyBitSet, (short) 0, (short)(lengthSize*8));
             }
         }
 

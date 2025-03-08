@@ -19,7 +19,7 @@ public class HdfTestUtils {
         DatatypeMessage dt = new DatatypeMessage(attributeType);
         // scalar, 1 string
         DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false);
-        HdfString hdfString = new HdfString(ATTRIBUTE_VALUE.getBytes(), classBitField);
+        HdfString<String> hdfString = new HdfString<String>(String.class, ATTRIBUTE_VALUE.getBytes(), attributeType);
         dataset.createAttribute(ATTRIBUTE_NAME, dt, ds, hdfString);
     }
 

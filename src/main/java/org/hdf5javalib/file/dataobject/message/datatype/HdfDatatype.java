@@ -14,7 +14,9 @@ public interface HdfDatatype {
     int getSize();
 
     short getSizeMessageData();
-    HdfData getInstance(ByteBuffer buffer);
+//    <T> HdfData<T> getInstance(Class<T> clazz, ByteBuffer buffer);
+    <T> T getInstance(Class<T> clazz, byte[] bytes);
+    <T> T getInstance(Class<T> clazz, ByteBuffer buffer);
 
     // Enum defined within the interface
     enum DatatypeClass {

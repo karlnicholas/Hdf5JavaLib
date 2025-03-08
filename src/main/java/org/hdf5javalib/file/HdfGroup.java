@@ -59,7 +59,7 @@ public class HdfGroup {
 
         localHeap = new HdfLocalHeap(HdfFixedPoint.of(localHeapContentsSize), HdfFixedPoint.of(hdfFile.getBufferAllocation().getLocalHeapContentsAddress()));
         localHeapContents = new HdfLocalHeapContents(heapData);
-        localHeap.addToHeap(new HdfString(new byte[0], StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII)), localHeapContents);
+        localHeap.addToHeap(new HdfString<>(String.class, new byte[0], new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0)), localHeapContents);
 
         // Define a B-Tree for group indexing
         bTree = new HdfBTreeV1("TREE", 0, 0, 0,
@@ -77,7 +77,7 @@ public class HdfGroup {
 
 
     public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage, long objectHeaderAddress) {
-        HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII));
+        HdfString<String> hdfDatasetName = new HdfString<>(String.class, datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length));
         // this poosibly changes addresses for anything after the dataGroupAddress, which includes the SNOD address.
         dataSet = new HdfDataSet(this, datasetName, hdfDatatype, dataSpaceMessage);
         int linkNameOffset = bTree.addGroup(hdfDatasetName, HdfFixedPoint.of(hdfFile.getBufferAllocation().getSnodAddress()),
@@ -112,12 +112,12 @@ public class HdfGroup {
 
             // Retrieve Local Heap Address if still not found
             if (localHeapPosition == -1 && symbolTableMessage.getLocalHeapAddress() != null && !symbolTableMessage.getLocalHeapAddress().isUndefined()) {
-                localHeapPosition = symbolTableMessage.getLocalHeapAddress().toBigInteger().longValue();
+                localHeapPosition = symbolTableMessage.getLocalHeapAddress().getInstance().longValue();
             }
 
             // Retrieve B-Tree Address
             if (symbolTableMessage.getBTreeAddress() != null && !symbolTableMessage.getBTreeAddress().isUndefined()) {
-                bTreePosition = symbolTableMessage.getBTreeAddress().toBigInteger().longValue();
+                bTreePosition = symbolTableMessage.getBTreeAddress().getInstance().longValue();
             }
         }
 
@@ -133,7 +133,7 @@ public class HdfGroup {
         if (localHeapPosition != -1) {
             buffer.position((int) localHeapPosition); // Move to the correct position
             localHeap.writeToByteBuffer(buffer);
-            buffer.position(localHeap.getDataSegmentAddress().toBigInteger().intValue());
+            buffer.position(localHeap.getDataSegmentAddress().getInstance().intValue());
             localHeapContents.writeToByteBuffer(buffer);
         } else {
             throw new IllegalStateException("No valid Local Heap position found.");

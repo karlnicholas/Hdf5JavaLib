@@ -3,6 +3,7 @@ package org.hdf5javalib.file.dataobject.message;
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
@@ -11,11 +12,11 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 @Getter
 public class SymbolTableMessage extends HdfMessage {
-    private final HdfFixedPoint bTreeAddress;
-    private final HdfFixedPoint localHeapAddress;
+    private final HdfFixedPoint<BigInteger> bTreeAddress;
+    private final HdfFixedPoint<BigInteger> localHeapAddress;
 
     // Constructor to create SymbolTableMessage directly with values
-    public SymbolTableMessage(HdfFixedPoint bTreeAddress, HdfFixedPoint localHeapAddress) {
+    public SymbolTableMessage(HdfFixedPoint<BigInteger> bTreeAddress, HdfFixedPoint<BigInteger> localHeapAddress) {
         super(MessageType.SymbolTableMessage, ()-> (short) (bTreeAddress.getSizeMessageData() + localHeapAddress.getSizeMessageData()), (byte)0);
         this.bTreeAddress = bTreeAddress;
         this.localHeapAddress = localHeapAddress;
@@ -23,8 +24,8 @@ public class SymbolTableMessage extends HdfMessage {
 
     public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        HdfFixedPoint bTreeAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
-        HdfFixedPoint localHeapAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
+        HdfFixedPoint<BigInteger> bTreeAddress = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
+        HdfFixedPoint<BigInteger> localHeapAddress = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
         return new SymbolTableMessage(bTreeAddress, localHeapAddress);
     }
 
@@ -41,8 +42,8 @@ public class SymbolTableMessage extends HdfMessage {
     @Override
     public String toString() {
         return "SymbolTableMessage{" +
-                "bTreeAddress=" + bTreeAddress.toBigInteger() +
-                ", localHeapAddress=" + localHeapAddress.toBigInteger() +
+                "bTreeAddress=" + bTreeAddress.getInstance() +
+                ", localHeapAddress=" + localHeapAddress.getInstance() +
                 '}';
     }
 }

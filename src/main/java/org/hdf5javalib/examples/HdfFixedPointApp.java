@@ -60,7 +60,7 @@ public class HdfFixedPointApp {
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                tryTemperatureSpliterator(channel, reader);
+//                tryTemperatureSpliterator(channel, reader);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -78,8 +78,8 @@ public class HdfFixedPointApp {
         }
         tryHdfApiInts("randomintseach.h5", this::writeEach);
         tryHdfApiInts("randomintsall.h5", this::writeAll);
-        tryHdfApiMatrixInts("weather_data_each.h5", this::writeEachMatrix);
-        tryHdfApiMatrixInts("weather_data_all.h5", this::writeAllMatrix);
+//        tryHdfApiMatrixInts("weather_data_each.h5", this::writeEachMatrix);
+//        tryHdfApiMatrixInts("weather_data_all.h5", this::writeAllMatrix);
     }
 
     @Data
@@ -89,10 +89,10 @@ public class HdfFixedPointApp {
 
     private void tryScalarDataSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
         DataClassDataSource<HdfFixedPoint> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfFixedPoint.class);
-        HdfFixedPoint[] allData = dataSource.readAll();
-        System.out.println("Scalar readAll stats = " + Arrays.stream(allData).map(HdfFixedPoint::toBigInteger).collect(Collectors.summarizingInt(BigInteger::intValue)));
-        System.out.println("Scalar streaming list = " + dataSource.stream().map(fp->HdfTypeUtils.populateFromFixedPoint(Scalar.class, "data", fp, 0)).toList());
-        System.out.println("Scalar parallelStreaming list = " + dataSource.parallelStream().map(fp->HdfTypeUtils.populateFromFixedPoint(Scalar.class, "data", fp, 0)).toList());
+        HdfFixedPoint<Scalar>[] allData = dataSource.readAll();
+        System.out.println("Scalar readAll stats = " + Arrays.stream(allData).map(HdfFixedPoint::getInstance).map(Scalar::getData).collect(Collectors.summarizingInt(BigInteger::intValue)));
+        System.out.println("Scalar streaming list = " + dataSource.stream().map(HdfFixedPoint::getInstance).toList());
+        System.out.println("Scalar parallelStreaming list = " + dataSource.parallelStream().map(HdfFixedPoint::getInstance).toList());
     }
 
     @Data
@@ -100,28 +100,32 @@ public class HdfFixedPointApp {
         private BigInteger temperature;
     }
 
-    public void tryTemperatureSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        DataClassDataSource<HdfFixedPoint> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfFixedPoint.class);
-        HdfFixedPoint[] allData = dataSource.readAll();
-        System.out.println("Vector readAll stats  = " + Arrays.stream(allData).map(HdfFixedPoint::toBigInteger).collect(Collectors.summarizingInt(BigInteger::intValue)));
-        System.out.println("Vector streaming stats = " + dataSource.stream()
-                .map(fp->HdfTypeUtils.populateFromFixedPoint(TemperatureData.class, "temperature", fp, 0))
-                .map(TemperatureData::getTemperature)
-                .collect(Collectors.summarizingInt(BigInteger::intValue)));
-        System.out.println("Vector parallel streaming stats = " + dataSource.parallelStream()
-                .map(fp->HdfTypeUtils.populateFromFixedPoint(TemperatureData.class, "temperature", fp, 0))
-                .map(TemperatureData::getTemperature)
-                .collect(Collectors.summarizingInt(BigInteger::intValue)));
-    }
+//    public void tryTemperatureSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
+//        DataClassDataSource<HdfFixedPoint> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfFixedPoint.class);
+//        HdfFixedPoint<BigInteger>[] allData = dataSource.readAll();
+//        System.out.println("Vector readAll stats  = " + Arrays.stream(allData).map(HdfFixedPoint::getInstance).collect(Collectors.summarizingInt(BigInteger::intValue)));
+//        System.out.println("Vector streaming stats = " + dataSource.stream()
+//                .map(fp->fp.getDatatype().getType().cast(fp.getInstance()))
+//                .map(bi->{
+//                    TemperatureData temperatureData = new TemperatureData();
+//                    temperatureData.setTemperature(bi);
+//                    return temperatureData;
+//                })
+//                .collect(Collectors.summarizingInt(BigInteger::intValue)));
+//        System.out.println("Vector parallel streaming stats = " + dataSource.parallelStream()
+//                .map(fp->HdfTypeUtils.populateFromFixedPoint(TemperatureData.class, "temperature", fp, 0))
+//                .map(TemperatureData::getTemperature)
+//                .collect(Collectors.summarizingInt(BigInteger::intValue)));
+//    }
 
     private void tryWeatherSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
         DataClassMatrixDataSource<HdfFixedPoint> dataSource = new DataClassMatrixDataSource<>(reader.getDataObjectHeaderPrefix(), 2, fileChannel, reader.getDataAddress(), HdfFixedPoint.class);
-        HdfFixedPoint[][] allData = dataSource.readAll();
+        HdfFixedPoint<BigDecimal>[][] allData = dataSource.readAll();
         // Print the matrix values
         System.out.println("Matrix readAll() = ");
-        for (HdfFixedPoint[] allDatum : allData) {
-            for (HdfFixedPoint hdfFixedPoint : allDatum) {
-                System.out.print(hdfFixedPoint.toBigDecimal(2) + " ");
+        for (HdfFixedPoint<BigDecimal>[] allDatum : allData) {
+            for (HdfFixedPoint<BigDecimal> hdfFixedPoint : allDatum) {
+                System.out.print(hdfFixedPoint.getInstance().setScale(2) + " ");
             }
             System.out.println(); // New line after each row
         }
@@ -130,8 +134,8 @@ public class HdfFixedPointApp {
         // Print all values
         System.out.println("Matrix stream() = ");
         stream.forEach(array -> {
-            for (HdfFixedPoint value : array) {
-                System.out.print(value.toBigDecimal(2) + " ");
+            for (HdfFixedPoint<BigDecimal> value : array) {
+                System.out.print(value.getInstance().setScale(2) + " ");
             }
             System.out.println(); // Newline after each array
         });
@@ -140,8 +144,8 @@ public class HdfFixedPointApp {
         // Print all values in order
         System.out.println("Matrix parallelStream() = ");
         parallelStream.forEachOrdered(array -> {
-            for (HdfFixedPoint value : array) {
-                System.out.print(value.toBigDecimal(2) + " ");
+            for (HdfFixedPoint<BigDecimal> value : array) {
+                System.out.print(value.getInstance().setScale(2) + " ");
             }
             System.out.println();
         });
@@ -258,49 +262,49 @@ public class HdfFixedPointApp {
         }
     }
 
-    @SneakyThrows
-    private void writeEachMatrix(MatrixWriterParams writerParams) {
-        AtomicInteger countHolder = new AtomicInteger(0);
-        ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
-        // Write to dataset
-        writerParams.dataset.write(() -> {
-            int count = countHolder.getAndIncrement();
-            if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
-            byteBuffer.clear();
-            BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
-            makeBitOffsetValues(writerParams, byteBuffer, twoShifted, count);
-            byteBuffer.flip();
-            return byteBuffer;
-        });
-    }
-
-    @SneakyThrows
-    private void writeAllMatrix(MatrixWriterParams writerParams) {
-        ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS * writerParams.NUM_RECORDS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
-        BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
-        for(int r=0; r<writerParams.NUM_RECORDS; r++) {
-            makeBitOffsetValues(writerParams, byteBuffer, twoShifted, r);
-        }
-        byteBuffer.flip();
-        // Write to dataset
-        writerParams.dataset.write(byteBuffer);
-    }
-
-    private void makeBitOffsetValues(MatrixWriterParams writerParams, ByteBuffer byteBuffer, BigDecimal twoShifted, int r) {
-        for(int c=0; c < writerParams.NUM_DATAPOINTS; ++c ) {
-            BigDecimal rawValue = writerParams.values.get(r).get(c).multiply(twoShifted);
-            BigInteger rawValueShifted = rawValue.toBigInteger();
-            new HdfFixedPoint(rawValueShifted,
-                    writerParams.fixedPointDatatype.getSize(),
-                    writerParams.fixedPointDatatype.isBigEndian(),
-                    writerParams.fixedPointDatatype.isLoPad(),
-                    writerParams.fixedPointDatatype.isHiPad(),
-                    writerParams.fixedPointDatatype.isSigned(),
-                    writerParams.fixedPointDatatype.getBitOffset(),
-                    writerParams.fixedPointDatatype.getBitPrecision())
-                    .writeValueToByteBuffer(byteBuffer);
-        }
-    }
+//    @SneakyThrows
+//    private void writeEachMatrix(MatrixWriterParams writerParams) {
+//        AtomicInteger countHolder = new AtomicInteger(0);
+//        ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+//        // Write to dataset
+//        writerParams.dataset.write(() -> {
+//            int count = countHolder.getAndIncrement();
+//            if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
+//            byteBuffer.clear();
+//            BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
+//            makeBitOffsetValues(writerParams, byteBuffer, twoShifted, count);
+//            byteBuffer.flip();
+//            return byteBuffer;
+//        });
+//    }
+//
+//    @SneakyThrows
+//    private void writeAllMatrix(MatrixWriterParams writerParams) {
+//        ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS * writerParams.NUM_RECORDS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+//        BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
+//        for(int r=0; r<writerParams.NUM_RECORDS; r++) {
+//            makeBitOffsetValues(writerParams, byteBuffer, twoShifted, r);
+//        }
+//        byteBuffer.flip();
+//        // Write to dataset
+//        writerParams.dataset.write(byteBuffer);
+//    }
+//
+//    private void makeBitOffsetValues(MatrixWriterParams writerParams, ByteBuffer byteBuffer, BigDecimal twoShifted, int r) {
+//        for(int c=0; c < writerParams.NUM_DATAPOINTS; ++c ) {
+//            BigDecimal rawValue = writerParams.values.get(r).get(c).multiply(twoShifted);
+//            BigInteger rawValueShifted = rawValue.toBigInteger();
+//            new HdfFixedPoint(rawValueShifted,
+//                    writerParams.fixedPointDatatype.getSize(),
+//                    writerParams.fixedPointDatatype.isBigEndian(),
+//                    writerParams.fixedPointDatatype.isLoPad(),
+//                    writerParams.fixedPointDatatype.isHiPad(),
+//                    writerParams.fixedPointDatatype.isSigned(),
+//                    writerParams.fixedPointDatatype.getBitOffset(),
+//                    writerParams.fixedPointDatatype.getBitPrecision())
+//                    .writeValueToByteBuffer(byteBuffer);
+//        }
+//    }
 
     @SneakyThrows
     private void writeEach(WriterParams writerParams) {

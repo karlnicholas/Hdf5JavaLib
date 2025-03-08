@@ -1,17 +1,17 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
-import org.hdf5javalib.dataclass.HdfCompound;
-import org.hdf5javalib.dataclass.HdfCompoundMember;
-import org.hdf5javalib.dataclass.HdfData;
+import org.hdf5javalib.dataclass.*;
 
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype.parseFixedPointType;
 import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype.parseFloatingPointType;
+import static org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype.DatatypeClass.FIXED;
 import static org.hdf5javalib.file.dataobject.message.datatype.StringDatatype.parseStringType;
 
 @Getter
@@ -175,15 +175,31 @@ public class CompoundDatatype implements HdfDatatype {
     }
 
     @Override
-    public HdfData getInstance(ByteBuffer buffer) {
-        // make sure the buffer advances the correct amount, in case the struct is padded
-        int startPos = buffer.position();
-        List<HdfCompoundMember> compoundMembers = new ArrayList<>();
-        for (CompoundMemberDatatype member: members) {
-            compoundMembers.add(new HdfCompoundMember(member.getName(), member.getInstance(buffer)));
+    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+        Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));
+        Map<String, CompoundMemberDatatype> nameToMemberMap = members.stream().collect(Collectors.toMap(CompoundMemberDatatype::getName, compoundMember -> compoundMember));
+        try {
+            T instance = clazz.getDeclaredConstructor().newInstance();
+            for( Field field: nameToFieldMap.values()) {
+                CompoundMemberDatatype member = nameToMemberMap.get(field.getName());
+                field.setAccessible(true);
+                if (member != null) {
+                    Object value = member.getInstance(field.getType(), bytes);
+                    if (field.getType().isAssignableFrom(value.getClass())) {
+                        field.set(instance, value);
+                    }  // Silently skip if types don't match
+                }  // Silently skip if no matching member
+            }
+            return instance;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        buffer.position(startPos + size);
-        return new HdfCompound(compoundMembers);
+    }
+    @Override
+    public <T> T getInstance(Class<T> clazz, ByteBuffer buffer) {
+        byte[] bytes = new byte[size];
+        buffer.get(bytes);
+        return getInstance(clazz, bytes);
     }
 
 }

@@ -1,13 +1,10 @@
 package org.hdf5javalib.datasource;
 
 import org.hdf5javalib.dataclass.HdfData;
-import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
-import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -95,8 +92,8 @@ public class DataClassDataSource<T extends HdfData> extends AbstractDataClassStr
 
     @Override
     protected T populateFromBufferRaw(ByteBuffer buffer) {
-        @SuppressWarnings("unchecked")
-        T result = (T) datatype.getInstance(buffer);
-        return result;
+        byte[] bytes = new byte[datatype.getSize()];
+        buffer.get(bytes);
+        return datatype.getInstance(dataClass, bytes);
     }
 }

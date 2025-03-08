@@ -5,6 +5,8 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -17,11 +19,11 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 public class HdfLocalHeap {
     private final String signature;
     private final int version;
-    private final HdfFixedPoint dataSegmentSize;
-    private HdfFixedPoint freeListOffset;
-    private final HdfFixedPoint dataSegmentAddress;
+    private final HdfFixedPoint<BigInteger> dataSegmentSize;
+    private HdfFixedPoint<BigInteger> freeListOffset;
+    private final HdfFixedPoint<BigInteger> dataSegmentAddress;
 
-    public HdfLocalHeap(String signature, int version, HdfFixedPoint dataSegmentSize, HdfFixedPoint freeListOffset, HdfFixedPoint dataSegmentAddress) {
+    public HdfLocalHeap(String signature, int version, HdfFixedPoint<BigInteger> dataSegmentSize, HdfFixedPoint<BigInteger> freeListOffset, HdfFixedPoint<BigInteger> dataSegmentAddress) {
         this.signature = signature;
         this.version = version;
         this.dataSegmentSize = dataSegmentSize;
@@ -29,13 +31,13 @@ public class HdfLocalHeap {
         this.dataSegmentAddress = dataSegmentAddress;
     }
 
-    public HdfLocalHeap(HdfFixedPoint dataSegmentSize, HdfFixedPoint dataSegmentAddress) {
+    public HdfLocalHeap(HdfFixedPoint<BigInteger> dataSegmentSize, HdfFixedPoint<BigInteger> dataSegmentAddress) {
         this("HEAP", 0, dataSegmentSize, HdfFixedPoint.of(0), dataSegmentAddress);
     }
 
-    public int addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents) {
+    public int addToHeap(HdfString<String> objectName, HdfLocalHeapContents localHeapContents) {
         byte[] objectNameBytes = objectName.getBytes();
-        int freeListOffset = this.freeListOffset.toBigInteger().intValue();
+        int freeListOffset = this.freeListOffset.getInstance().intValue();
         byte[] heapData = localHeapContents.getHeapData();
 
         // ✅ Extract free space size from the current freeListOffset location
@@ -101,9 +103,9 @@ public class HdfLocalHeap {
 
         // Parse fixed-point fields using HdfFixedPoint
         BitSet emptyBitSet = new BitSet();
-        HdfFixedPoint dataSegmentSize = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(lengthSize*8));
-        HdfFixedPoint freeListOffset = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-        HdfFixedPoint dataSegmentAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint<BigInteger> dataSegmentSize = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, lengthSize, emptyBitSet, (short) 0, (short)(lengthSize*8));
+        HdfFixedPoint<BigInteger> freeListOffset = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, lengthSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint<BigInteger> dataSegmentAddress = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
 
         return new HdfLocalHeap(signature, version, dataSegmentSize, freeListOffset, dataSegmentAddress);
     }

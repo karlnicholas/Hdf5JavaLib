@@ -5,6 +5,7 @@ import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFloatPoint;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.BitSet;
 
 @Getter
@@ -56,11 +57,104 @@ public class FloatingPointDatatype implements HdfDatatype {
     }
 
     @Override
-    public HdfData getInstance(ByteBuffer buffer) {
+    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+        if (clazz.isAssignableFrom(Double.class)) {  // Can accept Double
+            return clazz.cast(toDouble(bytes));
+        } else if (clazz.isAssignableFrom(Float.class)) {  // Can accept Float
+            return clazz.cast(toFloat(bytes));
+        } else {
+            throw new UnsupportedOperationException("Unknown type: " + clazz);
+        }
+    }
+
+    @Override
+    public <T> T getInstance(Class<T> clazz, ByteBuffer buffer) {
         byte[] bytes = new byte[size];
         buffer.get(bytes);
-        return new HdfFloatPoint(bytes, classBitField, size, bitOffset, bitPrecision, exponentLocation, exponentSize, mantissaLocation, mantissaSize, exponentBias);
+        return getInstance(clazz, bytes);
     }
+
+    // Convert buffer to Float
+    public Float toFloat(byte[] bytes) {
+        double value = toDoubleValue(bytes);
+        return (float) value; // Cast to float, may lose precision if size > 4 bytes
+    }
+
+    // Convert buffer to Double
+    public Double toDouble(byte[] bytes) {
+        return toDoubleValue(bytes);
+    }
+
+    private double toDoubleValue(byte[] buffer) {
+        if (buffer.length != size) {
+            throw new IllegalArgumentException("Buffer size (" + buffer.length + ") must match datatype size (" + size + ")");
+        }
+
+        // Determine byte order from classBitField
+        ByteOrder order = getByteOrder();
+        ByteBuffer bb = ByteBuffer.wrap(buffer).order(order);
+
+        // Convert buffer to long (up to 64 bits) for bit manipulation
+        long bits = 0;
+        if (size <= 4) {
+            bits = bb.getInt() & 0xFFFFFFFFL; // 32-bit unsigned
+        } else if (size <= 8) {
+            bits = bb.getLong();
+        } else {
+            throw new UnsupportedOperationException("Size > 8 bytes not supported");
+        }
+
+        // Shift bits to align with datatype.getBitOffset()
+        bits >>>= bitOffset; // Unsigned right shift to discard lower bits
+
+        // Extract sign bit (from signLocation in classBitField bits 8-15)
+        int signLocation = getSignLocation();
+        long signMask = 1L << signLocation;
+        int sign = (bits & signMask) != 0 ? -1 : 1;
+
+        // Extract exponent
+        long exponentMask = (1L << exponentSize) - 1;
+        long rawExponent = (bits >>> exponentLocation) & exponentMask;
+        int exponent = (int) (rawExponent - exponentBias);
+
+        // Extract mantissa
+        long mantissaMask = (1L << mantissaSize) - 1;
+        long mantissa = (bits >>> mantissaLocation) & mantissaMask;
+
+        // Assume normalized number (implied leading 1, common in HDF5 float spec)
+        double mantissaValue = 1.0 + (double) mantissa / (1L << mantissaSize); // Normalize mantissa
+
+        // Combine: sign * mantissa * 2^exponent
+        double value = sign * mantissaValue * Math.pow(2, exponent);
+
+        return value;
+    }
+
+    private ByteOrder getByteOrder() {
+        boolean bit0 = classBitField.get(0);
+        boolean bit6 = classBitField.get(6);
+        if (!bit6 && !bit0) return ByteOrder.LITTLE_ENDIAN;
+        if (!bit6 && bit0) return ByteOrder.BIG_ENDIAN;
+        if (bit6 && !bit0) throw new IllegalArgumentException("Reserved byte order");
+        if (bit6 && bit0) throw new UnsupportedOperationException("VAX-endian not supported");
+        return ByteOrder.LITTLE_ENDIAN; // Default, should never reach here
+    }
+
+    private int getSignLocation() {
+        int signLoc = 0;
+        for (int i = 8; i <= 15; i++) {
+            if (classBitField.get(i)) {
+                signLoc |= (1 << (i - 8));
+            }
+        }
+        return signLoc;
+    }
+//    @Override
+//    public HdfData getInstance(ByteBuffer buffer) {
+//        byte[] bytes = new byte[size];
+//        buffer.get(bytes);
+//        return new HdfFloatPoint(bytes, classBitField, size, bitOffset, bitPrecision, exponentLocation, exponentSize, mantissaLocation, mantissaSize, exponentBias);
+//    }
 
     @Override
     public String toString() {

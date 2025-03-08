@@ -66,8 +66,8 @@ public class HdfReadUtils {
     // TODO: fix recursion
     public static void parseContinuationMessage(FileChannel fileChannel, ObjectHeaderContinuationMessage objectHeaderContinuationMessage, short offsetSize, short lengthSize, List<HdfMessage> headerMessages) throws IOException {
 
-        long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().toBigInteger().longValue();
-        short continuationSize = objectHeaderContinuationMessage.getContinuationSize().toBigInteger().shortValueExact();
+        long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().getInstance().longValue();
+        short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getInstance().shortValueExact();
 
         // Move to the continuation block offset
         fileChannel.position(continuationOffset);
@@ -76,4 +76,14 @@ public class HdfReadUtils {
         parseDataObjectHeaderMessages(fileChannel, continuationSize, offsetSize, lengthSize, headerMessages);
     }
 
+    public static void reverseBytesInPlace(byte[] input) {
+        int i = 0, j = input.length - 1;
+        while (i < j) {
+            byte temp = input[i];
+            input[i] = input[j];
+            input[j] = temp;
+            i++;
+            j--;
+        }
+    }
 }

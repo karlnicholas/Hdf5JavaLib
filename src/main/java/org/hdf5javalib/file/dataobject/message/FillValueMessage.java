@@ -1,11 +1,9 @@
 package org.hdf5javalib.file.dataobject.message;
 
 import lombok.Getter;
-import org.hdf5javalib.dataclass.HdfFixedPoint;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.BitSet;
 
 @Getter
 public class FillValueMessage extends HdfMessage {
@@ -13,7 +11,7 @@ public class FillValueMessage extends HdfMessage {
     private final int spaceAllocationTime;  // 1 byte
     private final int fillValueWriteTime;   // 1 byte
     private final int fillValueDefined;     // 1 byte
-    private final HdfFixedPoint size;       // Size of the Fill Value field (optional, unsigned 4 bytes)
+    private final int size;       // Size of the Fill Value field (optional, unsigned 4 bytes)
     private final byte[] fillValue;         // Fill Value field (optional)
 
     // Constructor to initialize all fields
@@ -22,7 +20,7 @@ public class FillValueMessage extends HdfMessage {
             int spaceAllocationTime,
             int fillValueWriteTime,
             int fillValueDefined,
-            HdfFixedPoint size,
+            int size,
             byte[] fillValue
     ) {
         super(MessageType.FillValueMessage, ()-> (short) (8), (byte)1);
@@ -53,17 +51,16 @@ public class FillValueMessage extends HdfMessage {
         int fillValueDefined = Byte.toUnsignedInt(buffer.get());
 
         // Initialize optional fields
-        HdfFixedPoint size = null;
+        int size = 0;
         byte[] fillValue = null;
 
         // Handle Version 2+ behavior and fillValueDefined flag
         if (version >= 2 && fillValueDefined == 1) {
             // Parse Size (unsigned 4 bytes, using HdfFixedPoint)
-            size = HdfFixedPoint.readFromByteBuffer(buffer, (short) 4, new BitSet(), (short)0, (short)(4*8));
+            size =buffer.getInt();
 
             // Parse Fill Value
-            int sizeValue = size.toBigInteger().intValue();
-            fillValue = new byte[sizeValue];
+            fillValue = new byte[size];
             buffer.get(fillValue);
         }
 
@@ -78,7 +75,7 @@ public class FillValueMessage extends HdfMessage {
                 ", spaceAllocationTime=" + spaceAllocationTime +
                 ", fillValueWriteTime=" + fillValueWriteTime +
                 ", fillValueDefined=" + fillValueDefined +
-                ", size=" + (size != null ? size.toBigInteger() : "undefined") +
+                ", size=" + size +
                 ", fillValue=" + (fillValue != null ? fillValue.length + " bytes" : "undefined") +
                 '}';
     }
@@ -95,7 +92,7 @@ public class FillValueMessage extends HdfMessage {
         // Handle Version 2+ behavior and fillValueDefined flag
         if (version >= 2 && fillValueDefined == 1) {
             // Parse Size (unsigned 4 bytes, using HdfFixedPoint)
-            buffer.putInt(size.toBigInteger().intValue());
+            buffer.putInt(size);
             buffer.put(fillValue);
         }
     }
