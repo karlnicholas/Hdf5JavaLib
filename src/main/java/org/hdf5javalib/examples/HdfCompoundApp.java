@@ -1,6 +1,7 @@
 package org.hdf5javalib.examples;
 
 import org.hdf5javalib.HdfFileReader;
+import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.TypedDataSource;
@@ -215,37 +216,13 @@ public class HdfCompoundApp {
 
 
     public void tryCompoundSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-//        TypedCompoundDataSource<ShipperData> dataSource = new TypedCompoundDataSource<>((CompoundDatatype) reader.getDataType(), ShipperData.class);
-//        Spliterator<ShipperData> spliterator = new CompoundDatatypeSpliterator<>(fileChannel, reader.getDataAddress(), reader.getDataType().getSize(), reader.getDimension(), dataSource);
-//        System.out.println("count = " + StreamSupport.stream(spliterator, false).map(ShipperData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
-//        TypedDataClassDataSource<ShipperData> dataSource = new TypedDataClassDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, ShipperData.class, fileChannel, reader.getDataAddress());
-//        System.out.println("count = " + dataSource.stream().map(ShipperData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
         TypedDataSource<MonitoringData> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), MonitoringData.class);
         MonitoringData[] allData = dataSource.readAll();
         System.out.println("*** readAll: \r\n" + Arrays.asList(allData).stream().map(Object::toString).collect(Collectors.joining("\n")));
-
         System.out.println("*** stream: \r\n" + dataSource.stream().map(Object::toString).collect(Collectors.joining("\n")));
-
         System.out.println("\"*** parallelStream: \r\n" + dataSource.parallelStream().map(Object::toString).collect(Collectors.joining("\n")));
+
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream().forEach(System.out::println);
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), String.class).stream().forEach(System.out::println);
     }
 }
-
-//DataClassDataSource<HdfCompound> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class);
-//HdfCompound[] allData = dataSource.readAll();
-//        System.out.println("readAll = " + Arrays.stream(allData)
-//                .map(c->c.getMembers().stream()
-//                        .filter(m->m.getName().equalsIgnoreCase("pieces")).findFirst().orElseThrow())
-//        .map(cm->((HdfFixedPoint)cm.getData()).toBigInteger())
-//        .collect(Collectors.summarizingInt(BigInteger::intValue)));
-//
-//        System.out.println("stream = " + dataSource.stream()
-//                .map(c->c.getMembers().stream()
-//                        .filter(m->m.getName().equalsIgnoreCase("pieces")).findFirst().orElseThrow())
-//        .map(cm->((HdfFixedPoint)cm.getData()).toBigInteger())
-//        .collect(Collectors.summarizingInt(BigInteger::intValue)));
-//
-//        System.out.println("parallelStream = " + dataSource.parallelStream()
-//                .map(c->c.getMembers().stream()
-//                        .filter(m->m.getName().equalsIgnoreCase("pieces")).findFirst().orElseThrow())
-//        .map(cm->((HdfFixedPoint)cm.getData()).toBigInteger())
-//        .collect(Collectors.summarizingInt(BigInteger::intValue)));

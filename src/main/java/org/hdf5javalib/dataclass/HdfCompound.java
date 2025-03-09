@@ -21,13 +21,16 @@ public class HdfCompound implements HdfData {
     public HdfCompound(byte[] bytes, CompoundDatatype datatype) {
         this.datatype = datatype;
         this.bytes = bytes;
-        Map<String, CompoundMemberDatatype> nameToMemberMap = datatype.getMembers().stream().collect(Collectors.toMap(CompoundMemberDatatype::getName, compoundMember -> compoundMember));
-
         members = new ArrayList<>();
-        nameToMemberMap.forEach((name, member) -> {
+        datatype.getMembers().forEach(member -> {
             HdfCompoundMember hdfMember = new HdfCompoundMember(Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset()+member.getSize()), member);
             members.add(hdfMember);
         });
+    }
+
+    @Override
+    public String toString() {
+        return members.stream().map(HdfCompoundMember::toString).toList().toString()    ;
     }
 
     @Override

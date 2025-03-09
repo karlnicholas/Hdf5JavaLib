@@ -19,6 +19,10 @@ public class HdfCompoundMember implements HdfData {
     }
 
     @Override
+    public String toString() {
+        return datatype.getInstance(HdfData.class, bytes).toString();
+    }
+    @Override
     public int getSizeMessageData() {
         return bytes.length;
     }

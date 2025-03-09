@@ -89,16 +89,12 @@ public class HdfFixedPointApp {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), BigInteger.class);
         BigInteger[] allData = dataSource.readAll();
         System.out.println("Scalar readAll stats = " + Arrays.stream(allData)
-//                .map(HdfFixedPoint::getInstance)
-//                .map(bi->{
-//                    Scalar scalar = new Scalar();
-//                    scalar.data = bi.getData();
-//                    return scalar;
-//                })
-//                .map(Scalar::getData)
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
         System.out.println("Scalar streaming list = " + dataSource.stream().toList());
         System.out.println("Scalar parallelStreaming list = " + dataSource.parallelStream().toList());
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfFixedPoint.class).stream().forEach(System.out::println);
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), String.class).stream().forEach(System.out::println);
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), BigDecimal.class).stream().forEach(System.out::println);
     }
 
     public void tryVectorSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
@@ -175,12 +171,6 @@ public class HdfFixedPointApp {
                 }
                 data.add(row);
             }
-
-//            // Print sample data
-//            System.out.println("Data:");
-//            for (List<BigDecimal> row : data) {
-//                System.out.println(row);
-//            }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
