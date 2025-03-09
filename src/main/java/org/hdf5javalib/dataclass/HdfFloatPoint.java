@@ -4,13 +4,11 @@ import org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype;
 
 import java.nio.ByteBuffer;
 
-public class HdfFloatPoint<T> implements HdfData<T> {
-    private final Class<T> clazz;
+public class HdfFloatPoint implements HdfData {
     private final byte[] bytes;
     private FloatingPointDatatype datatype;
 
-    public HdfFloatPoint(Class<T> clazz, byte[] bytes, FloatingPointDatatype datatype) {
-        this.clazz = clazz;
+    public HdfFloatPoint(byte[] bytes, FloatingPointDatatype datatype) {
         this.bytes = bytes;
         this.datatype = datatype;
     }
@@ -46,7 +44,7 @@ public class HdfFloatPoint<T> implements HdfData<T> {
 
     @Override
     public String toString() {
-        return getInstance().toString();
+        return datatype.getInstance(String.class, bytes);
     }
 
     @Override
@@ -60,7 +58,7 @@ public class HdfFloatPoint<T> implements HdfData<T> {
     }
 
     @Override
-    public T getInstance() {
+    public <T> T getInstance(Class<T> clazz) {
         return datatype.getInstance(clazz, bytes);
     }
 }

@@ -14,20 +14,18 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 @Getter
-public class HdfFixedPoint<T> implements HdfData<T> {
-    private final Class<T> clazz;
+public class HdfFixedPoint implements HdfData {
     private final byte[] bytes; // Stored in little-endian format by default unless specified otherwise
     private final FixedPointDatatype datatype;
 
-    public HdfFixedPoint(Class<T> clazz, byte[] bytes, FixedPointDatatype datatype) {
-        this.clazz = clazz;
+    public HdfFixedPoint(byte[] bytes, FixedPointDatatype datatype) {
         this.bytes = bytes.clone();
         this.datatype = datatype;
         validateSize(datatype.getSize());
     }
 
     public HdfFixedPoint(BigInteger value, FixedPointDatatype datatype) {
-        this((Class<T>) BigInteger.class, toSizedByteArray(value, datatype.getSize(), datatype.isBigEndian()), datatype);
+        this(toSizedByteArray(value, datatype.getSize(), datatype.isBigEndian()), datatype);
     }
 
     public byte[] getBytes() {
@@ -37,17 +35,17 @@ public class HdfFixedPoint<T> implements HdfData<T> {
     /**
      * Construct 64-bit precision from long value
      */
-    public static HdfFixedPoint<BigInteger> of(long value) {
+    public static HdfFixedPoint of(long value) {
         byte[] bArray = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(value).array();
         FixedPointDatatype datatype = new FixedPointDatatype(
                 FixedPointDatatype.createClassAndVersion(),
                 FixedPointDatatype.createClassBitField(false, false, false, false),
                 (short) 8, (short) 0, (short) 64
         );
-        return new HdfFixedPoint<>(BigInteger.class, bArray, datatype);
+        return new HdfFixedPoint(bArray, datatype);
     }
 
-    public static <T> HdfFixedPoint<T> readFromFileChannel(Class<T> clazz, FileChannel fileChannel, int size, BitSet classBitField, short bitOffset, short bitPrecision) throws IOException {
+    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, int size, BitSet classBitField, short bitOffset, short bitPrecision) throws IOException {
         validateSize(size);
         byte[] bytes = new byte[size];
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(classBitField.get(0) ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
@@ -57,10 +55,10 @@ public class HdfFixedPoint<T> implements HdfData<T> {
                 classBitField,
                 (short) size, bitOffset, bitPrecision
         );
-        return new HdfFixedPoint<>(clazz, bytes, datatype);
+        return new HdfFixedPoint(bytes, datatype);
     }
 
-    public static <T> HdfFixedPoint<T>  readFromFileChannel(Class<T> clazz, FileChannel fileChannel, int size) throws IOException {
+    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, int size) throws IOException {
         validateSize(size);
         byte[] bytes = new byte[size];
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
@@ -70,10 +68,10 @@ public class HdfFixedPoint<T> implements HdfData<T> {
                 new BitSet(),
                 (short) size, (short) 0, (short) (size * 8)
         );
-        return new HdfFixedPoint<>(clazz, bytes, datatype);
+        return new HdfFixedPoint(bytes, datatype);
     }
 
-    public static HdfFixedPoint<BigInteger> undefined(int size) {
+    public static HdfFixedPoint undefined(int size) {
         validateSize(size);
         byte[] undefinedBytes = new byte[size];
         Arrays.fill(undefinedBytes, (byte) 0xFF);
@@ -82,10 +80,10 @@ public class HdfFixedPoint<T> implements HdfData<T> {
                 FixedPointDatatype.createClassBitField(false, false, false, true),
                 (short) size, (short) 0, (short) (size * 8)
         );
-        return new HdfFixedPoint<>(BigInteger.class, undefinedBytes, datatype);
+        return new HdfFixedPoint(undefinedBytes, datatype);
     }
 
-    public static HdfFixedPoint<BigInteger> undefined(ByteBuffer buffer, int size) {
+    public static HdfFixedPoint undefined(ByteBuffer buffer, int size) {
         validateSize(size);
         byte[] undefinedBytes = new byte[size];
         buffer.get(undefinedBytes);
@@ -94,10 +92,10 @@ public class HdfFixedPoint<T> implements HdfData<T> {
                 FixedPointDatatype.createClassBitField(false, false, false, true),
                 (short) size, (short) 0, (short) (size * 8)
         );
-        return new HdfFixedPoint<>(BigInteger.class, undefinedBytes, datatype);
+        return new HdfFixedPoint(undefinedBytes, datatype);
     }
 
-    public static <T> HdfFixedPoint<T> readFromByteBuffer(Class<T> clazz, ByteBuffer buffer, int size, BitSet classBitField, short bitOffset, short bitPrecision) {
+    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, int size, BitSet classBitField, short bitOffset, short bitPrecision) {
         validateSize(size);
         byte[] bytes = getLittleEndianBytes(buffer, size);
         FixedPointDatatype datatype = new FixedPointDatatype(
@@ -105,10 +103,10 @@ public class HdfFixedPoint<T> implements HdfData<T> {
                 classBitField,
                 (short) size, bitOffset, bitPrecision
         );
-        return new HdfFixedPoint<>(clazz, bytes, datatype);
+        return new HdfFixedPoint(bytes, datatype);
     }
 
-    public static <T> HdfFixedPoint<T> readFromByteBuffer(Class<T> clazz, ByteBuffer buffer, int size) {
+    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, int size) {
         validateSize(size);
         byte[] bytes = getLittleEndianBytes(buffer, size);
         FixedPointDatatype datatype = new FixedPointDatatype(
@@ -116,13 +114,13 @@ public class HdfFixedPoint<T> implements HdfData<T> {
                 new BitSet(),
                 (short) size, (short) 0, (short) (size * 8)
         );
-        return new HdfFixedPoint<>(clazz, bytes, datatype);
+        return new HdfFixedPoint(bytes, datatype);
     }
 
-    public static <T> HdfFixedPoint<T> readFromByteBuffer(Class<T> clazz, ByteBuffer buffer, FixedPointDatatype datatype) {
+    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, FixedPointDatatype datatype) {
         validateSize(datatype.getSize());
         byte[] bytes = getLittleEndianBytes(buffer, datatype.getSize());
-        return new HdfFixedPoint<>(clazz, bytes, datatype);
+        return new HdfFixedPoint(bytes, datatype);
     }
 
     public static boolean checkUndefined(ByteBuffer buffer, int size) {
@@ -176,7 +174,7 @@ public class HdfFixedPoint<T> implements HdfData<T> {
 
     @Override
     public String toString() {
-        return datatype.getInstance(clazz, bytes).toString();
+        return datatype.getInstance(String.class, bytes);
     }
 
     @Override
@@ -190,7 +188,7 @@ public class HdfFixedPoint<T> implements HdfData<T> {
     }
 
     @Override
-    public T getInstance() {
+    public <T> T getInstance(Class<T> clazz) {
         return datatype.getInstance(clazz, bytes);
     }
 }

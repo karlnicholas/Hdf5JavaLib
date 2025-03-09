@@ -3,6 +3,7 @@ package org.hdf5javalib.utils;
 import org.hdf5javalib.file.dataobject.message.*;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -66,8 +67,8 @@ public class HdfReadUtils {
     // TODO: fix recursion
     public static void parseContinuationMessage(FileChannel fileChannel, ObjectHeaderContinuationMessage objectHeaderContinuationMessage, short offsetSize, short lengthSize, List<HdfMessage> headerMessages) throws IOException {
 
-        long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().getInstance().longValue();
-        short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getInstance().shortValueExact();
+        long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().getInstance(BigInteger.class).longValue();
+        short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getInstance(BigInteger.class).shortValueExact();
 
         // Move to the continuation block offset
         fileChannel.position(continuationOffset);

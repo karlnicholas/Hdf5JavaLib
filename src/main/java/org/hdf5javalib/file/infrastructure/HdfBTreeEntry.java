@@ -7,6 +7,6 @@ import java.math.BigInteger;
 
 @Data
 public class HdfBTreeEntry {
-    private final HdfFixedPoint<BigInteger> key;
-    private final HdfFixedPoint<BigInteger> childPointer;
+    private final HdfFixedPoint key;
+    private final HdfFixedPoint childPointer;
 }

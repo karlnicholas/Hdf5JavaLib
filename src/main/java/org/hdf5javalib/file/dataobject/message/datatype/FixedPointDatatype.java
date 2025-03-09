@@ -2,6 +2,7 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 
 
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.math.BigDecimal;
@@ -197,6 +198,10 @@ public class FixedPointDatatype implements HdfDatatype {
             return clazz.cast(toBigDecimal(bytes));
         } else if (clazz.isAssignableFrom(BigInteger.class)) {  // Can accept BigInteger
             return clazz.cast(toBigInteger(bytes));
+        } else if (clazz.isAssignableFrom(String.class)) {  // Can accept BigInteger
+            return clazz.cast(toBigInteger(bytes).toString());
+        } else if (clazz.isAssignableFrom(HdfFixedPoint.class)) {  // Can accept BigInteger
+            return clazz.cast(new HdfFixedPoint(bytes, this));
         } else {
             throw new UnsupportedOperationException("Unknown type: " + clazz);
         }

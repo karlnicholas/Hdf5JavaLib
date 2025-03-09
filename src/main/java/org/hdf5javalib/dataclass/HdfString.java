@@ -10,14 +10,12 @@ import java.nio.ByteBuffer;
  * Stored bytes only hold bytes, encoded if needed. Null termination is added if needed when bytes are retrieved.
  * Java Strings are not null terminated and are UTF-8 encoded.
  */
-public class HdfString<T> implements HdfData<T> {
-    private final Class<T> clazz;
+public class HdfString implements HdfData {
     private final byte[] bytes;
     private final StringDatatype datatype;
 
     // Constructor for HDF metadata-based initialization (comprehensive parameters)
-    public HdfString(Class<T> clazz, byte[] bytes, StringDatatype datatype) {
-        this.clazz = clazz;
+    public HdfString(byte[] bytes, StringDatatype datatype) {
         this.bytes = bytes.clone();
         this.datatype = datatype;
     }
@@ -27,7 +25,7 @@ public class HdfString<T> implements HdfData<T> {
      * @param value String
      */
     public HdfString(String value, StringDatatype datatype) {
-        this((Class<T>) String.class, value.getBytes(), datatype);
+        this(value.getBytes(), datatype);
     }
 
     // Get the HDF byte[] representation for storage, always returns a copy
@@ -40,7 +38,7 @@ public class HdfString<T> implements HdfData<T> {
     // String representation for debugging and user-friendly output
     @Override
     public String toString() {
-        return getInstance().toString();
+        return datatype.getInstance(String.class, bytes);
     }
 
     @Override
@@ -55,7 +53,8 @@ public class HdfString<T> implements HdfData<T> {
     }
 
     @Override
-    public T getInstance() {
+    public <T> T getInstance(Class<T> clazz) {
         return datatype.getInstance(clazz, bytes);
     }
+
 }

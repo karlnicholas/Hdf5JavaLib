@@ -2,9 +2,8 @@ package org.hdf5javalib.dataclass;
 
 import java.nio.ByteBuffer;
 
-public interface HdfData<T> {
+public interface HdfData {
     int getSizeMessageData();
     void writeValueToByteBuffer(ByteBuffer buffer);
-    T getInstance();
-//    short getSize();
+    <T> T getInstance(Class<T> clazz);
 }

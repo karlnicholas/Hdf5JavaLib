@@ -69,13 +69,13 @@ public class HdfWriteUtils {
 
     public static void writeBigIntegerAsHdfFixedPoint(BigInteger value, HdfDatatype datatype, ByteBuffer buffer) {
         FixedPointDatatype fixedPointDatatype = (FixedPointDatatype)datatype;
-        HdfFixedPoint<BigInteger> fixedPoint = new HdfFixedPoint<BigInteger>(BigInteger.class, value.toByteArray(), fixedPointDatatype);
+        HdfFixedPoint fixedPoint = new HdfFixedPoint(value.toByteArray(), fixedPointDatatype);
         fixedPoint.writeValueToByteBuffer(buffer);
     }
 
     public static void writeBigDecimalAsHdfFixedPoint(BigDecimal value, HdfDatatype datatype, ByteBuffer buffer) {
         FixedPointDatatype fixedPointDatatype = (FixedPointDatatype)datatype;
-        HdfFixedPoint<BigDecimal> fixedPoint = new HdfFixedPoint<BigDecimal>(BigDecimal.class, value.unscaledValue().toByteArray(), fixedPointDatatype);
+        HdfFixedPoint fixedPoint = new HdfFixedPoint(value.unscaledValue().toByteArray(), fixedPointDatatype);
         fixedPoint.writeValueToByteBuffer(buffer);
     }
 }

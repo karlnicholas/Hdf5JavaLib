@@ -45,8 +45,8 @@ public class HdfLocalHeapContents {
      *
      * @return The next string, or null if no more strings are available.
      */
-    public HdfString<String> parseStringAtOffset(HdfFixedPoint<BigInteger> offset) {
-        int iOffset = offset.getInstance().intValue();
+    public HdfString parseStringAtOffset(HdfFixedPoint offset) {
+        int iOffset = offset.getInstance(BigInteger.class).intValue();
         if (iOffset >= heapData.length) {
             return null; // End of heap data
         }
@@ -59,7 +59,7 @@ public class HdfLocalHeapContents {
         }
 
         // Extract the string
-        HdfString<String> result = new HdfString<String>(String.class, Arrays.copyOfRange(heapData, start, iOffset), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), iOffset - start));
+        HdfString result = new HdfString(Arrays.copyOfRange(heapData, start, iOffset), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), iOffset - start));
 
         return result;
     }

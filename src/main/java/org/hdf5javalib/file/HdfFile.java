@@ -85,12 +85,12 @@ public class HdfFile {
 
     public void close() throws IOException {
         long endOfFileAddress = bufferAllocation.getDataAddress();
-        HdfFixedPoint<BigInteger>[] dimensionSizes = rootGroup.getDataSet().getDataObjectHeaderPrefix()
+        HdfFixedPoint[] dimensionSizes = rootGroup.getDataSet().getDataObjectHeaderPrefix()
                 .findMessageByType(DataLayoutMessage.class)
                 .orElseThrow()
                 .getDimensionSizes();
-        for(HdfFixedPoint<BigInteger> fixedPoint : dimensionSizes) {
-            endOfFileAddress += fixedPoint.getInstance().longValue();
+        for(HdfFixedPoint fixedPoint : dimensionSizes) {
+            endOfFileAddress += fixedPoint.getInstance(BigInteger.class).longValue();
         }
 
         superblock.setEndOfFileAddress(HdfFixedPoint.of(endOfFileAddress));

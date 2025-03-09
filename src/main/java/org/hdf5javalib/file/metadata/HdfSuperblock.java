@@ -27,11 +27,11 @@ public class HdfSuperblock {
     private final int groupLeafNodeK;
     private final int groupInternalNodeK;
 
-    private final HdfFixedPoint<BigInteger> baseAddress;
-    private final HdfFixedPoint<BigInteger> freeSpaceAddress;
+    private final HdfFixedPoint baseAddress;
+    private final HdfFixedPoint freeSpaceAddress;
     @Setter
-    private HdfFixedPoint<BigInteger> endOfFileAddress;
-    private final HdfFixedPoint<BigInteger> driverInformationAddress;
+    private HdfFixedPoint endOfFileAddress;
+    private final HdfFixedPoint driverInformationAddress;
     private final HdfSymbolTableEntry rootGroupSymbolTableEntry;
 
     public HdfSuperblock(
@@ -43,10 +43,10 @@ public class HdfSuperblock {
             short lengthSize,
             int groupLeafNodeK,
             int groupInternalNodeK,
-            HdfFixedPoint<BigInteger> baseAddress,
-            HdfFixedPoint<BigInteger> freeSpaceAddress,
-            HdfFixedPoint<BigInteger> endOfFileAddress,
-            HdfFixedPoint<BigInteger> driverInformationAddress,
+            HdfFixedPoint baseAddress,
+            HdfFixedPoint freeSpaceAddress,
+            HdfFixedPoint endOfFileAddress,
+            HdfFixedPoint driverInformationAddress,
             HdfSymbolTableEntry rootGroupSymbolTableEntry
     ) {
         this.version = version;
@@ -122,10 +122,10 @@ public class HdfSuperblock {
 
         // Parse addresses using HdfFixedPoint
         BitSet emptyBitSet = new BitSet();
-        HdfFixedPoint<BigInteger> baseAddress = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-        HdfFixedPoint<BigInteger> freeSpaceAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-        HdfFixedPoint<BigInteger> endOfFileAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-        HdfFixedPoint<BigInteger> driverInformationAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint baseAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint freeSpaceAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint endOfFileAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint driverInformationAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
 
         return new HdfSuperblock(
                 version,

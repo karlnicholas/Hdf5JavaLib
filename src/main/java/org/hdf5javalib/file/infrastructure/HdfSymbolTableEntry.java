@@ -14,13 +14,13 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 @Getter
 public class HdfSymbolTableEntry {
-    private final HdfFixedPoint<BigInteger> linkNameOffset;
-    private final HdfFixedPoint<BigInteger> objectHeaderAddress;
+    private final HdfFixedPoint linkNameOffset;
+    private final HdfFixedPoint objectHeaderAddress;
     private final int cacheType;
-    private final HdfFixedPoint<BigInteger> bTreeAddress;
-    private final HdfFixedPoint<BigInteger> nameHeapAddress;
+    private final HdfFixedPoint bTreeAddress;
+    private final HdfFixedPoint nameHeapAddress;
 
-    public HdfSymbolTableEntry(HdfFixedPoint<BigInteger> linkNameOffset, HdfFixedPoint<BigInteger> objectHeaderAddress, HdfFixedPoint<BigInteger> bTreeAddress, HdfFixedPoint<BigInteger> nameHeapAddress) {
+    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfFixedPoint objectHeaderAddress, HdfFixedPoint bTreeAddress, HdfFixedPoint nameHeapAddress) {
         this.linkNameOffset = linkNameOffset;
         this.objectHeaderAddress = objectHeaderAddress;
         this.cacheType = 1;
@@ -28,7 +28,7 @@ public class HdfSymbolTableEntry {
         this.nameHeapAddress = nameHeapAddress;
     }
 
-    public HdfSymbolTableEntry(HdfFixedPoint<BigInteger> linkNameOffset, HdfFixedPoint<BigInteger> objectHeaderAddress) {
+    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfFixedPoint objectHeaderAddress) {
         this.linkNameOffset = linkNameOffset;
         this.objectHeaderAddress = objectHeaderAddress;
         this.cacheType = 0;
@@ -39,8 +39,8 @@ public class HdfSymbolTableEntry {
     public static HdfSymbolTableEntry fromFileChannel(FileChannel fileChannel, short offsetSize) throws IOException {
         BitSet emptyBitSet = new BitSet();
         // Read the fixed-point values for linkNameOffset and objectHeaderAddress
-        HdfFixedPoint<BigInteger> linkNameOffset = HdfFixedPoint.readFromFileChannel(BigInteger.class, fileChannel, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-        HdfFixedPoint<BigInteger> objectHeaderAddress = HdfFixedPoint.readFromFileChannel(BigInteger.class, fileChannel, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint linkNameOffset = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint objectHeaderAddress = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
 
         // Read cache type and skip reserved field
         int cacheType = HdfReadUtils.readIntFromFileChannel(fileChannel);
@@ -48,8 +48,8 @@ public class HdfSymbolTableEntry {
 
         // Initialize addresses for cacheType 1
         if (cacheType == 1) {
-            HdfFixedPoint<BigInteger> bTreeAddress = HdfFixedPoint.readFromFileChannel(BigInteger.class, fileChannel, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-            HdfFixedPoint<BigInteger> localHeapAddress = HdfFixedPoint.readFromFileChannel(BigInteger.class, fileChannel, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+            HdfFixedPoint bTreeAddress = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+            HdfFixedPoint localHeapAddress = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
             return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress, bTreeAddress, localHeapAddress);
         } else {
             HdfReadUtils.skipBytes(fileChannel, 16); // Skip 16 bytes for scratch-pad
@@ -60,8 +60,8 @@ public class HdfSymbolTableEntry {
     public static HdfSymbolTableEntry fromByteBuffer(ByteBuffer buffer, short offsetSize) {
         BitSet emptyBitSet = new BitSet();
         // Read the fixed-point values for linkNameOffset and objectHeaderAddress
-        HdfFixedPoint<BigInteger> linkNameOffset = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-        HdfFixedPoint<BigInteger> objectHeaderAddress = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint linkNameOffset = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint objectHeaderAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
 
         // Read cache type and skip reserved field
         int cacheType = buffer.getInt();
@@ -69,8 +69,8 @@ public class HdfSymbolTableEntry {
 
         // Initialize addresses for cacheType 1
         if (cacheType == 1) {
-            HdfFixedPoint<BigInteger> bTreeAddress = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-            HdfFixedPoint<BigInteger> localHeapAddress = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+            HdfFixedPoint bTreeAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+            HdfFixedPoint localHeapAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
             return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress, bTreeAddress, localHeapAddress);
         } else {
             buffer.position(buffer.position() + 16);

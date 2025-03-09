@@ -5,6 +5,7 @@ import org.hdf5javalib.file.dataobject.message.HdfMessage;
 import org.hdf5javalib.file.dataobject.message.ObjectHeaderContinuationMessage;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -108,7 +109,7 @@ public class HdfObjectHeaderPrefixV1 {
 
             // After writing 6 messages, jump to continuation offset if present
             if (i == 5 && optContinuationMessage.isPresent()) {
-                buffer.position(optContinuationMessage.get().getContinuationOffset().getInstance().intValue());
+                buffer.position(optContinuationMessage.get().getContinuationOffset().getInstance(BigInteger.class).intValue());
             }
         }
     }

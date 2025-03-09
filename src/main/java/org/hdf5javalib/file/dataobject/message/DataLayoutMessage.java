@@ -17,21 +17,21 @@ public class DataLayoutMessage extends HdfMessage {
     private final int version;
     private final int layoutClass;
     @Setter
-    private HdfFixedPoint<BigInteger> dataAddress;
-    private final HdfFixedPoint<BigInteger>[] dimensionSizes;
+    private HdfFixedPoint dataAddress;
+    private final HdfFixedPoint[] dimensionSizes;
     private final int compactDataSize;
     private final byte[] compactData;
-    private final HdfFixedPoint<BigInteger> datasetElementSize;
+    private final HdfFixedPoint datasetElementSize;
 
     // Constructor to initialize all fields
     public DataLayoutMessage(
             int version,
             int layoutClass,
-            HdfFixedPoint<BigInteger> dataAddress,
-            HdfFixedPoint<BigInteger>[] dimensionSizes,
+            HdfFixedPoint dataAddress,
+            HdfFixedPoint[] dimensionSizes,
             int compactDataSize,
             byte[] compactData,
-            HdfFixedPoint<BigInteger> datasetElementSize
+            HdfFixedPoint datasetElementSize
     ) {
         super(MessageType.DataLayoutMessage, ()->{
             short size = (short) 8;
@@ -82,11 +82,11 @@ public class DataLayoutMessage extends HdfMessage {
         int layoutClass = Byte.toUnsignedInt(buffer.get());
 
         // Initialize fields
-        HdfFixedPoint<BigInteger> dataAddress = null;
-        HdfFixedPoint<BigInteger>[] dimensionSizes = null;
+        HdfFixedPoint dataAddress = null;
+        HdfFixedPoint[] dimensionSizes = null;
         int compactDataSize = 0;
         byte[] compactData = null;
-        HdfFixedPoint<BigInteger> datasetElementSize = null;
+        HdfFixedPoint datasetElementSize = null;
         BitSet emptyBitSet = new BitSet();
 
         // Parse based on layout class
@@ -98,19 +98,19 @@ public class DataLayoutMessage extends HdfMessage {
                 break;
 
             case 1: // Contiguous Storage
-                dataAddress = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short)0, (short)(offsetSize*8)); // Data address
+                dataAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short)0, (short)(offsetSize*8)); // Data address
                 dimensionSizes = new HdfFixedPoint[1];
-                dimensionSizes[0] = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short)0, (short)(offsetSize*8)); // Dimension size
+                dimensionSizes[0] = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short)0, (short)(offsetSize*8)); // Dimension size
                 break;
 
             case 2: // Chunked Storage
-                dataAddress = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short)0, (short)(offsetSize*8)); // Data address
+                dataAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short)0, (short)(offsetSize*8)); // Data address
                 int numDimensions = Byte.toUnsignedInt(buffer.get()); // Number of dimensions (1 byte)
                 dimensionSizes = new HdfFixedPoint[numDimensions];
                 for (int i = 0; i < numDimensions; i++) {
-                    dimensionSizes[i] = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short)0, (short)(offsetSize*8)); // Dimension sizes
+                    dimensionSizes[i] = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short)0, (short)(offsetSize*8)); // Dimension sizes
                 }
-                datasetElementSize = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, (short)4, emptyBitSet, (short)0, (short)(4*8)); // Dataset element size (4 bytes)
+                datasetElementSize = HdfFixedPoint.readFromByteBuffer(buffer, (short)4, emptyBitSet, (short)0, (short)(4*8)); // Dataset element size (4 bytes)
                 break;
 
             default:
@@ -172,9 +172,9 @@ public class DataLayoutMessage extends HdfMessage {
         private final int version;
         private final int rank;
         private final long[] chunkSizes;
-        private final HdfFixedPoint<BigInteger> address;
+        private final HdfFixedPoint address;
 
-        public ChunkedStorage(int version, int rank, long[] chunkSizes, HdfFixedPoint<BigInteger> address) {
+        public ChunkedStorage(int version, int rank, long[] chunkSizes, HdfFixedPoint address) {
             this.version = version;
             this.rank = rank;
             this.chunkSizes = chunkSizes;
@@ -189,7 +189,7 @@ public class DataLayoutMessage extends HdfMessage {
             for (int i = 0; i < rank; i++) {
                 chunkSizes[i] = Integer.toUnsignedLong(buffer.getInt());
             }
-            HdfFixedPoint<BigInteger> address = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
+            HdfFixedPoint address = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
             return new ChunkedStorage(version, rank, chunkSizes, address);
         }
 
@@ -199,7 +199,7 @@ public class DataLayoutMessage extends HdfMessage {
                     "version=" + version +
                     ", rank=" + rank +
                     ", chunkSizes=" + Arrays.toString(chunkSizes) +
-                    ", address=" + (address != null ? address.getInstance() : "null") +
+                    ", address=" + (address != null ? address.getInstance(BigInteger.class) : "null") +
                     '}';
         }
 
@@ -207,10 +207,10 @@ public class DataLayoutMessage extends HdfMessage {
 
     public static class ContiguousStorage {
         private final int version;
-        private final HdfFixedPoint<BigInteger> address;
-        private final HdfFixedPoint<BigInteger> size;
+        private final HdfFixedPoint address;
+        private final HdfFixedPoint size;
 
-        public ContiguousStorage(int version, HdfFixedPoint<BigInteger> address, HdfFixedPoint<BigInteger> size) {
+        public ContiguousStorage(int version, HdfFixedPoint address, HdfFixedPoint size) {
             this.version = version;
             this.address = address;
             this.size = size;
@@ -220,8 +220,8 @@ public class DataLayoutMessage extends HdfMessage {
             ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
             int version = Byte.toUnsignedInt(buffer.get());
             BitSet emptyBitSet = new BitSet(0);
-            HdfFixedPoint<BigInteger> address = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, emptyBitSet, (short)0, (short)(offsetSize*8));
-            HdfFixedPoint<BigInteger> size = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, lengthSize, emptyBitSet, (short)0, (short)(lengthSize*8));
+            HdfFixedPoint address = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short)0, (short)(offsetSize*8));
+            HdfFixedPoint size = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short)0, (short)(lengthSize*8));
             return new ContiguousStorage(version, address, size);
         }
 

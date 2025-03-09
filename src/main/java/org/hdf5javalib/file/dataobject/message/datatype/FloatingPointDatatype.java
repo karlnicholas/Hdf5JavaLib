@@ -1,6 +1,8 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.dataclass.HdfFloatPoint;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -60,6 +62,10 @@ public class FloatingPointDatatype implements HdfDatatype {
             return clazz.cast(toDouble(bytes));
         } else if (clazz.isAssignableFrom(Float.class)) {  // Can accept Float
             return clazz.cast(toFloat(bytes));
+        } else if (clazz.isAssignableFrom(String.class)) {  // Can accept Float
+            return clazz.cast(toDouble(bytes).toString());
+        } else if (clazz.isAssignableFrom(HdfFloatPoint.class)) {  // Can accept Float
+            return clazz.cast(new HdfFloatPoint(bytes, this));
         } else {
             throw new UnsupportedOperationException("Unknown type: " + clazz);
         }

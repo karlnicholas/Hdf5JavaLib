@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfString;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -36,6 +37,8 @@ public class StringDatatype implements HdfDatatype {
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         if (clazz.isAssignableFrom(String.class)) {  // Can accept String
             return clazz.cast(toString(bytes));
+        } else if (clazz.isAssignableFrom(HdfString.class)) {  // Can accept String
+            return clazz.cast(new HdfString(bytes, this));
         } else {
             throw new UnsupportedOperationException("Unknown type: " + clazz);
         }

@@ -12,11 +12,11 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 @Getter
 public class SymbolTableMessage extends HdfMessage {
-    private final HdfFixedPoint<BigInteger> bTreeAddress;
-    private final HdfFixedPoint<BigInteger> localHeapAddress;
+    private final HdfFixedPoint bTreeAddress;
+    private final HdfFixedPoint localHeapAddress;
 
     // Constructor to create SymbolTableMessage directly with values
-    public SymbolTableMessage(HdfFixedPoint<BigInteger> bTreeAddress, HdfFixedPoint<BigInteger> localHeapAddress) {
+    public SymbolTableMessage(HdfFixedPoint bTreeAddress, HdfFixedPoint localHeapAddress) {
         super(MessageType.SymbolTableMessage, ()-> (short) (bTreeAddress.getSizeMessageData() + localHeapAddress.getSizeMessageData()), (byte)0);
         this.bTreeAddress = bTreeAddress;
         this.localHeapAddress = localHeapAddress;
@@ -24,8 +24,8 @@ public class SymbolTableMessage extends HdfMessage {
 
     public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        HdfFixedPoint<BigInteger> bTreeAddress = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
-        HdfFixedPoint<BigInteger> localHeapAddress = HdfFixedPoint.readFromByteBuffer(BigInteger.class, buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
+        HdfFixedPoint bTreeAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
+        HdfFixedPoint localHeapAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
         return new SymbolTableMessage(bTreeAddress, localHeapAddress);
     }
 
@@ -42,8 +42,8 @@ public class SymbolTableMessage extends HdfMessage {
     @Override
     public String toString() {
         return "SymbolTableMessage{" +
-                "bTreeAddress=" + bTreeAddress.getInstance() +
-                ", localHeapAddress=" + localHeapAddress.getInstance() +
+                "bTreeAddress=" + bTreeAddress.getInstance(BigInteger.class) +
+                ", localHeapAddress=" + localHeapAddress.getInstance(BigInteger.class) +
                 '}';
     }
 }

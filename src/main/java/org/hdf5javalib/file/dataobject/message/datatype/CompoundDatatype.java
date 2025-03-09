@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfCompound;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
@@ -173,26 +174,33 @@ public class CompoundDatatype implements HdfDatatype {
 
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
-        Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));
-        Map<String, CompoundMemberDatatype> nameToMemberMap = members.stream().collect(Collectors.toMap(CompoundMemberDatatype::getName, compoundMember -> compoundMember));
-        // sanity checking.
-        try {
-            T instance = clazz.getDeclaredConstructor().newInstance();
-            for( CompoundMemberDatatype member: nameToMemberMap.values()) {
-                Field field = nameToFieldMap.get(member.getName());
-                if ( field == null ) {
-                    throw new NoSuchFieldException(member.getName());
+        if (clazz.isAssignableFrom(HdfCompound.class)) {
+            return clazz.cast(new HdfCompound(bytes, this));
+        } else if (clazz.isAssignableFrom(String.class)) {
+            return clazz.cast(new HdfCompound(bytes, this).toString());
+        } else {
+            Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));
+            Map<String, CompoundMemberDatatype> nameToMemberMap = members.stream().collect(Collectors.toMap(CompoundMemberDatatype::getName, compoundMember -> compoundMember));
+            // sanity checking.
+            try {
+                T instance = clazz.getDeclaredConstructor().newInstance();
+                for (CompoundMemberDatatype member : nameToMemberMap.values()) {
+                    Field field = nameToFieldMap.get(member.getName());
+                    if (field == null) {
+                        throw new NoSuchFieldException(member.getName());
+                    }
+                    field.setAccessible(true);
+                    Object value = member.getInstance(field.getType(), Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset() + member.getSize()));
+                    if (field.getType().isAssignableFrom(value.getClass())) {
+                        field.set(instance, value);
+                    }
                 }
-                field.setAccessible(true);
-                Object value = member.getInstance(field.getType(), Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset()+member.getSize()));
-                if (field.getType().isAssignableFrom(value.getClass())) {
-                    field.set(instance, value);
-                }
+                return instance;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-            return instance;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
+
     }
     @Override
     public <T> T getInstance(Class<T> clazz, ByteBuffer buffer) {

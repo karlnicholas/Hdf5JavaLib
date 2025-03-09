@@ -2,34 +2,34 @@ package org.hdf5javalib.dataclass;
 
 import lombok.Getter;
 import lombok.ToString;
+import org.hdf5javalib.file.dataobject.message.datatype.CompoundMemberDatatype;
 
 import java.nio.ByteBuffer;
 
 @Getter
 @ToString
-public class HdfCompoundMember<T> implements HdfData<T> {
-    private final Class<T> clazz;
-    private final String name;
-    private final HdfData data;
+public class HdfCompoundMember implements HdfData {
+    private final CompoundMemberDatatype datatype;
+    private final byte[] bytes;
+//    private final HdfData data;
 
-    public HdfCompoundMember(Class<T> clazz, String name, HdfData data) {
-        this.clazz = clazz;
-        this.name = name;
-        this.data = data;
+    public HdfCompoundMember(byte[] bytes, CompoundMemberDatatype datatype) {
+        this.bytes = bytes;
+        this.datatype = datatype;
     }
 
     @Override
     public int getSizeMessageData() {
-        return data.getSizeMessageData();
+        return bytes.length;
     }
 
     @Override
     public void writeValueToByteBuffer(ByteBuffer buffer) {
-        data.writeValueToByteBuffer(buffer);
+        buffer.put(bytes);
     }
 
     @Override
-    public T getInstance() {
-        return null;
+    public <T> T getInstance(Class<T> clazz) {
+        return datatype.getInstance(clazz, bytes);
     }
 }

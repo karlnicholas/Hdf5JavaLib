@@ -42,11 +42,11 @@ public abstract class AbstractTypedMatrixStreamingSource<T> {
                 .getHdfDatatype()
                 .getSize();
 
-        HdfFixedPoint<BigInteger>[] dimensions = headerPrefixV1.findMessageByType(DataspaceMessage.class)
+        HdfFixedPoint[] dimensions = headerPrefixV1.findMessageByType(DataspaceMessage.class)
                 .orElseThrow(() -> new IllegalStateException("DataspaceMessage not found"))
                 .getDimensions();
 
-        this.readsAvailable = dimensions[0].getInstance().intValue();
+        this.readsAvailable = dimensions[0].getInstance(BigInteger.class).intValue();
         this.datatype = headerPrefixV1.findMessageByType(DatatypeMessage.class)
                 .orElseThrow()
                 .getHdfDatatype();
@@ -54,7 +54,7 @@ public abstract class AbstractTypedMatrixStreamingSource<T> {
         if (dimensions.length == 1) {
             this.elementsPerRecord = 1;
         } else if (dimensions.length == 2) {
-            this.elementsPerRecord = dimensions[1].getInstance().intValue();
+            this.elementsPerRecord = dimensions[1].getInstance(BigInteger.class).intValue();
         } else {
             throw new IllegalArgumentException("Unsupported dimensionality: " + dimensions.length);
         }
