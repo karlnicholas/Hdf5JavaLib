@@ -178,17 +178,19 @@ public class CompoundDatatype implements HdfDatatype {
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));
         Map<String, CompoundMemberDatatype> nameToMemberMap = members.stream().collect(Collectors.toMap(CompoundMemberDatatype::getName, compoundMember -> compoundMember));
+        // sanity checking.
         try {
             T instance = clazz.getDeclaredConstructor().newInstance();
-            for( Field field: nameToFieldMap.values()) {
-                CompoundMemberDatatype member = nameToMemberMap.get(field.getName());
+            for( CompoundMemberDatatype member: nameToMemberMap.values()) {
+                Field field = nameToFieldMap.get(member.getName());
+                if ( field == null ) {
+                    throw new NoSuchFieldException(member.getName());
+                }
                 field.setAccessible(true);
-                if (member != null) {
-                    Object value = member.getInstance(field.getType(), Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset()+member.getSize()));
-                    if (field.getType().isAssignableFrom(value.getClass())) {
-                        field.set(instance, value);
-                    }  // Silently skip if types don't match
-                }  // Silently skip if no matching member
+                Object value = member.getInstance(field.getType(), Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset()+member.getSize()));
+                if (field.getType().isAssignableFrom(value.getClass())) {
+                    field.set(instance, value);
+                }
             }
             return instance;
         } catch (Exception e) {

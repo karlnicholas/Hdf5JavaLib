@@ -41,8 +41,19 @@ public class HdfCompoundApp {
                 tryCompoundSpliterator(channel, reader);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
+//        try {
+//            HdfFileReader reader = new HdfFileReader();
+//            String filePath = HdfCompoundApp.class.getResource("/env_monitoring.h5").getFile();
+//            try(FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+//                tryCompoundSpliterator(channel, reader);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 //        tryHdfApiCompound();
 //        tryHdfApiInts();
     }
