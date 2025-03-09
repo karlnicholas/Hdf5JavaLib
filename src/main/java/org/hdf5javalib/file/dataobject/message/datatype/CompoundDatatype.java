@@ -232,7 +232,6 @@ public class CompoundDatatype implements HdfDatatype {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
 
 //    @Override

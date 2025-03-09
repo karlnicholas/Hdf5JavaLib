@@ -16,26 +16,28 @@ import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * Hello world!
- *
  */
 public class HdfCompoundApp {
     public static void main(String[] args) {
         new HdfCompoundApp().run();
     }
+
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
             String filePath = HdfCompoundApp.class.getResource("/env_monitoring_labels.h5").getFile();
-            try(FileInputStream fis = new FileInputStream(filePath)) {
+            try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
                 tryCompoundSpliterator(channel, reader);
@@ -43,17 +45,17 @@ public class HdfCompoundApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-//        try {
-//            HdfFileReader reader = new HdfFileReader();
-//            String filePath = HdfCompoundApp.class.getResource("/env_monitoring.h5").getFile();
-//            try(FileInputStream fis = new FileInputStream(filePath)) {
-//                FileChannel channel = fis.getChannel();
-//                reader.readFile(channel);
-//                tryCompoundSpliterator(channel, reader);
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+        try {
+            HdfFileReader reader = new HdfFileReader();
+            String filePath = HdfCompoundApp.class.getResource("/env_monitoring.h5").getFile();
+            try (FileInputStream fis = new FileInputStream(filePath)) {
+                FileChannel channel = fis.getChannel();
+                reader.readFile(channel);
+                tryCustomSpliterator(channel, reader);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 //        tryHdfApiCompound();
 //        tryHdfApiInts();
     }
@@ -63,7 +65,7 @@ public class HdfCompoundApp {
         String ATTRIBUTE_VALUE = "Revision: , URL: ";
         BitSet classBitField = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
         // value
-        StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(), classBitField, (short)ATTRIBUTE_VALUE.length());
+        StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(), classBitField, (short) ATTRIBUTE_VALUE.length());
         // data type, String, DATASET_NAME.length
         DatatypeMessage dt = new DatatypeMessage(attributeType);
         // scalar, 1 string
@@ -86,73 +88,73 @@ public class HdfCompoundApp {
             List<CompoundMemberDatatype> shipment = List.of(
                     new CompoundMemberDatatype("shipmentId", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
-                            FixedPointDatatype.createClassAndVersion(),
-                            FixedPointDatatype.createClassBitField( false, false, false, false),
-                            (short)8, (short)0, (short)64)),
+                                    FixedPointDatatype.createClassAndVersion(),
+                                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                                    (short) 8, (short) 0, (short) 64)),
                     new CompoundMemberDatatype("origCountry", 8, 0, 0, new int[4],
-                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short)2)),
+                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 2)),
                     new CompoundMemberDatatype("origSlic", 10, 0, 0, new int[4],
-                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short)5)),
+                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 5)),
                     new CompoundMemberDatatype("origSort", 15, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField( false, false, false, false),
-                                    (short)1, (short)0, (short)8)),
+                                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                                    (short) 1, (short) 0, (short) 8)),
                     new CompoundMemberDatatype("destCountry", 16, 0, 0, new int[4],
-                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short)2)),
+                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 2)),
                     new CompoundMemberDatatype("destSlic", 18, 0, 0, new int[4],
-                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short)5)),
+                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 5)),
                     new CompoundMemberDatatype("destIbi", 23, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField( false, false, false, false),
-                                    (short)1, (short)0, (short)8)),
+                                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                                    (short) 1, (short) 0, (short) 8)),
                     new CompoundMemberDatatype("destPostalCode", 24, 0, 0, new int[4],
-                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short)9)),
+                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 9)),
                     new CompoundMemberDatatype("shipper", 33, 0, 0, new int[4],
-                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short)10)),
+                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 10)),
                     new CompoundMemberDatatype("service", 43, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField( false, false, false, false),
-                                    (short)1, (short)0, (short)8)),
+                                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                                    (short) 1, (short) 0, (short) 8)),
                     new CompoundMemberDatatype("packageType", 44, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField( false, false, false, false),
-                                    (short)1, (short)0, (short)8)),
+                                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                                    (short) 1, (short) 0, (short) 8)),
                     new CompoundMemberDatatype("accessorials", 45, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField( false, false, false, false),
-                                    (short)1, (short)0, (short)8)),
+                                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                                    (short) 1, (short) 0, (short) 8)),
                     new CompoundMemberDatatype("pieces", 46, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField( false, false, false, false),
-                                    (short)2, (short)0, (short)16)),
+                                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                                    (short) 2, (short) 0, (short) 16)),
                     new CompoundMemberDatatype("weight", 48, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField( false, false, false, false),
-                                    (short)2, (short)0, (short)16)),
+                                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                                    (short) 2, (short) 0, (short) 16)),
                     new CompoundMemberDatatype("cube", 50, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField( false, false, false, false),
-                                    (short)4, (short)0, (short)32)),
+                                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                                    (short) 4, (short) 0, (short) 32)),
                     new CompoundMemberDatatype("committedTnt", 54, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField( false, false, false, false),
-                                    (short)1, (short)0, (short)8)),
+                                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                                    (short) 1, (short) 0, (short) 8)),
                     new CompoundMemberDatatype("committedDate", 55, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField( false, false, false, false),
-                                    (short)1, (short)0, (short)8))
+                                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                                    (short) 1, (short) 0, (short) 8))
             );
-            short compoundSize = (short) shipment.stream().mapToInt(c->c.getType().getSize()).sum();
+            short compoundSize = (short) shipment.stream().mapToInt(c -> c.getType().getSize()).sum();
             // Define Compound DataType correctly
             CompoundDatatype compoundType = new CompoundDatatype(CompoundDatatype.createClassAndVersion(), CompoundDatatype.createClassBitField((short) shipment.size()), compoundSize, shipment);
 //            DatatypeMessage dataTypeMessage = new DatatypeMessage((byte) 1, (byte) 6, BitSet.valueOf(new byte[]{0b10001}), 56, compoundType);
@@ -225,4 +227,39 @@ public class HdfCompoundApp {
         new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream().forEach(System.out::println);
         new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), String.class).stream().forEach(System.out::println);
     }
+
+
+    private void tryCustomSpliterator(FileChannel fileChannel, HdfFileReader reader) {
+        CompoundDatatype.addConverter(MonitoringData.class, (bytes, datatype) -> {
+            Map<String, Field> nameToFieldMap = Arrays.stream(MonitoringData.class.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));
+            Map<String, CompoundMemberDatatype> nameToMemberMap = datatype.getMembers().stream().collect(Collectors.toMap(member -> switch (member.getName()) {
+                        case "Site Name" -> new String("siteName");
+                        case "Air Quality Index" -> new String("airQualityIndex");
+                        case "Temperature" -> new String("temperature");
+                        case "Sample Count" -> new String("sampleCount");
+                        default -> throw new RuntimeException("Error");
+                    },
+                    compoundMember -> compoundMember));
+            // sanity checking.
+            MonitoringData instance = new MonitoringData();
+            try {
+                for (CompoundMemberDatatype member : nameToMemberMap.values()) {
+                    Field field = nameToFieldMap.get(member.getName());
+                    if (field == null) {
+                        throw new NoSuchFieldException(member.getName());
+                    }
+                    field.setAccessible(true);
+                    Object value = member.getInstance(field.getType(), Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset() + member.getSize()));
+                    if (field.getType().isAssignableFrom(value.getClass())) {
+                        field.set(instance, value);
+                    }
+                }
+                return instance;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream().forEach(System.out::println);
+    }
+
 }
