@@ -46,7 +46,7 @@ public abstract class AbstractTypedMatrixStreamingSource<T> {
                 .orElseThrow(() -> new IllegalStateException("DataspaceMessage not found"))
                 .getDimensions();
 
-        this.readsAvailable = dimensions[0].getInstance(BigInteger.class).intValue();
+        this.readsAvailable = dimensions[0].getInstance(Integer.class);
         this.datatype = headerPrefixV1.findMessageByType(DatatypeMessage.class)
                 .orElseThrow()
                 .getHdfDatatype();
@@ -54,7 +54,7 @@ public abstract class AbstractTypedMatrixStreamingSource<T> {
         if (dimensions.length == 1) {
             this.elementsPerRecord = 1;
         } else if (dimensions.length == 2) {
-            this.elementsPerRecord = dimensions[1].getInstance(BigInteger.class).intValue();
+            this.elementsPerRecord = dimensions[1].getInstance(Integer.class);
         } else {
             throw new IllegalArgumentException("Unsupported dimensionality: " + dimensions.length);
         }

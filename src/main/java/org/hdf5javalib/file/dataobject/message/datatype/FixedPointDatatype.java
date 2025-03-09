@@ -2,7 +2,9 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 
 
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.dataclass.HdfFloatPoint;
 import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.math.BigDecimal;
@@ -10,6 +12,8 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 public class FixedPointDatatype implements HdfDatatype {
@@ -18,6 +22,19 @@ public class FixedPointDatatype implements HdfDatatype {
     private final int size;
     private final short bitOffset;
     private final short bitPrecision;
+    // In your HdfDataType/FixedPointDatatype class
+    private static final Map<Class<?>, HdfConverter<FixedPointDatatype, ?>> CONVERTERS = new HashMap<>();
+    static {
+        CONVERTERS.put(BigDecimal.class, (bytes, dt) -> dt.toBigDecimal(bytes));
+        CONVERTERS.put(BigInteger.class, (bytes, dt) -> dt.toBigInteger(bytes));
+        CONVERTERS.put(String.class, (bytes, dt) -> dt.toBigInteger(bytes).toString());
+        CONVERTERS.put(HdfFixedPoint.class, HdfFixedPoint::new);
+        CONVERTERS.put(HdfData.class, HdfFixedPoint::new);
+        CONVERTERS.put(Long.class, (bytes, dt) -> dt.toLong(bytes));
+        CONVERTERS.put(Integer.class, (bytes, dt) -> dt.toInteger(bytes));
+        CONVERTERS.put(Short.class, (bytes, dt) -> dt.toShort(bytes));
+        CONVERTERS.put(Byte.class, (bytes, dt) -> dt.toByte(bytes));
+    }
 
     public FixedPointDatatype(byte classAndVersion, BitSet classBitField, int size, short bitOffset, short bitPrecision) {
 
@@ -295,28 +312,48 @@ public class FixedPointDatatype implements HdfDatatype {
                 .divide(new BigDecimal(BigInteger.ONE.shiftLeft(bitOffset)), bitOffset, RoundingMode.HALF_UP);
     }
 
+    // Public method to add user-defined converters
+    public static <T> void addConverter(Class<T> clazz, HdfConverter<FixedPointDatatype, T> converter) {
+        CONVERTERS.put(clazz, converter);
+    }
+
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
-        if (BigDecimal.class.isAssignableFrom(clazz)) {  // Accepts BigDecimal or subclasses
-            return clazz.cast(toBigDecimal(bytes));
-        } else if (BigInteger.class.isAssignableFrom(clazz)) {  // Accepts BigInteger or subclasses
-            return clazz.cast(toBigInteger(bytes));
-        } else if (String.class.isAssignableFrom(clazz)) {  // Accepts String or subclasses
-            return clazz.cast(toBigInteger(bytes).toString());
-        } else if (HdfFixedPoint.class.isAssignableFrom(clazz)) {  // Accepts HdfFixedPoint or subclasses
-            return clazz.cast(new HdfFixedPoint(bytes, this));
-        } else if (Long.class.isAssignableFrom(clazz)) {  // Accepts Long or subclasses
-            return clazz.cast(Long.valueOf(toLong(bytes)));
-        } else if (Integer.class.isAssignableFrom(clazz)) {  // Accepts Integer or subclasses
-            return clazz.cast(Integer.valueOf(toInteger(bytes)));
-        } else if (Short.class.isAssignableFrom(clazz)) {  // Accepts Short or subclasses
-            return clazz.cast(Short.valueOf(toShort(bytes)));
-        } else if (Byte.class.isAssignableFrom(clazz)) {  // Accepts Byte or subclasses
-            return clazz.cast(Byte.valueOf(toByte(bytes)));
-        } else {
-            throw new UnsupportedOperationException("Unknown type: " + clazz);
+        @SuppressWarnings("unchecked")
+        HdfConverter<FixedPointDatatype, T> converter = (HdfConverter<FixedPointDatatype, T>) CONVERTERS.get(clazz);
+        if (converter != null) {
+            return clazz.cast(converter.convert(bytes, this));
         }
+        for (Map.Entry<Class<?>, HdfConverter<FixedPointDatatype, ?>> entry : CONVERTERS.entrySet()) {
+            if (entry.getKey().isAssignableFrom(clazz)) {
+                return clazz.cast(entry.getValue().convert(bytes, this));
+            }
+        }
+        throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
+
+//    @Override
+//    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+//        if (BigDecimal.class.isAssignableFrom(clazz)) {  // Accepts BigDecimal or subclasses
+//            return clazz.cast(toBigDecimal(bytes));
+//        } else if (BigInteger.class.isAssignableFrom(clazz)) {  // Accepts BigInteger or subclasses
+//            return clazz.cast(toBigInteger(bytes));
+//        } else if (String.class.isAssignableFrom(clazz)) {  // Accepts String or subclasses
+//            return clazz.cast(toBigInteger(bytes).toString());
+//        } else if (HdfFixedPoint.class.isAssignableFrom(clazz)) {  // Accepts HdfFixedPoint or subclasses
+//            return clazz.cast(new HdfFixedPoint(bytes, this));
+//        } else if (Long.class.isAssignableFrom(clazz)) {  // Accepts Long or subclasses
+//            return clazz.cast(Long.valueOf(toLong(bytes)));
+//        } else if (Integer.class.isAssignableFrom(clazz)) {  // Accepts Integer or subclasses
+//            return clazz.cast(Integer.valueOf(toInteger(bytes)));
+//        } else if (Short.class.isAssignableFrom(clazz)) {  // Accepts Short or subclasses
+//            return clazz.cast(Short.valueOf(toShort(bytes)));
+//        } else if (Byte.class.isAssignableFrom(clazz)) {  // Accepts Byte or subclasses
+//            return clazz.cast(Byte.valueOf(toByte(bytes)));
+//        } else {
+//            throw new UnsupportedOperationException("Unknown type: " + clazz);
+//        }
+//    }
 
     @Override
     public <T> T getInstance(Class<T> clazz, ByteBuffer buffer) {

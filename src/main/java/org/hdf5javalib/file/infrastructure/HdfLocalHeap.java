@@ -36,7 +36,7 @@ public class HdfLocalHeap {
 
     public int addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents) {
         byte[] objectNameBytes = objectName.getBytes();
-        int freeListOffset = this.freeListOffset.getInstance(BigInteger.class).intValue();
+        int freeListOffset = this.freeListOffset.getInstance(Integer.class);
         byte[] heapData = localHeapContents.getHeapData();
 
         // ✅ Extract free space size from the current freeListOffset location

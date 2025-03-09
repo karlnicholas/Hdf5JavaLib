@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Getter
-@ToString
 public class HdfCompound implements HdfData {
     private final CompoundDatatype datatype;
     private final byte[] bytes;

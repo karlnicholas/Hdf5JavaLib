@@ -11,7 +11,6 @@ import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.file.infrastructure.*;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -113,12 +112,12 @@ public class HdfGroup {
 
             // Retrieve Local Heap Address if still not found
             if (localHeapPosition == -1 && symbolTableMessage.getLocalHeapAddress() != null && !symbolTableMessage.getLocalHeapAddress().isUndefined()) {
-                localHeapPosition = symbolTableMessage.getLocalHeapAddress().getInstance(BigInteger.class).longValue();
+                localHeapPosition = symbolTableMessage.getLocalHeapAddress().getInstance(Long.class);
             }
 
             // Retrieve B-Tree Address
             if (symbolTableMessage.getBTreeAddress() != null && !symbolTableMessage.getBTreeAddress().isUndefined()) {
-                bTreePosition = symbolTableMessage.getBTreeAddress().getInstance(BigInteger.class).longValue();
+                bTreePosition = symbolTableMessage.getBTreeAddress().getInstance(Long.class);
             }
         }
 
@@ -134,7 +133,7 @@ public class HdfGroup {
         if (localHeapPosition != -1) {
             buffer.position((int) localHeapPosition); // Move to the correct position
             localHeap.writeToByteBuffer(buffer);
-            buffer.position(localHeap.getDataSegmentAddress().getInstance(BigInteger.class).intValue());
+            buffer.position(Math.toIntExact(localHeap.getDataSegmentAddress().getInstance(Long.class)));
             localHeapContents.writeToByteBuffer(buffer);
         } else {
             throw new IllegalStateException("No valid Local Heap position found.");

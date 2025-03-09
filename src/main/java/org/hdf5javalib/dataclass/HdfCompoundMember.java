@@ -7,7 +7,6 @@ import org.hdf5javalib.file.dataobject.message.datatype.CompoundMemberDatatype;
 import java.nio.ByteBuffer;
 
 @Getter
-@ToString
 public class HdfCompoundMember implements HdfData {
     private final CompoundMemberDatatype datatype;
     private final byte[] bytes;

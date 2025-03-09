@@ -1,18 +1,32 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfData;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.dataclass.HdfFloatPoint;
 import org.hdf5javalib.dataclass.HdfString;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 public class StringDatatype implements HdfDatatype {
     private final byte classAndVersion;
     private final BitSet classBitField;
     private final int size;
+    // In your HdfDataType/FixedPointDatatype class
+    private static final Map<Class<?>, HdfConverter<StringDatatype, ?>> CONVERTERS = new HashMap<>();
+    static {
+        CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes).toString());
+        CONVERTERS.put(HdfString.class, HdfString::new);
+        CONVERTERS.put(HdfData.class, HdfString::new);
+    }
 
     public StringDatatype(byte classAndVersion, BitSet classBitField, int size) {
         this.classAndVersion = classAndVersion;
@@ -33,15 +47,24 @@ public class StringDatatype implements HdfDatatype {
         return 0x13;
     }
 
+    // Public method to add user-defined converters
+    public static <T> void addConverter(Class<T> clazz, HdfConverter<StringDatatype, T> converter) {
+        CONVERTERS.put(clazz, converter);
+    }
+
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
-        if (String.class.isAssignableFrom(clazz)) {  // Accepts String or subclasses
-            return clazz.cast(toString(bytes));
-        } else if (HdfString.class.isAssignableFrom(clazz)) {  // Accepts HdfString or subclasses
-            return clazz.cast(new HdfString(bytes, this));
-        } else {
-            throw new UnsupportedOperationException("Unknown type: " + clazz);
+        @SuppressWarnings("unchecked")
+        HdfConverter<StringDatatype, T> converter = (HdfConverter<StringDatatype, T>) CONVERTERS.get(clazz);
+        if (converter != null) {
+            return clazz.cast(converter.convert(bytes, this));
         }
+        for (Map.Entry<Class<?>, HdfConverter<StringDatatype, ?>> entry : CONVERTERS.entrySet()) {
+            if (entry.getKey().isAssignableFrom(clazz)) {
+                return clazz.cast(entry.getValue().convert(bytes, this));
+            }
+        }
+        throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
     @Override

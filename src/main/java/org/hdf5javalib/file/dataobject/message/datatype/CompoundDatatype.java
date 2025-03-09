@@ -2,8 +2,11 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfCompound;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,6 +21,12 @@ public class CompoundDatatype implements HdfDatatype {
     private final BitSet classBitField; // Number of members in the compound datatype
     private final int size;
     private List<CompoundMemberDatatype> members;     // Member definitions
+    // In your HdfDataType/FixedPointDatatype class
+    private static final Map<Class<?>, HdfConverter<CompoundDatatype, ?>> CONVERTERS = new HashMap<>();
+    static {
+        CONVERTERS.put(String.class, (bytes, dt) -> new HdfCompound(bytes, dt).toString());
+        CONVERTERS.put(HdfCompound.class, HdfCompound::new);
+    }
 
     // New application-level constructor
     public CompoundDatatype(byte classAndVersion, BitSet classBitField, int size, List<CompoundMemberDatatype> members) {
@@ -171,37 +180,91 @@ public class CompoundDatatype implements HdfDatatype {
         }
         return size;
     }
+    // Public method to add user-defined converters
+    public static <T> void addConverter(Class<T> clazz, HdfConverter<CompoundDatatype, T> converter) {
+        CONVERTERS.put(clazz, converter);
+    }
 
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
-        if (HdfCompound.class.isAssignableFrom(clazz)) {
-            return clazz.cast(new HdfCompound(bytes, this));
-        } else if (String.class.isAssignableFrom(clazz)) {
-            return clazz.cast(new HdfCompound(bytes, this).toString());
-        } else {
-            Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));
-            Map<String, CompoundMemberDatatype> nameToMemberMap = members.stream().collect(Collectors.toMap(CompoundMemberDatatype::getName, compoundMember -> compoundMember));
-            // sanity checking.
-            try {
-                T instance = clazz.getDeclaredConstructor().newInstance();
-                for (CompoundMemberDatatype member : nameToMemberMap.values()) {
-                    Field field = nameToFieldMap.get(member.getName());
-                    if (field == null) {
-                        throw new NoSuchFieldException(member.getName());
-                    }
-                    field.setAccessible(true);
-                    Object value = member.getInstance(field.getType(), Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset() + member.getSize()));
-                    if (field.getType().isAssignableFrom(value.getClass())) {
-                        field.set(instance, value);
-                    }
-                }
-                return instance;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        // Check CONVERTERS first
+        @SuppressWarnings("unchecked")
+        HdfConverter<CompoundDatatype, T> converter = (HdfConverter<CompoundDatatype, T>) CONVERTERS.get(clazz);
+        if (converter != null) {
+            return clazz.cast(converter.convert(bytes, this));
+        }
+        for (Map.Entry<Class<?>, HdfConverter<CompoundDatatype, ?>> entry : CONVERTERS.entrySet()) {
+            if (entry.getKey().isAssignableFrom(clazz)) {
+                return clazz.cast(entry.getValue().convert(bytes, this));
             }
         }
 
+        // Fall back to toPOJO for non-primitive, unregistered types
+        if (!clazz.isPrimitive()) {
+            try {
+                return toPOJO(clazz, bytes);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Failed to convert to POJO: " + clazz, e);
+            }
+        }
+
+        throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
+
+    public <T> T toPOJO(Class<T> clazz, byte[] bytes) {
+        Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));
+        Map<String, CompoundMemberDatatype> nameToMemberMap = members.stream().collect(Collectors.toMap(CompoundMemberDatatype::getName, compoundMember -> compoundMember));
+        // sanity checking.
+        try {
+            T instance = clazz.getDeclaredConstructor().newInstance();
+            for (CompoundMemberDatatype member : nameToMemberMap.values()) {
+                Field field = nameToFieldMap.get(member.getName());
+                if (field == null) {
+                    throw new NoSuchFieldException(member.getName());
+                }
+                field.setAccessible(true);
+                Object value = member.getInstance(field.getType(), Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset() + member.getSize()));
+                if (field.getType().isAssignableFrom(value.getClass())) {
+                    field.set(instance, value);
+                }
+            }
+            return instance;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+//    @Override
+//    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+//        if (HdfCompound.class.isAssignableFrom(clazz)) {
+//            return clazz.cast(new HdfCompound(bytes, this));
+//        } else if (String.class.isAssignableFrom(clazz)) {
+//            return clazz.cast(new HdfCompound(bytes, this).toString());
+//        } else {
+//            Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));
+//            Map<String, CompoundMemberDatatype> nameToMemberMap = members.stream().collect(Collectors.toMap(CompoundMemberDatatype::getName, compoundMember -> compoundMember));
+//            // sanity checking.
+//            try {
+//                T instance = clazz.getDeclaredConstructor().newInstance();
+//                for (CompoundMemberDatatype member : nameToMemberMap.values()) {
+//                    Field field = nameToFieldMap.get(member.getName());
+//                    if (field == null) {
+//                        throw new NoSuchFieldException(member.getName());
+//                    }
+//                    field.setAccessible(true);
+//                    Object value = member.getInstance(field.getType(), Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset() + member.getSize()));
+//                    if (field.getType().isAssignableFrom(value.getClass())) {
+//                        field.set(instance, value);
+//                    }
+//                }
+//                return instance;
+//            } catch (Exception e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//
+//    }
     @Override
     public <T> T getInstance(Class<T> clazz, ByteBuffer buffer) {
         byte[] bytes = new byte[size];

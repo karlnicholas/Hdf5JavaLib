@@ -6,7 +6,6 @@ import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
@@ -28,7 +27,7 @@ public class HdfLocalHeapContents {
      * @param fileChannel fileChannel
      * @param dataSize size
      * @return HdfLocalHeapContents
-     * @throws IOException
+     * @throws IOException ioexception
      */
     public static HdfLocalHeapContents readFromFileChannel(FileChannel fileChannel, int dataSize) throws IOException {
         // Allocate buffer and read heap data from the file channel
@@ -46,22 +45,21 @@ public class HdfLocalHeapContents {
      * @return The next string, or null if no more strings are available.
      */
     public HdfString parseStringAtOffset(HdfFixedPoint offset) {
-        int iOffset = offset.getInstance(BigInteger.class).intValue();
+        long iOffset = offset.getInstance(Long.class);
         if (iOffset >= heapData.length) {
             return null; // End of heap data
         }
 
-        int start = iOffset;
+        long start = iOffset;
 
         // Find the null terminator
-        while (iOffset < heapData.length && heapData[iOffset] != 0) {
+        while (iOffset < heapData.length && heapData[(int) iOffset] != 0) {
             iOffset++;
         }
 
         // Extract the string
-        HdfString result = new HdfString(Arrays.copyOfRange(heapData, start, iOffset), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), iOffset - start));
 
-        return result;
+        return new HdfString(Arrays.copyOfRange(heapData, (int) start, (int) iOffset), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), (int) (iOffset - start)));
     }
 
     public void writeToByteBuffer(ByteBuffer buffer) {

@@ -1,11 +1,18 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfData;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfFloatPoint;
+import org.hdf5javalib.dataclass.HdfString;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 public class FloatingPointDatatype implements HdfDatatype {
@@ -19,6 +26,15 @@ public class FloatingPointDatatype implements HdfDatatype {
     private final byte mantissaLocation;
     private final byte mantissaSize;
     private final int exponentBias;
+    // In your HdfDataType class
+    private static final Map<Class<?>, HdfConverter<FloatingPointDatatype, ?>> CONVERTERS = new HashMap<>();
+    static {
+        CONVERTERS.put(Double.class, (bytes, dt) -> dt.toDouble(bytes));
+        CONVERTERS.put(Float.class, (bytes, dt) -> dt.toFloat(bytes));
+        CONVERTERS.put(String.class, (bytes, dt) -> dt.toDouble(bytes).toString());
+        CONVERTERS.put(HdfFloatPoint.class, HdfFloatPoint::new);
+        CONVERTERS.put(HdfData.class, HdfFloatPoint::new);
+    }
 
     public FloatingPointDatatype(byte classAndVersion, BitSet classBitField, int size, short bitOffset, short bitPrecision, byte exponentLocation, byte exponentSize, byte mantissaLocation, byte mantissaSize, int exponentBias) {
         this.classAndVersion = classAndVersion;
@@ -55,19 +71,24 @@ public class FloatingPointDatatype implements HdfDatatype {
         return (short) size;
     }
 
+    // Public method to add user-defined converters
+    public static <T> void addConverter(Class<T> clazz, HdfConverter<FloatingPointDatatype, T> converter) {
+        CONVERTERS.put(clazz, converter);
+    }
+
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
-        if (Double.class.isAssignableFrom(clazz)) {  // Accepts Double or subclasses
-            return clazz.cast(toDouble(bytes));
-        } else if (Float.class.isAssignableFrom(clazz)) {  // Accepts Float or subclasses
-            return clazz.cast(toFloat(bytes));
-        } else if (String.class.isAssignableFrom(clazz)) {  // Accepts String or subclasses
-            return clazz.cast(toDouble(bytes).toString());
-        } else if (HdfFloatPoint.class.isAssignableFrom(clazz)) {  // Accepts HdfFloatPoint or subclasses
-            return clazz.cast(new HdfFloatPoint(bytes, this));
-        } else {
-            throw new UnsupportedOperationException("Unknown type: " + clazz);
+        @SuppressWarnings("unchecked")
+        HdfConverter<FloatingPointDatatype, T> converter = (HdfConverter<FloatingPointDatatype, T>) CONVERTERS.get(clazz);
+        if (converter != null) {
+            return clazz.cast(converter.convert(bytes, this));
         }
+        for (Map.Entry<Class<?>, HdfConverter<FloatingPointDatatype, ?>> entry : CONVERTERS.entrySet()) {
+            if (entry.getKey().isAssignableFrom(clazz)) {
+                return clazz.cast(entry.getValue().convert(bytes, this));
+            }
+        }
+        throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
     @Override
