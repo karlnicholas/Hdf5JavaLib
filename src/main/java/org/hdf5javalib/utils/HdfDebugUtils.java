@@ -1,12 +1,6 @@
 package org.hdf5javalib.utils;
 
-import org.hdf5javalib.file.dataobject.message.datatype.*;
-
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
-import java.util.Arrays;
 
 public class HdfDebugUtils {
 //    public static void printData(FileChannel fileChannel, CompoundDatatype compoundDataType, long dataAddress, long dimension ) throws IOException {

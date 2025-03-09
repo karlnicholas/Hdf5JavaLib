@@ -1,8 +1,6 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
-import org.hdf5javalib.dataclass.HdfData;
-import org.hdf5javalib.dataclass.HdfFloatPoint;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

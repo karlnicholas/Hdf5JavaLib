@@ -1,18 +1,5 @@
 package org.hdf5javalib.utils;
 
-import lombok.SneakyThrows;
-import org.hdf5javalib.dataclass.HdfCompound;
-import org.hdf5javalib.dataclass.HdfCompoundMember;
-import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.dataclass.HdfString;
-
-import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 public class HdfTypeUtils {
 //    /**
 //     * Instantiates and populates a BigInteger or BigDecimal field of a class with a fixed-point value.

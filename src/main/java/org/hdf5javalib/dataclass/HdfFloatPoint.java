@@ -3,7 +3,6 @@ package org.hdf5javalib.dataclass;
 import org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 public class HdfFloatPoint<T> implements HdfData<T> {
     private final Class<T> clazz;

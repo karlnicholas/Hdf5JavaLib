@@ -1,6 +1,5 @@
 package org.hdf5javalib.datasource;
 
-import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 
 import java.io.IOException;

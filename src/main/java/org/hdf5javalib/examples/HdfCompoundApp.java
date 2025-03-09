@@ -1,7 +1,6 @@
 package org.hdf5javalib.examples;
 
 import org.hdf5javalib.HdfFileReader;
-import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.TypedDataSource;

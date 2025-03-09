@@ -1,17 +1,14 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
-import org.hdf5javalib.dataclass.*;
 
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype.parseFixedPointType;
 import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype.parseFloatingPointType;
-import static org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype.DatatypeClass.FIXED;
 import static org.hdf5javalib.file.dataobject.message.datatype.StringDatatype.parseStringType;
 
 @Getter
