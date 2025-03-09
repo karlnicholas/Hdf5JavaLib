@@ -199,7 +199,7 @@ public class DataLayoutMessage extends HdfMessage {
                     "version=" + version +
                     ", rank=" + rank +
                     ", chunkSizes=" + Arrays.toString(chunkSizes) +
-                    ", address=" + (address != null ? address.getInstance(Long.class) : "null") +
+                    ", address=" + (address != null ? address.getInstance(BigInteger.class) : "null") +
                     '}';
         }
 

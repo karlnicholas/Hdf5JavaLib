@@ -9,6 +9,7 @@ import org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import org.hdf5javalib.file.metadata.HdfSuperblock;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -89,7 +90,7 @@ public class HdfFile {
                 .orElseThrow()
                 .getDimensionSizes();
         for(HdfFixedPoint fixedPoint : dimensionSizes) {
-            endOfFileAddress += fixedPoint.getInstance(Long.class);
+            endOfFileAddress += fixedPoint.getInstance(BigInteger.class).longValue();
         }
 
         superblock.setEndOfFileAddress(HdfFixedPoint.of(endOfFileAddress));

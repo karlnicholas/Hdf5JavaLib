@@ -83,7 +83,7 @@ public class HdfDataSet {
 //        long recordCount = dimensions[dimensions.length-1].toBigInteger().longValue();
         long dimensionSizes = hdfDatatype.getSize();
         for(HdfFixedPoint fixedPoint : dimensions) {
-            dimensionSizes *= fixedPoint.getInstance(Long.class);
+            dimensionSizes *= fixedPoint.getInstance(BigInteger.class).longValue();
         }
         HdfFixedPoint[] hdfDimensionSizes = (HdfFixedPoint[]) Array.newInstance(HdfFixedPoint.class, 1);
         DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1,

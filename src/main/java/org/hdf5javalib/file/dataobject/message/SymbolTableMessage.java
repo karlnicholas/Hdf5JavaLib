@@ -42,8 +42,8 @@ public class SymbolTableMessage extends HdfMessage {
     @Override
     public String toString() {
         return "SymbolTableMessage{" +
-                "bTreeAddress=" + bTreeAddress.getInstance(Long.class) +
-                ", localHeapAddress=" + localHeapAddress.getInstance(Long.class) +
+                "bTreeAddress=" + bTreeAddress.getInstance(BigInteger.class) +
+                ", localHeapAddress=" + localHeapAddress.getInstance(BigInteger.class) +
                 '}';
     }
 }

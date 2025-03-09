@@ -6,6 +6,7 @@ import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
@@ -45,7 +46,7 @@ public class HdfLocalHeapContents {
      * @return The next string, or null if no more strings are available.
      */
     public HdfString parseStringAtOffset(HdfFixedPoint offset) {
-        long iOffset = offset.getInstance(Long.class);
+        long iOffset = offset.getInstance(BigInteger.class).longValue();
         if (iOffset >= heapData.length) {
             return null; // End of heap data
         }
