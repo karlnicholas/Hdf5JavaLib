@@ -4,7 +4,7 @@ import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
-import org.hdf5javalib.datasource.DataClassDataSource;
+import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
@@ -16,7 +16,6 @@ import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
@@ -35,7 +34,7 @@ public class HdfCompoundApp {
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = HdfCompoundApp.class.getResource("/env_monitoring.h5").getFile();
+            String filePath = HdfCompoundApp.class.getResource("/env_monitoring_labels.h5").getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
@@ -211,8 +210,8 @@ public class HdfCompoundApp {
 //        System.out.println("count = " + StreamSupport.stream(spliterator, false).map(ShipperData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
 //        TypedDataClassDataSource<ShipperData> dataSource = new TypedDataClassDataSource<>(reader.getDataObjectHeaderPrefix(), "temperature", 0, ShipperData.class, fileChannel, reader.getDataAddress());
 //        System.out.println("count = " + dataSource.stream().map(ShipperData::getPieces).collect(Collectors.summarizingInt(BigInteger::intValue)));
-        DataClassDataSource<HdfCompound> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class);
-        HdfCompound[] allData = dataSource.readAll();
+        TypedDataSource<MonitoringData> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), MonitoringData.class);
+        MonitoringData[] allData = dataSource.readAll();
         System.out.println("*** readAll: \r\n" + Arrays.asList(allData).stream().map(Object::toString).collect(Collectors.joining("\n")));
 
         System.out.println("*** stream: \r\n" + dataSource.stream().map(Object::toString).collect(Collectors.joining("\n")));

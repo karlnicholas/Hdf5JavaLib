@@ -184,7 +184,7 @@ public class CompoundDatatype implements HdfDatatype {
                 CompoundMemberDatatype member = nameToMemberMap.get(field.getName());
                 field.setAccessible(true);
                 if (member != null) {
-                    Object value = member.getInstance(field.getType(), bytes);
+                    Object value = member.getInstance(field.getType(), Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset()+member.getSize()));
                     if (field.getType().isAssignableFrom(value.getClass())) {
                         field.set(instance, value);
                     }  // Silently skip if types don't match

@@ -6,8 +6,6 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.datasource.DataClassDataSource;
-import org.hdf5javalib.datasource.DataClassMatrixDataSource;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.datasource.TypedMatrixDataSource;
 import org.hdf5javalib.file.HdfDataSet;
@@ -15,7 +13,6 @@ import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.utils.HdfTestUtils;
-import org.hdf5javalib.utils.HdfTypeUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.FileInputStream;

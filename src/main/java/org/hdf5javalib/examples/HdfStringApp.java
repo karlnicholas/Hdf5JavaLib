@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
-import org.hdf5javalib.datasource.DataClassDataSource;
+import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
@@ -55,16 +55,16 @@ public class HdfStringApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        tryHdfApiStrings("string_utf8_each.h5", this::writeEach, StringDatatype.createClassBitField( StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.UTF8), 12);
-        tryHdfApiStrings("string_ascii_all.h5", this::writeAll, StringDatatype.createClassBitField(StringDatatype.PaddingType.SPACE_PAD, StringDatatype.CharacterSet.ASCII), 8);
+//        tryHdfApiStrings("string_utf8_each.h5", this::writeEach, StringDatatype.createClassBitField( StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.UTF8), 12);
+//        tryHdfApiStrings("string_ascii_all.h5", this::writeAll, StringDatatype.createClassBitField(StringDatatype.PaddingType.SPACE_PAD, StringDatatype.CharacterSet.ASCII), 8);
     }
 
     private void tryStringSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
 
-        DataClassDataSource<HdfString> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfString.class);
+        TypedDataSource<String> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), String.class);
         System.out.println("String stream = " + dataSource.stream().toList());
 
-        HdfString[] allData = dataSource.readAll();
+        String[] allData = dataSource.readAll();
         System.out.println("String stream = " + Arrays.stream(allData).toList());
 
     }
