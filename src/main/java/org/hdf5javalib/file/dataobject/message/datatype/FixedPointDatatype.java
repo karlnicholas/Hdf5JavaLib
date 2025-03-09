@@ -168,7 +168,7 @@ public class FixedPointDatatype implements HdfDatatype {
         return value;
     }
 
-    public BigDecimal toBigDecimal(byte[] bytes, int scale) {
+    public BigDecimal toBigDecimal(byte[] bytes) {
         boolean isBigEndian = isBigEndian();
         boolean isSigned = isSigned();
         byte[] workingBytes = bytes.clone();
@@ -186,14 +186,15 @@ public class FixedPointDatatype implements HdfDatatype {
             rawValue = new BigInteger(workingBytes);
         }
 
+        // Convert to BigDecimal, shifting the binary point by bitOffset
         return new BigDecimal(rawValue)
-                .divide(new BigDecimal(BigInteger.ONE.shiftLeft(bitOffset)), scale, RoundingMode.HALF_UP);
+                .divide(new BigDecimal(BigInteger.ONE.shiftLeft(bitOffset)), bitOffset, RoundingMode.HALF_UP);
     }
 
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         if (clazz.isAssignableFrom(BigDecimal.class)) {  // Can accept BigDecimal
-            return clazz.cast(toBigDecimal(bytes, 0));
+            return clazz.cast(toBigDecimal(bytes));
         } else if (clazz.isAssignableFrom(BigInteger.class)) {  // Can accept BigInteger
             return clazz.cast(toBigInteger(bytes));
         } else {

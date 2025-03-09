@@ -8,6 +8,8 @@ import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.DataClassDataSource;
 import org.hdf5javalib.datasource.DataClassMatrixDataSource;
+import org.hdf5javalib.datasource.TypedDataSource;
+import org.hdf5javalib.datasource.TypedMatrixDataSource;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
@@ -60,7 +62,7 @@ public class HdfFixedPointApp {
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-//                tryTemperatureSpliterator(channel, reader);
+                tryVectorSpliterator(channel, reader);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -71,81 +73,71 @@ public class HdfFixedPointApp {
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                tryWeatherSpliterator(channel, reader);
+                tryMatrixSpliterator(channel, reader);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        tryHdfApiInts("randomintseach.h5", this::writeEach);
-        tryHdfApiInts("randomintsall.h5", this::writeAll);
+//        tryHdfApiInts("randomintseach.h5", this::writeEach);
+//        tryHdfApiInts("randomintsall.h5", this::writeAll);
 //        tryHdfApiMatrixInts("weather_data_each.h5", this::writeEachMatrix);
 //        tryHdfApiMatrixInts("weather_data_all.h5", this::writeAllMatrix);
     }
 
-    @Data
-    public static class Scalar {
-        private BigInteger data;
-    }
-
     private void tryScalarDataSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        DataClassDataSource<HdfFixedPoint> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfFixedPoint.class);
-        HdfFixedPoint<Scalar>[] allData = dataSource.readAll();
-        System.out.println("Scalar readAll stats = " + Arrays.stream(allData).map(HdfFixedPoint::getInstance).map(Scalar::getData).collect(Collectors.summarizingInt(BigInteger::intValue)));
-        System.out.println("Scalar streaming list = " + dataSource.stream().map(HdfFixedPoint::getInstance).toList());
-        System.out.println("Scalar parallelStreaming list = " + dataSource.parallelStream().map(HdfFixedPoint::getInstance).toList());
-    }
-
-    @Data
-    public static class TemperatureData {
-        private BigInteger temperature;
-    }
-
-//    public void tryTemperatureSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-//        DataClassDataSource<HdfFixedPoint> dataSource = new DataClassDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfFixedPoint.class);
-//        HdfFixedPoint<BigInteger>[] allData = dataSource.readAll();
-//        System.out.println("Vector readAll stats  = " + Arrays.stream(allData).map(HdfFixedPoint::getInstance).collect(Collectors.summarizingInt(BigInteger::intValue)));
-//        System.out.println("Vector streaming stats = " + dataSource.stream()
-//                .map(fp->fp.getDatatype().getType().cast(fp.getInstance()))
+        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), BigInteger.class);
+        BigInteger[] allData = dataSource.readAll();
+        System.out.println("Scalar readAll stats = " + Arrays.stream(allData)
+//                .map(HdfFixedPoint::getInstance)
 //                .map(bi->{
-//                    TemperatureData temperatureData = new TemperatureData();
-//                    temperatureData.setTemperature(bi);
-//                    return temperatureData;
+//                    Scalar scalar = new Scalar();
+//                    scalar.data = bi.getData();
+//                    return scalar;
 //                })
-//                .collect(Collectors.summarizingInt(BigInteger::intValue)));
-//        System.out.println("Vector parallel streaming stats = " + dataSource.parallelStream()
-//                .map(fp->HdfTypeUtils.populateFromFixedPoint(TemperatureData.class, "temperature", fp, 0))
-//                .map(TemperatureData::getTemperature)
-//                .collect(Collectors.summarizingInt(BigInteger::intValue)));
-//    }
+//                .map(Scalar::getData)
+                .collect(Collectors.summarizingInt(BigInteger::intValue)));
+        System.out.println("Scalar streaming list = " + dataSource.stream().toList());
+        System.out.println("Scalar parallelStreaming list = " + dataSource.parallelStream().toList());
+    }
 
-    private void tryWeatherSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        DataClassMatrixDataSource<HdfFixedPoint> dataSource = new DataClassMatrixDataSource<>(reader.getDataObjectHeaderPrefix(), 2, fileChannel, reader.getDataAddress(), HdfFixedPoint.class);
-        HdfFixedPoint<BigDecimal>[][] allData = dataSource.readAll();
+    public void tryVectorSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
+        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), BigInteger.class);
+        BigInteger[] allData = dataSource.readAll();
+        System.out.println("Vector readAll stats  = " + Arrays.stream(allData).collect(Collectors.summarizingInt(BigInteger::intValue)));
+        System.out.println("Vector streaming stats = " + dataSource.stream()
+                .collect(Collectors.summarizingInt(BigInteger::intValue)));
+        System.out.println("Vector parallel streaming stats = " + dataSource.parallelStream()
+                .collect(Collectors.summarizingInt(BigInteger::intValue)));
+    }
+
+    private void tryMatrixSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
+        TypedMatrixDataSource<BigDecimal> dataSource = new TypedMatrixDataSource<>(reader.getDataObjectHeaderPrefix(), 2, fileChannel, reader.getDataAddress(), BigDecimal.class);
+        BigDecimal[][] allData = dataSource.readAll();
         // Print the matrix values
         System.out.println("Matrix readAll() = ");
-        for (HdfFixedPoint<BigDecimal>[] allDatum : allData) {
-            for (HdfFixedPoint<BigDecimal> hdfFixedPoint : allDatum) {
-                System.out.print(hdfFixedPoint.getInstance().setScale(2) + " ");
+        for (BigDecimal[] allDatum : allData) {
+            for (BigDecimal bigDecimal : allDatum) {
+                System.out.print(bigDecimal.setScale(2, RoundingMode.HALF_UP) + " ");
             }
             System.out.println(); // New line after each row
         }
 
-        Stream<HdfFixedPoint[]> stream = dataSource.stream();
+        Stream<BigDecimal[]> stream = dataSource.stream();
         // Print all values
         System.out.println("Matrix stream() = ");
         stream.forEach(array -> {
-            for (HdfFixedPoint<BigDecimal> value : array) {
-                System.out.print(value.getInstance().setScale(2) + " ");
+            for (BigDecimal value : array) {
+                System.out.print(value.setScale(2, RoundingMode.HALF_UP) + " ");
             }
             System.out.println(); // Newline after each array
         });
-        Stream<HdfFixedPoint[]> parallelStream = dataSource.parallelStream();
+        Stream<BigDecimal[]> parallelStream = dataSource.parallelStream();
 
         // Print all values in order
         System.out.println("Matrix parallelStream() = ");
         parallelStream.forEachOrdered(array -> {
-            for (HdfFixedPoint<BigDecimal> value : array) {
-                System.out.print(value.getInstance().setScale(2) + " ");
+            for (BigDecimal value : array) {
+                System.out.print(value.setScale(2, RoundingMode.HALF_UP) + " ");
             }
             System.out.println();
         });
