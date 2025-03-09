@@ -16,13 +16,11 @@ import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -231,35 +229,20 @@ public class HdfCompoundApp {
 
     private void tryCustomSpliterator(FileChannel fileChannel, HdfFileReader reader) {
         CompoundDatatype.addConverter(MonitoringData.class, (bytes, datatype) -> {
-            Map<String, Field> nameToFieldMap = Arrays.stream(MonitoringData.class.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));
-            Map<String, CompoundMemberDatatype> nameToMemberMap = datatype.getMembers().stream().collect(Collectors.toMap(member -> switch (member.getName()) {
-                        case "Site Name" -> new String("siteName");
-                        case "Air Quality Index" -> new String("airQualityIndex");
-                        case "Temperature" -> new String("temperature");
-                        case "Sample Count" -> new String("sampleCount");
-                        default -> throw new RuntimeException("Error");
-                    },
-                    compoundMember -> compoundMember));
-            // sanity checking.
-            MonitoringData instance = new MonitoringData();
-            try {
-                for (CompoundMemberDatatype member : nameToMemberMap.values()) {
-                    Field field = nameToFieldMap.get(member.getName());
-                    if (field == null) {
-                        throw new NoSuchFieldException(member.getName());
-                    }
-                    field.setAccessible(true);
-                    Object value = member.getInstance(field.getType(), Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset() + member.getSize()));
-                    if (field.getType().isAssignableFrom(value.getClass())) {
-                        field.set(instance, value);
-                    }
+            MonitoringData monitoringData = new MonitoringData();
+            datatype.getMembers().forEach(member -> {
+                byte[] memberBytes = Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset() + member.getSize());
+                switch (member.getName()) {
+                    case "Site Name" -> monitoringData.setSiteName(member.getInstance(String.class, memberBytes));
+                    case "Air Quality Index" -> monitoringData.setAirQualityIndex(member.getInstance(Float.class, memberBytes));
+                    case "Temperature" -> monitoringData.setTemperature(member.getInstance(Double.class, memberBytes));
+                    case "Sample Count" -> monitoringData.setSampleCount(member.getInstance(Integer.class, memberBytes));
+                    default -> throw new RuntimeException("Error");
                 }
-                return instance;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            });
+            return monitoringData;
         });
-        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream().forEach(System.out::println);
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), MonitoringData.class).stream().forEach(System.out::println);
     }
 
 }
