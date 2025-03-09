@@ -57,13 +57,13 @@ public class FloatingPointDatatype implements HdfDatatype {
 
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
-        if (clazz.isAssignableFrom(Double.class)) {  // Can accept Double
+        if (Double.class.isAssignableFrom(clazz)) {  // Accepts Double or subclasses
             return clazz.cast(toDouble(bytes));
-        } else if (clazz.isAssignableFrom(Float.class)) {  // Can accept Float
+        } else if (Float.class.isAssignableFrom(clazz)) {  // Accepts Float or subclasses
             return clazz.cast(toFloat(bytes));
-        } else if (clazz.isAssignableFrom(String.class)) {  // Can accept Float
+        } else if (String.class.isAssignableFrom(clazz)) {  // Accepts String or subclasses
             return clazz.cast(toDouble(bytes).toString());
-        } else if (clazz.isAssignableFrom(HdfFloatPoint.class)) {  // Can accept Float
+        } else if (HdfFloatPoint.class.isAssignableFrom(clazz)) {  // Accepts HdfFloatPoint or subclasses
             return clazz.cast(new HdfFloatPoint(bytes, this));
         } else {
             throw new UnsupportedOperationException("Unknown type: " + clazz);

@@ -104,6 +104,109 @@ public class FixedPointDatatype implements HdfDatatype {
         return classBitField.get(3);
     }
 
+    // Conversion methods
+    public long toLong(byte[] bytes) {
+        if (bitOffset != 0) {
+            throw new IllegalStateException("Cannot convert to Long: bitOffset must be 0, got " + bitOffset);
+        }
+        if (size != 8) {
+            throw new IllegalStateException("Cannot convert to Long: size must be 8, got " + size);
+        }
+        if (bytes.length < 8) {
+            throw new IllegalArgumentException("Byte array too small for Long, need 8 bytes, got " + bytes.length);
+        }
+
+        long value = 0;
+        if (isBigEndian()) {
+            for (int i = 0; i < 8; i++) {
+                value = (value << 8) | (bytes[i] & 0xFF);
+            }
+        } else {
+            for (int i = 7; i >= 0; i--) {
+                value = (value << 8) | (bytes[i] & 0xFF);
+            }
+        }
+
+        if (!isSigned() && value < 0) {
+            throw new ArithmeticException("Unsigned value out of range for signed Long: " + value);
+        }
+        return value;
+    }
+
+    public int toInteger(byte[] bytes) {
+        if (bitOffset != 0) {
+            throw new IllegalStateException("Cannot convert to Integer: bitOffset must be 0, got " + bitOffset);
+        }
+        if (size != 4) {
+            throw new IllegalStateException("Cannot convert to Integer: size must be 4, got " + size);
+        }
+        if (bytes.length < 4) {
+            throw new IllegalArgumentException("Byte array too small for Integer, need 4 bytes, got " + bytes.length);
+        }
+
+        int value = 0;
+        if (isBigEndian()) {
+            for (int i = 0; i < 4; i++) {
+                value = (value << 8) | (bytes[i] & 0xFF);
+            }
+        } else {
+            for (int i = 3; i >= 0; i--) {
+                value = (value << 8) | (bytes[i] & 0xFF);
+            }
+        }
+
+        if (!isSigned() && value < 0) {
+            throw new ArithmeticException("Unsigned value out of range for signed Integer: " + value);
+        }
+        return value;
+    }
+
+    public short toShort(byte[] bytes) {
+        if (bitOffset != 0) {
+            throw new IllegalStateException("Cannot convert to Short: bitOffset must be 0, got " + bitOffset);
+        }
+        if (size != 2) {
+            throw new IllegalStateException("Cannot convert to Short: size must be 2, got " + size);
+        }
+        if (bytes.length < 2) {
+            throw new IllegalArgumentException("Byte array too small for Short, need 2 bytes, got " + bytes.length);
+        }
+
+        short value = 0;
+        if (isBigEndian()) {
+            for (int i = 0; i < 2; i++) {
+                value = (short) ((value << 8) | (bytes[i] & 0xFF));
+            }
+        } else {
+            for (int i = 1; i >= 0; i--) {
+                value = (short) ((value << 8) | (bytes[i] & 0xFF));
+            }
+        }
+
+        if (!isSigned() && value < 0) {
+            throw new ArithmeticException("Unsigned value out of range for signed Short: " + value);
+        }
+        return value;
+    }
+
+    public byte toByte(byte[] bytes) {
+        if (bitOffset != 0) {
+            throw new IllegalStateException("Cannot convert to Byte: bitOffset must be 0, got " + bitOffset);
+        }
+        if (size != 1) {
+            throw new IllegalStateException("Cannot convert to Byte: size must be 1, got " + size);
+        }
+        if (bytes.length < 1) {
+            throw new IllegalArgumentException("Byte array too small for Byte, need 1 byte, got " + bytes.length);
+        }
+
+        byte value = bytes[0];
+        if (!isSigned() && value < 0) {
+            throw new ArithmeticException("Unsigned value out of range for signed Byte: " + value);
+        }
+        return value;
+    }
+
     public BigInteger toBigInteger(byte[] bytes) {
         if (bytes.length < size) {
             throw new IllegalArgumentException("Byte array too small for specified size");
@@ -194,14 +297,22 @@ public class FixedPointDatatype implements HdfDatatype {
 
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
-        if (clazz.isAssignableFrom(BigDecimal.class)) {  // Can accept BigDecimal
+        if (BigDecimal.class.isAssignableFrom(clazz)) {  // Accepts BigDecimal or subclasses
             return clazz.cast(toBigDecimal(bytes));
-        } else if (clazz.isAssignableFrom(BigInteger.class)) {  // Can accept BigInteger
+        } else if (BigInteger.class.isAssignableFrom(clazz)) {  // Accepts BigInteger or subclasses
             return clazz.cast(toBigInteger(bytes));
-        } else if (clazz.isAssignableFrom(String.class)) {  // Can accept BigInteger
+        } else if (String.class.isAssignableFrom(clazz)) {  // Accepts String or subclasses
             return clazz.cast(toBigInteger(bytes).toString());
-        } else if (clazz.isAssignableFrom(HdfFixedPoint.class)) {  // Can accept BigInteger
+        } else if (HdfFixedPoint.class.isAssignableFrom(clazz)) {  // Accepts HdfFixedPoint or subclasses
             return clazz.cast(new HdfFixedPoint(bytes, this));
+        } else if (Long.class.isAssignableFrom(clazz)) {  // Accepts Long or subclasses
+            return clazz.cast(Long.valueOf(toLong(bytes)));
+        } else if (Integer.class.isAssignableFrom(clazz)) {  // Accepts Integer or subclasses
+            return clazz.cast(Integer.valueOf(toInteger(bytes)));
+        } else if (Short.class.isAssignableFrom(clazz)) {  // Accepts Short or subclasses
+            return clazz.cast(Short.valueOf(toShort(bytes)));
+        } else if (Byte.class.isAssignableFrom(clazz)) {  // Accepts Byte or subclasses
+            return clazz.cast(Byte.valueOf(toByte(bytes)));
         } else {
             throw new UnsupportedOperationException("Unknown type: " + clazz);
         }

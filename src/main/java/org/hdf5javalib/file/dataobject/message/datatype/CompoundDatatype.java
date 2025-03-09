@@ -174,9 +174,9 @@ public class CompoundDatatype implements HdfDatatype {
 
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
-        if (clazz.isAssignableFrom(HdfCompound.class)) {
+        if (HdfCompound.class.isAssignableFrom(clazz)) {
             return clazz.cast(new HdfCompound(bytes, this));
-        } else if (clazz.isAssignableFrom(String.class)) {
+        } else if (String.class.isAssignableFrom(clazz)) {
             return clazz.cast(new HdfCompound(bytes, this).toString());
         } else {
             Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));

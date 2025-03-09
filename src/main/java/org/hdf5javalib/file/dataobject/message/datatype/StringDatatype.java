@@ -35,9 +35,9 @@ public class StringDatatype implements HdfDatatype {
 
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
-        if (clazz.isAssignableFrom(String.class)) {  // Can accept String
+        if (String.class.isAssignableFrom(clazz)) {  // Accepts String or subclasses
             return clazz.cast(toString(bytes));
-        } else if (clazz.isAssignableFrom(HdfString.class)) {  // Can accept String
+        } else if (HdfString.class.isAssignableFrom(clazz)) {  // Accepts HdfString or subclasses
             return clazz.cast(new HdfString(bytes, this));
         } else {
             throw new UnsupportedOperationException("Unknown type: " + clazz);
