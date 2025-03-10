@@ -5,7 +5,6 @@ import org.hdf5javalib.file.dataobject.message.HdfMessage;
 import org.hdf5javalib.file.dataobject.message.ObjectHeaderContinuationMessage;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;

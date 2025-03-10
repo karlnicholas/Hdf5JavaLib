@@ -6,7 +6,6 @@ import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;

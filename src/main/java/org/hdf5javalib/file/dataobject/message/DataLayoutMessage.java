@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;

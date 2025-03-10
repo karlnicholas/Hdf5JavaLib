@@ -3,7 +3,6 @@ package org.hdf5javalib.utils;
 import org.hdf5javalib.file.dataobject.message.*;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;

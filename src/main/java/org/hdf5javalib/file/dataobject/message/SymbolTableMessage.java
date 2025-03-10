@@ -3,7 +3,6 @@ package org.hdf5javalib.file.dataobject.message;
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;

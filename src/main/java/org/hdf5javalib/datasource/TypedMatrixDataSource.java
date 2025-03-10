@@ -8,7 +8,6 @@ import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
