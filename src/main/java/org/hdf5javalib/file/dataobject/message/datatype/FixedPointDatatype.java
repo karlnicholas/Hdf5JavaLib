@@ -4,7 +4,6 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.dataclass.HdfFloatPoint;
 import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.math.BigDecimal;
