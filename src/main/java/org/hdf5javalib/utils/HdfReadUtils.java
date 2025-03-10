@@ -68,7 +68,7 @@ public class HdfReadUtils {
     public static void parseContinuationMessage(FileChannel fileChannel, ObjectHeaderContinuationMessage objectHeaderContinuationMessage, short offsetSize, short lengthSize, List<HdfMessage> headerMessages) throws IOException {
 
         long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().getInstance(Long.class);
-        short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getInstance(Short.class);
+        short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getInstance(Long.class).shortValue();
 
         // Move to the continuation block offset
         fileChannel.position(continuationOffset);

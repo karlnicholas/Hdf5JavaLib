@@ -34,6 +34,17 @@ public class HdfCompoundApp {
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
+            String filePath = HdfCompoundApp.class.getResource("/test.h5").getFile();
+            try (FileInputStream fis = new FileInputStream(filePath)) {
+                FileChannel channel = fis.getChannel();
+                reader.readFile(channel);
+                tryCompoundTestSpliterator(channel, reader);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            HdfFileReader reader = new HdfFileReader();
             String filePath = HdfCompoundApp.class.getResource("/env_monitoring_labels.h5").getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
@@ -212,6 +223,10 @@ public class HdfCompoundApp {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    public void tryCompoundTestSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
+        System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream().count());
     }
 
 
