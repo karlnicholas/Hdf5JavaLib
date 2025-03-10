@@ -1,14 +1,5 @@
 package org.hdf5javalib.dataclass;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
 public class HdfFixedPointTest {
 //
 //    private HdfFixedPoint createFixedPoint(byte[] bytes, int size, boolean signed, boolean littleEndian,

@@ -1,13 +1,5 @@
 package org.hdf5javalib.string;
 
-import org.hdf5javalib.dataclass.HdfString;
-import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
-import org.junit.jupiter.api.Test;
-
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 public class TestHdfString {
 
 //    @Test

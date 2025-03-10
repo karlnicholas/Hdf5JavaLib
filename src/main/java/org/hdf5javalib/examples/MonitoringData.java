@@ -1,8 +1,6 @@
 package org.hdf5javalib.examples;
 
-import lombok.*;
-
-import java.math.BigInteger;
+import lombok.Data;
 
 @Data
 public class MonitoringData {

@@ -5,7 +5,6 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.BitSet;

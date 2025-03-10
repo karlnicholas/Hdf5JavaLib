@@ -1,15 +1,12 @@
 package org.hdf5javalib.dataclass;
 
 import lombok.Getter;
-import lombok.ToString;
-import org.hdf5javalib.file.dataobject.message.datatype.*;
+import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Getter
 public class HdfCompound implements HdfData {
