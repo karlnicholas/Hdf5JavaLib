@@ -179,7 +179,7 @@ public class HdfFixedPoint implements HdfData {
 
     @Override
     public int getSizeMessageData() {
-        return bytes.length;
+        return datatype.getSizeMessageData();
     }
 
     @Override

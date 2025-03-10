@@ -229,7 +229,6 @@ public class HdfCompoundApp {
         System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream().count());
     }
 
-
     public void tryCompoundSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
         TypedDataSource<MonitoringData> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), MonitoringData.class);
         MonitoringData[] allData = dataSource.readAll();

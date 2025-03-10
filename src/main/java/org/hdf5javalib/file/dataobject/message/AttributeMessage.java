@@ -106,6 +106,7 @@ public class AttributeMessage extends HdfMessage {
         buffer.putShort((short) nameSize);
 //        buffer.putShort(datatypeMessage.getSizeMessageData());
 //        buffer.putShort(dataspaceMessage.getSizeMessageData());
+        //TODO: 8 ?
         buffer.putShort((short) 8);
         buffer.putShort((short) 8);
 
@@ -113,7 +114,8 @@ public class AttributeMessage extends HdfMessage {
         buffer.put(name.getBytes());
 
         // padding bytes
-        buffer.put(new byte[(8 - (nameSize % 8)) % 8]);
+        byte[] paddingBytes = new byte[(8 - (nameSize % 8)) % 8];
+        buffer.put(paddingBytes);
 
         datatypeMessage.writeInfoToByteBuffer(buffer);
 

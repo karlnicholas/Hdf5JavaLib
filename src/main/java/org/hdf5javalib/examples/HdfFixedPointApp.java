@@ -79,10 +79,10 @@ public class HdfFixedPointApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-//        tryHdfApiInts("randomintseach.h5", this::writeEach);
-//        tryHdfApiInts("randomintsall.h5", this::writeAll);
-//        tryHdfApiMatrixInts("weather_data_each.h5", this::writeEachMatrix);
-//        tryHdfApiMatrixInts("weather_data_all.h5", this::writeAllMatrix);
+        tryHdfApiInts("randomintseach.h5", this::writeEach);
+        tryHdfApiInts("randomintsall.h5", this::writeAll);
+        tryHdfApiMatrixInts("weather_data_each.h5", this::writeEachMatrix);
+        tryHdfApiMatrixInts("weather_data_all.h5", this::writeAllMatrix);
     }
 
     private void tryScalarDataSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
@@ -245,49 +245,44 @@ public class HdfFixedPointApp {
         }
     }
 
-//    @SneakyThrows
-//    private void writeEachMatrix(MatrixWriterParams writerParams) {
-//        AtomicInteger countHolder = new AtomicInteger(0);
-//        ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
-//        // Write to dataset
-//        writerParams.dataset.write(() -> {
-//            int count = countHolder.getAndIncrement();
-//            if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
-//            byteBuffer.clear();
-//            BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
-//            makeBitOffsetValues(writerParams, byteBuffer, twoShifted, count);
-//            byteBuffer.flip();
-//            return byteBuffer;
-//        });
-//    }
-//
-//    @SneakyThrows
-//    private void writeAllMatrix(MatrixWriterParams writerParams) {
-//        ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS * writerParams.NUM_RECORDS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
-//        BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
-//        for(int r=0; r<writerParams.NUM_RECORDS; r++) {
-//            makeBitOffsetValues(writerParams, byteBuffer, twoShifted, r);
-//        }
-//        byteBuffer.flip();
-//        // Write to dataset
-//        writerParams.dataset.write(byteBuffer);
-//    }
-//
-//    private void makeBitOffsetValues(MatrixWriterParams writerParams, ByteBuffer byteBuffer, BigDecimal twoShifted, int r) {
-//        for(int c=0; c < writerParams.NUM_DATAPOINTS; ++c ) {
-//            BigDecimal rawValue = writerParams.values.get(r).get(c).multiply(twoShifted);
-//            BigInteger rawValueShifted = rawValue.toBigInteger();
-//            new HdfFixedPoint(rawValueShifted,
-//                    writerParams.fixedPointDatatype.getSize(),
-//                    writerParams.fixedPointDatatype.isBigEndian(),
-//                    writerParams.fixedPointDatatype.isLoPad(),
-//                    writerParams.fixedPointDatatype.isHiPad(),
-//                    writerParams.fixedPointDatatype.isSigned(),
-//                    writerParams.fixedPointDatatype.getBitOffset(),
-//                    writerParams.fixedPointDatatype.getBitPrecision())
-//                    .writeValueToByteBuffer(byteBuffer);
-//        }
-//    }
+    @SneakyThrows
+    private void writeEachMatrix(MatrixWriterParams writerParams) {
+        AtomicInteger countHolder = new AtomicInteger(0);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+        BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
+        BigDecimal point5 = new BigDecimal("0.5");
+        // Write to dataset
+        writerParams.dataset.write(() -> {
+            int count = countHolder.getAndIncrement();
+            if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
+            byteBuffer.clear();
+            makeBitOffsetValues(writerParams, byteBuffer, twoShifted, point5, count);
+            byteBuffer.flip();
+            return byteBuffer;
+        });
+    }
+
+    @SneakyThrows
+    private void writeAllMatrix(MatrixWriterParams writerParams) {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS * writerParams.NUM_RECORDS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+        BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
+        BigDecimal point5 = new BigDecimal("0.5");
+        for(int r=0; r<writerParams.NUM_RECORDS; r++) {
+            makeBitOffsetValues(writerParams, byteBuffer, twoShifted, point5, r);
+        }
+        byteBuffer.flip();
+        // Write to dataset
+        writerParams.dataset.write(byteBuffer);
+    }
+
+    private void makeBitOffsetValues(MatrixWriterParams writerParams, ByteBuffer byteBuffer, BigDecimal twoShifted, BigDecimal point5, int r) {
+        for(int c=0; c < writerParams.NUM_DATAPOINTS; ++c ) {
+            BigDecimal rawValue = writerParams.values.get(r).get(c).multiply(twoShifted).add(point5);
+            BigInteger rawValueShifted = rawValue.toBigInteger();
+            new HdfFixedPoint(rawValueShifted, writerParams.fixedPointDatatype)
+                    .writeValueToByteBuffer(byteBuffer);
+        }
+    }
 
     @SneakyThrows
     private void writeEach(WriterParams writerParams) {

@@ -30,7 +30,7 @@ public class HdfString implements HdfData {
 
     // Get the HDF byte[] representation for storage, always returns a copy
     public byte[] getBytes() {
-        byte[] copy = new byte[datatype.getSize()];
+        byte[] copy = new byte[getSizeMessageData()];
         System.arraycopy(bytes, 0, copy, 0, bytes.length);
         return copy;
     }
@@ -43,8 +43,7 @@ public class HdfString implements HdfData {
 
     @Override
     public int getSizeMessageData() {
-//        return (short) (StringDatatype.PaddingType.fromBitSet(classBitField) == StringDatatype.PaddingType.NULL_TERMINATE ? length + 1 : length);
-        return datatype.getSize();
+        return (short) (datatype.getPaddingType() == StringDatatype.PaddingType.NULL_TERMINATE ? datatype.getSize() + 1 : datatype.getSize());
     }
 
     @Override
