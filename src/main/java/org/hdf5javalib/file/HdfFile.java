@@ -90,7 +90,7 @@ public class HdfFile {
                 .orElseThrow()
                 .getDimensionSizes();
         for(HdfFixedPoint fixedPoint : dimensionSizes) {
-            endOfFileAddress += fixedPoint.getInstance(BigInteger.class).longValue();
+            endOfFileAddress += fixedPoint.getInstance(Long.class);
         }
 
         superblock.setEndOfFileAddress(HdfFixedPoint.of(endOfFileAddress));

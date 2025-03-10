@@ -44,8 +44,8 @@ public class TypedMatrixDataSource<T> extends AbstractTypedMatrixStreamingSource
         this.dataClass = dataClass;
         recordSize = headerPrefixV1.findMessageByType(DatatypeMessage.class).orElseThrow().getHdfDatatype().getSize();
         HdfFixedPoint[] dimensions = headerPrefixV1.findMessageByType(DataspaceMessage.class).orElseThrow().getDimensions();
-        readsAvailable = dimensions[0].getInstance(BigInteger.class).intValue();
-        dimension = dimensions[1].getInstance(BigInteger.class).intValue();
+        readsAvailable = dimensions[0].getInstance(Long.class).intValue();
+        dimension = dimensions[1].getInstance(Long.class).intValue();
         fixedPointDatatype = (FixedPointDatatype) headerPrefixV1.findMessageByType(DatatypeMessage.class).orElseThrow().getHdfDatatype();
 //        // Parse fields and map them to CompoundDatatype members
 //        Field fieldToSet = null;

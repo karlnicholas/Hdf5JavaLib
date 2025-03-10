@@ -46,7 +46,7 @@ public class HdfLocalHeapContents {
      * @return The next string, or null if no more strings are available.
      */
     public HdfString parseStringAtOffset(HdfFixedPoint offset) {
-        long iOffset = offset.getInstance(BigInteger.class).longValue();
+        long iOffset = offset.getInstance(Long.class);
         if (iOffset >= heapData.length) {
             return null; // End of heap data
         }

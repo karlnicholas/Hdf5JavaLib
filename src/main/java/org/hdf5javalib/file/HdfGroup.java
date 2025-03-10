@@ -113,12 +113,12 @@ public class HdfGroup {
 
             // Retrieve Local Heap Address if still not found
             if (localHeapPosition == -1 && symbolTableMessage.getLocalHeapAddress() != null && !symbolTableMessage.getLocalHeapAddress().isUndefined()) {
-                localHeapPosition = symbolTableMessage.getLocalHeapAddress().getInstance(BigInteger.class).longValue();
+                localHeapPosition = symbolTableMessage.getLocalHeapAddress().getInstance(Long.class);
             }
 
             // Retrieve B-Tree Address
             if (symbolTableMessage.getBTreeAddress() != null && !symbolTableMessage.getBTreeAddress().isUndefined()) {
-                bTreePosition = symbolTableMessage.getBTreeAddress().getInstance(BigInteger.class).longValue();
+                bTreePosition = symbolTableMessage.getBTreeAddress().getInstance(Long.class);
             }
         }
 
@@ -134,7 +134,7 @@ public class HdfGroup {
         if (localHeapPosition != -1) {
             buffer.position((int) localHeapPosition); // Move to the correct position
             localHeap.writeToByteBuffer(buffer);
-            buffer.position(localHeap.getDataSegmentAddress().getInstance(BigInteger.class).intValue());
+            buffer.position(localHeap.getDataSegmentAddress().getInstance(Long.class).intValue());
             localHeapContents.writeToByteBuffer(buffer);
         } else {
             throw new IllegalStateException("No valid Local Heap position found.");

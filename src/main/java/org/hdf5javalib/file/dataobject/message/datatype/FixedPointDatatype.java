@@ -125,20 +125,20 @@ public class FixedPointDatatype implements HdfDatatype {
         if (bitOffset != 0) {
             throw new IllegalStateException("Cannot convert to Long: bitOffset must be 0, got " + bitOffset);
         }
-        if (size != 8) {
-            throw new IllegalStateException("Cannot convert to Long: size must be 8, got " + size);
-        }
-        if (bytes.length < 8) {
-            throw new IllegalArgumentException("Byte array too small for Long, need 8 bytes, got " + bytes.length);
+//        if (size != 8) {
+//            throw new IllegalStateException("Cannot convert to Long: size must be 8, got " + size);
+//        }
+        if (bytes.length > 8 || size > 8 || bytes.length != size) {
+            throw new IllegalArgumentException("Bytes or size wrong for Long, got " + bytes.length+":"+size);
         }
 
         long value = 0;
         if (isBigEndian()) {
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < size; i++) {
                 value = (value << 8) | (bytes[i] & 0xFF);
             }
         } else {
-            for (int i = 7; i >= 0; i--) {
+            for (int i = size-1; i >= 0; i--) {
                 value = (value << 8) | (bytes[i] & 0xFF);
             }
         }
@@ -153,20 +153,20 @@ public class FixedPointDatatype implements HdfDatatype {
         if (bitOffset != 0) {
             throw new IllegalStateException("Cannot convert to Integer: bitOffset must be 0, got " + bitOffset);
         }
-        if (size != 4) {
-            throw new IllegalStateException("Cannot convert to Integer: size must be 4, got " + size);
-        }
-        if (bytes.length < 4) {
-            throw new IllegalArgumentException("Byte array too small for Integer, need 4 bytes, got " + bytes.length);
+//        if (size != 4) {
+//            throw new IllegalStateException("Cannot convert to Integer: size must be 4, got " + size);
+//        }
+        if (bytes.length > 4 || size > 4 || bytes.length != size) {
+            throw new IllegalArgumentException("Bytes or size wrong for Integer, got " + bytes.length+":"+size);
         }
 
         int value = 0;
         if (isBigEndian()) {
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < size; i++) {
                 value = (value << 8) | (bytes[i] & 0xFF);
             }
         } else {
-            for (int i = 3; i >= 0; i--) {
+            for (int i = size-1; i >= 0; i--) {
                 value = (value << 8) | (bytes[i] & 0xFF);
             }
         }
@@ -181,20 +181,20 @@ public class FixedPointDatatype implements HdfDatatype {
         if (bitOffset != 0) {
             throw new IllegalStateException("Cannot convert to Short: bitOffset must be 0, got " + bitOffset);
         }
-        if (size != 2) {
-            throw new IllegalStateException("Cannot convert to Short: size must be 2, got " + size);
-        }
-        if (bytes.length < 2) {
-            throw new IllegalArgumentException("Byte array too small for Short, need 2 bytes, got " + bytes.length);
+//        if (size != 2) {
+//            throw new IllegalStateException("Cannot convert to Short: size must be 2, got " + size);
+//        }
+        if (bytes.length > 2 || size > 2 || bytes.length != size) {
+            throw new IllegalArgumentException("Bytes or size wrong for Short, got " + bytes.length+":"+size);
         }
 
         short value = 0;
         if (isBigEndian()) {
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < size; i++) {
                 value = (short) ((value << 8) | (bytes[i] & 0xFF));
             }
         } else {
-            for (int i = 1; i >= 0; i--) {
+            for (int i = size-1; i >= 0; i--) {
                 value = (short) ((value << 8) | (bytes[i] & 0xFF));
             }
         }
@@ -209,11 +209,11 @@ public class FixedPointDatatype implements HdfDatatype {
         if (bitOffset != 0) {
             throw new IllegalStateException("Cannot convert to Byte: bitOffset must be 0, got " + bitOffset);
         }
-        if (size != 1) {
-            throw new IllegalStateException("Cannot convert to Byte: size must be 1, got " + size);
-        }
-        if (bytes.length < 1) {
-            throw new IllegalArgumentException("Byte array too small for Byte, need 1 byte, got " + bytes.length);
+//        if (size != 1) {
+//            throw new IllegalStateException("Cannot convert to Byte: size must be 1, got " + size);
+//        }
+        if (bytes.length > 1 || size > 1 || bytes.length != size) {
+            throw new IllegalArgumentException("Bytes or size wrong for Byte, got " + bytes.length+":"+size);
         }
 
         byte value = bytes[0];
