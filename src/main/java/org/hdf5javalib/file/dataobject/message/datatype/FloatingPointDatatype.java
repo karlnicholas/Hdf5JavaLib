@@ -150,7 +150,7 @@ public class FloatingPointDatatype implements HdfDatatype {
         return value;
     }
 
-    private ByteOrder getByteOrder() {
+    public ByteOrder getByteOrder() {
         boolean bit0 = classBitField.get(0);
         boolean bit6 = classBitField.get(6);
         if (!bit6 && !bit0) return ByteOrder.LITTLE_ENDIAN;

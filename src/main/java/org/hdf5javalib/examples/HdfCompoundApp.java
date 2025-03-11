@@ -13,6 +13,7 @@ import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.CompoundMemberDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
+import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -186,7 +187,7 @@ public class HdfCompoundApp {
 
             AtomicInteger countHolder = new AtomicInteger(0);
 //            TypedDataSource<ShipperData> volumeDataHdfDataSource = new TypedDataSource<>(dataset.getDataObjectHeaderPrefix(), 0, file., 0, ShipperData.class);
-            ByteBuffer volumeBuffer = ByteBuffer.allocate(compoundType.getSize());
+            ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize());
             // Write to dataset
             dataset.write(() -> {
                 int count = countHolder.getAndIncrement();
@@ -195,25 +196,25 @@ public class HdfCompoundApp {
                         .shipmentId(BigInteger.valueOf(count + 1000))
                         .origCountry("US")
                         .origSlic("12345")
-                        .origSort(BigInteger.valueOf(4))
+                        .origSort((byte)4)
                         .destCountry("CA")
                         .destSlic("67890")
-                        .destIbi(BigInteger.ZERO)
+                        .destIbi((byte)0)
                         .destPostalCode("A1B2C3")
                         .shipper("FedEx")
-                        .service(BigInteger.ZERO)
-                        .packageType(BigInteger.valueOf(3))
-                        .accessorials(BigInteger.ZERO)
-                        .pieces(BigInteger.valueOf(2))
-                        .weight(BigInteger.valueOf(50))
-                        .cube(BigInteger.valueOf(1200))
-                        .committedTnt(BigInteger.valueOf(255))
-                        .committedDate(BigInteger.valueOf(3))
+                        .service(Byte.valueOf((byte)0))
+                        .packageType(Byte.valueOf((byte)0))
+                        .accessorials(Byte.valueOf((byte)0))
+                        .pieces(Short.valueOf((short) 2))
+                        .weight(Short.valueOf((short) 50))
+                        .cube(Integer.valueOf(1200))
+                        .committedTnt(Byte.valueOf((byte)255))
+                        .committedDate(Byte.valueOf((byte)3))
                         .build();
-
-                volumeBuffer.clear();
-                volumeBuffer.position(0);
-                return volumeBuffer;
+                buffer.clear();
+                HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, buffer, ShipperData.class);
+                buffer.position(0);
+                return buffer;
             });
 
             dataset.close();
