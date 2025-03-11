@@ -46,17 +46,17 @@ public class HdfFixedPointApp {
         new HdfFixedPointApp().run();
     }
     private void run() {
-        try {
-            HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(HdfCompoundApp.class.getResource("/singleint.h5")).getFile();
-            try(FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
-                tryScalarDataSpliterator(channel, reader);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            HdfFileReader reader = new HdfFileReader();
+//            String filePath = Objects.requireNonNull(HdfCompoundApp.class.getResource("/singleint.h5")).getFile();
+//            try(FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+//                tryScalarDataSpliterator(channel, reader);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
         try {
             HdfFileReader reader = new HdfFileReader();
             String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/randomints.h5")).getFile();

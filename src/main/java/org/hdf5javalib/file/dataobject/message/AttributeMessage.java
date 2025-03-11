@@ -102,7 +102,8 @@ public class AttributeMessage extends HdfMessage {
         buffer.put((byte) 0);
 
         // Write the sizes of name, datatype, and dataspace (2 bytes each)
-        int nameSize = name.getSizeMessageData();
+        byte[] nameBytes = name.getBytes();
+        int nameSize = nameBytes.length;
         buffer.putShort((short) nameSize);
 //        buffer.putShort(datatypeMessage.getSizeMessageData());
 //        buffer.putShort(dataspaceMessage.getSizeMessageData());
@@ -111,7 +112,7 @@ public class AttributeMessage extends HdfMessage {
         buffer.putShort((short) 8);
 
         // Read the name (variable size)
-        buffer.put(name.getBytes());
+        buffer.put(nameBytes);
 
         // padding bytes
         byte[] paddingBytes = new byte[(8 - (nameSize % 8)) % 8];

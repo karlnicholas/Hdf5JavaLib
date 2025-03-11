@@ -10,7 +10,7 @@ public class NilMessage extends HdfMessage {
 
     public static HdfMessage parseHeaderMessage(byte flag, byte[] data, int offsetSize, int lengthSize) {
         // No data to parse for null message
-        return new NilMessage(lengthSize);
+        return new NilMessage(data.length);
     }
 
     @Override

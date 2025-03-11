@@ -6,7 +6,9 @@ import java.nio.ByteBuffer;
 
 /**
  * HDFString. Stored bytes are not null terminated even if null termination is set in classBitField.
- * Length however includes the null terminator if it is defined.
+ * The length in the StringDatatype message needs to be length + 1 if the string is defined as
+ * null-terminated and the string is not null terminated. There is not a lot of fancy logic here, the app
+ * needs to sort out what it expects. Probably need some utils or factory for this.
  * Stored bytes only hold bytes, encoded if needed. Null termination is added if needed when bytes are retrieved.
  * Java Strings are not null terminated and are UTF-8 encoded.
  */
@@ -43,7 +45,7 @@ public class HdfString implements HdfData {
 
     @Override
     public int getSizeMessageData() {
-        return (short) (datatype.getPaddingType() == StringDatatype.PaddingType.NULL_TERMINATE ? datatype.getSize() + 1 : datatype.getSize());
+        return datatype.getSize();
     }
 
     @Override
