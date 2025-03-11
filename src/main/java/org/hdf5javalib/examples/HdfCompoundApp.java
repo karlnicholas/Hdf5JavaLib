@@ -16,11 +16,14 @@ import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -65,8 +68,7 @@ public class HdfCompoundApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-//        tryHdfApiCompound();
-//        tryHdfApiInts();
+        tryHdfApiCompound();
     }
 
     private void writeVersionAttribute(HdfDataSet dataset) {
@@ -182,37 +184,37 @@ public class HdfCompoundApp {
             // ADD ATTRIBUTE: "GIT root revision"
             writeVersionAttribute(dataset);
 
-//            AtomicInteger countHolder = new AtomicInteger(0);
-//            TypedCompoundDataSource<ShipperData> volumeDataHdfDataSource = new TypedCompoundDataSource<>(compoundType, ShipperData.class);
-//            ByteBuffer volumeBuffer = ByteBuffer.allocate(compoundType.getSize());
-//            // Write to dataset
-//            dataset.write(() -> {
-//                int count = countHolder.getAndIncrement();
-//                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
-//                ShipperData instance = ShipperData.builder()
-//                        .shipmentId(BigInteger.valueOf(count + 1000))
-//                        .origCountry("US")
-//                        .origSlic("12345")
-//                        .origSort(BigInteger.valueOf(4))
-//                        .destCountry("CA")
-//                        .destSlic("67890")
-//                        .destIbi(BigInteger.ZERO)
-//                        .destPostalCode("A1B2C3")
-//                        .shipper("FedEx")
-//                        .service(BigInteger.ZERO)
-//                        .packageType(BigInteger.valueOf(3))
-//                        .accessorials(BigInteger.ZERO)
-//                        .pieces(BigInteger.valueOf(2))
-//                        .weight(BigInteger.valueOf(50))
-//                        .cube(BigInteger.valueOf(1200))
-//                        .committedTnt(BigInteger.valueOf(255))
-//                        .committedDate(BigInteger.valueOf(3))
-//                        .build();
-//                volumeBuffer.clear();
-//                volumeDataHdfDataSource.writeToBuffer(instance, volumeBuffer);
-//                volumeBuffer.position(0);
-//                return volumeBuffer;
-//            });
+            AtomicInteger countHolder = new AtomicInteger(0);
+//            TypedDataSource<ShipperData> volumeDataHdfDataSource = new TypedDataSource<>(dataset.getDataObjectHeaderPrefix(), 0, file., 0, ShipperData.class);
+            ByteBuffer volumeBuffer = ByteBuffer.allocate(compoundType.getSize());
+            // Write to dataset
+            dataset.write(() -> {
+                int count = countHolder.getAndIncrement();
+                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
+                ShipperData instance = ShipperData.builder()
+                        .shipmentId(BigInteger.valueOf(count + 1000))
+                        .origCountry("US")
+                        .origSlic("12345")
+                        .origSort(BigInteger.valueOf(4))
+                        .destCountry("CA")
+                        .destSlic("67890")
+                        .destIbi(BigInteger.ZERO)
+                        .destPostalCode("A1B2C3")
+                        .shipper("FedEx")
+                        .service(BigInteger.ZERO)
+                        .packageType(BigInteger.valueOf(3))
+                        .accessorials(BigInteger.ZERO)
+                        .pieces(BigInteger.valueOf(2))
+                        .weight(BigInteger.valueOf(50))
+                        .cube(BigInteger.valueOf(1200))
+                        .committedTnt(BigInteger.valueOf(255))
+                        .committedDate(BigInteger.valueOf(3))
+                        .build();
+
+                volumeBuffer.clear();
+                volumeBuffer.position(0);
+                return volumeBuffer;
+            });
 
             dataset.close();
             file.close();
