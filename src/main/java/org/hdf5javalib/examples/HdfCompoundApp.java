@@ -204,7 +204,7 @@ public class HdfCompoundApp {
                         .destPostalCode("A1B2C3")
                         .shipper("FedEx")
                         .service(BigInteger.valueOf(0))
-                        .packageType(BigInteger.valueOf(0))
+                        .packageType(BigInteger.valueOf(3))
                         .accessorials(BigInteger.valueOf(0))
                         .pieces(BigInteger.valueOf(2))
                         .weight(BigInteger.valueOf(50))

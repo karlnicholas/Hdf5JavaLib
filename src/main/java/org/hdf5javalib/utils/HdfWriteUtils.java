@@ -17,6 +17,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.hdf5javalib.utils.HdfReadUtils.reverseBytesInPlace;
+
 public class HdfWriteUtils {
 
     /**
@@ -159,6 +161,7 @@ public class HdfWriteUtils {
                     throw new IllegalArgumentException("BigInteger too large for " + size + " bytes");
                 }
             }
+            reverseBytesInPlace(bytes);
             temp.put(bytes, 0, Math.min(bytes.length, size));
         } else if (fieldType == BigDecimal.class) {
             byte[] bytes = ((BigDecimal) value).unscaledValue().toByteArray();
@@ -166,6 +169,7 @@ public class HdfWriteUtils {
             if (bytes.length > size) {
                 throw new IllegalArgumentException("BigInteger too large for " + size + " bytes");
             }
+            reverseBytesInPlace(bytes);
             temp.put(bytes, 0, Math.min(bytes.length, size));
         } else {
             throw new IllegalArgumentException("Field " + fieldType.getName() + " not supported for FixedPointDatatype");
