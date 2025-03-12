@@ -15,36 +15,59 @@ public class ShipperData {
     private BigInteger shipmentId;
     private String origCountry;
     private String origSlic;
-    private Byte origSort;
+    private BigInteger origSort;
     private String destCountry;
     private String destSlic;
-    private Byte destIbi;
+    private BigInteger destIbi;
     private String destPostalCode;
     private String shipper;
-    private Byte service;
-    private Byte packageType;
-    private Byte accessorials;
-    private Short pieces;
-    private Short weight;
-    private Integer cube;
-    private Byte committedTnt;
-    private Byte committedDate;
-}
+    private BigInteger service;
+    private BigInteger packageType;
+    private BigInteger accessorials;
+    private BigInteger pieces;
+    private BigInteger weight;
+    private BigInteger cube;
+    private BigInteger committedTnt;
+    private BigInteger committedDate;
 
-//                                    (short) 8, (short) 0, (short) 64)),
-//                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 2)),
-//                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 5)),
-//                                    (short) 1, (short) 0, (short) 8)),
-//                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 2)),
-//                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 5)),
-//                                    (short) 1, (short) 0, (short) 8)),
-//                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 9)),
-//                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 10)),
-//                                    (short) 1, (short) 0, (short) 8)),
-//                                    (short) 1, (short) 0, (short) 8)),
-//                                    (short) 1, (short) 0, (short) 8)),
-//                                    (short) 2, (short) 0, (short) 16)),
-//                                    (short) 2, (short) 0, (short) 16)),
-//                                    (short) 4, (short) 0, (short) 32)),
-//                                    (short) 1, (short) 0, (short) 8)),
-//                                    (short) 1, (short) 0, (short) 8))
+//    private BigInteger shipmentId;
+//    private String origCountry;
+//    private String origSlic;
+//    private Byte origSort;
+//    private String destCountry;
+//    private String destSlic;
+//    private Byte destIbi;
+//    private String destPostalCode;
+//    private String shipper;
+//    private Byte service;
+//    private Byte packageType;
+//    private Byte accessorials;
+//    private Short pieces;
+//    private Short weight;
+//    private Integer cube;
+//    private Byte committedTnt;
+//    private Byte committedDate;
+//
+//    @Override
+//    public String toString() {
+//        return "ShipperData{" +
+//                "shipmentId=" + shipmentId + "," +
+//                "origCountry=" + origCountry + "," +
+//                "origSlic=" + origSlic + "," +
+//                "origSort=" + Byte.toUnsignedInt(origSort) + "," +
+//                "destCountry=" + destCountry + "," +
+//                "destSlic=" + destSlic + "," +
+//                "destIbi=" + Byte.toUnsignedInt(destIbi) + "," +
+//                "destPostalCode=" + destPostalCode + "," +
+//                "shipper=" + shipper + "," +
+//                "service=" + Byte.toUnsignedInt(service) + "," +
+//                "packageType=" + Byte.toUnsignedInt(packageType) + "," +
+//                "accessorials=" + Byte.toUnsignedInt(accessorials) + "," +
+//                "pieces=" + Short.toUnsignedInt(pieces) + "," +
+//                "weight=" + Short.toUnsignedInt(weight) + "," +
+//                "cube=" + Integer.toUnsignedLong(cube) + "," +
+//                "committedTnt=" + Byte.toUnsignedInt(committedTnt) + "," +
+//                "committedDate=" + Byte.toUnsignedInt(committedDate) +
+//                "}";
+//    }
+}

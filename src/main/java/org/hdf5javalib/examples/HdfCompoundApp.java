@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
@@ -187,7 +188,7 @@ public class HdfCompoundApp {
 
             AtomicInteger countHolder = new AtomicInteger(0);
 //            TypedDataSource<ShipperData> volumeDataHdfDataSource = new TypedDataSource<>(dataset.getDataObjectHeaderPrefix(), 0, file., 0, ShipperData.class);
-            ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize());
+            ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
             // Write to dataset
             dataset.write(() -> {
                 int count = countHolder.getAndIncrement();
@@ -196,20 +197,20 @@ public class HdfCompoundApp {
                         .shipmentId(BigInteger.valueOf(count + 1000))
                         .origCountry("US")
                         .origSlic("12345")
-                        .origSort((byte)4)
+                        .origSort(BigInteger.valueOf(4))
                         .destCountry("CA")
                         .destSlic("67890")
-                        .destIbi((byte)0)
+                        .destIbi(BigInteger.valueOf(0))
                         .destPostalCode("A1B2C3")
                         .shipper("FedEx")
-                        .service(Byte.valueOf((byte)0))
-                        .packageType(Byte.valueOf((byte)0))
-                        .accessorials(Byte.valueOf((byte)0))
-                        .pieces(Short.valueOf((short) 2))
-                        .weight(Short.valueOf((short) 50))
-                        .cube(Integer.valueOf(1200))
-                        .committedTnt(Byte.valueOf((byte)255))
-                        .committedDate(Byte.valueOf((byte)3))
+                        .service(BigInteger.valueOf(0))
+                        .packageType(BigInteger.valueOf(0))
+                        .accessorials(BigInteger.valueOf(0))
+                        .pieces(BigInteger.valueOf(2))
+                        .weight(BigInteger.valueOf(50))
+                        .cube(BigInteger.valueOf(1200))
+                        .committedTnt(BigInteger.valueOf(255))
+                        .committedDate(BigInteger.valueOf(3))
                         .build();
                 buffer.clear();
                 HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, buffer, ShipperData.class);
@@ -224,12 +225,16 @@ public class HdfCompoundApp {
 
             System.out.println("HDF5 file created and written successfully!");
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
     public void tryCompoundTestSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
         System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream().count());
+        System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream()
+                .findFirst().orElseThrow());
+        System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), ShipperData.class).stream()
+                .findFirst().orElseThrow());
     }
 
     public void tryCompoundSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {

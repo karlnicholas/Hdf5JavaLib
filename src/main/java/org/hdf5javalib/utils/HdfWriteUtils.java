@@ -153,13 +153,18 @@ public class HdfWriteUtils {
         } else if (fieldType == BigInteger.class) {
             byte[] bytes = ((BigInteger) value).toByteArray();
             if (bytes.length > size) {
-                throw new IllegalArgumentException("BigInteger too large for " + size + " bytes");
+                // try trimming leading - big endian - zeros
+                bytes = trimLeadingZeros(bytes);
+                if (bytes.length > size) {
+                    throw new IllegalArgumentException("BigInteger too large for " + size + " bytes");
+                }
             }
             temp.put(bytes, 0, Math.min(bytes.length, size));
         } else if (fieldType == BigDecimal.class) {
             byte[] bytes = ((BigDecimal) value).unscaledValue().toByteArray();
+            bytes = trimLeadingZeros(bytes);
             if (bytes.length > size) {
-                throw new IllegalArgumentException("BigDecimal too large for " + size + " bytes");
+                throw new IllegalArgumentException("BigInteger too large for " + size + " bytes");
             }
             temp.put(bytes, 0, Math.min(bytes.length, size));
         } else {
@@ -188,4 +193,19 @@ public class HdfWriteUtils {
 
         return temp.array();
     }
+
+    public static byte[] trimLeadingZeros(byte[] bytes) {
+        if (bytes == null || bytes.length == 0) return bytes;
+
+        int start = 0;
+        while (start < bytes.length && bytes[start] == 0) {
+            start++;
+        }
+
+        if (start == bytes.length) return new byte[]{0}; // All zeros case
+        byte[] result = new byte[bytes.length - start];
+        System.arraycopy(bytes, start, result, 0, result.length);
+        return result;
+    }
+
 }

@@ -143,9 +143,9 @@ public class FixedPointDatatype implements HdfDatatype {
             }
         }
 
-        if (!isSigned() && value < 0) {
-            throw new ArithmeticException("Unsigned value out of range for signed Long: " + value);
-        }
+//        if (!isSigned() && value < 0) {
+//            throw new ArithmeticException("Unsigned value out of range for signed Long: " + value);
+//        }
         return value;
     }
 
@@ -171,9 +171,9 @@ public class FixedPointDatatype implements HdfDatatype {
             }
         }
 
-        if (!isSigned() && value < 0) {
-            throw new ArithmeticException("Unsigned value out of range for signed Integer: " + value);
-        }
+//        if (!isSigned() && value < 0) {
+//            throw new ArithmeticException("Unsigned value out of range for signed Integer: " + value);
+//        }
         return value;
     }
 
@@ -199,9 +199,9 @@ public class FixedPointDatatype implements HdfDatatype {
             }
         }
 
-        if (!isSigned() && value < 0) {
-            throw new ArithmeticException("Unsigned value out of range for signed Short: " + value);
-        }
+//        if (!isSigned() && value < 0) {
+//            throw new ArithmeticException("Unsigned value out of range for signed Short: " + value);
+//        }
         return value;
     }
 
@@ -217,9 +217,9 @@ public class FixedPointDatatype implements HdfDatatype {
         }
 
         byte value = bytes[0];
-        if (!isSigned() && value < 0) {
-            throw new ArithmeticException("Unsigned value out of range for signed Byte: " + value);
-        }
+//        if (!isSigned() && value < 0) {
+//            throw new ArithmeticException("Unsigned value out of range for signed Byte: " + value);
+//        }
         return value;
     }
 
