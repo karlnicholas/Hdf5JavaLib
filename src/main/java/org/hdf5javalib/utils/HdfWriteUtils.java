@@ -3,7 +3,6 @@ package org.hdf5javalib.utils;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfFloatPoint;
 import org.hdf5javalib.dataclass.HdfString;
-import org.hdf5javalib.examples.ShipperData;
 import org.hdf5javalib.file.dataobject.message.datatype.*;
 
 import java.lang.reflect.Field;

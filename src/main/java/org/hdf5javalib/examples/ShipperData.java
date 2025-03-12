@@ -1,8 +1,6 @@
 package org.hdf5javalib.examples;
 
 import lombok.*;
-import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
-import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.math.BigInteger;
 
