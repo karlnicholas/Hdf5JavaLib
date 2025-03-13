@@ -8,9 +8,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
 
+import static javax.swing.text.html.parser.DTDConstants.FIXED;
 import static org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype.parseFixedPointType;
 import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype.parseFloatingPointType;
 import static org.hdf5javalib.file.dataobject.message.datatype.StringDatatype.parseStringType;
+import static org.hdf5javalib.file.dataobject.message.datatype.VariableLengthDatatype.parseVariableLengthDatatype;
+
 
 @Getter
 public class DatatypeMessage extends HdfMessage {
@@ -81,12 +84,13 @@ public class DatatypeMessage extends HdfMessage {
 //    }
 
     private static HdfDatatype parseMessageDataType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
-        int dataTypeClass = classAndVersion & 0x0F;
+        HdfDatatype.DatatypeClass dataTypeClass = HdfDatatype.DatatypeClass.fromValue(classAndVersion & 0x0F);
         return switch (dataTypeClass) {
-            case 0 -> parseFixedPointType(classAndVersion, classBitField, size, buffer);
-            case 1 -> parseFloatingPointType(classAndVersion, classBitField, size, buffer);
-            case 3 -> parseStringType(classAndVersion, classBitField, size, buffer);
-            case 6 -> new CompoundDatatype(classAndVersion, classBitField, size, buffer);
+            case FIXED -> parseFixedPointType(classAndVersion, classBitField, size, buffer);
+            case FLOAT -> parseFloatingPointType(classAndVersion, classBitField, size, buffer);
+            case STRING -> parseStringType(classAndVersion, classBitField, size, buffer);
+            case COMPOUND -> new CompoundDatatype(classAndVersion, classBitField, size, buffer);
+            case VLEN -> parseVariableLengthDatatype(classAndVersion, classBitField, size, buffer);
             default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
         };
     }

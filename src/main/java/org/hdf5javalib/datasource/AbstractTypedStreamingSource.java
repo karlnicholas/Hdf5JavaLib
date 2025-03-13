@@ -5,7 +5,9 @@ import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeapGrok;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -30,12 +32,13 @@ public abstract class AbstractTypedStreamingSource<T> {
     protected final int scale;
     protected final long sizeForReadBuffer;
     protected final long endOffset;
+    protected HdfGlobalHeapGrok globalHeap;
 
     public AbstractTypedStreamingSource(HdfObjectHeaderPrefixV1 headerPrefixV1, int scale, FileChannel fileChannel, long startOffset) {
         this.fileChannel = fileChannel;
         this.startOffset = startOffset;
         this.scale = scale;
-
+        this.globalHeap = new HdfGlobalHeapGrok(this::initializeGlobalHeap);
         this.recordSize = headerPrefixV1.findMessageByType(DatatypeMessage.class)
                 .orElseThrow(() -> new IllegalStateException("DatatypeMessage not found"))
                 .getHdfDatatype()
@@ -49,6 +52,8 @@ public abstract class AbstractTypedStreamingSource<T> {
         this.datatype = headerPrefixV1.findMessageByType(DatatypeMessage.class)
                 .orElseThrow()
                 .getHdfDatatype();
+        // search dataType for VariableLengthDatatype
+        datatype.needsGlobalHeap().ifPresent(datatype -> datatype.setGlobalHeap(globalHeap));
 
         if (dimensions.length == 1) {
             this.elementsPerRecord = 1;
@@ -60,6 +65,15 @@ public abstract class AbstractTypedStreamingSource<T> {
 
         this.sizeForReadBuffer = (long) recordSize * elementsPerRecord;
         this.endOffset = fileChannel != null ? startOffset + sizeForReadBuffer * readsAvailable : 0;
+    }
+
+    private void initializeGlobalHeap(int length, long offset, int index) {
+        try {
+            fileChannel.position(offset);
+            globalHeap.readFromFileChannel(fileChannel, (short)8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public long getSizeForReadBuffer() {
@@ -144,5 +158,6 @@ public abstract class AbstractTypedStreamingSource<T> {
         public int characteristics() {
             return NONNULL | ORDERED | IMMUTABLE | SIZED | SUBSIZED;
         }
+
     }
 }

@@ -13,11 +13,10 @@ import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.CompoundMemberDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
-import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -39,7 +38,7 @@ public class HdfCompoundApp {
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = HdfCompoundApp.class.getResource("/test.h5").getFile();
+            String filePath = HdfCompoundApp.class.getResource("/compound_example_gpt.h5").getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
@@ -48,29 +47,29 @@ public class HdfCompoundApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        try {
-            HdfFileReader reader = new HdfFileReader();
-            String filePath = HdfCompoundApp.class.getResource("/env_monitoring_labels.h5").getFile();
-            try (FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
-                tryCompoundSpliterator(channel, reader);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            HdfFileReader reader = new HdfFileReader();
-            String filePath = HdfCompoundApp.class.getResource("/env_monitoring.h5").getFile();
-            try (FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
-                tryCustomSpliterator(channel, reader);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        tryHdfApiCompound();
+//        try {
+//            HdfFileReader reader = new HdfFileReader();
+//            String filePath = HdfCompoundApp.class.getResource("/env_monitoring_labels.h5").getFile();
+//            try (FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+//                tryCompoundSpliterator(channel, reader);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//        try {
+//            HdfFileReader reader = new HdfFileReader();
+//            String filePath = HdfCompoundApp.class.getResource("/env_monitoring.h5").getFile();
+//            try (FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+//                tryCustomSpliterator(channel, reader);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//        tryHdfApiCompound();
     }
 
     private void writeVersionAttribute(HdfDataSet dataset) {
@@ -190,33 +189,33 @@ public class HdfCompoundApp {
 //            TypedDataSource<ShipperData> volumeDataHdfDataSource = new TypedDataSource<>(dataset.getDataObjectHeaderPrefix(), 0, file., 0, ShipperData.class);
             ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
             // Write to dataset
-            dataset.write(() -> {
-                int count = countHolder.getAndIncrement();
-                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
-                ShipperData instance = ShipperData.builder()
-                        .shipmentId(BigInteger.valueOf(count + 1000))
-                        .origCountry("US")
-                        .origSlic("12345")
-                        .origSort(BigInteger.valueOf(4))
-                        .destCountry("CA")
-                        .destSlic("67890")
-                        .destIbi(BigInteger.valueOf(0))
-                        .destPostalCode("A1B2C3")
-                        .shipper("FedEx")
-                        .service(BigInteger.valueOf(0))
-                        .packageType(BigInteger.valueOf(3))
-                        .accessorials(BigInteger.valueOf(0))
-                        .pieces(BigInteger.valueOf(2))
-                        .weight(BigInteger.valueOf(50))
-                        .cube(BigInteger.valueOf(1200))
-                        .committedTnt(BigInteger.valueOf(255))
-                        .committedDate(BigInteger.valueOf(3))
-                        .build();
-                buffer.clear();
-                HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, buffer, ShipperData.class);
-                buffer.position(0);
-                return buffer;
-            });
+//            dataset.write(() -> {
+//                int count = countHolder.getAndIncrement();
+//                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
+//                ShipperData instance = ShipperData.builder()
+//                        .shipmentId(BigInteger.valueOf(count + 1000))
+//                        .origCountry("US")
+//                        .origSlic("12345")
+//                        .origSort(BigInteger.valueOf(4))
+//                        .destCountry("CA")
+//                        .destSlic("67890")
+//                        .destIbi(BigInteger.valueOf(0))
+//                        .destPostalCode("A1B2C3")
+//                        .shipper("FedEx")
+//                        .service(BigInteger.valueOf(0))
+//                        .packageType(BigInteger.valueOf(3))
+//                        .accessorials(BigInteger.valueOf(0))
+//                        .pieces(BigInteger.valueOf(2))
+//                        .weight(BigInteger.valueOf(50))
+//                        .cube(BigInteger.valueOf(1200))
+//                        .committedTnt(BigInteger.valueOf(255))
+//                        .committedDate(BigInteger.valueOf(3))
+//                        .build();
+//                buffer.clear();
+//                HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, buffer, ShipperData.class);
+//                buffer.position(0);
+//                return buffer;
+//            });
 
             dataset.close();
             file.close();
@@ -231,10 +230,17 @@ public class HdfCompoundApp {
 
     public void tryCompoundTestSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
         System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream().count());
-        System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream()
-                .findFirst().orElseThrow());
-        System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), ShipperData.class).stream()
-                .findFirst().orElseThrow());
+//        System.out.println("Ten Rows = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream().filter(c->c.getMembers().get(0).getInstance(Long.class).longValue() < 1010 ));
+        System.out.println("Ten Rows:");
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class)
+                .stream()
+                .limit(10)
+                .forEach(c -> System.out.println("Row: " + c.getMembers()));
+        System.out.println("Ten BigDecimals = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream()
+                        .filter(c->c.getMembers().get(0).getInstance(Long.class).longValue() < 1010 )
+                .map(c->c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
+//        System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), ShipperData.class).stream()
+//                .findFirst().orElseThrow());
     }
 
     public void tryCompoundSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {

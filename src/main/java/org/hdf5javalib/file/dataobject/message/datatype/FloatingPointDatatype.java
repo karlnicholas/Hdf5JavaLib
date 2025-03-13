@@ -3,12 +3,14 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFloatPoint;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeapGrok;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Getter
 public class FloatingPointDatatype implements HdfDatatype {
@@ -201,4 +203,11 @@ public class FloatingPointDatatype implements HdfDatatype {
         buffer.putInt(exponentBias);
     }
 
+    @Override
+    public Optional<HdfDatatype> needsGlobalHeap() {
+        return Optional.empty();
+    }
+
+    @Override
+    public void setGlobalHeap(HdfGlobalHeapGrok grok) {}
 }

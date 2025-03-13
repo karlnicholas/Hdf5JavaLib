@@ -1,10 +1,12 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeapGrok;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
+import java.util.Optional;
 
 @Getter
 public class CompoundMemberDatatype implements HdfDatatype {
@@ -27,6 +29,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
             case FIXED -> computeFixedMessageDataSize(name);
             case FLOAT -> computeFloatMessageDataSize(name);
             case STRING -> computeStringMessageDataSize(name);
+            case VLEN -> computeVariableLengthMessageDataSize(name);
             default -> throw new IllegalStateException("Unexpected datatype class: " + type.getDatatypeClass());
         };
     }
@@ -43,7 +46,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
     private short computeFixedMessageDataSize(String name) {
         if (name.length() > 0 ) {
             int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 44);
+            return (short) (name.length()+1 + padding + 40 + 4);
         } else {
             return 44;
         }
@@ -51,7 +54,12 @@ public class CompoundMemberDatatype implements HdfDatatype {
 
     private short computeStringMessageDataSize(String name) {
         int padding = (8 -  ((name.length()+1)% 8)) % 8;
-        return (short) (name.length()+1 + padding + 40);
+        return (short) (name.length()+1 + padding + 40 + 0);
+    }
+
+    private short computeVariableLengthMessageDataSize(String name) {
+        int padding = (8 -  ((name.length()+1)% 8)) % 8;
+        return (short) (name.length()+1 + padding + 40 + 12);
     }
 
     @Override
@@ -119,5 +127,15 @@ public class CompoundMemberDatatype implements HdfDatatype {
         byte[] bytes = new byte[sizeMessageData];
         buffer.get(bytes);
         return getInstance(clazz, bytes);
+    }
+
+    @Override
+    public Optional<HdfDatatype> needsGlobalHeap() {
+        return type.needsGlobalHeap();
+    }
+
+    @Override
+    public void setGlobalHeap(HdfGlobalHeapGrok globalHeap) {
+        type.setGlobalHeap(globalHeap);
     }
 }

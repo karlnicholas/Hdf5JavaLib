@@ -4,6 +4,7 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeapGrok;
 import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Getter
 public class FixedPointDatatype implements HdfDatatype {
@@ -360,5 +362,13 @@ public class FixedPointDatatype implements HdfDatatype {
         buffer.get(bytes);
         return getInstance(clazz, bytes);
     }
+
+    @Override
+    public Optional<HdfDatatype> needsGlobalHeap() {
+        return Optional.empty();
+    }
+
+    @Override
+    public void setGlobalHeap(HdfGlobalHeapGrok grok) {}
 }
 

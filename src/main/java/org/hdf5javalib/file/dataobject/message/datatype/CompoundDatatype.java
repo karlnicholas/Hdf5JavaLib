@@ -2,6 +2,7 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfCompound;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeapGrok;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 import static org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype.parseFixedPointType;
 import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype.parseFloatingPointType;
 import static org.hdf5javalib.file.dataobject.message.datatype.StringDatatype.parseStringType;
+import static org.hdf5javalib.file.dataobject.message.datatype.VariableLengthDatatype.parseVariableLengthDatatype;
 
 @Getter
 public class CompoundDatatype implements HdfDatatype {
@@ -111,19 +113,20 @@ public class CompoundDatatype implements HdfDatatype {
             });
 
             int size = buffer.getInt();
-            HdfDatatype hdfDatatype = parseCompoundDataType(version, dataTypeClass, classBitField, size, buffer);
+            HdfDatatype hdfDatatype = parseCompoundDataType(classAndVersion, dataTypeClass, classBitField, size, buffer);
             CompoundMemberDatatype compoundMemberDatatype = new CompoundMemberDatatype(name, offset, dimensionality, dimensionPermutation, dimensionSizes, hdfDatatype);
 
             members.add(compoundMemberDatatype);
         }
     }
 
-    public static HdfDatatype parseCompoundDataType(byte version, byte dataTypeClass, BitSet classBitField, int size, ByteBuffer buffer) {
+    public static HdfDatatype parseCompoundDataType(byte classAndVersion, byte dataTypeClass, BitSet classBitField, int size, ByteBuffer buffer) {
          return switch (dataTypeClass) {
-            case 0 -> parseFixedPointType(version, classBitField, size, buffer);
-            case 1 -> parseFloatingPointType(version, classBitField, size, buffer );
-            case 3 -> parseStringType(version, classBitField, size, buffer);
+            case 0 -> parseFixedPointType(classAndVersion, classBitField, size, buffer);
+            case 1 -> parseFloatingPointType(classAndVersion, classBitField, size, buffer );
+            case 3 -> parseStringType(classAndVersion, classBitField, size, buffer);
     //            case 6 -> parseCompoundDataType(version, size, classBitField, name, buffer);
+            case 9 -> parseVariableLengthDatatype(classAndVersion, classBitField, size, buffer);
             default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
         };
     }
@@ -267,5 +270,21 @@ public class CompoundDatatype implements HdfDatatype {
         buffer.get(bytes);
         return getInstance(clazz, bytes);
     }
+    @Override
+    public Optional<HdfDatatype> needsGlobalHeap() {
+        for (CompoundMemberDatatype member : members) {
+            Optional<HdfDatatype> result = member.needsGlobalHeap();
+            if (result.isPresent()) {
+                return result;
+            }
+        }
+        return Optional.empty();
+    }
 
+    @Override
+    public void setGlobalHeap(HdfGlobalHeapGrok globalHeap) {
+        for (CompoundMemberDatatype member : members) {
+            member.setGlobalHeap(globalHeap);
+        }
+    }
 }

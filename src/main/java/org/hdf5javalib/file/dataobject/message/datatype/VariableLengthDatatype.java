@@ -2,7 +2,7 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfData;
-import org.hdf5javalib.dataclass.HdfString;
+import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeapGrok;
 
 import java.nio.ByteBuffer;
@@ -10,27 +10,37 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Getter
-public class StringDatatype implements HdfDatatype {
+public class VariableLengthDatatype implements HdfDatatype {
     private final byte classAndVersion;
     private final BitSet classBitField;
     private final int size;
+    private final int baseType;
+    private HdfGlobalHeapGrok globalHeap;
     // In your HdfDataType/FixedPointDatatype class
-    private static final Map<Class<?>, HdfConverter<StringDatatype, ?>> CONVERTERS = new HashMap<>();
+    private static final Map<Class<?>, HdfConverter<VariableLengthDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
-        CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes).toString());
-        CONVERTERS.put(HdfString.class, HdfString::new);
-        CONVERTERS.put(HdfData.class, HdfString::new);
+        CONVERTERS.put(String.class, ((bytes, datatype) -> datatype.toString(bytes)));
+        CONVERTERS.put(HdfVariableLength.class, HdfVariableLength::new);
+        CONVERTERS.put(HdfData.class, HdfVariableLength::new);
     }
 
-    public StringDatatype(byte classAndVersion, BitSet classBitField, int size) {
+    private Object toString(byte[] bytes) {
+        return new String(bytes, CharacterSet.fromBitSet(classBitField) == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
+    }
+
+    public VariableLengthDatatype(byte classAndVersion, BitSet classBitField, int size, int baseType) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
+        this.baseType = baseType;
     }
 
 
-    public static StringDatatype parseStringType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer ignoredBuffer) {
-        return new StringDatatype(classAndVersion, classBitField, size);
+    public static VariableLengthDatatype parseVariableLengthDatatype(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+        buffer.position(buffer.position()+12);
+        int baseType = 0;
+
+        return new VariableLengthDatatype(classAndVersion, classBitField, size, baseType);
     }
 
     public static BitSet createClassBitField(PaddingType paddingType, CharacterSet charSet) {
@@ -42,18 +52,18 @@ public class StringDatatype implements HdfDatatype {
     }
 
     // Public method to add user-defined converters
-    public static <T> void addConverter(Class<T> clazz, HdfConverter<StringDatatype, T> converter) {
+    public static <T> void addConverter(Class<T> clazz, HdfConverter<VariableLengthDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         @SuppressWarnings("unchecked")
-        HdfConverter<StringDatatype, T> converter = (HdfConverter<StringDatatype, T>) CONVERTERS.get(clazz);
+        HdfConverter<VariableLengthDatatype, T> converter = (HdfConverter<VariableLengthDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
             return clazz.cast(converter.convert(bytes, this));
         }
-        for (Map.Entry<Class<?>, HdfConverter<StringDatatype, ?>> entry : CONVERTERS.entrySet()) {
+        for (Map.Entry<Class<?>, HdfConverter<VariableLengthDatatype, ?>> entry : CONVERTERS.entrySet()) {
             if (entry.getKey().isAssignableFrom(clazz)) {
                 return clazz.cast(entry.getValue().convert(bytes, this));
             }
@@ -68,41 +78,41 @@ public class StringDatatype implements HdfDatatype {
         return getInstance(clazz, bytes);
     }
 
-    public String toString(byte[] bytes) {
-        byte[] workingBytes = new byte[size];
-        int workingEnd = Math.min(size, bytes.length);
-        System.arraycopy(bytes, 0, workingBytes, 0, workingEnd);
-
-        // Pad with spaces if SPACE_PAD and bytes is shorter than size
-        if (getPaddingType() == PaddingType.SPACE_PAD && workingEnd < size) {
-            Arrays.fill(workingBytes, workingEnd, size, (byte) ' ');
-        }
-
-        // Count non-0x00 bytes
-        int validLength = 0;
-        for (int i = 0; i < size; i++) {
-            if (workingBytes[i] != 0x00) {
-                validLength++;
-            }
-        }
-
-        // Build array without 0x00
-        byte[] cleanBytes = new byte[validLength];
-        int pos = 0;
-        for (int i = 0; i < size; i++) {
-            if (workingBytes[i] != 0x00) {
-                cleanBytes[pos++] = workingBytes[i];
-            }
-        }
-
-        return new String(cleanBytes,
-                getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
-
-    }
+//    public String toString(byte[] bytes) {
+//        byte[] workingBytes = new byte[size];
+//        int workingEnd = Math.min(size, bytes.length);
+//        System.arraycopy(bytes, 0, workingBytes, 0, workingEnd);
+//
+//        // Pad with spaces if SPACE_PAD and bytes is shorter than size
+//        if (getPaddingType() == PaddingType.SPACE_PAD && workingEnd < size) {
+//            Arrays.fill(workingBytes, workingEnd, size, (byte) ' ');
+//        }
+//
+//        // Count non-0x00 bytes
+//        int validLength = 0;
+//        for (int i = 0; i < size; i++) {
+//            if (workingBytes[i] != 0x00) {
+//                validLength++;
+//            }
+//        }
+//
+//        // Build array without 0x00
+//        byte[] cleanBytes = new byte[validLength];
+//        int pos = 0;
+//        for (int i = 0; i < size; i++) {
+//            if (workingBytes[i] != 0x00) {
+//                cleanBytes[pos++] = workingBytes[i];
+//            }
+//        }
+//
+//        return new String(cleanBytes,
+//                getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
+//
+//    }
 
     @Override
     public DatatypeClass getDatatypeClass() {
-        return DatatypeClass.STRING;
+        return DatatypeClass.VLEN;
     }
 
     @Override
@@ -118,8 +128,9 @@ public class StringDatatype implements HdfDatatype {
 
     @Override
     public String toString() {
-        return "StringDatatype{" +
+        return "VariableLengthDatatype{" +
                 "size=" + size +
+                ", type='" + (classBitField.get(0) ? "String" : "Sequence") + '\'' +
                 ", padding='" + getPaddingType().name + '\'' +
                 ", charSet='" + getCharacterSet().name + '\'' +
                 '}';
@@ -173,8 +184,8 @@ public class StringDatatype implements HdfDatatype {
         }
 
         public static PaddingType fromBitSet(BitSet bits) {
-            int value = (bits.get(0) ? 1 : 0) | (bits.get(1) ? 2 : 0) |
-                    (bits.get(2) ? 4 : 0) | (bits.get(3) ? 8 : 0);
+            int value = (bits.get(4) ? 1 : 0) | (bits.get(5) ? 2 : 0) |
+                    (bits.get(6) ? 4 : 0) | (bits.get(7) ? 8 : 0);
             return fromValue(value);
         }
     }
@@ -217,8 +228,8 @@ public class StringDatatype implements HdfDatatype {
         }
 
         public static CharacterSet fromBitSet(BitSet bits) {
-            int value = (bits.get(4) ? 1 : 0) | (bits.get(5) ? 2 : 0) |
-                    (bits.get(6) ? 4 : 0) | (bits.get(7) ? 8 : 0);
+            int value = (bits.get(8) ? 1 : 0) | (bits.get(9) ? 2 : 0) |
+                    (bits.get(10) ? 4 : 0) | (bits.get(11) ? 8 : 0);
             return fromValue(value);
         }
     }
@@ -234,10 +245,11 @@ public class StringDatatype implements HdfDatatype {
 
     @Override
     public Optional<HdfDatatype> needsGlobalHeap() {
-        return Optional.empty();
+        return Optional.of(this);
+    }
+    public void setGlobalHeap(HdfGlobalHeapGrok globalHeap) {
+        this.globalHeap = globalHeap;
     }
 
-    @Override
-    public void setGlobalHeap(HdfGlobalHeapGrok grok) {}
 }
 
