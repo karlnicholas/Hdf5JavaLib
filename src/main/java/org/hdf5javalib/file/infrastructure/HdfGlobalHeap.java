@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-public class HdfGlobalHeapGrok {
+public class HdfGlobalHeap {
     private static final String SIGNATURE = "GCOL";
     private static final int VERSION = 1;
 
@@ -22,7 +22,7 @@ public class HdfGlobalHeapGrok {
     private int nextObjectId;
     public GlobalHeapInitialize initialize;
 
-    public HdfGlobalHeapGrok(GlobalHeapInitialize initialize) {
+    public HdfGlobalHeap(GlobalHeapInitialize initialize) {
         this.initialize = initialize;
         this.collectionSize = HdfFixedPoint.of(4096L);
         this.objects = null;
@@ -129,7 +129,7 @@ public class HdfGlobalHeapGrok {
 
     @Override
     public String toString() {
-        return "HdfGlobalHeapGrok{" +
+        return "HdfGlobalHeap{" +
                 "signature='" + SIGNATURE + '\'' +
                 ", version=" + VERSION +
                 ", collectionSize=" + collectionSize +

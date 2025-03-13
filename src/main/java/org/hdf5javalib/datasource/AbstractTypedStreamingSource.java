@@ -5,7 +5,7 @@ import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeapGrok;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,13 +32,13 @@ public abstract class AbstractTypedStreamingSource<T> {
     protected final int scale;
     protected final long sizeForReadBuffer;
     protected final long endOffset;
-    protected HdfGlobalHeapGrok globalHeap;
+    protected HdfGlobalHeap globalHeap;
 
     public AbstractTypedStreamingSource(HdfObjectHeaderPrefixV1 headerPrefixV1, int scale, FileChannel fileChannel, long startOffset) {
         this.fileChannel = fileChannel;
         this.startOffset = startOffset;
         this.scale = scale;
-        this.globalHeap = new HdfGlobalHeapGrok(this::initializeGlobalHeap);
+        this.globalHeap = new HdfGlobalHeap(this::initializeGlobalHeap);
         this.recordSize = headerPrefixV1.findMessageByType(DatatypeMessage.class)
                 .orElseThrow(() -> new IllegalStateException("DatatypeMessage not found"))
                 .getHdfDatatype()

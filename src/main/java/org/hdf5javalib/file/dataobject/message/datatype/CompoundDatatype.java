@@ -2,7 +2,7 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfCompound;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeapGrok;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
@@ -282,7 +282,7 @@ public class CompoundDatatype implements HdfDatatype {
     }
 
     @Override
-    public void setGlobalHeap(HdfGlobalHeapGrok globalHeap) {
+    public void setGlobalHeap(HdfGlobalHeap globalHeap) {
         for (CompoundMemberDatatype member : members) {
             member.setGlobalHeap(globalHeap);
         }

@@ -1,8 +1,6 @@
 package org.hdf5javalib.dataclass;
 
-import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.VariableLengthDatatype;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeapGrok;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

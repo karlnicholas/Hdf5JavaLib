@@ -3,7 +3,7 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfVariableLength;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeapGrok;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -15,7 +15,7 @@ public class VariableLengthDatatype implements HdfDatatype {
     private final BitSet classBitField;
     private final int size;
     private final int baseType;
-    private HdfGlobalHeapGrok globalHeap;
+    private HdfGlobalHeap globalHeap;
     // In your HdfDataType/FixedPointDatatype class
     private static final Map<Class<?>, HdfConverter<VariableLengthDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
@@ -247,7 +247,7 @@ public class VariableLengthDatatype implements HdfDatatype {
     public Optional<HdfDatatype> needsGlobalHeap() {
         return Optional.of(this);
     }
-    public void setGlobalHeap(HdfGlobalHeapGrok globalHeap) {
+    public void setGlobalHeap(HdfGlobalHeap globalHeap) {
         this.globalHeap = globalHeap;
     }
 

@@ -3,7 +3,7 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFloatPoint;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeapGrok;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -209,5 +209,5 @@ public class FloatingPointDatatype implements HdfDatatype {
     }
 
     @Override
-    public void setGlobalHeap(HdfGlobalHeapGrok grok) {}
+    public void setGlobalHeap(HdfGlobalHeap grok) {}
 }

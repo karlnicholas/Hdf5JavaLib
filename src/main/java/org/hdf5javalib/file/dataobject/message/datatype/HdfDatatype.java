@@ -1,6 +1,6 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeapGrok;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;
@@ -20,7 +20,7 @@ public interface HdfDatatype {
 
     Optional<HdfDatatype> needsGlobalHeap();
 
-    void setGlobalHeap(HdfGlobalHeapGrok globalHeap);
+    void setGlobalHeap(HdfGlobalHeap globalHeap);
 
     // Enum defined within the interface
     enum DatatypeClass {
