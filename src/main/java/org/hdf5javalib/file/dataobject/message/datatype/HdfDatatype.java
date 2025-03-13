@@ -18,8 +18,6 @@ public interface HdfDatatype {
     <T> T getInstance(Class<T> clazz, byte[] bytes);
     <T> T getInstance(Class<T> clazz, ByteBuffer buffer);
 
-    Optional<HdfDatatype> needsGlobalHeap();
-
     void setGlobalHeap(HdfGlobalHeap globalHeap);
 
     // Enum defined within the interface

@@ -204,10 +204,5 @@ public class FloatingPointDatatype implements HdfDatatype {
     }
 
     @Override
-    public Optional<HdfDatatype> needsGlobalHeap() {
-        return Optional.empty();
-    }
-
-    @Override
     public void setGlobalHeap(HdfGlobalHeap grok) {}
 }

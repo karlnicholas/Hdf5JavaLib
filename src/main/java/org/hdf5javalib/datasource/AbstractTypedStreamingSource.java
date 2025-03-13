@@ -53,7 +53,7 @@ public abstract class AbstractTypedStreamingSource<T> {
                 .orElseThrow()
                 .getHdfDatatype();
         // search dataType for VariableLengthDatatype
-        datatype.needsGlobalHeap().ifPresent(datatype -> datatype.setGlobalHeap(globalHeap));
+        datatype.setGlobalHeap(globalHeap);
 
         if (dimensions.length == 1) {
             this.elementsPerRecord = 1;

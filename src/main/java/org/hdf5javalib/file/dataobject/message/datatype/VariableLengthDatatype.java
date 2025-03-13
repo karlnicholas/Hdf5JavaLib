@@ -243,10 +243,6 @@ public class VariableLengthDatatype implements HdfDatatype {
         return CharacterSet.fromBitSet(classBitField);
     }
 
-    @Override
-    public Optional<HdfDatatype> needsGlobalHeap() {
-        return Optional.of(this);
-    }
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {
         this.globalHeap = globalHeap;
     }

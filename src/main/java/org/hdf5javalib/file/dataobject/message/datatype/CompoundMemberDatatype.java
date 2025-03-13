@@ -130,11 +130,6 @@ public class CompoundMemberDatatype implements HdfDatatype {
     }
 
     @Override
-    public Optional<HdfDatatype> needsGlobalHeap() {
-        return type.needsGlobalHeap();
-    }
-
-    @Override
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {
         type.setGlobalHeap(globalHeap);
     }

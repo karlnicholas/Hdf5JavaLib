@@ -270,16 +270,6 @@ public class CompoundDatatype implements HdfDatatype {
         buffer.get(bytes);
         return getInstance(clazz, bytes);
     }
-    @Override
-    public Optional<HdfDatatype> needsGlobalHeap() {
-        for (CompoundMemberDatatype member : members) {
-            Optional<HdfDatatype> result = member.needsGlobalHeap();
-            if (result.isPresent()) {
-                return result;
-            }
-        }
-        return Optional.empty();
-    }
 
     @Override
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {

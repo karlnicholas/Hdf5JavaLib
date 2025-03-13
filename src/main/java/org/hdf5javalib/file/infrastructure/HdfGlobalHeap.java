@@ -2,15 +2,13 @@ package org.hdf5javalib.file.infrastructure;
 
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.dataclass.HdfString;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.List;
+import java.util.TreeMap;
 
 public class HdfGlobalHeap {
     private static final String SIGNATURE = "GCOL";
@@ -18,7 +16,7 @@ public class HdfGlobalHeap {
 
     private HdfFixedPoint collectionSize;
     private HdfFixedPoint dataSegmentAddress;
-    private List<GlobalHeapObject> objects;
+    private TreeMap<Integer, GlobalHeapObject> objects;
     private int nextObjectId;
     public GlobalHeapInitialize initialize;
 
@@ -29,23 +27,22 @@ public class HdfGlobalHeap {
         this.nextObjectId = 1;
     }
 
-    public byte[] getDataBytes(int length, long offset, int index) {
+    public byte[] getDataBytes(int length, long offset, int objectId) {
         if (objects == null) {
-            initialize.initializeCallback(length, offset, index);
+            initialize.initializeCallback(length, offset, objectId);
         }
-        GlobalHeapObject obj = objects.get(index - 1);
-        if ( obj.objectId != index) {
-            throw new RuntimeException("Invalid index");
+        GlobalHeapObject obj = objects.get(objectId);
+        if (obj == null) {
+            throw new RuntimeException("No object found for objectId: " + objectId);
         }
         return obj.getData();
     }
 
-    public int addToHeap(HdfString objectName) {
+    public int addToHeap(byte[] bytes) {
         if (objects == null) {
-            objects = new ArrayList<>();
+            objects = new TreeMap<>();
         }
-        byte[] objectData = objectName.getBytes();
-        int objectSize = objectData.length;
+        int objectSize = bytes.length;
         int alignedSize = (objectSize + 7) & ~7;
         int headerSize = 16;
 
@@ -56,8 +53,8 @@ public class HdfGlobalHeap {
         long newSize = collectionSize.getInstance(Long.class) + headerSize + alignedSize;
         this.collectionSize = HdfFixedPoint.of(newSize);
 
-        GlobalHeapObject obj = new GlobalHeapObject(nextObjectId, 1, objectSize, objectData);
-        objects.add(obj);
+        GlobalHeapObject obj = new GlobalHeapObject(nextObjectId, 1, objectSize, bytes);
+        objects.put(nextObjectId, obj);
         int objectId = nextObjectId;
         nextObjectId++;
         return objectId;
@@ -90,14 +87,14 @@ public class HdfGlobalHeap {
         fileChannel.read(objectBuffer);
         objectBuffer.flip();
 
-        List<GlobalHeapObject> objects = new ArrayList<>();
+        TreeMap<Integer, GlobalHeapObject> objects = new TreeMap<>();
         int nextObjectId = 1;
 
         while (objectBuffer.position() < objectBuffer.limit()) {
             GlobalHeapObject obj = GlobalHeapObject.readFromByteBuffer(objectBuffer);
-            objects.add(obj);
+            objects.put(obj.getObjectId(), obj);
             if (obj.getObjectId() == 0) {
-                break; // Object 0 is free space, stop
+                break;
             }
             nextObjectId = Math.max(nextObjectId, obj.getObjectId() + 1);
         }
@@ -117,12 +114,12 @@ public class HdfGlobalHeap {
         buffer.put((byte) VERSION);
         buffer.put(new byte[3]);
         long totalSize = 16;
-        for (GlobalHeapObject obj : objects) {
+        for (GlobalHeapObject obj : objects.values()) {
             totalSize += 16 + obj.getObjectSize() + (8 - (obj.getObjectSize() % 8)) % 8;
         }
         buffer.putLong(totalSize);
 
-        for (GlobalHeapObject obj : objects) {
+        for (GlobalHeapObject obj : objects.values()) {
             obj.writeToByteBuffer(buffer);
         }
     }
@@ -139,7 +136,7 @@ public class HdfGlobalHeap {
     }
 
     public interface GlobalHeapInitialize {
-        void initializeCallback(int length, long offset, int index);
+        void initializeCallback(int length, long offset, int objectId);
     }
 
     @Getter
