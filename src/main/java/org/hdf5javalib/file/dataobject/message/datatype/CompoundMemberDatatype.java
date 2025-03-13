@@ -6,7 +6,6 @@ import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
-import java.util.Optional;
 
 @Getter
 public class CompoundMemberDatatype implements HdfDatatype {
@@ -35,7 +34,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
     }
 
     private short computeFloatMessageDataSize(String name) {
-        if (name.length() > 0 ) {
+        if (!name.isEmpty()) {
             int padding = (8 -  ((name.length()+1)% 8)) % 8;
             return (short) (name.length()+1 + padding + 44);
         } else {
@@ -44,7 +43,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
     }
 
     private short computeFixedMessageDataSize(String name) {
-        if (name.length() > 0 ) {
+        if (!name.isEmpty()) {
             int padding = (8 -  ((name.length()+1)% 8)) % 8;
             return (short) (name.length()+1 + padding + 40 + 4);
         } else {

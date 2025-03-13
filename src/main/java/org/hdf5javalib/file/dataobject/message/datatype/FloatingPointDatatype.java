@@ -10,7 +10,6 @@ import java.nio.ByteOrder;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Getter
 public class FloatingPointDatatype implements HdfDatatype {

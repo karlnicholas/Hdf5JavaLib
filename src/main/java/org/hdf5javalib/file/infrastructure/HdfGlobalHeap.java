@@ -18,7 +18,7 @@ public class HdfGlobalHeap {
     private HdfFixedPoint dataSegmentAddress;
     private TreeMap<Integer, GlobalHeapObject> objects;
     private int nextObjectId;
-    public GlobalHeapInitialize initialize;
+    private final GlobalHeapInitialize initialize;
 
     public HdfGlobalHeap(GlobalHeapInitialize initialize) {
         this.initialize = initialize;

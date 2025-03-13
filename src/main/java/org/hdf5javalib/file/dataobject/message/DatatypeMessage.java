@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
 
-import static javax.swing.text.html.parser.DTDConstants.FIXED;
 import static org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype.parseFixedPointType;
 import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype.parseFloatingPointType;
 import static org.hdf5javalib.file.dataobject.message.datatype.StringDatatype.parseStringType;

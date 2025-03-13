@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 
 public class HdfFloatPoint implements HdfData {
     private final byte[] bytes;
-    private FloatingPointDatatype datatype;
+    private final FloatingPointDatatype datatype;
 
     public HdfFloatPoint(byte[] bytes, FloatingPointDatatype datatype) {
         this.bytes = bytes;

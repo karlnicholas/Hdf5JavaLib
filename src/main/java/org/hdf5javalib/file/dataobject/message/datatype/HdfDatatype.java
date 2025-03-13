@@ -4,7 +4,6 @@ import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;
-import java.util.Optional;
 
 public interface HdfDatatype {
     void writeDefinitionToByteBuffer(ByteBuffer buffer);

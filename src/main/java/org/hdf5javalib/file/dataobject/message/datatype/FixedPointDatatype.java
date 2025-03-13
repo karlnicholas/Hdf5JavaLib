@@ -14,7 +14,6 @@ import java.nio.ByteBuffer;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Getter
 public class FixedPointDatatype implements HdfDatatype {
