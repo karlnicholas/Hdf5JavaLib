@@ -248,6 +248,15 @@ public class HdfCompoundApp {
         private BigDecimal bitfieldVal;
     }
 
+    @Data
+    public static class MonitoringData {
+        private String siteName;
+        private Float airQualityIndex;
+        private Double temperature;
+        private Integer sampleCount;
+    }
+
+
     public void tryCompoundTestSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
         System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream().count());
 
