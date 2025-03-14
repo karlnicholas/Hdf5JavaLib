@@ -4,6 +4,7 @@ import org.hdf5javalib.file.dataobject.message.datatype.VariableLengthDatatype;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * HDFString. Stored bytes are not null terminated even if null termination is set in classBitField.
@@ -63,7 +64,8 @@ public class HdfVariableLength implements HdfData {
 //                + ", GCOL="  + gcol
 //                + ", IDX=" + index
 //                + "}";
-        return datatype.getInstance(String.class, bytes);
+        return new String(bytes, VariableLengthDatatype.CharacterSet.fromBitSet(datatype.getClassBitField()) == VariableLengthDatatype.CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
+//        return datatype.getInstance(String.class, bytes);
     }
 
     @Override

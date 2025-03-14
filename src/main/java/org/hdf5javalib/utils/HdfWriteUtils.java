@@ -161,7 +161,7 @@ public class HdfWriteUtils {
                 }
             }
             reverseBytesInPlace(bytes);
-            temp.put(bytes, 0, Math.min(bytes.length, size));
+            temp.put(bytes, 0, bytes.length);
         } else if (fieldType == BigDecimal.class) {
             byte[] bytes = ((BigDecimal) value).unscaledValue().toByteArray();
             bytes = trimLeadingZeros(bytes);
@@ -169,7 +169,7 @@ public class HdfWriteUtils {
                 throw new IllegalArgumentException("BigInteger too large for " + size + " bytes");
             }
             reverseBytesInPlace(bytes);
-            temp.put(bytes, 0, Math.min(bytes.length, size));
+            temp.put(bytes, 0, bytes.length);
         } else {
             throw new IllegalArgumentException("Field " + fieldType.getName() + " not supported for FixedPointDatatype");
         }

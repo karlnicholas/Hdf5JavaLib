@@ -1,5 +1,6 @@
 package org.hdf5javalib.examples;
 
+import lombok.Data;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
@@ -17,6 +18,7 @@ import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -228,9 +230,26 @@ public class HdfCompoundApp {
         }
     }
 
+    @Data
+    public static class CompoundExample {
+        private Long recordId;
+        private String fixedStr;
+        private String varStr;
+        private Float floatVal;
+        private Double doubleVal;
+        private Byte int8_Val;
+        private Short int16_Val;
+        private Integer int32_Val;
+        private Long int64_Val;
+        private Short uint8_Val;
+        private Integer uint16_Val;
+        private Long uint32_Val;
+        private BigInteger uint64_Val;
+        private BigDecimal bitfieldVal;
+    }
+
     public void tryCompoundTestSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
         System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream().count());
-//        System.out.println("Ten Rows = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream().filter(c->c.getMembers().get(0).getInstance(Long.class).longValue() < 1010 ));
         System.out.println("Ten Rows:");
         new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class)
                 .stream()
@@ -239,7 +258,14 @@ public class HdfCompoundApp {
         System.out.println("Ten BigDecimals = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream()
                         .filter(c->c.getMembers().get(0).getInstance(Long.class).longValue() < 1010 )
                 .map(c->c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
-//        System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), ShipperData.class).stream()
+
+        System.out.println("Ten Rows:");
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), CompoundExample.class)
+                .stream()
+                .limit(10)
+                .forEach(c -> System.out.println("Row: " + c));
+
+        //        System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), ShipperData.class).stream()
 //                .findFirst().orElseThrow());
     }
 

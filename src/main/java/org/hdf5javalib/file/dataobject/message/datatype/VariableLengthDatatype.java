@@ -21,13 +21,9 @@ public class VariableLengthDatatype implements HdfDatatype {
     // In your HdfDataType/FixedPointDatatype class
     private static final Map<Class<?>, HdfConverter<VariableLengthDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
-        CONVERTERS.put(String.class, ((bytes, datatype) -> datatype.toString(bytes)));
+        CONVERTERS.put(String.class, ((bytes, datatype) -> new HdfVariableLength(bytes, datatype).toString()));
         CONVERTERS.put(HdfVariableLength.class, HdfVariableLength::new);
         CONVERTERS.put(HdfData.class, HdfVariableLength::new);
-    }
-
-    private Object toString(byte[] bytes) {
-        return new String(bytes, CharacterSet.fromBitSet(classBitField) == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
     }
 
     public VariableLengthDatatype(byte classAndVersion, BitSet classBitField, int size, int baseType) {
