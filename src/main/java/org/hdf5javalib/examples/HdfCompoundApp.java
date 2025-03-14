@@ -250,11 +250,13 @@ public class HdfCompoundApp {
 
     public void tryCompoundTestSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
         System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream().count());
+
         System.out.println("Ten Rows:");
         new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class)
                 .stream()
                 .limit(10)
                 .forEach(c -> System.out.println("Row: " + c.getMembers()));
+
         System.out.println("Ten BigDecimals = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream()
                         .filter(c->c.getMembers().get(0).getInstance(Long.class).longValue() < 1010 )
                 .map(c->c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
@@ -262,11 +264,8 @@ public class HdfCompoundApp {
         System.out.println("Ten Rows:");
         new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), CompoundExample.class)
                 .stream()
-                .limit(10)
+                .filter(c -> c.getRecordId() < 1010)
                 .forEach(c -> System.out.println("Row: " + c));
-
-        //        System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), ShipperData.class).stream()
-//                .findFirst().orElseThrow());
     }
 
     public void tryCompoundSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
