@@ -48,24 +48,7 @@ public class HdfVariableLength implements HdfData {
     // String representation for debugging and user-friendly output
     @Override
     public String toString() {
-//        long len = 0;
-//        for (int i = 4-1; i >= 0; i--) {
-//            len = (len << 8) | (bytes[i] & 0xFF);
-//        }
-//        long gcol = 0;
-//        for (int i = 8-1; i >= 0; i--) {
-//            gcol = (gcol << 8) | (bytes[i+4] & 0xFF);
-//        }
-//        long index = 0;
-//        for (int i = 4-1; i >= 0; i--) {
-//            index = (index << 8) | (bytes[i+12] & 0xFF);
-//        }
-//        return "HdfVariableLength{len=" + len
-//                + ", GCOL="  + gcol
-//                + ", IDX=" + index
-//                + "}";
-        return new String(bytes, VariableLengthDatatype.CharacterSet.fromBitSet(datatype.getClassBitField()) == VariableLengthDatatype.CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
-//        return datatype.getInstance(String.class, bytes);
+        return datatype.getInstance(String.class, bytes);
     }
 
     @Override

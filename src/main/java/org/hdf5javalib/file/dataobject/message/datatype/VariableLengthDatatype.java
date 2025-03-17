@@ -7,6 +7,7 @@ import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class VariableLengthDatatype implements HdfDatatype {
     // In your HdfDataType/FixedPointDatatype class
     private static final Map<Class<?>, HdfConverter<VariableLengthDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
-        CONVERTERS.put(String.class, ((bytes, datatype) -> new HdfVariableLength(bytes, datatype).toString()));
+        CONVERTERS.put(String.class, ((bytes, dt) -> dt.toString(bytes)));
         CONVERTERS.put(HdfVariableLength.class, HdfVariableLength::new);
         CONVERTERS.put(HdfData.class, HdfVariableLength::new);
     }
@@ -76,37 +77,37 @@ public class VariableLengthDatatype implements HdfDatatype {
         return getInstance(clazz, bytes);
     }
 
-//    public String toString(byte[] bytes) {
-//        byte[] workingBytes = new byte[size];
-//        int workingEnd = Math.min(size, bytes.length);
-//        System.arraycopy(bytes, 0, workingBytes, 0, workingEnd);
-//
-//        // Pad with spaces if SPACE_PAD and bytes is shorter than size
-//        if (getPaddingType() == PaddingType.SPACE_PAD && workingEnd < size) {
-//            Arrays.fill(workingBytes, workingEnd, size, (byte) ' ');
-//        }
-//
-//        // Count non-0x00 bytes
-//        int validLength = 0;
-//        for (int i = 0; i < size; i++) {
-//            if (workingBytes[i] != 0x00) {
-//                validLength++;
-//            }
-//        }
-//
-//        // Build array without 0x00
-//        byte[] cleanBytes = new byte[validLength];
-//        int pos = 0;
-//        for (int i = 0; i < size; i++) {
-//            if (workingBytes[i] != 0x00) {
-//                cleanBytes[pos++] = workingBytes[i];
-//            }
-//        }
-//
-//        return new String(cleanBytes,
-//                getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
-//
-//    }
+    public String toString(byte[] bytes) {
+        byte[] workingBytes = new byte[size];
+        int workingEnd = Math.min(size, bytes.length);
+        System.arraycopy(bytes, 0, workingBytes, 0, workingEnd);
+
+        // Pad with spaces if SPACE_PAD and bytes is shorter than size
+        if (getPaddingType() == PaddingType.SPACE_PAD && workingEnd < size) {
+            Arrays.fill(workingBytes, workingEnd, size, (byte) ' ');
+        }
+
+        // Count non-0x00 bytes
+        int validLength = 0;
+        for (int i = 0; i < size; i++) {
+            if (workingBytes[i] != 0x00) {
+                validLength++;
+            }
+        }
+
+        // Build array without 0x00
+        byte[] cleanBytes = new byte[validLength];
+        int pos = 0;
+        for (int i = 0; i < size; i++) {
+            if (workingBytes[i] != 0x00) {
+                cleanBytes[pos++] = workingBytes[i];
+            }
+        }
+
+        return new String(cleanBytes,
+                getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
+
+    }
 
     @Override
     public DatatypeClass getDatatypeClass() {
