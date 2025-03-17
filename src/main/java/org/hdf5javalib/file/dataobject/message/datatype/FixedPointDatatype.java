@@ -27,7 +27,7 @@ public class FixedPointDatatype implements HdfDatatype {
     static {
         CONVERTERS.put(BigDecimal.class, (bytes, dt) -> dt.toBigDecimal(bytes));
         CONVERTERS.put(BigInteger.class, (bytes, dt) -> dt.toBigInteger(bytes));
-        CONVERTERS.put(String.class, (bytes, dt) -> dt.toBigInteger(bytes).toString());
+        CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfFixedPoint.class, HdfFixedPoint::new);
         CONVERTERS.put(HdfData.class, HdfFixedPoint::new);
         CONVERTERS.put(Long.class, (bytes, dt) -> dt.toLong(bytes));
@@ -364,5 +364,10 @@ public class FixedPointDatatype implements HdfDatatype {
 
     @Override
     public void setGlobalHeap(HdfGlobalHeap grok) {}
+
+    @Override
+    public String toString(byte[] bytes) {
+        return toBigDecimal(bytes).toString();
+    }
 }
 

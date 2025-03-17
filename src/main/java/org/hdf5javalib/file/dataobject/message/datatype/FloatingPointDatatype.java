@@ -28,7 +28,7 @@ public class FloatingPointDatatype implements HdfDatatype {
     static {
         CONVERTERS.put(Double.class, (bytes, dt) -> dt.toDouble(bytes));
         CONVERTERS.put(Float.class, (bytes, dt) -> dt.toFloat(bytes));
-        CONVERTERS.put(String.class, (bytes, dt) -> dt.toDouble(bytes).toString());
+        CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfFloatPoint.class, HdfFloatPoint::new);
         CONVERTERS.put(HdfData.class, HdfFloatPoint::new);
     }
@@ -204,4 +204,9 @@ public class FloatingPointDatatype implements HdfDatatype {
 
     @Override
     public void setGlobalHeap(HdfGlobalHeap grok) {}
+
+    @Override
+    public String toString(byte[] bytes) {
+        return toDouble(bytes).toString();
+    }
 }

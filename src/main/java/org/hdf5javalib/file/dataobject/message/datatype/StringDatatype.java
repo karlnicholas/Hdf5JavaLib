@@ -20,7 +20,7 @@ public class StringDatatype implements HdfDatatype {
     // In your HdfDataType/FixedPointDatatype class
     private static final Map<Class<?>, HdfConverter<StringDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
-        CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes).toString());
+        CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfString.class, HdfString::new);
         CONVERTERS.put(HdfData.class, HdfString::new);
     }

@@ -23,7 +23,7 @@ public class CompoundDatatype implements HdfDatatype {
     // In your HdfDataType/FixedPointDatatype class
     private static final Map<Class<?>, HdfConverter<CompoundDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
-        CONVERTERS.put(String.class, (bytes, dt) -> new HdfCompound(bytes, dt).toString());
+        CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfCompound.class, HdfCompound::new);
     }
 
@@ -276,5 +276,12 @@ public class CompoundDatatype implements HdfDatatype {
         for (CompoundMemberDatatype member : members) {
             member.setGlobalHeap(globalHeap);
         }
+    }
+
+    @Override
+    public String toString(byte[] bytes) {
+        return members.stream().map(m->
+            m.toString(Arrays.copyOfRange(bytes, m.getOffset(), m.getOffset() + m.getSize()))
+        ).collect(Collectors.joining(", "));
     }
 }

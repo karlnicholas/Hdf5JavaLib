@@ -132,4 +132,9 @@ public class CompoundMemberDatatype implements HdfDatatype {
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {
         type.setGlobalHeap(globalHeap);
     }
+
+    @Override
+    public String toString(byte[] bytes) {
+        return type.toString(bytes);
+    }
 }

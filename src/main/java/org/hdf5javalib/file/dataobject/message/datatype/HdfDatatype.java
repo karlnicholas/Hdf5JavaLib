@@ -19,6 +19,8 @@ public interface HdfDatatype {
 
     void setGlobalHeap(HdfGlobalHeap globalHeap);
 
+    String toString(byte[] bytes);
+
     // Enum defined within the interface
     enum DatatypeClass {
         FIXED(0),    // HDF5 integer types
