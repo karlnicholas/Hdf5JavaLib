@@ -93,6 +93,9 @@ public class CompoundDatatype implements HdfDatatype {
 
             byte classAndVersion = buffer.get();
             byte version = (byte) ((classAndVersion >> 4) & 0x0F);
+            if ( version != 1 ) {
+                throw new UnsupportedOperationException("Unsupported version: " + version);
+            }
             byte dataTypeClass = (byte) (classAndVersion & 0x0F);
 
             byte[] classBits = new byte[3];
