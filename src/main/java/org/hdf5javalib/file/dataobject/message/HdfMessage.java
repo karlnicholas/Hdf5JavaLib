@@ -3,7 +3,13 @@ package org.hdf5javalib.file.dataobject.message;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -86,7 +92,63 @@ System.out.println(messageType + " " + sizeSupplier.get() + " " + messageFlags);
         buffer.put((byte) 0);
     }
 
-    public abstract void writeToByteBuffer(ByteBuffer buffer);
+    public abstract void writeMessageToByteBuffer(ByteBuffer buffer);
+
+    // Parse header messages
+    public static List<HdfMessage> readMessagesFromByteBuffer(FileChannel fileChannel, short objectHeaderSize, short offsetSize, short lengthSize) throws IOException {
+        ByteBuffer buffer  = ByteBuffer.allocate(objectHeaderSize).order(ByteOrder.LITTLE_ENDIAN);
+        fileChannel.read(buffer);
+        buffer.flip();
+        List<HdfMessage> messages = new ArrayList<>();
+
+        while (buffer.hasRemaining()) {
+            // Header Message Type (2 bytes, little-endian)
+            HdfMessage.MessageType type = HdfMessage.MessageType.fromValue(buffer.getShort());
+            int size = Short.toUnsignedInt(buffer.getShort());
+            byte flags = buffer.get();
+            buffer.position(buffer.position() + 3); // Skip 3 reserved bytes
+
+            // Header Message Data
+            byte[] messageData = new byte[size];
+            buffer.get(messageData);
+
+            // Add the message to the list
+            messages.add(createMessageInstance(type, flags, messageData, offsetSize, lengthSize, ()-> Arrays.copyOfRange(messageData, 8, messageData.length)));
+
+        }
+        return messages;
+    }
+
+    public static HdfMessage createMessageInstance(HdfMessage.MessageType type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData) {
+        System.out.println("type:flags:length " + type + " " + flags + " " + data.length);
+        return switch (type) {
+            case NilMessage -> NilMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case DataspaceMessage -> DataspaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case DatatypeMessage -> DatatypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, getDataTypeData.get());
+            case FillValueMessage -> FillValueMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case DataLayoutMessage -> DataLayoutMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case AttributeMessage -> AttributeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case ObjectHeaderContinuationMessage -> ObjectHeaderContinuationMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case SymbolTableMessage -> SymbolTableMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case ObjectModificationTimeMessage -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case BtreeKValuesMessage -> BTreeKValuesMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            default -> throw new IllegalArgumentException("Unknown message type: " + type);
+        };
+    }
+
+    // TODO: fix recursion
+    public static List<HdfMessage> parseContinuationMessage(FileChannel fileChannel, ObjectHeaderContinuationMessage objectHeaderContinuationMessage, short offsetSize, short lengthSize) throws IOException {
+        List<HdfMessage> messages = new ArrayList<>();
+        long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().getInstance(Long.class);
+        short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getInstance(Long.class).shortValue();
+
+        // Move to the continuation block offset
+        fileChannel.position(continuationOffset);
+
+        // Parse the continuation block messages
+        messages.addAll(readMessagesFromByteBuffer(fileChannel, continuationSize, offsetSize, lengthSize));
+        return messages;
+    }
 
     /**
      * Enum representing various HDF5 message types.

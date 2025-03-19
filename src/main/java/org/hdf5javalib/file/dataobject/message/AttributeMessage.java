@@ -11,8 +11,6 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.BitSet;
 
-import static org.hdf5javalib.utils.HdfReadUtils.createMessageInstance;
-
 /**
  * Represents an Attribute Message in the HDF5 file format.
  *
@@ -131,7 +129,7 @@ public class AttributeMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer) {
+    public void writeMessageToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
         buffer.put((byte) version);
 

@@ -172,7 +172,7 @@ public class DatatypeMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer) {
+    public void writeMessageToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
 
         // datatype specifics

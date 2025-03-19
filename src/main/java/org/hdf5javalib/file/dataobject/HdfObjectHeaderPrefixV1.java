@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hdf5javalib.utils.HdfReadUtils.parseContinuationMessage;
-import static org.hdf5javalib.utils.HdfReadUtils.parseDataObjectHeaderMessages;
+import static org.hdf5javalib.file.dataobject.message.HdfMessage.parseContinuationMessage;
+import static org.hdf5javalib.file.dataobject.message.HdfMessage.readMessagesFromByteBuffer;
 
 @Getter
 public class HdfObjectHeaderPrefixV1 {
@@ -64,10 +64,10 @@ public class HdfObjectHeaderPrefixV1 {
             throw new IllegalArgumentException("Reserved integer in Data Object Header Prefix is not zero.");
         }
         List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>();
-        parseDataObjectHeaderMessages(fileChannel, objectHeaderSize, offsetSize, lengthSize, dataObjectHeaderMessages);
+        dataObjectHeaderMessages.addAll(readMessagesFromByteBuffer(fileChannel, objectHeaderSize, offsetSize, lengthSize));
         for ( HdfMessage hdfMessage: dataObjectHeaderMessages) {
             if (hdfMessage instanceof ObjectHeaderContinuationMessage) {
-                parseContinuationMessage(fileChannel, (ObjectHeaderContinuationMessage)hdfMessage, offsetSize, lengthSize, dataObjectHeaderMessages);
+                dataObjectHeaderMessages.addAll(parseContinuationMessage(fileChannel, (ObjectHeaderContinuationMessage)hdfMessage, offsetSize, lengthSize));
                 break;
             }
         }
@@ -100,7 +100,7 @@ public class HdfObjectHeaderPrefixV1 {
 
         for (int i = 0; i < headerMessages.size(); i++) {
             HdfMessage hdfMessage = headerMessages.get(i);
-            hdfMessage.writeToByteBuffer(buffer);
+            hdfMessage.writeMessageToByteBuffer(buffer);
 
             // Pad to 8-byte boundary
             int position = buffer.position();

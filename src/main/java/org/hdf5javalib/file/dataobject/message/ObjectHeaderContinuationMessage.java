@@ -78,7 +78,7 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer) {
+    public void writeMessageToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
         // Write B-tree address (sizeOfOffsets bytes, little-endian)
         writeFixedPointToBuffer(buffer, continuationOffset);

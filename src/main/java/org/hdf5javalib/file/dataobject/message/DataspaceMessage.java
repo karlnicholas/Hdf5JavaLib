@@ -149,7 +149,7 @@ public class DataspaceMessage extends HdfMessage {
     }
 
     @Override
-    public void writeToByteBuffer(ByteBuffer buffer) {
+    public void writeMessageToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
         writeInfoToByteBuffer(buffer);
     }
