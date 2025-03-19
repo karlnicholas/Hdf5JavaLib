@@ -1,6 +1,7 @@
 package org.hdf5javalib.file;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.dataobject.message.DataLayoutMessage;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
@@ -18,6 +19,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.function.Supplier;
 
 @Getter
+@Slf4j
 public class HdfFile {
     private final String fileName;
     private final StandardOpenOption[] openOptions;
@@ -94,8 +96,8 @@ public class HdfFile {
 
         superblock.setEndOfFileAddress(HdfFixedPoint.of(endOfFileAddress));
 
-        System.out.println(superblock);
-        System.out.println(rootGroup);
+        log.debug("{}", superblock);
+        log.debug("{}", rootGroup);
 
         // Allocate the buffer dynamically up to the data start location
         ByteBuffer buffer = ByteBuffer.allocate(bufferAllocation.getDataAddress()).order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian

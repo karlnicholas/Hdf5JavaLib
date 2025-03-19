@@ -1,6 +1,7 @@
 package org.hdf5javalib;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfGroup;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
@@ -17,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 
 @Getter
+@Slf4j
 public class HdfFileReader {
     // level 0
     private HdfSuperblock superblock;
@@ -33,7 +35,7 @@ public class HdfFileReader {
     public void readFile(FileChannel fileChannel) throws IOException {
         // Parse the superblock at the beginning of the file
         superblock = HdfSuperblock.readFromFileChannel(fileChannel);
-        System.out.println(superblock);
+        log.debug("{}", superblock);
 
         short offsetSize = superblock.getOffsetSize();
         short lengthSize = superblock.getLengthSize();
@@ -85,9 +87,7 @@ public class HdfFileReader {
         );
 
 
-//            System.out.println(hdfGroupSymbolTableNode);
-
-        System.out.println(rootGroup);
+        log.debug("{}", rootGroup);
 
         for( int i=0; i < symbolTableNode.getNumberOfSymbols(); ++i ) {
             HdfSymbolTableEntry ste = symbolTableNode.getSymbolTableEntries().get(i);
@@ -97,7 +97,7 @@ public class HdfFileReader {
             long dataLObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
             fileChannel.position(dataLObjectHeaderAddress);
             dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
-            System.out.println(datasetName + "@" + dataLObjectHeaderAddress + " = " + dataObjectHeaderPrefix);
+            log.debug("{}", datasetName + "@" + dataLObjectHeaderAddress + " = " + dataObjectHeaderPrefix);
 
             for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
                 if (message instanceof DatatypeMessage dataTypeMessage) {
@@ -112,8 +112,6 @@ public class HdfFileReader {
 
         }
 
-//        System.out.println("DataType{" + compoundDataType + "\r\n}");
-
-        System.out.println("Parsing complete. NEXT: " + fileChannel.position());
+        log.debug("Parsing complete. NEXT: {}", fileChannel.position());
     }
 }

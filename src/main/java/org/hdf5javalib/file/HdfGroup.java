@@ -98,7 +98,6 @@ public class HdfGroup {
         buffer.position(dataGroupAddress);
         objectHeader.writeToByteBuffer(buffer);
 
-        //        System.out.println(objectHeader);
         long localHeapPosition = -1;
         long bTreePosition = -1;
 

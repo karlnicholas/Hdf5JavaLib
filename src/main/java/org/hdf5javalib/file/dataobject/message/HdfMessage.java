@@ -2,6 +2,7 @@ package org.hdf5javalib.file.dataobject.message;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -62,6 +63,7 @@ import java.util.function.Supplier;
  *      HDF5 Object Header Documentation</a>
  */
 @Getter
+@Slf4j
 public abstract class HdfMessage {
     private final MessageType messageType;
     @Setter
@@ -119,7 +121,7 @@ public abstract class HdfMessage {
     }
 
     protected static HdfMessage createMessageInstance(HdfMessage.MessageType type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData) {
-        System.out.println("type:flags:length " + type + " " + flags + " " + data.length);
+        log.trace("type:flags:length {} {} {}", type, flags, data.length);
         return switch (type) {
             case NilMessage -> NilMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
             case DataspaceMessage -> DataspaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
