@@ -12,12 +12,12 @@ public class HdfVariableLength implements HdfData {
 
     // Constructor for HDF metadata-based initialization (comprehensive parameters)
     public HdfVariableLength(byte[] bytes, VariableLengthDatatype datatype) {
-        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
-        int length = buffer.getInt();
-        long offset = buffer.getLong();
-        int index = buffer.getInt();
-        this.bytes = datatype.getGlobalHeap().getDataBytes(length, offset, index);
-//        this.bytes = bytes.clone();
+//        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
+//        int length = buffer.getInt();
+//        long offset = buffer.getLong();
+//        int index = buffer.getInt();
+//        this.bytes = datatype.getGlobalHeap().getDataBytes(length, offset, index);
+        this.bytes = bytes.clone();
         this.datatype = datatype;
     }
 

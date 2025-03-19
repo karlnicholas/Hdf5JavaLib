@@ -6,6 +6,7 @@ import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -78,33 +79,39 @@ public class VariableLengthDatatype implements HdfDatatype {
     }
 
     public String toString(byte[] bytes) {
-        byte[] workingBytes = new byte[size];
-        int workingEnd = Math.min(size, bytes.length);
-        System.arraycopy(bytes, 0, workingBytes, 0, workingEnd);
+        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
+        int length = buffer.getInt();
+        long offset = buffer.getLong();
+        int index = buffer.getInt();
 
-        // Pad with spaces if SPACE_PAD and bytes is shorter than size
-        if (getPaddingType() == PaddingType.SPACE_PAD && workingEnd < size) {
-            Arrays.fill(workingBytes, workingEnd, size, (byte) ' ');
-        }
+        byte[] workingBytes = globalHeap.getDataBytes(length, offset, index);
+//        byte[] workingBytes = new byte[bytes.length];
+//        int workingEnd = Math.min(size, bytes.length);
+//        System.arraycopy(bytes, 0, workingBytes, 0, workingEnd);
 
-        // Count non-0x00 bytes
-        int validLength = 0;
-        for (int i = 0; i < size; i++) {
-            if (workingBytes[i] != 0x00) {
-                validLength++;
-            }
-        }
+//        // Pad with spaces if SPACE_PAD and bytes is shorter than size
+//        if (getPaddingType() == PaddingType.SPACE_PAD && length < size) {
+//            Arrays.fill(workingBytes, length, size, (byte) ' ');
+//        }
+//
+//        // Count non-0x00 bytes
+//        int validLength = 0;
+//        for (int i = 0; i < size; i++) {
+//            if (workingBytes[i] != 0x00) {
+//                validLength++;
+//            }
+//        }
+//
+//        // Build array without 0x00
+//        byte[] cleanBytes = new byte[validLength];
+//        int pos = 0;
+//        for (int i = 0; i < size; i++) {
+//            if (workingBytes[i] != 0x00) {
+//                cleanBytes[pos++] = workingBytes[i];
+//            }
+//        }
 
-        // Build array without 0x00
-        byte[] cleanBytes = new byte[validLength];
-        int pos = 0;
-        for (int i = 0; i < size; i++) {
-            if (workingBytes[i] != 0x00) {
-                cleanBytes[pos++] = workingBytes[i];
-            }
-        }
-
-        return new String(cleanBytes,
+        return new String(workingBytes,
                 getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
 
     }
