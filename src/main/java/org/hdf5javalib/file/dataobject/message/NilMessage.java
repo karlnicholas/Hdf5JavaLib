@@ -38,13 +38,13 @@ import java.nio.ByteBuffer;
  */
 public class NilMessage extends HdfMessage {
 
-    public NilMessage(int size) {
-        super(MessageType.NilMessage, ()-> (short) size, (byte)0);
+    public NilMessage(int size, byte flags) {
+        super(MessageType.NilMessage, ()-> (short) size, flags);
     }
 
-    public static HdfMessage parseHeaderMessage(byte flag, byte[] data, int offsetSize, int lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
         // No data to parse for null message
-        return new NilMessage(data.length);
+        return new NilMessage(data.length, flags);
     }
 
     @Override

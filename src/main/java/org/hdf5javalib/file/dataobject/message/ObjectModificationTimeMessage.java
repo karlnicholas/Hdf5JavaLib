@@ -46,8 +46,8 @@ public class ObjectModificationTimeMessage extends HdfMessage {
     private final long secondsAfterEpoch;
 
     // Constructor to initialize all fields
-    public ObjectModificationTimeMessage(int version, long secondsAfterEpoch) {
-        super(MessageType.ObjectModificationTimeMessage, ()-> (short) (8), (byte)0);
+    public ObjectModificationTimeMessage(int version, long secondsAfterEpoch, byte flags) {
+        super(MessageType.ObjectModificationTimeMessage, ()-> (short) (8), flags);
         this.version = version;
         this.secondsAfterEpoch = secondsAfterEpoch;
     }
@@ -74,7 +74,7 @@ public class ObjectModificationTimeMessage extends HdfMessage {
         long secondsAfterEpoch = Integer.toUnsignedLong(buffer.getInt());
 
         // Return a constructed instance of ObjectModificationTimeMessage
-        return new ObjectModificationTimeMessage(version, secondsAfterEpoch);
+        return new ObjectModificationTimeMessage(version, secondsAfterEpoch, flags);
     }
 
     @Override

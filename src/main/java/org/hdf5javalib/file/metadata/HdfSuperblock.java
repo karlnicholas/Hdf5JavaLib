@@ -13,6 +13,58 @@ import java.util.BitSet;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
+/**
+ * Represents the Superblock in the HDF5 file format.
+ *
+ * <p>The Superblock is the root metadata structure in an HDF5 file. It contains
+ * essential information about the file layout, including pointers to key data
+ * structures such as the root group, free space management, and driver
+ * information. The Superblock is always located at a known file offset,
+ * allowing quick access to file metadata.</p>
+ *
+ * <h2>Structure</h2>
+ * <p>The HDF5 Superblock consists of the following components:</p>
+ * <ul>
+ *   <li><b>Signature (8 bytes)</b>: Identifies the file as an HDF5 file
+ *       (ASCII "˜HDF\r\n\032\n").</li>
+ *   <li><b>Version (1 byte)</b>: Specifies the version of the superblock format.</li>
+ *   <li><b>Offset Size (1 byte)</b>: Defines the size (in bytes) of file offsets.</li>
+ *   <li><b>Length Size (1 byte)</b>: Defines the size (in bytes) of length fields.</li>
+ *   <li><b>File Consistency Flags (1 byte, optional)</b>: Used in later versions
+ *       for metadata consistency tracking.</li>
+ *   <li><b>Base Address (offset)</b>: The file address of the base location
+ *       for relative addressing.</li>
+ *   <li><b>Free Space Address (offset)</b>: The file address of the free space
+ *       manager, if present.</li>
+ *   <li><b>End of File Address (offset)</b>: The address of the last allocated
+ *       byte in the file.</li>
+ *   <li><b>Driver Information Address (offset, optional)</b>: Location of the
+ *       driver information block for specialized file drivers.</li>
+ *   <li><b>Root Group Object Header Address (offset)</b>: The location of the
+ *       root group's object header, which serves as the entry point to the file’s
+ *       hierarchical structure.</li>
+ * </ul>
+ *
+ * <h2>Purpose</h2>
+ * <p>The Superblock serves several critical functions:</p>
+ * <ul>
+ *   <li>Identifies an HDF5 file and its format version.</li>
+ *   <li>Defines key parameters such as offset sizes and length sizes.</li>
+ *   <li>Provides pointers to essential file structures, including the root group,
+ *       free space manager, and driver information.</li>
+ * </ul>
+ *
+ * <h2>Processing</h2>
+ * <p>When reading an HDF5 file, the Superblock is the first structure examined to
+ * determine the file format version, address size settings, and location of key
+ * metadata structures. It is vital for properly interpreting the file’s contents.</p>
+ *
+ * <p>This class provides methods to parse and interpret the HDF5 Superblock
+ * based on the HDF5 file specification.</p>
+ *
+ * @see <a href="https://docs.hdfgroup.org/hdf5/develop/group___s_u_p_e_r_b_l_o_c_k.html">
+ *      HDF5 Superblock Documentation</a>
+ */
 @Getter
 public class HdfSuperblock {
     private static final byte[] FILE_SIGNATURE = new byte[]{(byte) 0x89, 0x48, 0x44, 0x46, 0x0d, 0x0a, 0x1a, 0x0a};

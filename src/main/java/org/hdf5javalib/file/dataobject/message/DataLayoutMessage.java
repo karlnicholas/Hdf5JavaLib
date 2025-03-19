@@ -76,7 +76,8 @@ public class DataLayoutMessage extends HdfMessage {
             HdfFixedPoint[] dimensionSizes,
             int compactDataSize,
             byte[] compactData,
-            HdfFixedPoint datasetElementSize
+            HdfFixedPoint datasetElementSize,
+            byte flags
     ) {
         super(MessageType.DataLayoutMessage, ()->{
             short size = (short) 8;
@@ -95,7 +96,7 @@ public class DataLayoutMessage extends HdfMessage {
                     throw new IllegalArgumentException("Unsupported layout class: " + layoutClass);
             }
             return size;
-        }, (byte)0);
+        }, flags);
         this.version = version;
         this.layoutClass = layoutClass;
         this.dataAddress = dataAddress;
@@ -163,7 +164,7 @@ public class DataLayoutMessage extends HdfMessage {
         }
 
         // Return a constructed instance of DataLayoutMessage
-        return new DataLayoutMessage(version, layoutClass, dataAddress, dimensionSizes, compactDataSize, compactData, datasetElementSize);
+        return new DataLayoutMessage(version, layoutClass, dataAddress, dimensionSizes, compactDataSize, compactData, datasetElementSize, flags);
     }
 
     @Override

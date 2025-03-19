@@ -69,7 +69,7 @@ public class HdfGroup {
         objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 1, 24,
                 Collections.singletonList(new SymbolTableMessage(
                         HdfFixedPoint.of(btreeAddress),
-                        HdfFixedPoint.of(localHeapAddress))));
+                        HdfFixedPoint.of(localHeapAddress), (byte)0)));
 
         // Define a root group
         symbolTableNode = new HdfGroupSymbolTableNode("SNOD", 1, 0, new ArrayList<>());

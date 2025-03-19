@@ -6,6 +6,55 @@ import lombok.Setter;
 import java.nio.ByteBuffer;
 import java.util.function.Supplier;
 
+/**
+ * Represents a base class for HDF5 Object Header Messages.
+ *
+ * <p>Each object in an HDF5 file has an object header containing metadata messages that
+ * describe the object. These messages include essential information about datasets, groups,
+ * and other HDF5 structures. The {@code HdfMessage} class serves as a base for all such
+ * message types, encapsulating common properties and functionality.</p>
+ *
+ * <h2>Structure</h2>
+ * <p>An HDF5 Object Header Message consists of the following components:</p>
+ * <ul>
+ *   <li><b>Message Type (2 bytes)</b>: Identifies the type of message stored.</li>
+ *   <li><b>Size of Message Data (2 bytes)</b>: Specifies the number of bytes in the
+ *       message data, including padding to align the message to an 8-byte boundary.</li>
+ *   <li><b>Message Flags (1 byte)</b>: A bit field that defines specific properties of the message:</li>
+ *   <ul>
+ *       <li>Bit 0: Message data is constant (e.g., Datatype Messages).</li>
+ *       <li>Bit 1: Message is shared and stored in another location.</li>
+ *       <li>Bit 2: Message should not be shared.</li>
+ *       <li>Bit 3: Fail if message type is unknown and file is writable.</li>
+ *       <li>Bit 4: Set bit 5 if message type is unknown and file is modified.</li>
+ *       <li>Bit 5: Indicates the object was modified by software unaware of this message.</li>
+ *       <li>Bit 6: Message is shareable.</li>
+ *       <li>Bit 7: Always fail if message type is unknown (even for read-only access).</li>
+ *   </ul>
+ *   <li><b>Reserved (3 bytes)</b>: Unused space for alignment.</li>
+ * </ul>
+ *
+ * <h2>Purpose</h2>
+ * <p>The {@code HdfMessage} class provides a foundation for handling various
+ * HDF5 metadata messages, enabling structured parsing and serialization.</p>
+ *
+ * <h2>Usage</h2>
+ * <p>Concrete implementations of this class represent specific HDF5 message types such as:</p>
+ * <ul>
+ *   <li>{@code DataspaceMessage} – Defines dataset dimensions.</li>
+ *   <li>{@code DatatypeMessage} – Specifies the type of data stored.</li>
+ *   <li>{@code FillValueMessage} – Defines default fill values.</li>
+ *   <li>{@code DataLayoutMessage} – Describes the storage layout.</li>
+ *   <li>{@code AttributeMessage} – Stores user-defined metadata.</li>
+ *   <li>And many more...</li>
+ * </ul>
+ *
+ * <p>This class provides methods for encoding and decoding HDF5 object header messages
+ * based on the HDF5 file specification.</p>
+ *
+ * @see <a href="https://docs.hdfgroup.org/hdf5/develop/group___o_b_j_e_c_t___h_e_a_d_e_r.html">
+ *      HDF5 Object Header Documentation</a>
+ */
 @Getter
 public abstract class HdfMessage {
     private final MessageType messageType;
@@ -17,6 +66,7 @@ public abstract class HdfMessage {
         this.messageType = messageType;
         this.sizeMessageData = sizeSupplier.get();
         this.messageFlags = messageFlags;
+System.out.println(messageType + " " + sizeSupplier.get() + " " + messageFlags);
     }
 
     /**

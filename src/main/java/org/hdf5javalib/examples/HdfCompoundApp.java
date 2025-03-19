@@ -81,9 +81,9 @@ public class HdfCompoundApp {
         // value
         StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(), classBitField, (short) ATTRIBUTE_VALUE.length());
         // data type, String, DATASET_NAME.length
-        DatatypeMessage dt = new DatatypeMessage(attributeType);
+        DatatypeMessage dt = new DatatypeMessage(attributeType, (byte)0);
         // scalar, 1 string
-        DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false);
+        DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false, (byte)0);
         HdfString hdfString = new HdfString(ATTRIBUTE_VALUE.getBytes(), attributeType);
         dataset.createAttribute(ATTRIBUTE_NAME, dt, ds, hdfString);
     }
@@ -175,7 +175,7 @@ public class HdfCompoundApp {
 
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false);
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false, (byte)0);
 //            hsize_t dim[1] = { NUM_RECORDS };
 //            DataSpace space(1, dim);
 

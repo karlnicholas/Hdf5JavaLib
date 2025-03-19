@@ -54,7 +54,7 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 public class DataspaceMessage extends HdfMessage {
     private final int version; // Version of the dataspace message
     private final int dimensionality; // Number of dimensions (rank)
-    private final int flags;
+    private final int parsedFlags;
     private final HdfFixedPoint[] dimensions; // Sizes of each dimension
     private final HdfFixedPoint[] maxDimensions; // Maximum sizes of each dimension, if specified
     private final boolean hasMaxDimensions; // Indicates if max dimensions are included
@@ -63,10 +63,11 @@ public class DataspaceMessage extends HdfMessage {
     public DataspaceMessage(
             int version,
             int dimensionality,
-            int flags,
+            int parsedFlags,
             HdfFixedPoint[] dimensions,
             HdfFixedPoint[] maxDimensions,
-            boolean hasMaxDimensions
+            boolean hasMaxDimensions,
+            byte flags
     ) {
         super(MessageType.DataspaceMessage, ()->{
             short size = 8;
@@ -81,10 +82,10 @@ public class DataspaceMessage extends HdfMessage {
                 }
             }
             return size;
-        }, hasMaxDimensions?(byte)1:(byte)0);
+        }, flags);
         this.version = version;
         this.dimensionality = dimensionality;
-        this.flags = flags;
+        this.parsedFlags = parsedFlags;
         this.dimensions = dimensions;
         this.maxDimensions = maxDimensions;
         this.hasMaxDimensions = hasMaxDimensions;
@@ -93,13 +94,13 @@ public class DataspaceMessage extends HdfMessage {
     /**
      * Parses the header message and returns a constructed instance.
      *
-     * @param ignoredFlags      ignored
+     * @param flags      flags
      * @param data       Byte array containing the header message data.
      * @param ignoredOffsetSize ignored
      * @param lengthSize Size of lengths in bytes.
      * @return A fully constructed `DataspaceMessage` instance.
      */
-    public static HdfMessage parseHeaderMessage(byte ignoredFlags, byte[] data, short ignoredOffsetSize, short lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short ignoredOffsetSize, short lengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Read the version (1 byte)
@@ -108,7 +109,7 @@ public class DataspaceMessage extends HdfMessage {
         // Read the rank (1 byte)
         int dimensionality = Byte.toUnsignedInt(buffer.get());
 
-        // Read flags (1 byte)
+        // Read parsedFlags (1 byte)
         int parsedFlags = Byte.toUnsignedInt(buffer.get());
 
         // Skip reserved bytes (5 bytes)
@@ -132,7 +133,7 @@ public class DataspaceMessage extends HdfMessage {
         }
 
         // Return a constructed instance of DataspaceMessage
-        return new DataspaceMessage(version, dimensionality, parsedFlags, dimensions, maxDimensions, hasMaxDimensions);
+        return new DataspaceMessage(version, dimensionality, parsedFlags, dimensions, maxDimensions, hasMaxDimensions, flags);
     }
 
     @Override
@@ -140,7 +141,7 @@ public class DataspaceMessage extends HdfMessage {
         return "DataspaceMessage{" +
                 "version=" + version +
                 ", dimensionality=" + dimensionality +
-                ", flags=" + flags +
+                ", flags=" + parsedFlags +
                 ", dimensions=" + (dimensions != null ? Arrays.toString(dimensions) : "Not Present") +
                 ", maxDimensions=" + (maxDimensions != null  ? Arrays.toString(maxDimensions) : "Not Present") +
                 ", hasMaxDimensions=" + hasMaxDimensions +
@@ -161,7 +162,7 @@ public class DataspaceMessage extends HdfMessage {
         buffer.put((byte) dimensionality);
 
         // Read flags (1 byte)
-        buffer.put((byte) flags);
+        buffer.put((byte) parsedFlags);
 
         // Skip reserved bytes (5 bytes)
         buffer.put(new byte[5]);

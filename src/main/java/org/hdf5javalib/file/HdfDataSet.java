@@ -56,7 +56,7 @@ public class HdfDataSet {
         System.arraycopy(name.getBytes(StandardCharsets.US_ASCII), 0, nameBytes, 0, name.length());
         AttributeMessage attributeMessage = new AttributeMessage(1,
                 new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII), name.length()+1)),
-                dt, ds, value);
+                dt, ds, value, (byte)0);
         attributes.add(attributeMessage);
         computeSpaceRequirements();
         return attributeMessage;
@@ -67,13 +67,13 @@ public class HdfDataSet {
         List<HdfMessage> headerMessages = new ArrayList<>();
         headerMessages.add(dataSpaceMessage);
 
-        DatatypeMessage dataTypeMessage = new DatatypeMessage(hdfDatatype);
+        DatatypeMessage dataTypeMessage = new DatatypeMessage(hdfDatatype, (byte)0);
         headerMessages.add(dataTypeMessage);
 
         // Add FillValue message
         FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 2, 1,
                 0,
-                new byte[0]);
+                new byte[0], (byte)0);
         headerMessages.add(fillValueMessage);
 
         // Add DataLayoutMessage (Storage format)
@@ -88,11 +88,11 @@ public class HdfDataSet {
         DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1,
                 HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()),
                 hdfDimensionSizes,
-                0, null, HdfFixedPoint.undefined((short)8));
+                0, null, HdfFixedPoint.undefined((short)8), (byte)0);
         headerMessages.add(dataLayoutMessage);
 
         // add ObjectModification Time message
-        ObjectModificationTimeMessage objectModificationTimeMessage = new ObjectModificationTimeMessage(1, Instant.now().getEpochSecond());
+        ObjectModificationTimeMessage objectModificationTimeMessage = new ObjectModificationTimeMessage(1, Instant.now().getEpochSecond(), (byte)0);
         headerMessages.add(objectModificationTimeMessage);
 
         // attribute messages at the end
@@ -107,10 +107,10 @@ public class HdfDataSet {
         if ( objectHeaderSize + 8 > currentObjectHeaderSize) {
             // restructure the messages
             headerMessages.clear();
-            ObjectHeaderContinuationMessage objectHeaderContinuationMessage = new ObjectHeaderContinuationMessage(HdfFixedPoint.of(0), HdfFixedPoint.of(0));
+            ObjectHeaderContinuationMessage objectHeaderContinuationMessage = new ObjectHeaderContinuationMessage(HdfFixedPoint.of(0), HdfFixedPoint.of(0), (byte)0);
             headerMessages.add(objectHeaderContinuationMessage);
             // NiLMessage is now 0 size because there is no extra space
-            headerMessages.add(new NilMessage(0));
+            headerMessages.add(new NilMessage(0, (byte)0));
             headerMessages.add(dataTypeMessage);
             headerMessages.add(fillValueMessage);
             headerMessages.add(dataLayoutMessage);
@@ -137,7 +137,7 @@ public class HdfDataSet {
             // set the object header size.
         } else {
             // add remaining space
-            headerMessages.add(new NilMessage(currentObjectHeaderSize - 8 - objectHeaderSize));
+            headerMessages.add(new NilMessage(currentObjectHeaderSize - 8 - objectHeaderSize, (byte)0));
         }
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, Math.max(objectHeaderSize, currentObjectHeaderSize), headerMessages);
     }

@@ -50,8 +50,8 @@ public class BTreeKValuesMessage extends HdfMessage {
     private final int groupInternalNodeK;
     private final int groupLeafNodeK;
 
-    public BTreeKValuesMessage(int version, int indexedStorageInternalNodeK, int groupInternalNodeK, int groupLeafNodeK) {
-        super(MessageType.BtreeKValuesMessage, ()-> (short) (1+2+2+2), (byte)0);
+    public BTreeKValuesMessage(int version, int indexedStorageInternalNodeK, int groupInternalNodeK, int groupLeafNodeK, byte flags) {
+        super(MessageType.BtreeKValuesMessage, ()-> (short) (1+2+2+2), flags);
         this.version = version;
         this.indexedStorageInternalNodeK = indexedStorageInternalNodeK;
         this.groupInternalNodeK = groupInternalNodeK;
@@ -68,7 +68,7 @@ public class BTreeKValuesMessage extends HdfMessage {
         int indexedStorageInternalNodeK = Short.toUnsignedInt(buffer.getShort());
         int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
         int groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
-        return new BTreeKValuesMessage(version, indexedStorageInternalNodeK, groupInternalNodeK, groupLeafNodeK);
+        return new BTreeKValuesMessage(version, indexedStorageInternalNodeK, groupInternalNodeK, groupLeafNodeK, flags);
     }
 
     @Override

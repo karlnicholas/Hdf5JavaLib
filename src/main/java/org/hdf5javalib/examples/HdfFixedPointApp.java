@@ -77,10 +77,10 @@ public class HdfFixedPointApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        tryHdfApiInts("randomintseach.h5", this::writeEach);
-        tryHdfApiInts("randomintsall.h5", this::writeAll);
-        tryHdfApiMatrixInts("weather_data_each.h5", this::writeEachMatrix);
-        tryHdfApiMatrixInts("weather_data_all.h5", this::writeAllMatrix);
+//        tryHdfApiInts("randomintseach.h5", this::writeEach);
+//        tryHdfApiInts("randomintsall.h5", this::writeAll);
+//        tryHdfApiMatrixInts("weather_data_each.h5", this::writeEachMatrix);
+//        tryHdfApiMatrixInts("weather_data_all.h5", this::writeAllMatrix);
     }
 
     private void tryScalarDataSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
@@ -186,7 +186,7 @@ public class HdfFixedPointApp {
 
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS), HdfFixedPoint.of(NUM_DATAPOINTS)};
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 2, 1, hdfDimensions, hdfDimensions, false);
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 2, 1, hdfDimensions, hdfDimensions, false, (byte)0);
 
             FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
@@ -219,7 +219,7 @@ public class HdfFixedPointApp {
 
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false);
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false, (byte)0);
 
             FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),

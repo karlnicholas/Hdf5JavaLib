@@ -65,9 +65,10 @@ public class FillValueMessage extends HdfMessage {
             int fillValueWriteTime,
             int fillValueDefined,
             int size,
-            byte[] fillValue
+            byte[] fillValue,
+            byte flags
     ) {
-        super(MessageType.FillValueMessage, ()-> (short) (8), (byte)1);
+        super(MessageType.FillValueMessage, ()-> (short) (8), flags);
         this.version = version;
         this.spaceAllocationTime = spaceAllocationTime;
         this.fillValueWriteTime = fillValueWriteTime;
@@ -109,7 +110,7 @@ public class FillValueMessage extends HdfMessage {
         }
 
         // Return a constructed instance of FillValueMessage
-        return new FillValueMessage(version, spaceAllocationTime, fillValueWriteTime, fillValueDefined, size, fillValue);
+        return new FillValueMessage(version, spaceAllocationTime, fillValueWriteTime, fillValueDefined, size, fillValue, flags);
     }
 
     @Override
