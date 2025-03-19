@@ -64,13 +64,8 @@ public class DatatypeMessage extends HdfMessage {
     private final HdfDatatype hdfDatatype;                 // Remaining raw data
 
     // Constructor to initialize all fields
-    public DatatypeMessage(HdfDatatype hdfDatatype, byte flags) {
-        super(MessageType.DatatypeMessage, ()-> {
-            short sizeMessageData = 8;
-            sizeMessageData += hdfDatatype.getSizeMessageData();
-            // to 8 byte boundary
-            return (short) ((sizeMessageData + 7) & ~7);
-        },flags);
+    public DatatypeMessage(HdfDatatype hdfDatatype, byte flags, short sizeMessageData) {
+        super(MessageType.DatatypeMessage, sizeMessageData,flags);
         this.hdfDatatype = hdfDatatype;
     }
 
@@ -102,7 +97,7 @@ public class DatatypeMessage extends HdfMessage {
         // Parse Size (unsigned 4 bytes)
         int size = buffer.getInt();
         HdfDatatype hdfDatatype = parseMessageDataType(classAndVersion, classBitField, size, buffer);
-        return new DatatypeMessage(hdfDatatype, flags);
+        return new DatatypeMessage(hdfDatatype, flags, (short) data.length);
     }
 //    public static CompoundMemberDatatype parseMember(ByteBuffer buffer) {
 //        buffer.mark();

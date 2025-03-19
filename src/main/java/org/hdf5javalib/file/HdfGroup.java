@@ -66,10 +66,12 @@ public class HdfGroup {
                 HdfFixedPoint.undefined((short)8),
                 HdfFixedPoint.undefined((short)8));
 
+        HdfFixedPoint btree = HdfFixedPoint.of(btreeAddress);
+        HdfFixedPoint localHeap = HdfFixedPoint.of(localHeapAddress);
+
+        // (short) (bTreeAddress.getDatatype().getSize() + localHeapAddress.getDatatype().getSize()
         objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 1, 24,
-                Collections.singletonList(new SymbolTableMessage(
-                        HdfFixedPoint.of(btreeAddress),
-                        HdfFixedPoint.of(localHeapAddress), (byte)0)));
+                Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte)0,(short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))));
 
         // Define a root group
         symbolTableNode = new HdfGroupSymbolTableNode("SNOD", 1, 0, new ArrayList<>());

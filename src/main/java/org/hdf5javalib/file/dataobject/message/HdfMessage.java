@@ -68,11 +68,10 @@ public abstract class HdfMessage {
     private short sizeMessageData;
     private final byte messageFlags;
 
-    protected HdfMessage(MessageType messageType, Supplier<Short> sizeSupplier, byte messageFlags) {
+    protected HdfMessage(MessageType messageType, short sizeMessageData, byte messageFlags) {
         this.messageType = messageType;
-        this.sizeMessageData = sizeSupplier.get();
+        this.sizeMessageData = sizeMessageData;
         this.messageFlags = messageFlags;
-System.out.println(messageType + " " + sizeSupplier.get() + " " + messageFlags);
     }
 
     /**
@@ -119,7 +118,7 @@ System.out.println(messageType + " " + sizeSupplier.get() + " " + messageFlags);
         return messages;
     }
 
-    public static HdfMessage createMessageInstance(HdfMessage.MessageType type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData) {
+    protected static HdfMessage createMessageInstance(HdfMessage.MessageType type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData) {
         System.out.println("type:flags:length " + type + " " + flags + " " + data.length);
         return switch (type) {
             case NilMessage -> NilMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
@@ -138,7 +137,6 @@ System.out.println(messageType + " " + sizeSupplier.get() + " " + messageFlags);
 
     // TODO: fix recursion
     public static List<HdfMessage> parseContinuationMessage(FileChannel fileChannel, ObjectHeaderContinuationMessage objectHeaderContinuationMessage, short offsetSize, short lengthSize) throws IOException {
-        List<HdfMessage> messages = new ArrayList<>();
         long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().getInstance(Long.class);
         short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getInstance(Long.class).shortValue();
 
@@ -146,13 +144,13 @@ System.out.println(messageType + " " + sizeSupplier.get() + " " + messageFlags);
         fileChannel.position(continuationOffset);
 
         // Parse the continuation block messages
-        messages.addAll(readMessagesFromByteBuffer(fileChannel, continuationSize, offsetSize, lengthSize));
-        return messages;
+        return new ArrayList<>(readMessagesFromByteBuffer(fileChannel, continuationSize, offsetSize, lengthSize));
     }
 
     /**
      * Enum representing various HDF5 message types.
      */
+    @Getter
     public enum MessageType {
         /**
          * **NIL Message (0x0000)**:
@@ -304,14 +302,6 @@ System.out.println(messageType + " " + sizeSupplier.get() + " " + messageFlags);
         MessageType(short value, String name) {
             this.value = value;
             this.name = name;
-        }
-
-        public short getValue() {
-            return value;
-        }
-
-        public String getName() {
-            return name;
         }
 
         /**

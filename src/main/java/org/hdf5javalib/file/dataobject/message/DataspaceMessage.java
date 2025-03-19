@@ -67,22 +67,10 @@ public class DataspaceMessage extends HdfMessage {
             HdfFixedPoint[] dimensions,
             HdfFixedPoint[] maxDimensions,
             boolean hasMaxDimensions,
-            byte flags
+            byte flags,
+            short sizeMessageData
     ) {
-        super(MessageType.DataspaceMessage, ()->{
-            short size = 8;
-            if ( dimensions != null ) {
-                for (HdfFixedPoint dimension : dimensions) {
-                    size += dimension.getDatatype().getSize();
-                }
-            }
-            if ( maxDimensions != null ) {
-                for (HdfFixedPoint maxDimension : maxDimensions) {
-                    size += maxDimension.getDatatype().getSize();
-                }
-            }
-            return size;
-        }, flags);
+        super(MessageType.DataspaceMessage, sizeMessageData, flags);
         this.version = version;
         this.dimensionality = dimensionality;
         this.parsedFlags = parsedFlags;
@@ -133,7 +121,7 @@ public class DataspaceMessage extends HdfMessage {
         }
 
         // Return a constructed instance of DataspaceMessage
-        return new DataspaceMessage(version, dimensionality, parsedFlags, dimensions, maxDimensions, hasMaxDimensions, flags);
+        return new DataspaceMessage(version, dimensionality, parsedFlags, dimensions, maxDimensions, hasMaxDimensions, flags, (short) data.length);
     }
 
     @Override

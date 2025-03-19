@@ -66,9 +66,10 @@ public class FillValueMessage extends HdfMessage {
             int fillValueDefined,
             int size,
             byte[] fillValue,
-            byte flags
+            byte flags,
+            short sizeMessageData
     ) {
-        super(MessageType.FillValueMessage, ()-> (short) (8), flags);
+        super(MessageType.FillValueMessage, sizeMessageData, flags);
         this.version = version;
         this.spaceAllocationTime = spaceAllocationTime;
         this.fillValueWriteTime = fillValueWriteTime;
@@ -82,11 +83,11 @@ public class FillValueMessage extends HdfMessage {
      *
      * @param flags      Flags associated with the message (not used here).
      * @param data       Byte array containing the header message data.
-     * @param offsetSize Size of offsets in bytes (not used here).
-     * @param lengthSize Size of lengths in bytes (not used here).
+     * @param ignoredOffsetSize Size of offsets in bytes (not used here).
+     * @param ignoredLengthSize Size of lengths in bytes (not used here).
      * @return A fully constructed `FillValueMessage` instance.
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int ignoredOffsetSize, int ignoredLengthSize) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Parse the first 4 bytes
@@ -110,7 +111,7 @@ public class FillValueMessage extends HdfMessage {
         }
 
         // Return a constructed instance of FillValueMessage
-        return new FillValueMessage(version, spaceAllocationTime, fillValueWriteTime, fillValueDefined, size, fillValue, flags);
+        return new FillValueMessage(version, spaceAllocationTime, fillValueWriteTime, fillValueDefined, size, fillValue, flags, (short) data.length);
     }
 
     @Override

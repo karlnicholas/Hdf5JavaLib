@@ -56,18 +56,8 @@ public class AttributeMessage extends HdfMessage {
     private final DataspaceMessage dataspaceMessage;
     private final HdfData value;
 
-    public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfString value, byte flags) {
-        super(MessageType.AttributeMessage, ()-> {
-            short s = 8;
-            int nameSize = name.toString().length();
-            nameSize = (short) ((nameSize + 7) & ~7);
-            int datatypeSize = 8; // datatypeMessage.getSizeMessageData();
-            int dataspaceSize = 8; // dataspaceMessage.getSizeMessageData();
-            int valueSize = value != null ? value.toString().length() : 0;
-            valueSize  = (short) ((valueSize + 7) & ~7);
-            s += nameSize + datatypeSize + dataspaceSize + valueSize;
-            return s;
-        }, flags);
+    public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfString value, byte flags, short sizeMessageData) {
+        super(MessageType.AttributeMessage, sizeMessageData, flags);
         this.version = version;
         this.datatypeMessage = datatypeMessage;
         this.dataspaceMessage = dataspaceMessage;
@@ -116,7 +106,7 @@ public class AttributeMessage extends HdfMessage {
             buffer.get(dataBytes);
             value = new HdfString(dataBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, dataBytes.length));
         }
-        return new AttributeMessage(version, name, dt, ds, value, flags);
+        return new AttributeMessage(version, name, dt, ds, value, flags, (short)data.length);
     }
 
     @Override

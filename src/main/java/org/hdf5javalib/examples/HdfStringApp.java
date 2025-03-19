@@ -80,7 +80,18 @@ public class HdfStringApp {
 
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false, (byte)0);
+            short dataSpaceMessageSize = 8;
+            if ( hdfDimensions != null ) {
+                for (HdfFixedPoint dimension : hdfDimensions) {
+                    dataSpaceMessageSize += dimension.getDatatype().getSize();
+                }
+            }
+            if ( hdfDimensions != null ) {
+                for (HdfFixedPoint maxDimension : hdfDimensions) {
+                    dataSpaceMessageSize += maxDimension.getDatatype().getSize();
+                }
+            }
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false, (byte)0, dataSpaceMessageSize);
 
             StringDatatype stringDatatype = new StringDatatype(
                     StringDatatype.createClassAndVersion(),

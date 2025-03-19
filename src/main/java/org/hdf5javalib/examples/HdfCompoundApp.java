@@ -81,9 +81,24 @@ public class HdfCompoundApp {
         // value
         StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(), classBitField, (short) ATTRIBUTE_VALUE.length());
         // data type, String, DATASET_NAME.length
-        DatatypeMessage dt = new DatatypeMessage(attributeType, (byte)0);
+        short dataTypeMessageSize = 8;
+        dataTypeMessageSize += attributeType.getSizeMessageData();
+        // to 8 byte boundary
+        dataTypeMessageSize += ((dataTypeMessageSize + 7) & ~7);
+        DatatypeMessage dt = new DatatypeMessage(attributeType, (byte)1, dataTypeMessageSize);
         // scalar, 1 string
-        DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false, (byte)0);
+        short dataspaceMessageSize = 8;
+//        if ( dimensions != null ) {
+//            for (HdfFixedPoint dimension : dimensions) {
+//                dataspaceMessageSize += dimension.getDatatype().getSize();
+//            }
+//        }
+//        if ( maxDimensions != null ) {
+//            for (HdfFixedPoint maxDimension : maxDimensions) {
+//                dataspaceMessageSize += maxDimension.getDatatype().getSize();
+//            }
+//        }
+        DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false, (byte)0, dataspaceMessageSize);
         HdfString hdfString = new HdfString(ATTRIBUTE_VALUE.getBytes(), attributeType);
         dataset.createAttribute(ATTRIBUTE_NAME, dt, ds, hdfString);
     }
@@ -175,7 +190,18 @@ public class HdfCompoundApp {
 
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false, (byte)0);
+            short dataspaceMessageSize = 8;
+            if ( hdfDimensions != null ) {
+                for (HdfFixedPoint dimension : hdfDimensions) {
+                    dataspaceMessageSize += dimension.getDatatype().getSize();
+                }
+            }
+            if ( hdfDimensions != null ) {
+                for (HdfFixedPoint maxDimension : hdfDimensions) {
+                    dataspaceMessageSize += maxDimension.getDatatype().getSize();
+                }
+            }
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false, (byte)0, dataspaceMessageSize);
 //            hsize_t dim[1] = { NUM_RECORDS };
 //            DataSpace space(1, dim);
 

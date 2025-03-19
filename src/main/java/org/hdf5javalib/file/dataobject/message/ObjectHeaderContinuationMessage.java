@@ -54,8 +54,8 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
     private HdfFixedPoint continuationOffset; // Offset of the continuation block
     private HdfFixedPoint continuationSize;   // Size of the continuation block
 
-    public ObjectHeaderContinuationMessage(final HdfFixedPoint continuationOffset, final HdfFixedPoint continuationSize, byte flags) {
-        super(MessageType.ObjectHeaderContinuationMessage, ()-> (short) (8+8), flags);
+    public ObjectHeaderContinuationMessage(final HdfFixedPoint continuationOffset, final HdfFixedPoint continuationSize, byte flags, short sizeMessageData) {
+        super(MessageType.ObjectHeaderContinuationMessage, sizeMessageData, flags);
         this.continuationOffset = continuationOffset;
         this.continuationSize = continuationSize;
     }
@@ -66,7 +66,7 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
         BitSet emptyBitSet = new BitSet();
         HdfFixedPoint continuationOffset = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
         HdfFixedPoint continuationSize = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(lengthSize*8));
-        return new ObjectHeaderContinuationMessage(continuationOffset, continuationSize, flags);
+        return new ObjectHeaderContinuationMessage(continuationOffset, continuationSize, flags, (short) data.length);
     }
 
     @Override
