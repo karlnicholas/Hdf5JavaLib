@@ -177,10 +177,10 @@ public class HdfFixedPoint implements HdfData {
         return datatype.getInstance(String.class, bytes);
     }
 
-    @Override
-    public int getSizeMessageData() {
-        return datatype.getSizeMessageData();
-    }
+//    @Override
+//    public int getSizeMessageData() {
+//        return datatype.getSizeMessageData();
+//    }
 
     @Override
     public void writeValueToByteBuffer(ByteBuffer buffer) {

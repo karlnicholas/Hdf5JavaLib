@@ -32,7 +32,7 @@ public class HdfVariableLength implements HdfData {
 
     // Get the HDF byte[] representation for storage, always returns a copy
     public byte[] getBytes() {
-        byte[] copy = new byte[getSizeMessageData()];
+        byte[] copy = new byte[ datatype.getSize()];
         System.arraycopy(bytes, 0, copy, 0, bytes.length);
         return copy;
     }
@@ -43,11 +43,11 @@ public class HdfVariableLength implements HdfData {
         return datatype.getInstance(String.class, bytes);
     }
 
-    @Override
-    public int getSizeMessageData() {
-        return datatype.getSize();
-    }
-
+//    @Override
+//    public int getSizeMessageData() {
+//        return datatype.getSize();
+//    }
+//
     @Override
     public void writeValueToByteBuffer(ByteBuffer buffer) {
         buffer.put(getBytes());

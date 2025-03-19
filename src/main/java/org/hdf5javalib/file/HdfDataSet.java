@@ -52,7 +52,7 @@ public class HdfDataSet {
         dataAddress = hdfGroup.write(byteBuffer, this);
     }
 
-    public AttributeMessage createAttribute(String name, DatatypeMessage dt, DataspaceMessage ds, HdfData value) {
+    public AttributeMessage createAttribute(String name, DatatypeMessage dt, DataspaceMessage ds, HdfString value) {
         byte[] nameBytes = new byte[name.length()];
         System.arraycopy(name.getBytes(StandardCharsets.US_ASCII), 0, nameBytes, 0, name.length());
         AttributeMessage attributeMessage = new AttributeMessage(1,

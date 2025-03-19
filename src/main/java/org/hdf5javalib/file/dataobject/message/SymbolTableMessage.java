@@ -16,7 +16,7 @@ public class SymbolTableMessage extends HdfMessage {
 
     // Constructor to create SymbolTableMessage directly with values
     public SymbolTableMessage(HdfFixedPoint bTreeAddress, HdfFixedPoint localHeapAddress) {
-        super(MessageType.SymbolTableMessage, ()-> (short) (bTreeAddress.getSizeMessageData() + localHeapAddress.getSizeMessageData()), (byte)0);
+        super(MessageType.SymbolTableMessage, ()-> (short) (bTreeAddress.getDatatype().getSize() + localHeapAddress.getDatatype().getSize()), (byte)0);
         this.bTreeAddress = bTreeAddress;
         this.localHeapAddress = localHeapAddress;
     }

@@ -25,7 +25,7 @@ public class HdfWriteUtils {
      * If undefined, fills with 0xFF.
      */
     public static void writeFixedPointToBuffer(ByteBuffer buffer, HdfFixedPoint value) {
-        int size = value.getSizeMessageData();
+        int size = value.getDatatype().getSize();
         byte[] bytesToWrite = new byte[size];
 
         if (value.isUndefined()) {

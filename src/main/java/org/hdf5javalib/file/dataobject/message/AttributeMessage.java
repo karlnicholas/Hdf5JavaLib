@@ -21,14 +21,14 @@ public class AttributeMessage extends HdfMessage {
     private final DataspaceMessage dataspaceMessage;
     private final HdfData value;
 
-    public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfData value) {
+    public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfString value) {
         super(MessageType.AttributeMessage, ()-> {
             short s = 8;
-            int nameSize = name.getSizeMessageData();
+            int nameSize = name.toString().length();
             nameSize = (short) ((nameSize + 7) & ~7);
             int datatypeSize = 8; // datatypeMessage.getSizeMessageData();
             int dataspaceSize = 8; // dataspaceMessage.getSizeMessageData();
-            int valueSize = value != null ? value.getSizeMessageData() : 0;
+            int valueSize = value != null ? value.toString().length() : 0;
             valueSize  = (short) ((valueSize + 7) & ~7);
             s += nameSize + datatypeSize + dataspaceSize + valueSize;
             return s;
@@ -74,7 +74,7 @@ public class AttributeMessage extends HdfMessage {
         HdfMessage hdfDataObjectHeaderDs = createMessageInstance(MessageType.DataspaceMessage, (byte) 0, dsBytes, offsetSize, lengthSize, null);
         DataspaceMessage ds = (DataspaceMessage) hdfDataObjectHeaderDs;
 
-        HdfData value = null;
+        HdfString value = null;
         if ( dt.getHdfDatatype().getDatatypeClass() == HdfDatatype.DatatypeClass.STRING ) {
             int dtDataSize = dt.getHdfDatatype().getSize();
             byte[] dataBytes = new byte[dtDataSize];

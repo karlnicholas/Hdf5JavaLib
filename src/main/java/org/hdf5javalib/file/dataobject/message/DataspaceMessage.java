@@ -32,12 +32,12 @@ public class DataspaceMessage extends HdfMessage {
             short size = 8;
             if ( dimensions != null ) {
                 for (HdfFixedPoint dimension : dimensions) {
-                    size += dimension.getSizeMessageData();
+                    size += dimension.getDatatype().getSize();
                 }
             }
             if ( maxDimensions != null ) {
                 for (HdfFixedPoint maxDimension : maxDimensions) {
-                    size += maxDimension.getSizeMessageData();
+                    size += maxDimension.getDatatype().getSize();
                 }
             }
             return size;

@@ -47,10 +47,10 @@ public class HdfFloatPoint implements HdfData {
         return datatype.getInstance(String.class, bytes);
     }
 
-    @Override
-    public int getSizeMessageData() {
-        return (short)bytes.length;
-    }
+//    @Override
+//    public int getSizeMessageData() {
+//        return (short)bytes.length;
+//    }
 
     @Override
     public void writeValueToByteBuffer(ByteBuffer buffer) {
