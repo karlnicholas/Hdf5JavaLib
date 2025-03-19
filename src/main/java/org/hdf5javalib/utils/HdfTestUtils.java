@@ -21,7 +21,7 @@ public class HdfTestUtils {
         dataTypeMessageSize += attributeType.getSizeMessageData();
         // to 8 byte boundary
         dataTypeMessageSize += ((dataTypeMessageSize + 7) & ~7);
-        DatatypeMessage dt = new DatatypeMessage(attributeType, (byte)0, dataTypeMessageSize);
+        DatatypeMessage dt = new DatatypeMessage(attributeType, (byte)1, dataTypeMessageSize);
         // scalar, 1 string
         short dataSpaceMessageSize = 8;
         DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false, (byte)0, dataSpaceMessageSize);

@@ -79,13 +79,13 @@ public class HdfDataSet {
         dataTypeMessageSize += hdfDatatype.getSizeMessageData();
         // to 8 byte boundary
         dataTypeMessageSize += ((dataTypeMessageSize + 7) & ~7);
-        DatatypeMessage dataTypeMessage = new DatatypeMessage(hdfDatatype, (byte)0, dataTypeMessageSize);
+        DatatypeMessage dataTypeMessage = new DatatypeMessage(hdfDatatype, (byte)1, dataTypeMessageSize);
         headerMessages.add(dataTypeMessage);
 
         // Add FillValue message
         FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 2, 1,
                 0,
-                new byte[0], (byte)0, (short)8);
+                new byte[0], (byte)1, (short)8);
         headerMessages.add(fillValueMessage);
 
         // Add DataLayoutMessage (Storage format)
