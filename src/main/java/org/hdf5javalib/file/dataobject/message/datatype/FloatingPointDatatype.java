@@ -88,13 +88,6 @@ public class FloatingPointDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
-    @Override
-    public <T> T getInstance(Class<T> clazz, ByteBuffer buffer) {
-        byte[] bytes = new byte[size];
-        buffer.get(bytes);
-        return getInstance(clazz, bytes);
-    }
-
     // Convert buffer to Float
     public Float toFloat(byte[] bytes) {
         double value = toDoubleValue(bytes);
@@ -170,12 +163,6 @@ public class FloatingPointDatatype implements HdfDatatype {
         }
         return signLoc;
     }
-//    @Override
-//    public HdfData getInstance(ByteBuffer buffer) {
-//        byte[] bytes = new byte[size];
-//        buffer.get(bytes);
-//        return new HdfFloatPoint(bytes, classBitField, size, bitOffset, bitPrecision, exponentLocation, exponentSize, mantissaLocation, mantissaSize, exponentBias);
-//    }
 
     @Override
     public String toString() {

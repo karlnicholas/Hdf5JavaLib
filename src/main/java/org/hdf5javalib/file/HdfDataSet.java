@@ -1,7 +1,6 @@
 package org.hdf5javalib.file;
 
 import lombok.Getter;
-import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;

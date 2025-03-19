@@ -161,7 +161,7 @@ public class HdfFixedPoint implements HdfData {
         }
     }
 
-    public static byte[] toSizedByteArray(BigInteger value, int byteSize, boolean bigEndian) {
+    private static byte[] toSizedByteArray(BigInteger value, int byteSize, boolean bigEndian) {
         byte[] fullBytes = value.toByteArray();
         byte[] result = new byte[byteSize];
         int copyLength = Math.min(fullBytes.length, byteSize);
@@ -176,11 +176,6 @@ public class HdfFixedPoint implements HdfData {
     public String toString() {
         return datatype.getInstance(String.class, bytes);
     }
-
-//    @Override
-//    public int getSizeMessageData() {
-//        return datatype.getSizeMessageData();
-//    }
 
     @Override
     public void writeValueToByteBuffer(ByteBuffer buffer) {

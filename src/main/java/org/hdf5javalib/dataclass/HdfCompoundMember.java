@@ -5,12 +5,17 @@ import org.hdf5javalib.file.dataobject.message.datatype.CompoundMemberDatatype;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Holds bytes that are needed for lookup in the global heap
+ */
 @Getter
 public class HdfCompoundMember implements HdfData {
     private final CompoundMemberDatatype datatype;
     private final byte[] bytes;
-//    private final HdfData data;
 
+    /**
+     * Holds bytes that are needed for lookup in the global heap
+     */
     public HdfCompoundMember(byte[] bytes, CompoundMemberDatatype datatype) {
         this.bytes = bytes;
         this.datatype = datatype;
@@ -20,10 +25,6 @@ public class HdfCompoundMember implements HdfData {
     public String toString() {
         return datatype.getInstance(HdfData.class, bytes).toString();
     }
-//    @Override
-//    public int getSizeMessageData() {
-//        return bytes.length;
-//    }
 
     @Override
     public void writeValueToByteBuffer(ByteBuffer buffer) {

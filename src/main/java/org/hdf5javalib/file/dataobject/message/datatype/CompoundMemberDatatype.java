@@ -121,12 +121,6 @@ public class CompoundMemberDatatype implements HdfDatatype {
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         return type.getInstance(clazz, bytes);
     }
-    @Override
-    public <T> T getInstance(Class<T> clazz, ByteBuffer buffer) {
-        byte[] bytes = new byte[sizeMessageData];
-        buffer.get(bytes);
-        return getInstance(clazz, bytes);
-    }
 
     @Override
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {

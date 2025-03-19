@@ -13,6 +13,43 @@ import java.util.BitSet;
 
 import static org.hdf5javalib.utils.HdfReadUtils.createMessageInstance;
 
+/**
+ * Represents an Attribute Message in the HDF5 file format.
+ *
+ * <p>The Attribute Message stores metadata about an HDF5 object, such as a dataset,
+ * group, or named datatype. Attributes provide additional descriptive information,
+ * such as units, labels, or other user-defined metadata, without affecting the
+ * dataset's primary data.</p>
+ *
+ * <h2>Structure</h2>
+ * <p>The Attribute Message consists of the following components:</p>
+ * <ul>
+ *   <li><b>Version (1 byte)</b>: Identifies the version of the attribute message format.</li>
+ *   <li><b>Name (variable-length)</b>: Specifies the name of the attribute.</li>
+ *   <li><b>Datatype Message</b>: Defines the datatype of the attribute's value.</li>
+ *   <li><b>Dataspace Message</b>: Defines the dimensionality (rank) and size of the attribute's value.</li>
+ *   <li><b>Raw Data (variable-length)</b>: Stores the actual attribute value(s).</li>
+ * </ul>
+ *
+ * <h2>Purpose</h2>
+ * <p>Attribute Messages are used for:</p>
+ * <ul>
+ *   <li>Adding metadata to datasets, groups, or named datatypes.</li>
+ *   <li>Storing small amounts of auxiliary data efficiently.</li>
+ *   <li>Providing descriptive labels, units, or other contextual information.</li>
+ * </ul>
+ *
+ * <h2>Processing</h2>
+ * <p>Attributes in HDF5 are stored similarly to datasets but are not intended for
+ * large-scale data storage. They are typically read and written via the attribute
+ * interface in HDF5 libraries.</p>
+ *
+ * <p>This class provides methods to parse and interpret Attribute Messages
+ * based on the HDF5 file specification.</p>
+ *
+ * @see <a href="https://docs.hdfgroup.org/hdf5/develop/group___a_t_t_r_i_b_u_t_e.html">
+ *      HDF5 Attribute Documentation</a>
+ */
 @Getter
 public class AttributeMessage extends HdfMessage {
     private final int version;

@@ -10,6 +10,46 @@ import java.util.BitSet;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
+/**
+ * Represents a Dataspace Message in the HDF5 file format.
+ *
+ * <p>The Dataspace Message defines the dimensionality and shape of a dataset,
+ * specifying how data is organized within an HDF5 file. It includes information
+ * about the number of dimensions, the size of each dimension, and optionally
+ * maximum dimensions for extensible datasets.</p>
+ *
+ * <h2>Structure</h2>
+ * <p>The Dataspace Message consists of the following components:</p>
+ * <ul>
+ *   <li><b>Version (1 byte)</b>: Identifies the version of the dataspace format.</li>
+ *   <li><b>Dimensionality (1 byte)</b>: Specifies the number of dimensions (rank)
+ *       of the dataset, ranging from 0 (scalar) to a maximum allowed value (typically 32).</li>
+ *   <li><b>Flags (1 byte, version-dependent)</b>: May indicate whether maximum dimensions
+ *       or permutation indexes are present.</li>
+ *   <li><b>Dimension Sizes (array of unsigned 64-bit integers)</b>: Defines the
+ *       current sizes of each dimension in the dataset.</li>
+ *   <li><b>Maximum Dimension Sizes (optional, array of unsigned 64-bit integers)</b>:
+ *       Specifies the maximum sizes for extensible dimensions (if applicable).</li>
+ * </ul>
+ *
+ * <h2>Dataspace Types</h2>
+ * <p>The HDF5 format supports the following dataspace types:</p>
+ * <ul>
+ *   <li><b>Scalar</b>: A single data point with no dimensions.</li>
+ *   <li><b>Simple</b>: A multidimensional array with fixed or extensible dimensions.</li>
+ *   <li><b>Null</b>: A dataspace that contains no elements.</li>
+ * </ul>
+ *
+ * <h2>Extensibility</h2>
+ * <p>If a dataspace has maximum dimension sizes larger than its current sizes, it can be
+ * extended dynamically, allowing datasets to grow over time.</p>
+ *
+ * <p>This class provides methods to parse and interpret Dataspace Messages based on
+ * the HDF5 file specification.</p>
+ *
+ * @see <a href="https://docs.hdfgroup.org/hdf5/develop/group___d_a_t_a_s_p_a_c_e.html">
+ *      HDF5 Dataspace Documentation</a>
+ */
 @Getter
 public class DataspaceMessage extends HdfMessage {
     private final int version; // Version of the dataspace message

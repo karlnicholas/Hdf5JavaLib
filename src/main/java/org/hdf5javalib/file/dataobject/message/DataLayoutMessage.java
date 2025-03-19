@@ -11,6 +11,52 @@ import java.util.BitSet;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
+/**
+ * Represents a Data Layout Message in the HDF5 file format.
+ *
+ * <p>The Data Layout Message defines how raw data is stored within an HDF5 file.
+ * It specifies the data storage method (contiguous, chunked, or compact) and
+ * includes details about data organization, offsets, and dimensions.</p>
+ *
+ * <h2>Structure</h2>
+ * <p>The Data Layout Message consists of the following components:</p>
+ * <ul>
+ *   <li><b>Version (1 byte)</b>: Identifies the version of the data layout message format.</li>
+ *   <li><b>Layout Class (1 byte)</b>: Defines the storage method, which can be one of:
+ *       <ul>
+ *         <li><b>Contiguous (0)</b>: Data is stored in a single continuous block.</li>
+ *         <li><b>Chunked (1)</b>: Data is divided into fixed-size chunks, allowing
+ *             partial I/O and compression.</li>
+ *         <li><b>Compact (2)</b>: Small datasets are stored directly within the
+ *             object header.</li>
+ *       </ul>
+ *   </li>
+ *   <li><b>Storage Properties</b>: Additional fields vary based on the layout class:
+ *       <ul>
+ *         <li><b>Contiguous:</b> Includes an 8-byte file address indicating where
+ *             the data begins.</li>
+ *         <li><b>Chunked:</b> Includes the dimensionality and chunk dimensions,
+ *             along with a file address for each chunk.</li>
+ *         <li><b>Compact:</b> Stores raw data directly within the message.</li>
+ *       </ul>
+ *   </li>
+ * </ul>
+ *
+ * <h2>Layout Classes</h2>
+ * <p>The HDF5 format supports different layout strategies:</p>
+ * <ul>
+ *   <li><b>Contiguous</b>: Efficient for sequential access but not ideal for partial modifications.</li>
+ *   <li><b>Chunked</b>: Supports compression, partial I/O, and expansion, making it suitable
+ *       for large and multidimensional datasets.</li>
+ *   <li><b>Compact</b>: Optimized for very small datasets, reducing file overhead.</li>
+ * </ul>
+ *
+ * <p>This class provides methods for parsing and interpreting Data Layout Messages
+ * based on the HDF5 file specification.</p>
+ *
+ * @see <a href="https://docs.hdfgroup.org/hdf5/develop/group___d_a_t_a_l_a_y_o_u_t.html">
+ *      HDF5 Data Layout Documentation</a>
+ */
 @Getter
 public class DataLayoutMessage extends HdfMessage {
     private final int version;

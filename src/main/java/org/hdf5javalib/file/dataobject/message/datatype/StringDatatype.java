@@ -64,13 +64,6 @@ public class StringDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
-    @Override
-    public <T> T getInstance(Class<T> clazz, ByteBuffer buffer) {
-        byte[] bytes = new byte[size];
-        buffer.get(bytes);
-        return getInstance(clazz, bytes);
-    }
-
     public String toString(byte[] bytes) {
         byte[] workingBytes = new byte[size];
         int workingEnd = Math.min(size, bytes.length);

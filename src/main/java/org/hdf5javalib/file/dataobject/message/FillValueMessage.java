@@ -5,6 +5,50 @@ import lombok.Getter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Represents a Fill Value Message in the HDF5 file format.
+ *
+ * <p>The Fill Value Message defines the default value used to initialize
+ * unallocated or uninitialized elements of a dataset. This ensures that
+ * datasets have a consistent default value when accessed before explicit
+ * data is written.</p>
+ *
+ * <h2>Structure</h2>
+ * <p>The Fill Value Message consists of the following components:</p>
+ * <ul>
+ *   <li><b>Version (1 byte)</b>: Identifies the version of the fill value format.</li>
+ *   <li><b>Space Allocation Time (1 byte, version-dependent)</b>: Determines when
+ *       space for fill values is allocated. Options include:
+ *       <ul>
+ *         <li>Early (allocated when the dataset is created).</li>
+ *         <li>Late (allocated when data is written).</li>
+ *         <li>Incremental (allocated gradually as chunks are written).</li>
+ *       </ul>
+ *   </li>
+ *   <li><b>Fill Value Write Time (1 byte, version-dependent)</b>: Specifies when
+ *       the fill value is written (on dataset creation or first data write).</li>
+ *   <li><b>Fill Value Defined Flag (1 byte)</b>: Indicates whether a user-defined
+ *       fill value is provided.</li>
+ *   <li><b>Fill Value Size (variable)</b>: Specifies the size of the fill value in bytes.</li>
+ *   <li><b>Fill Value Data (variable, optional)</b>: Contains the actual fill value,
+ *       matching the dataset's datatype.</li>
+ * </ul>
+ *
+ * <h2>Usage</h2>
+ * <p>Fill values are used to ensure that uninitialized regions of a dataset have
+ * predictable content. They are particularly useful for:</p>
+ * <ul>
+ *   <li>Defining default values for missing or newly allocated data.</li>
+ *   <li>Ensuring consistency when reading uninitialized portions of a dataset.</li>
+ *   <li>Improving dataset integrity in applications requiring structured default data.</li>
+ * </ul>
+ *
+ * <p>This class provides methods to parse and interpret Fill Value Messages based
+ * on the HDF5 file specification.</p>
+ *
+ * @see <a href="https://docs.hdfgroup.org/hdf5/develop/group___f_i_l_l_v_a_l_u_e.html">
+ *      HDF5 Fill Value Documentation</a>
+ */
 @Getter
 public class FillValueMessage extends HdfMessage {
     private final int version;              // 1 byte

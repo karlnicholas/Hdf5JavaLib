@@ -29,11 +29,6 @@ public class HdfCompound implements HdfData {
         return members.stream().map(HdfCompoundMember::toString).toList().toString()    ;
     }
 
-//    @Override
-//    public int getSizeMessageData() {
-//        return members.stream().mapToInt(HdfCompoundMember::getSizeMessageData).sum();
-//    }
-
     @Override
     public void writeValueToByteBuffer(ByteBuffer buffer) {
         members.forEach(member -> member.writeValueToByteBuffer(buffer));

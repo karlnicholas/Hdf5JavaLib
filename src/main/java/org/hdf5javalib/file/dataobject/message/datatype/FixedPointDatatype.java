@@ -332,36 +332,6 @@ public class FixedPointDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
-//    @Override
-//    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
-//        if (BigDecimal.class.isAssignableFrom(clazz)) {  // Accepts BigDecimal or subclasses
-//            return clazz.cast(toBigDecimal(bytes));
-//        } else if (BigInteger.class.isAssignableFrom(clazz)) {  // Accepts BigInteger or subclasses
-//            return clazz.cast(toBigInteger(bytes));
-//        } else if (String.class.isAssignableFrom(clazz)) {  // Accepts String or subclasses
-//            return clazz.cast(toBigInteger(bytes).toString());
-//        } else if (HdfFixedPoint.class.isAssignableFrom(clazz)) {  // Accepts HdfFixedPoint or subclasses
-//            return clazz.cast(new HdfFixedPoint(bytes, this));
-//        } else if (Long.class.isAssignableFrom(clazz)) {  // Accepts Long or subclasses
-//            return clazz.cast(Long.valueOf(toLong(bytes)));
-//        } else if (Integer.class.isAssignableFrom(clazz)) {  // Accepts Integer or subclasses
-//            return clazz.cast(Integer.valueOf(toInteger(bytes)));
-//        } else if (Short.class.isAssignableFrom(clazz)) {  // Accepts Short or subclasses
-//            return clazz.cast(Short.valueOf(toShort(bytes)));
-//        } else if (Byte.class.isAssignableFrom(clazz)) {  // Accepts Byte or subclasses
-//            return clazz.cast(Byte.valueOf(toByte(bytes)));
-//        } else {
-//            throw new UnsupportedOperationException("Unknown type: " + clazz);
-//        }
-//    }
-
-    @Override
-    public <T> T getInstance(Class<T> clazz, ByteBuffer buffer) {
-        byte[] bytes = new byte[size];
-        buffer.get(bytes);
-        return getInstance(clazz, bytes);
-    }
-
     @Override
     public void setGlobalHeap(HdfGlobalHeap grok) {}
 

@@ -8,7 +8,6 @@ import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,13 +70,6 @@ public class VariableLengthDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
-    @Override
-    public <T> T getInstance(Class<T> clazz, ByteBuffer buffer) {
-        byte[] bytes = new byte[size];
-        buffer.get(bytes);
-        return getInstance(clazz, bytes);
-    }
-
     public String toString(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         int length = buffer.getInt();
@@ -85,32 +77,6 @@ public class VariableLengthDatatype implements HdfDatatype {
         int index = buffer.getInt();
 
         byte[] workingBytes = globalHeap.getDataBytes(length, offset, index);
-//        byte[] workingBytes = new byte[bytes.length];
-//        int workingEnd = Math.min(size, bytes.length);
-//        System.arraycopy(bytes, 0, workingBytes, 0, workingEnd);
-
-//        // Pad with spaces if SPACE_PAD and bytes is shorter than size
-//        if (getPaddingType() == PaddingType.SPACE_PAD && length < size) {
-//            Arrays.fill(workingBytes, length, size, (byte) ' ');
-//        }
-//
-//        // Count non-0x00 bytes
-//        int validLength = 0;
-//        for (int i = 0; i < size; i++) {
-//            if (workingBytes[i] != 0x00) {
-//                validLength++;
-//            }
-//        }
-//
-//        // Build array without 0x00
-//        byte[] cleanBytes = new byte[validLength];
-//        int pos = 0;
-//        for (int i = 0; i < size; i++) {
-//            if (workingBytes[i] != 0x00) {
-//                cleanBytes[pos++] = workingBytes[i];
-//            }
-//        }
-
         return new String(workingBytes,
                 getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
 

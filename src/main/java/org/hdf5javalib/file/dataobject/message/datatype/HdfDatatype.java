@@ -15,7 +15,7 @@ public interface HdfDatatype {
     short getSizeMessageData();
 //    <T> HdfData<T> getInstance(Class<T> clazz, ByteBuffer buffer);
     <T> T getInstance(Class<T> clazz, byte[] bytes);
-    <T> T getInstance(Class<T> clazz, ByteBuffer buffer);
+//    <T> T getInstance(Class<T> clazz, ByteBuffer buffer);
 
     void setGlobalHeap(HdfGlobalHeap globalHeap);
 

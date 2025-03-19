@@ -8,7 +8,6 @@ import org.apache.commons.csv.CSVRecord;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
-import org.hdf5javalib.datasource.TypedMatrixDataSource;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
@@ -35,7 +34,6 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Hello world!
@@ -74,7 +72,7 @@ public class HdfFixedPointApp {
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                tryMatrixSpliterator(channel, reader);
+//                tryMatrixSpliterator(channel, reader);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -107,38 +105,38 @@ public class HdfFixedPointApp {
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
     }
 
-    private void tryMatrixSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        TypedMatrixDataSource<BigDecimal> dataSource = new TypedMatrixDataSource<>(reader.getDataObjectHeaderPrefix(), 2, fileChannel, reader.getDataAddress(), BigDecimal.class);
-        BigDecimal[][] allData = dataSource.readAll();
-        // Print the matrix values
-        System.out.println("Matrix readAll() = ");
-        for (BigDecimal[] allDatum : allData) {
-            for (BigDecimal bigDecimal : allDatum) {
-                System.out.print(bigDecimal.setScale(2, RoundingMode.HALF_UP) + " ");
-            }
-            System.out.println(); // New line after each row
-        }
-
-        Stream<BigDecimal[]> stream = dataSource.stream();
-        // Print all values
-        System.out.println("Matrix stream() = ");
-        stream.forEach(array -> {
-            for (BigDecimal value : array) {
-                System.out.print(value.setScale(2, RoundingMode.HALF_UP) + " ");
-            }
-            System.out.println(); // Newline after each array
-        });
-        Stream<BigDecimal[]> parallelStream = dataSource.parallelStream();
-
-        // Print all values in order
-        System.out.println("Matrix parallelStream() = ");
-        parallelStream.forEachOrdered(array -> {
-            for (BigDecimal value : array) {
-                System.out.print(value.setScale(2, RoundingMode.HALF_UP) + " ");
-            }
-            System.out.println();
-        });
-    }
+//    private void tryMatrixSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
+//        TypedMatrixDataSource<BigDecimal> dataSource = new TypedMatrixDataSource<>(reader.getDataObjectHeaderPrefix(), 2, fileChannel, reader.getDataAddress(), BigDecimal.class);
+//        BigDecimal[][] allData = dataSource.readAll();
+//        // Print the matrix values
+//        System.out.println("Matrix readAll() = ");
+//        for (BigDecimal[] allDatum : allData) {
+//            for (BigDecimal bigDecimal : allDatum) {
+//                System.out.print(bigDecimal.setScale(2, RoundingMode.HALF_UP) + " ");
+//            }
+//            System.out.println(); // New line after each row
+//        }
+//
+//        Stream<BigDecimal[]> stream = dataSource.stream();
+//        // Print all values
+//        System.out.println("Matrix stream() = ");
+//        stream.forEach(array -> {
+//            for (BigDecimal value : array) {
+//                System.out.print(value.setScale(2, RoundingMode.HALF_UP) + " ");
+//            }
+//            System.out.println(); // Newline after each array
+//        });
+//        Stream<BigDecimal[]> parallelStream = dataSource.parallelStream();
+//
+//        // Print all values in order
+//        System.out.println("Matrix parallelStream() = ");
+//        parallelStream.forEachOrdered(array -> {
+//            for (BigDecimal value : array) {
+//                System.out.print(value.setScale(2, RoundingMode.HALF_UP) + " ");
+//            }
+//            System.out.println();
+//        });
+//    }
 
     private void tryHdfApiMatrixInts(String FILE_NAME, Consumer<MatrixWriterParams> writer) {
         String filePath = "/weatherdata.csv";

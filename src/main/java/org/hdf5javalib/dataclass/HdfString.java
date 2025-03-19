@@ -43,11 +43,6 @@ public class HdfString implements HdfData {
         return datatype.getInstance(String.class, bytes);
     }
 
-//    @Override
-//    public int getSizeMessageData() {
-//        return datatype.getSize();
-//    }
-
     @Override
     public void writeValueToByteBuffer(ByteBuffer buffer) {
         buffer.put(getBytes());
