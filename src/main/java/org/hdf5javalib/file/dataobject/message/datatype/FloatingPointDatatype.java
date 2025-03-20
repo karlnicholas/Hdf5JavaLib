@@ -206,4 +206,171 @@ public class FloatingPointDatatype implements HdfDatatype {
     public String toString(byte[] bytes) {
         return toDouble(bytes).toString();
     }
+
+    public static class ClassBitField {
+        // Constants for bit positions
+        private static final int BYTE_ORDER_LOW = 0;  // Bit 0
+        private static final int PADDING_LOW = 1;     // Bit 1
+        private static final int PADDING_HIGH = 2;    // Bit 2
+        private static final int PADDING_INTERNAL = 3;// Bit 3
+        private static final int MANTISSA_NORM_LOW = 4;  // Bit 4
+        private static final int MANTISSA_NORM_HIGH = 5; // Bit 5
+        private static final int BYTE_ORDER_HIGH = 6; // Bit 6
+        private static final int SIGN_LOCATION_START = 8; // Bits 8–15
+
+        // Enum for byte order
+        public enum ByteOrder {
+            LITTLE_ENDIAN(0b00),  // 00
+            BIG_ENDIAN(0b01),     // 01
+            VAX_ENDIAN(0b11);     // 11 (10 is reserved)
+
+            private final int value;
+            ByteOrder(int value) { this.value = value; }
+            public int getValue() { return value; }
+        }
+
+        // Enum for mantissa normalization
+        public enum MantissaNormalization {
+            NONE(0),           // 00
+            ALWAYS_SET(1),     // 01
+            IMPLIED_SET(2),    // 10
+            RESERVED(3);       // 11
+
+            private final int value;
+            MantissaNormalization(int value) { this.value = value; }
+            public int getValue() { return value; }
+        }
+
+        /**
+         * Creates a BitSet from the given HDF5 floating-point datatype properties.
+         * @param byteOrder Byte order (little-endian, big-endian, VAX-endian)
+         * @param lowPad Padding for low bits (true = 1, false = 0)
+         * @param highPad Padding for high bits
+         * @param internalPad Padding for internal bits
+         * @param mantissaNorm Mantissa normalization type
+         * @param signLocation Sign bit position (0–255 for 8 bits)
+         * @return BitSet representing the 24-bit class bit field
+         */
+        public static BitSet createBitSet(ByteOrder byteOrder, boolean lowPad, boolean highPad,
+                                          boolean internalPad, MantissaNormalization mantissaNorm,
+                                          int signLocation) {
+            BitSet bitSet = new BitSet(24);
+
+            // Set byte order (bits 0 and 6)
+            int boValue = byteOrder.getValue();
+            bitSet.set(BYTE_ORDER_LOW, (boValue & 0b01) != 0);  // Bit 0
+            bitSet.set(BYTE_ORDER_HIGH, (boValue & 0b10) != 0); // Bit 6
+
+            // Set padding types (bits 1–3)
+            bitSet.set(PADDING_LOW, lowPad);
+            bitSet.set(PADDING_HIGH, highPad);
+            bitSet.set(PADDING_INTERNAL, internalPad);
+
+            // Set mantissa normalization (bits 4–5)
+            int mnValue = mantissaNorm.getValue();
+            bitSet.set(MANTISSA_NORM_LOW, (mnValue & 0b01) != 0);   // Bit 4
+            bitSet.set(MANTISSA_NORM_HIGH, (mnValue & 0b10) != 0);  // Bit 5
+
+            // Set sign location (bits 8–15, 8-bit value)
+            if (signLocation < 0 || signLocation > 255) {
+                throw new IllegalArgumentException("Sign location must be 0–255");
+            }
+            for (int i = 0; i < 8; i++) {
+                bitSet.set(SIGN_LOCATION_START + i, (signLocation & (1 << i)) != 0);
+            }
+
+            // Bits 7, 16–23 are reserved and remain 0 by default
+            return bitSet;
+        }
+
+        /**
+         * Gets the ByteOrder from a BitSet.
+         */
+        public static ByteOrder getByteOrder(BitSet bitSet) {
+            int value = (bitSet.get(BYTE_ORDER_HIGH) ? 0b10 : 0) |
+                    (bitSet.get(BYTE_ORDER_LOW) ? 0b01 : 0);
+            switch (value) {
+                case 0b00: return ByteOrder.LITTLE_ENDIAN;
+                case 0b01: return ByteOrder.BIG_ENDIAN;
+                case 0b11: return ByteOrder.VAX_ENDIAN;
+                default: throw new IllegalStateException("Reserved byte order value: " + value);
+            }
+        }
+
+        /**
+         * Gets the low bits padding type from a BitSet.
+         */
+        public static boolean getLowPad(BitSet bitSet) {
+            return bitSet.get(PADDING_LOW);
+        }
+
+        /**
+         * Gets the high bits padding type from a BitSet.
+         */
+        public static boolean getHighPad(BitSet bitSet) {
+            return bitSet.get(PADDING_HIGH);
+        }
+
+        /**
+         * Gets the internal bits padding type from a BitSet.
+         */
+        public static boolean getInternalPad(BitSet bitSet) {
+            return bitSet.get(PADDING_INTERNAL);
+        }
+
+        /**
+         * Gets the MantissaNormalization from a BitSet.
+         */
+        public static MantissaNormalization getMantissaNormalization(BitSet bitSet) {
+            int value = (bitSet.get(MANTISSA_NORM_HIGH) ? 0b10 : 0) |
+                    (bitSet.get(MANTISSA_NORM_LOW) ? 0b01 : 0);
+            switch (value) {
+                case 0: return MantissaNormalization.NONE;
+                case 1: return MantissaNormalization.ALWAYS_SET;
+                case 2: return MantissaNormalization.IMPLIED_SET;
+                case 3: return MantissaNormalization.RESERVED;
+                default: throw new IllegalStateException("Invalid mantissa norm value: " + value);
+            }
+        }
+
+        /**
+         * Gets the sign location from a BitSet (bits 8–15).
+         */
+        public static int getSignLocation(BitSet bitSet) {
+            int signLocation = 0;
+            for (int i = 0; i < 8; i++) {
+                if (bitSet.get(SIGN_LOCATION_START + i)) {
+                    signLocation |= (1 << i);
+                }
+            }
+            return signLocation;
+        }
+
+        // Example usage
+        public static void main(String[] args) {
+            // Create a BitSet matching your example: 20 1F 00
+            BitSet bitSet = createBitSet(
+                    ByteOrder.LITTLE_ENDIAN, // 00 at bits 6, 0
+                    false, false, false,     // 000 at bits 1–3
+                    MantissaNormalization.IMPLIED_SET, // 10 at bits 4–5
+                    31                       // 00011111 at bits 8–15
+            );
+
+            // Convert to hex for verification
+            byte[] bytes = bitSet.toByteArray();
+            StringBuilder hex = new StringBuilder();
+            for (int i = 0; i < 3; i++) {
+                hex.append(String.format("%02X ", i < bytes.length ? bytes[i] & 0xFF : 0));
+            }
+            System.out.println("BitSet as hex: " + hex); // Should print "20 1F 00 "
+
+            // Extract values
+            System.out.println("Byte Order: " + getByteOrder(bitSet));
+            System.out.println("Low Pad: " + getLowPad(bitSet));
+            System.out.println("High Pad: " + getHighPad(bitSet));
+            System.out.println("Internal Pad: " + getInternalPad(bitSet));
+            System.out.println("Mantissa Norm: " + getMantissaNormalization(bitSet));
+            System.out.println("Sign Location: " + getSignLocation(bitSet));
+        }
+    }
 }

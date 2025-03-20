@@ -23,6 +23,8 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype.ClassBitField.MantissaNormalization.IMPLIED_SET;
+
 /**
  * Hello world!
  */
@@ -101,7 +103,7 @@ public class HdfCompoundApp {
                     new CompoundMemberDatatype("recordId", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                                    FixedPointDatatype.createClassBitField(false, false, false, true),
                                     (short) 8, (short) 0, (short) 64)),
                     new CompoundMemberDatatype("fixedStr", 8, 0, 0, new int[4],
                             new StringDatatype(
@@ -117,12 +119,12 @@ public class HdfCompoundApp {
                     new CompoundMemberDatatype("floatVal", 64, 0, 0, new int[4],
                             new FloatingPointDatatype(
                                     FloatingPointDatatype.createClassAndVersion(),
-                                    FloatingPointDatatype.createClassBitField(false),
+                                    FloatingPointDatatype.ClassBitField.createBitSet(FloatingPointDatatype.ClassBitField.ByteOrder.LITTLE_ENDIAN, false, false, false, IMPLIED_SET, 31),
                                     4, (short) 0, (short) 32, (byte) 23, (byte) 8, (byte) 0, (byte) 23, 127)),
-                    new CompoundMemberDatatype("floatVal", 72, 0, 0, new int[4],
+                    new CompoundMemberDatatype("doubleVal", 72, 0, 0, new int[4],
                             new FloatingPointDatatype(
                                     FloatingPointDatatype.createClassAndVersion(),
-                                    FloatingPointDatatype.createClassBitField(false),
+                                    FloatingPointDatatype.ClassBitField.createBitSet(FloatingPointDatatype.ClassBitField.ByteOrder.LITTLE_ENDIAN, false, false, false, IMPLIED_SET, 63),
                                     8, (short) 0, (short) 64, (byte) 52, (byte) 11, (byte) 0, (byte) 52, 1023)),
                     new CompoundMemberDatatype("int8_Val", 80, 0, 0, new int[4],
                             new FixedPointDatatype(
