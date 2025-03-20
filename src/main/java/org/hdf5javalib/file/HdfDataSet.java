@@ -135,8 +135,6 @@ public class HdfDataSet {
         }
         if ( objectHeaderSize + 8 > currentObjectHeaderSize) {
             currentObjectHeaderSize = hdfGroup.getHdfFile().getBufferAllocation().expandDataGroupStorageSize(objectHeaderSize);
-            // redo addresses already set.
-            dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
         }
         // Test whether there is space enough for a NilMessage of 0 length
         if ( objectHeaderSize > currentObjectHeaderSize ) {
@@ -167,13 +165,14 @@ public class HdfDataSet {
             hdfGroup.getHdfFile().getBufferAllocation().setDataGroupAndContinuationStorageSize(objectHeaderSize, continueSize);
             objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getMessageContinuationAddress()));
             objectHeaderContinuationMessage.setContinuationSize(HdfFixedPoint.of(continueSize));
-            // redo addresses already set.
-            dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
             // set the object header size.
         } else if (objectHeaderSize + 8 < currentObjectHeaderSize) {
             // add remaining space
             headerMessages.add(new NilMessage(currentObjectHeaderSize - 8 - objectHeaderSize, (byte)0, (short)(currentObjectHeaderSize - 8 - objectHeaderSize)));
         }
+        // redo addresses already set.
+        dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
+
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, Math.max(objectHeaderSize, currentObjectHeaderSize), headerMessages);
     }
     public void close() {
