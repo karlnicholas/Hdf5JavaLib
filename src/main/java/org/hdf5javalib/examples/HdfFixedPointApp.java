@@ -77,10 +77,10 @@ public class HdfFixedPointApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-//        tryHdfApiInts("randomintseach.h5", this::writeEach);
-//        tryHdfApiInts("randomintsall.h5", this::writeAll);
-//        tryHdfApiMatrixInts("weather_data_each.h5", this::writeEachMatrix);
-//        tryHdfApiMatrixInts("weather_data_all.h5", this::writeAllMatrix);
+        tryHdfApiInts("randomintseach.h5", this::writeEach);
+        tryHdfApiInts("randomintsall.h5", this::writeAll);
+        tryHdfApiMatrixInts("weather_data_each.h5", this::writeEachMatrix);
+        tryHdfApiMatrixInts("weather_data_all.h5", this::writeAllMatrix);
     }
 
     private void tryScalarDataSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {

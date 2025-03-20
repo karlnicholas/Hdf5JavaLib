@@ -78,7 +78,7 @@ public class HdfDataSet {
         short dataTypeMessageSize = 8;
         dataTypeMessageSize += hdfDatatype.getSizeMessageData();
         // to 8 byte boundary
-        dataTypeMessageSize += ((dataTypeMessageSize + 7) & ~7);
+        dataTypeMessageSize = (short) ((dataTypeMessageSize + 7) & ~7);
         DatatypeMessage dataTypeMessage = new DatatypeMessage(hdfDatatype, (byte)1, dataTypeMessageSize);
         headerMessages.add(dataTypeMessage);
 
