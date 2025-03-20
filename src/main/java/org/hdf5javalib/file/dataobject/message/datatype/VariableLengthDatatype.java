@@ -94,7 +94,7 @@ public class VariableLengthDatatype implements HdfDatatype {
 
     @Override
     public short getSizeMessageData() {
-        return 0;
+        return 8;
     }
 
 

@@ -22,11 +22,17 @@ public class HdfBufferAllocation {
 //        }
     }
 
-    public void setDataGroupAndCOntinuationStorageSize(int objectHeaderSize, int continueSize) {
+    public void setDataGroupAndContinuationStorageSize(int objectHeaderSize, int continueSize) {
         this.dataGroupStorageSize = objectHeaderSize;
         this.messageContinuationSpace = continueSize;
         recalc();
     }
+    public int expandDataGroupStorageSize(int objectHeaderSize) {
+        dataGroupStorageSize = objectHeaderSize;
+        recalc();
+        return dataGroupStorageSize;
+    }
+
     /**
      * HDF5 File Structure - Address Offsets and Sizes
      * This section defines memory layout constants for key structures in an HDF5 file.

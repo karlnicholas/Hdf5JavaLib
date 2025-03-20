@@ -36,9 +36,9 @@ public class CompoundMemberDatatype implements HdfDatatype {
     private short computeFloatMessageDataSize(String name) {
         if (!name.isEmpty()) {
             int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 44);
+            return (short) (name.length()+1 + padding + 40 + 12);
         } else {
-            return 44;
+            return 52;
         }
     }
 
@@ -52,13 +52,21 @@ public class CompoundMemberDatatype implements HdfDatatype {
     }
 
     private short computeStringMessageDataSize(String name) {
-        int padding = (8 -  ((name.length()+1)% 8)) % 8;
-        return (short) (name.length()+1 + padding + 40 + 0);
+        if (!name.isEmpty()) {
+            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+            return (short) (name.length()+1 + padding + 40 + 0);
+        } else {
+            return 40;
+        }
     }
 
     private short computeVariableLengthMessageDataSize(String name) {
-        int padding = (8 -  ((name.length()+1)% 8)) % 8;
-        return (short) (name.length()+1 + padding + 40 + 12);
+        if (!name.isEmpty()) {
+            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+            return (short) (name.length()+1 + padding + 40 + 12);
+        } else {
+            return 52;
+        }
     }
 
     @Override

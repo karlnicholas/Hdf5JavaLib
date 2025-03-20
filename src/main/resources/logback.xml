@@ -10,5 +10,5 @@
     </root>
 
     <!-- Optional: Set specific package to DEBUG -->
-    <logger name="org.hdf5javalib" level="DEBUG" />
+    <logger name="org.hdf5javalib" level="TRACE" />
 </configuration>
