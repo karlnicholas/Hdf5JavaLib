@@ -47,7 +47,7 @@ public class VariableLengthDatatype implements HdfDatatype {
     }
 
     public static byte createClassAndVersion() {
-        return 0x13;
+        return 0x19;
     }
 
     // Public method to add user-defined converters
@@ -110,6 +110,8 @@ public class VariableLengthDatatype implements HdfDatatype {
 
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
+        byte[] bytes = {0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00};
+        buffer.put(bytes);
     }
 
     // Inner Enum for Padding Type (Bits 0-3)

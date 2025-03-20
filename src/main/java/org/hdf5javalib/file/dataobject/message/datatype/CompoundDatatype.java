@@ -239,4 +239,5 @@ public class CompoundDatatype implements HdfDatatype {
             m.toString(Arrays.copyOfRange(bytes, m.getOffset(), m.getOffset() + m.getSize()))
         ).collect(Collectors.joining(", "));
     }
+
 }
