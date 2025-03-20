@@ -83,7 +83,7 @@ public class HdfDataSet {
         headerMessages.add(dataTypeMessage);
 
         // Add FillValue message
-        FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 2, 1,
+        FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 0, 1,
                 0,
                 new byte[0], (byte)1, (short)8);
         headerMessages.add(fillValueMessage);
@@ -135,6 +135,8 @@ public class HdfDataSet {
         }
         if ( objectHeaderSize + 8 > currentObjectHeaderSize) {
             currentObjectHeaderSize = hdfGroup.getHdfFile().getBufferAllocation().expandDataGroupStorageSize(objectHeaderSize);
+            // redo addresses already set.
+            dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
         }
         // Test whether there is space enough for a NilMessage of 0 length
         if ( objectHeaderSize > currentObjectHeaderSize ) {
