@@ -58,6 +58,16 @@ public class FloatingPointDatatype implements HdfDatatype {
         return new FloatingPointDatatype(version, classBitField, size,bitOffset, bitPrecision, exponentLocation, exponentSize, mantissaLocation, mantissaSize, exponentBias);
     }
 
+    public static BitSet createClassBitField(boolean bigEndian) {
+        BitSet classBitField = new BitSet();
+        if (bigEndian) classBitField.set(0);
+        return classBitField;
+    }
+
+    public static byte createClassAndVersion() {
+        return 0x11;
+    }
+
     @Override
     public DatatypeClass getDatatypeClass() {
         return DatatypeClass.FLOAT;

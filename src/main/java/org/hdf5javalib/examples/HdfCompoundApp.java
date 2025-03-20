@@ -10,10 +10,7 @@ import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
-import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
-import org.hdf5javalib.file.dataobject.message.datatype.CompoundMemberDatatype;
-import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
-import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
+import org.hdf5javalib.file.dataobject.message.datatype.*;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -71,7 +68,7 @@ public class HdfCompoundApp {
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
-//        tryHdfApiCompound();
+        tryHdfApiCompound();
     }
 
     private void writeVersionAttribute(HdfDataSet dataset) {
@@ -88,104 +85,98 @@ public class HdfCompoundApp {
         DatatypeMessage dt = new DatatypeMessage(attributeType, (byte)1, dataTypeMessageSize);
         // scalar, 1 string
         short dataspaceMessageSize = 8;
-//        if ( dimensions != null ) {
-//            for (HdfFixedPoint dimension : dimensions) {
-//                dataspaceMessageSize += dimension.getDatatype().getSize();
-//            }
-//        }
-//        if ( maxDimensions != null ) {
-//            for (HdfFixedPoint maxDimension : maxDimensions) {
-//                dataspaceMessageSize += maxDimension.getDatatype().getSize();
-//            }
-//        }
         DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false, (byte)0, dataspaceMessageSize);
         HdfString hdfString = new HdfString(ATTRIBUTE_VALUE.getBytes(), attributeType);
         dataset.createAttribute(ATTRIBUTE_NAME, dt, ds, hdfString);
     }
 
     public void tryHdfApiCompound() {
-        final String FILE_NAME = "testcompound.h5";
+        final String FILE_NAME = "compound_example.h5";
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
-        final String DATASET_NAME = "Demand";
-        final int NUM_RECORDS = 1750;
+        final String DATASET_NAME = "CompoundData";
+        final int NUM_RECORDS = 1000;
 
         try {
             // Create a new HDF5 file
             HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
-            // DatatypeMessage with CompoundDatatype
-            BitSet stringBitSet = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
-            List<CompoundMemberDatatype> shipment = List.of(
-                    new CompoundMemberDatatype("shipmentId", 0, 0, 0, new int[4],
+
+            List<CompoundMemberDatatype> compoundData = List.of(
+                    new CompoundMemberDatatype("recordId", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField(false, false, false, false),
                                     (short) 8, (short) 0, (short) 64)),
-                    new CompoundMemberDatatype("origCountry", 8, 0, 0, new int[4],
-                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 2)),
-                    new CompoundMemberDatatype("origSlic", 10, 0, 0, new int[4],
-                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 5)),
-                    new CompoundMemberDatatype("origSort", 15, 0, 0, new int[4],
+                    new CompoundMemberDatatype("fixedStr", 8, 0, 0, new int[4],
+                            new StringDatatype(
+                                    StringDatatype.createClassAndVersion(),
+                                    StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
+                                    (short) 10)),
+                    new CompoundMemberDatatype("varStr", 8, 0, 0, new int[4],
+                            new VariableLengthDatatype(
+                                    VariableLengthDatatype.createClassAndVersion(),
+                                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_TERMINATE, VariableLengthDatatype.CharacterSet.ASCII),
+                                    (short) 10,
+                                    0)),
+                    new CompoundMemberDatatype("floatVal", 15, 0, 0, new int[4],
+                            new FloatingPointDatatype(
+                                    FloatingPointDatatype.createClassAndVersion(),
+                                    FloatingPointDatatype.createClassBitField(false),
+                                    4, (short) 0, (short) 32, (byte) 23, (byte) 8, (byte) 0, (byte) 23, 127)),
+                    new CompoundMemberDatatype("floatVal", 15, 0, 0, new int[4],
+                            new FloatingPointDatatype(
+                                    FloatingPointDatatype.createClassAndVersion(),
+                                    FloatingPointDatatype.createClassBitField(false),
+                                    8, (short) 0, (short) 64, (byte) 52, (byte) 11, (byte) 0, (byte) 52, 1023)),
+                    new CompoundMemberDatatype("int8_Val", 0, 0, 0, new int[4],
+                            new FixedPointDatatype(
+                                    FixedPointDatatype.createClassAndVersion(),
+                                    FixedPointDatatype.createClassBitField(false, false, false, true),
+                                    (short) 1, (short) 0, (short) 8)),
+                    new CompoundMemberDatatype("uint8_Val", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField(false, false, false, false),
                                     (short) 1, (short) 0, (short) 8)),
-                    new CompoundMemberDatatype("destCountry", 16, 0, 0, new int[4],
-                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 2)),
-                    new CompoundMemberDatatype("destSlic", 18, 0, 0, new int[4],
-                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 5)),
-                    new CompoundMemberDatatype("destIbi", 23, 0, 0, new int[4],
+                    new CompoundMemberDatatype("int16_Val", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField(false, false, false, false),
-                                    (short) 1, (short) 0, (short) 8)),
-                    new CompoundMemberDatatype("destPostalCode", 24, 0, 0, new int[4],
-                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 9)),
-                    new CompoundMemberDatatype("shipper", 33, 0, 0, new int[4],
-                            new StringDatatype(StringDatatype.createClassAndVersion(), stringBitSet, (short) 10)),
-                    new CompoundMemberDatatype("service", 43, 0, 0, new int[4],
-                            new FixedPointDatatype(
-                                    FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField(false, false, false, false),
-                                    (short) 1, (short) 0, (short) 8)),
-                    new CompoundMemberDatatype("packageType", 44, 0, 0, new int[4],
-                            new FixedPointDatatype(
-                                    FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField(false, false, false, false),
-                                    (short) 1, (short) 0, (short) 8)),
-                    new CompoundMemberDatatype("accessorials", 45, 0, 0, new int[4],
-                            new FixedPointDatatype(
-                                    FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField(false, false, false, false),
-                                    (short) 1, (short) 0, (short) 8)),
-                    new CompoundMemberDatatype("pieces", 46, 0, 0, new int[4],
+                                    FixedPointDatatype.createClassBitField(false, false, false, true),
+                                    (short) 2, (short) 0, (short) 16)),
+                    new CompoundMemberDatatype("uint16_Val", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField(false, false, false, false),
                                     (short) 2, (short) 0, (short) 16)),
-                    new CompoundMemberDatatype("weight", 48, 0, 0, new int[4],
+                    new CompoundMemberDatatype("int32_Val", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField(false, false, false, false),
-                                    (short) 2, (short) 0, (short) 16)),
-                    new CompoundMemberDatatype("cube", 50, 0, 0, new int[4],
+                                    FixedPointDatatype.createClassBitField(false, false, false, true),
+                                    (short) 4, (short) 0, (short) 32)),
+                    new CompoundMemberDatatype("uint32_Val", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField(false, false, false, false),
                                     (short) 4, (short) 0, (short) 32)),
-                    new CompoundMemberDatatype("committedTnt", 54, 0, 0, new int[4],
+                    new CompoundMemberDatatype("int64_Val", 0, 0, 0, new int[4],
+                            new FixedPointDatatype(
+                                    FixedPointDatatype.createClassAndVersion(),
+                                    FixedPointDatatype.createClassBitField(false, false, false, true),
+                                    (short) 8, (short) 0, (short) 64)),
+                    new CompoundMemberDatatype("uint64_Val", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField(false, false, false, false),
-                                    (short) 1, (short) 0, (short) 8)),
-                    new CompoundMemberDatatype("committedDate", 55, 0, 0, new int[4],
+                                    (short) 8, (short) 0, (short) 64)),
+                    new CompoundMemberDatatype("bitfieldVal", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
                                     FixedPointDatatype.createClassBitField(false, false, false, false),
-                                    (short) 1, (short) 0, (short) 8))
+                                    (short) 8, (short) 7, (short) 57))
             );
-            short compoundSize = (short) shipment.stream().mapToInt(c -> c.getType().getSize()).sum();
+            short compoundSize = (short) compoundData.stream().mapToInt(c -> c.getType().getSize()).sum();
+
             // Define Compound DataType correctly
-            CompoundDatatype compoundType = new CompoundDatatype(CompoundDatatype.createClassAndVersion(), CompoundDatatype.createClassBitField((short) shipment.size()), compoundSize, shipment);
+            CompoundDatatype compoundType = new CompoundDatatype(CompoundDatatype.createClassAndVersion(), CompoundDatatype.createClassBitField((short) compoundData.size()), compoundSize, compoundData);
 //            DatatypeMessage dataTypeMessage = new DatatypeMessage((byte) 1, (byte) 6, BitSet.valueOf(new byte[]{0b10001}), 56, compoundType);
 
             // Create data space
@@ -211,11 +202,11 @@ public class HdfCompoundApp {
 
 
             // ADD ATTRIBUTE: "GIT root revision"
-            writeVersionAttribute(dataset);
+//            writeVersionAttribute(dataset);
 
-            AtomicInteger countHolder = new AtomicInteger(0);
+//            AtomicInteger countHolder = new AtomicInteger(0);
 //            TypedDataSource<ShipperData> volumeDataHdfDataSource = new TypedDataSource<>(dataset.getDataObjectHeaderPrefix(), 0, file., 0, ShipperData.class);
-            ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
+//            ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
             // Write to dataset
 //            dataset.write(() -> {
 //                int count = countHolder.getAndIncrement();
