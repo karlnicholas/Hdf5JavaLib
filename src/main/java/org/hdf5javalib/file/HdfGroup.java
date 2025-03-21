@@ -94,8 +94,8 @@ public class HdfGroup {
 
     public void writeToBuffer(ByteBuffer buffer) {
         // Write Object Header at position found in rootGroupEntry
-        int dataGroupAddress = hdfFile.getBufferAllocation().getObjectHeaderPrefixAddress();
-        buffer.position(dataGroupAddress);
+        long dataGroupAddress = hdfFile.getBufferAllocation().getObjectHeaderPrefixAddress();
+        buffer.position((int) dataGroupAddress);
         objectHeader.writeToByteBuffer(buffer);
 
         long localHeapPosition = -1;
@@ -142,11 +142,11 @@ public class HdfGroup {
 
         // need to writre the dataset
         if ( dataSet != null ) {
-            buffer.position(hdfFile.getBufferAllocation().getDataGroupAddress());
+            buffer.position((int) hdfFile.getBufferAllocation().getDataGroupAddress());
             dataSet.writeToBuffer(buffer);
         }
 
-        buffer.position(hdfFile.getBufferAllocation().getSnodAddress());
+        buffer.position((int) hdfFile.getBufferAllocation().getSnodAddress());
         symbolTableNode.writeToBuffer(buffer);
 
     }

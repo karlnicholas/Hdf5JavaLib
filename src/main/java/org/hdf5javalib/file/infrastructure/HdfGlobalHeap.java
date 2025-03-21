@@ -38,7 +38,7 @@ public class HdfGlobalHeap {
         return obj.getData();
     }
 
-    public int addToHeap(byte[] bytes) {
+    public byte[] addToHeap(byte[] bytes) {
         if (objects == null) {
             objects = new TreeMap<>();
         }
@@ -57,7 +57,11 @@ public class HdfGlobalHeap {
         objects.put(nextObjectId, obj);
         int objectId = nextObjectId;
         nextObjectId++;
-        return objectId;
+        ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN);
+        buffer.putInt(objectSize);
+        dataSegmentAddress.writeValueToByteBuffer(buffer);
+        buffer.putInt(objectId);
+        return buffer.array();
     }
 
     public void readFromFileChannel(FileChannel fileChannel, short offsetSize) throws IOException {
@@ -133,6 +137,10 @@ public class HdfGlobalHeap {
                 ", dataSegmentAddress=" + dataSegmentAddress +
                 ", objects=" + (objects != null ? objects.size() : "null") +
                 '}';
+    }
+
+    public void setGlobalHeapAddress(long globalHeapAddress) {
+        dataSegmentAddress = HdfFixedPoint.of(globalHeapAddress);
     }
 
     public interface GlobalHeapInitialize {

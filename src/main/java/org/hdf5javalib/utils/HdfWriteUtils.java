@@ -3,7 +3,9 @@ package org.hdf5javalib.utils;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfFloatPoint;
 import org.hdf5javalib.dataclass.HdfString;
+import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.file.dataobject.message.datatype.*;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -116,6 +118,19 @@ public class HdfWriteUtils {
                     HdfString hdfString = new HdfString(bytes, membertyped);
                     buffer.position(member.getOffset());
                     hdfString.writeValueToByteBuffer(buffer);
+                } else if (memberType instanceof VariableLengthDatatype membertyped) {
+                    if (fieldType != String.class) {
+                        throw new IllegalArgumentException("Field " + member.getName() + " must be String for VariableLengthDatatype, got " + fieldType.getName());
+                    }
+                    Charset charset = membertyped.getCharacterSet() == VariableLengthDatatype.CharacterSet.ASCII
+                            ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8;
+                    byte[] bytes = ((String) value).getBytes(charset);
+                    HdfGlobalHeap hdfGlobalHeap = membertyped.getGlobalHeap();
+                    byte[] varInstanceBytes = hdfGlobalHeap.addToHeap(bytes);
+
+                    HdfVariableLength hdfVariableLength = new HdfVariableLength(varInstanceBytes, membertyped);
+                    buffer.position(member.getOffset());
+                    hdfVariableLength.writeValueToByteBuffer(buffer);
                 } else if (memberType instanceof FixedPointDatatype membertyped) {
                     byte[] bytes = toFixedPointBytes(value, membertyped, fieldType);
                     HdfFixedPoint hdfFixedPoint = new HdfFixedPoint(bytes, membertyped);
@@ -138,42 +153,40 @@ public class HdfWriteUtils {
     // Convert field value to byte array for FixedPointDatatype
     private static byte[] toFixedPointBytes(Object value, FixedPointDatatype datatype, Class<?> fieldType) {
         int size = datatype.getSize();
-        ByteBuffer temp = ByteBuffer.allocate(size).order(datatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer temp = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
 
         if (fieldType == Byte.class || fieldType == byte.class) {
             temp.put((Byte) value);
         } else if (fieldType == Short.class || fieldType == short.class) {
-            if (size < 2) throw new IllegalArgumentException("Short requires at least 2 bytes, got " + size);
+//            if (size < 2) throw new IllegalArgumentException("Short requires at least 2 bytes, got " + size);
             temp.putShort((Short) value);
+
         } else if (fieldType == Integer.class || fieldType == int.class) {
-            if (size < 4) throw new IllegalArgumentException("Integer requires at least 4 bytes, got " + size);
+//            if (size < 4) throw new IllegalArgumentException("Integer requires at least 4 bytes, got " + size);
             temp.putInt((Integer) value);
         } else if (fieldType == Long.class || fieldType == long.class) {
-            if (size < 8) throw new IllegalArgumentException("Long requires at least 8 bytes, got " + size);
+//            if (size < 8) throw new IllegalArgumentException("Long requires at least 8 bytes, got " + size);
             temp.putLong((Long) value);
         } else if (fieldType == BigInteger.class) {
             byte[] bytes = ((BigInteger) value).toByteArray();
-            if (bytes.length > size) {
-                // try trimming leading - big endian - zeros
-                bytes = trimLeadingZeros(bytes);
-                if (bytes.length > size) {
-                    throw new IllegalArgumentException("BigInteger too large for " + size + " bytes");
-                }
-            }
             reverseBytesInPlace(bytes);
             temp.put(bytes, 0, bytes.length);
         } else if (fieldType == BigDecimal.class) {
             byte[] bytes = ((BigDecimal) value).unscaledValue().toByteArray();
-            bytes = trimLeadingZeros(bytes);
-            if (bytes.length > size) {
-                throw new IllegalArgumentException("BigInteger too large for " + size + " bytes");
-            }
             reverseBytesInPlace(bytes);
             temp.put(bytes, 0, bytes.length);
         } else {
             throw new IllegalArgumentException("Field " + fieldType.getName() + " not supported for FixedPointDatatype");
         }
 
+        byte[] bytes = trimTrailingZeros(temp.array());
+        if (bytes.length > size) {
+                throw new IllegalArgumentException("Value " + value + " too large for " + size + " bytes");
+        }
+        //TODO: write as little endian
+        if ( datatype.isBigEndian()) {
+            reverseBytesInPlace(bytes);
+        }
         byte[] result = new byte[size];
         System.arraycopy(temp.array(), 0, result, 0, Math.min(size, temp.position()));
         return result;
@@ -208,6 +221,20 @@ public class HdfWriteUtils {
         if (start == bytes.length) return new byte[]{0}; // All zeros case
         byte[] result = new byte[bytes.length - start];
         System.arraycopy(bytes, start, result, 0, result.length);
+        return result;
+    }
+
+    public static byte[] trimTrailingZeros(byte[] bytes) {
+        if (bytes == null || bytes.length == 0) return bytes;
+
+        int end = bytes.length - 1;
+        while (end >= 0 && bytes[end] == 0) {
+            end--;
+        }
+
+        if (end < 0) return new byte[]{0}; // All zeros case
+        byte[] result = new byte[end + 1];
+        System.arraycopy(bytes, 0, result, 0, result.length);
         return result;
     }
 

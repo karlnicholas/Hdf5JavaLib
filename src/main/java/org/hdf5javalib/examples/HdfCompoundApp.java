@@ -1,5 +1,6 @@
 package org.hdf5javalib.examples;
 
+import lombok.Builder;
 import lombok.Data;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
@@ -8,19 +9,25 @@ import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
+import org.hdf5javalib.file.dataobject.message.DataLayoutMessage;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.*;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype.ClassBitField.MantissaNormalization.IMPLIED_SET;
@@ -99,6 +106,19 @@ public class HdfCompoundApp {
             // Create a new HDF5 file
             HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
 
+            HdfGlobalHeap hdfGlobalHeap = new HdfGlobalHeap((length, offset, objectId) -> {
+                // this only gets called on read
+            });
+
+
+            VariableLengthDatatype variableLengthDatatype = new VariableLengthDatatype(
+                    VariableLengthDatatype.createClassAndVersion(),
+                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_PAD, VariableLengthDatatype.CharacterSet.ASCII),
+                    (short) 16,
+                    0);
+
+            variableLengthDatatype.setGlobalHeap(hdfGlobalHeap);
+
             List<CompoundMemberDatatype> compoundData = List.of(
                     new CompoundMemberDatatype("recordId", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
@@ -111,11 +131,7 @@ public class HdfCompoundApp {
                                     StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
                                     (short) 10)),
                     new CompoundMemberDatatype("varStr", 24, 0, 0, new int[4],
-                            new VariableLengthDatatype(
-                                    VariableLengthDatatype.createClassAndVersion(),
-                                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_PAD, VariableLengthDatatype.CharacterSet.ASCII),
-                                    (short) 16,
-                                    0)),
+                            variableLengthDatatype),
                     new CompoundMemberDatatype("floatVal", 64, 0, 0, new int[4],
                             new FloatingPointDatatype(
                                     FloatingPointDatatype.createClassAndVersion(),
@@ -200,42 +216,40 @@ public class HdfCompoundApp {
 
             // Create dataset
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, compoundType, dataSpaceMessage);
-
+            HdfFixedPoint dimensionSize = dataset.getDataObjectHeaderPrefix().findMessageByType(DataLayoutMessage.class).orElseThrow().getDimensionSizes()[0];
+            long globalHeapAddress = file.getBufferAllocation().computeGlobalHeapAddress(dimensionSize.getInstance(Long.class));
+            hdfGlobalHeap.setGlobalHeapAddress(globalHeapAddress);
 
             // ADD ATTRIBUTE: "GIT root revision"
 //            writeVersionAttribute(dataset);
 
-//            AtomicInteger countHolder = new AtomicInteger(0);
-//            TypedDataSource<ShipperData> volumeDataHdfDataSource = new TypedDataSource<>(dataset.getDataObjectHeaderPrefix(), 0, file., 0, ShipperData.class);
-//            ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
+            AtomicInteger countHolder = new AtomicInteger(0);
+            ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
             // Write to dataset
-//            dataset.write(() -> {
-//                int count = countHolder.getAndIncrement();
-//                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
-//                ShipperData instance = ShipperData.builder()
-//                        .shipmentId(BigInteger.valueOf(count + 1000))
-//                        .origCountry("US")
-//                        .origSlic("12345")
-//                        .origSort(BigInteger.valueOf(4))
-//                        .destCountry("CA")
-//                        .destSlic("67890")
-//                        .destIbi(BigInteger.valueOf(0))
-//                        .destPostalCode("A1B2C3")
-//                        .shipper("FedEx")
-//                        .service(BigInteger.valueOf(0))
-//                        .packageType(BigInteger.valueOf(3))
-//                        .accessorials(BigInteger.valueOf(0))
-//                        .pieces(BigInteger.valueOf(2))
-//                        .weight(BigInteger.valueOf(50))
-//                        .cube(BigInteger.valueOf(1200))
-//                        .committedTnt(BigInteger.valueOf(255))
-//                        .committedDate(BigInteger.valueOf(3))
-//                        .build();
-//                buffer.clear();
-//                HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, buffer, ShipperData.class);
-//                buffer.position(0);
-//                return buffer;
-//            });
+            dataset.write(() -> {
+                int count = countHolder.getAndIncrement();
+                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
+                CompoundExample instance = CompoundExample.builder()
+                        .recordId(count + 1000L)
+                        .fixedStr("FixedData")
+                        .varStr("varData:"+Math.random()*1900)
+                        .floatVal(3.14F)
+                        .doubleVal(2.718D)
+                        .int8_Val((byte) -1)
+                        .uint8_Val((short) (2^8-1))
+                        .int16_Val((short) -1)
+                        .uint16_Val(2^16-1)
+                        .int32_Val(-1)
+                        .uint32_Val((long) (2^32-1))
+                        .int64_Val((long) -1)
+                        .uint64_Val(BigInteger.valueOf(2^64-1))
+                        .bitfieldVal(BigDecimal.valueOf(1.5))
+                        .build();
+                buffer.clear();
+                HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, buffer, CompoundExample.class);
+                buffer.position(0);
+                return buffer;
+            });
 
             dataset.close();
             file.close();
@@ -249,6 +263,7 @@ public class HdfCompoundApp {
     }
 
     @Data
+    @Builder
     public static class CompoundExample {
         private Long recordId;
         private String fixedStr;

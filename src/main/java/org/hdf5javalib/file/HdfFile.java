@@ -100,10 +100,10 @@ public class HdfFile {
         log.debug("{}", rootGroup);
 
         // Allocate the buffer dynamically up to the data start location
-        ByteBuffer buffer = ByteBuffer.allocate(bufferAllocation.getDataAddress()).order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
-        buffer.position(bufferAllocation.getSuperblockAddress());
+        ByteBuffer buffer = ByteBuffer.allocate((int) bufferAllocation.getDataAddress()).order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
+        buffer.position((int) bufferAllocation.getSuperblockAddress());
         superblock.writeToByteBuffer(buffer);
-        buffer.position(bufferAllocation.getObjectHeaderPrefixAddress());
+        buffer.position((int) bufferAllocation.getObjectHeaderPrefixAddress());
         rootGroup.writeToBuffer(buffer);
         buffer.position(0);
 
