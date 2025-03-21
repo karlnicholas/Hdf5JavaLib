@@ -6,6 +6,7 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.dataobject.message.DataLayoutMessage;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import org.hdf5javalib.file.metadata.HdfSuperblock;
 
@@ -27,11 +28,13 @@ public class HdfFile {
     private final HdfSuperblock superblock;
     private final HdfGroup rootGroup;
     private final HdfBufferAllocation bufferAllocation;
+    private final HdfGlobalHeap globalHeap;
 
     public HdfFile(String fileName, StandardOpenOption[] openOptions) {
         this.fileName = fileName;
         this.openOptions = openOptions;
         this.bufferAllocation = new HdfBufferAllocation();
+        this.globalHeap = new HdfGlobalHeap(() -> bufferAllocation.getGlobalHeapAddress());
 
         // 100320
         superblock = new HdfSuperblock(0, 0, 0, 0,
@@ -58,7 +61,13 @@ public class HdfFile {
      * @return HdfDataSet
      */
     public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
+        hdfDatatype.setGlobalHeap(globalHeap);
         return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage, bufferAllocation.getDataGroupAddress());
+    }
+
+    protected void recomputeBufferAllocation(HdfDataSet dataSet) {
+        HdfFixedPoint dimensionSize = dataSet.getDataObjectHeaderPrefix().findMessageByType(DataLayoutMessage.class).orElseThrow().getDimensionSizes()[0];
+        bufferAllocation.computeGlobalHeapAddress(dimensionSize.getInstance(Long.class));
     }
 
     public long write(Supplier<ByteBuffer> bufferSupplier) throws IOException {

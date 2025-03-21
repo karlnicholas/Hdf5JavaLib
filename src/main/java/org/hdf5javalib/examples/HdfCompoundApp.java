@@ -9,11 +9,9 @@ import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
-import org.hdf5javalib.file.dataobject.message.DataLayoutMessage;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.*;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.FileInputStream;
@@ -105,19 +103,10 @@ public class HdfCompoundApp {
         try {
             // Create a new HDF5 file
             HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
-
-            HdfGlobalHeap hdfGlobalHeap = new HdfGlobalHeap((length, offset, objectId) -> {
-                // this only gets called on read
-            });
-
-
-            VariableLengthDatatype variableLengthDatatype = new VariableLengthDatatype(
-                    VariableLengthDatatype.createClassAndVersion(),
-                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_PAD, VariableLengthDatatype.CharacterSet.ASCII),
-                    (short) 16,
-                    0);
-
-            variableLengthDatatype.setGlobalHeap(hdfGlobalHeap);
+//
+//            VariableLengthDatatype variableLengthDatatype = ;
+//
+//            variableLengthDatatype.setGlobalHeap(file.getGlobalHeap());
 
             List<CompoundMemberDatatype> compoundData = List.of(
                     new CompoundMemberDatatype("recordId", 0, 0, 0, new int[4],
@@ -131,7 +120,11 @@ public class HdfCompoundApp {
                                     StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
                                     (short) 10)),
                     new CompoundMemberDatatype("varStr", 24, 0, 0, new int[4],
-                            variableLengthDatatype),
+                            new VariableLengthDatatype(
+                                    VariableLengthDatatype.createClassAndVersion(),
+                                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_PAD, VariableLengthDatatype.CharacterSet.ASCII),
+                                    (short) 16,
+                                    0)),
                     new CompoundMemberDatatype("floatVal", 64, 0, 0, new int[4],
                             new FloatingPointDatatype(
                                     FloatingPointDatatype.createClassAndVersion(),
@@ -216,9 +209,6 @@ public class HdfCompoundApp {
 
             // Create dataset
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, compoundType, dataSpaceMessage);
-            HdfFixedPoint dimensionSize = dataset.getDataObjectHeaderPrefix().findMessageByType(DataLayoutMessage.class).orElseThrow().getDimensionSizes()[0];
-            long globalHeapAddress = file.getBufferAllocation().computeGlobalHeapAddress(dimensionSize.getInstance(Long.class));
-            hdfGlobalHeap.setGlobalHeapAddress(globalHeapAddress);
 
             // ADD ATTRIBUTE: "GIT root revision"
 //            writeVersionAttribute(dataset);

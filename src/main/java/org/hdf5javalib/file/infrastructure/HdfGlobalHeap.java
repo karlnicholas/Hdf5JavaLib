@@ -15,13 +15,25 @@ public class HdfGlobalHeap {
     private static final int VERSION = 1;
 
     private HdfFixedPoint collectionSize;
-    private HdfFixedPoint dataSegmentAddress;
+    private HdfFixedPoint dataSegmentOffset;
     private TreeMap<Integer, GlobalHeapObject> objects;
     private int nextObjectId;
     private final GlobalHeapInitialize initialize;
+    private final GLobalHeapDataSegmentAddress dataSegmentAddress;
 
     public HdfGlobalHeap(GlobalHeapInitialize initialize) {
         this.initialize = initialize;
+        this.dataSegmentAddress = null;
+        this.dataSegmentOffset = HdfFixedPoint.of(0);
+        this.collectionSize = HdfFixedPoint.of(4096L);
+        this.objects = null;
+        this.nextObjectId = 1;
+    }
+
+    public HdfGlobalHeap(GLobalHeapDataSegmentAddress dataSegmentAddress) {
+        this.initialize = null;
+        this.dataSegmentAddress = dataSegmentAddress;
+        this.dataSegmentOffset = HdfFixedPoint.of(0);
         this.collectionSize = HdfFixedPoint.of(4096L);
         this.objects = null;
         this.nextObjectId = 1;
@@ -59,12 +71,12 @@ public class HdfGlobalHeap {
         nextObjectId++;
         ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN);
         buffer.putInt(objectSize);
-        dataSegmentAddress.writeValueToByteBuffer(buffer);
+        buffer.putLong(dataSegmentAddress.getDataSegmentAddress());
         buffer.putInt(objectId);
         return buffer.array();
     }
 
-    public void readFromFileChannel(FileChannel fileChannel, short offsetSize) throws IOException {
+    public void readFromFileChannel(FileChannel fileChannel, short ignoredOffsetSize) throws IOException {
         ByteBuffer headerBuffer = ByteBuffer.allocate(16);
         headerBuffer.order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(headerBuffer);
@@ -104,7 +116,7 @@ public class HdfGlobalHeap {
         }
 
         this.collectionSize = collectionSize;
-        this.dataSegmentAddress = HdfFixedPoint.of(fileChannel.position() - (declaredSize - 16) - 16);
+        this.dataSegmentOffset = HdfFixedPoint.of(fileChannel.position() - (declaredSize - 16) - 16);
         this.objects = objects;
         this.nextObjectId = nextObjectId;
     }
@@ -134,17 +146,17 @@ public class HdfGlobalHeap {
                 "signature='" + SIGNATURE + '\'' +
                 ", version=" + VERSION +
                 ", collectionSize=" + collectionSize +
-                ", dataSegmentAddress=" + dataSegmentAddress +
+                ", dataSegmentOffset=" + dataSegmentOffset +
                 ", objects=" + (objects != null ? objects.size() : "null") +
                 '}';
     }
 
-    public void setGlobalHeapAddress(long globalHeapAddress) {
-        dataSegmentAddress = HdfFixedPoint.of(globalHeapAddress);
-    }
-
     public interface GlobalHeapInitialize {
         void initializeCallback(int length, long offset, int objectId);
+    }
+
+    public interface GLobalHeapDataSegmentAddress {
+        long getDataSegmentAddress();
     }
 
     @Getter

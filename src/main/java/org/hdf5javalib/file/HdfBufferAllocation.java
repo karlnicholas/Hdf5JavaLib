@@ -96,9 +96,8 @@ public class HdfBufferAllocation {
 
     private long globalHeapAddress;
 
-    public long computeGlobalHeapAddress(Long dataSegmentSize) {
+    public void computeGlobalHeapAddress(Long dataSegmentSize) {
         globalHeapAddress = dataAddress + dataSegmentSize;
-        return globalHeapAddress;
     }
 
 }

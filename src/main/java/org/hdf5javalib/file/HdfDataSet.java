@@ -172,8 +172,8 @@ public class HdfDataSet {
         }
         // redo addresses already set.
         dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
-
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, Math.max(objectHeaderSize, currentObjectHeaderSize), headerMessages);
+        hdfGroup.getHdfFile().recomputeBufferAllocation(this);
     }
     public void close() {
     }
