@@ -52,17 +52,17 @@ public class HdfCompoundApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        try {
-            HdfFileReader reader = new HdfFileReader();
-            String filePath = HdfCompoundApp.class.getResource("/compound_example.h5").getFile();
-            try (FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
-                tryCompoundTestSpliterator(channel, reader);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            HdfFileReader reader = new HdfFileReader();
+//            String filePath = HdfCompoundApp.class.getResource("/compound_example.h5").getFile();
+//            try (FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+//                tryCompoundTestSpliterator(channel, reader);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 //        try {
 //            HdfFileReader reader = new HdfFileReader();
 //            String filePath = HdfCompoundApp.class.getResource("/env_monitoring_labels.h5").getFile();
@@ -85,7 +85,7 @@ public class HdfCompoundApp {
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
-//        tryHdfApiCompound();
+        tryHdfApiCompound();
     }
 
     private void writeVersionAttribute(HdfDataSet dataset) {
@@ -111,22 +111,17 @@ public class HdfCompoundApp {
         final String FILE_NAME = "compound_example.h5";
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "CompoundData";
-        final int NUM_RECORDS = 10;
-        final int CYCLE_LENGTH = 10;
+        final int NUM_RECORDS = 1000;
 
         try {
             // Create a new HDF5 file
             HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
-//
-//            VariableLengthDatatype variableLengthDatatype = ;
-//
-//            variableLengthDatatype.setGlobalHeap(file.getGlobalHeap());
 
             List<CompoundMemberDatatype> compoundData = List.of(
                     new CompoundMemberDatatype("recordId", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
                                     FixedPointDatatype.createClassAndVersion(),
-                                    FixedPointDatatype.createClassBitField(false, false, false, true),
+                                    FixedPointDatatype.createClassBitField(false, false, false, false),
                                     (short) 8, (short) 0, (short) 64)),
                     new CompoundMemberDatatype("fixedStr", 8, 0, 0, new int[4],
                             new StringDatatype(
@@ -204,7 +199,6 @@ public class HdfCompoundApp {
                     CompoundDatatype.createClassAndVersion(),
                     CompoundDatatype.createClassBitField((short) compoundData.size()),
                     compoundSize, compoundData);
-//            DatatypeMessage dataTypeMessage = new DatatypeMessage((byte) 1, (byte) 6, BitSet.valueOf(new byte[]{0b10001}), 56, compoundType);
 
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
