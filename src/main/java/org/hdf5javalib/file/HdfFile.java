@@ -103,7 +103,19 @@ public class HdfFile {
             endOfFileAddress += fixedPoint.getInstance(Long.class);
         }
 
+        // some convoluted logic for adding globalHeap data if needed
+        ByteBuffer globalHeapBuffer = null;
+        long globalHeapAddress = -1;
+        long globalHeapSize = globalHeap.getWriteBufferSize();
+        if ( globalHeapSize > 0 ) {
+            globalHeapAddress = endOfFileAddress;
+            endOfFileAddress += globalHeapSize;
+            globalHeapBuffer = ByteBuffer.allocate((int) globalHeapSize);
+            globalHeap.writeToByteBuffer(globalHeapBuffer);
+            globalHeapBuffer.position(0);
+        }
         superblock.setEndOfFileAddress(HdfFixedPoint.of(endOfFileAddress));
+
 
         log.debug("{}", superblock);
         log.debug("{}", rootGroup);
@@ -127,7 +139,13 @@ public class HdfFile {
             while (buffer.hasRemaining()) {
                 fileChannel.write(buffer);
             }
-
+            // check here if global heap needs to be written
+            if ( globalHeapAddress > 0 ) {
+                fileChannel.position(globalHeapAddress);
+                while (globalHeapBuffer.hasRemaining()) {
+                    fileChannel.write(globalHeapBuffer);
+                }
+            }
         }
     }
 

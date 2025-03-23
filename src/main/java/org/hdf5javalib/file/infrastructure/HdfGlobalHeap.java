@@ -13,6 +13,7 @@ import java.util.TreeMap;
 public class HdfGlobalHeap {
     private static final String SIGNATURE = "GCOL";
     private static final int VERSION = 1;
+    private static final int ALIGNMENT = 4096;
 
     private HdfFixedPoint collectionSize;
     private HdfFixedPoint dataSegmentOffset;
@@ -25,7 +26,7 @@ public class HdfGlobalHeap {
         this.initialize = initialize;
         this.dataSegmentAddress = null;
         this.dataSegmentOffset = HdfFixedPoint.of(0);
-        this.collectionSize = HdfFixedPoint.of(4096L);
+        this.collectionSize = HdfFixedPoint.of(ALIGNMENT);
         this.objects = null;
         this.nextObjectId = 1;
     }
@@ -34,7 +35,7 @@ public class HdfGlobalHeap {
         this.initialize = null;
         this.dataSegmentAddress = dataSegmentAddress;
         this.dataSegmentOffset = HdfFixedPoint.of(0);
-        this.collectionSize = HdfFixedPoint.of(4096L);
+        this.collectionSize = HdfFixedPoint.of(ALIGNMENT);
         this.objects = null;
         this.nextObjectId = 1;
     }
@@ -55,7 +56,7 @@ public class HdfGlobalHeap {
             objects = new TreeMap<>();
         }
         int objectSize = bytes.length;
-        int alignedSize = (objectSize + 7) & ~7;
+        int alignedSize = alignToEightBytes(objectSize);
         int headerSize = 16;
 
         if (nextObjectId > 0xFFFF) {
@@ -65,7 +66,8 @@ public class HdfGlobalHeap {
         long newSize = collectionSize.getInstance(Long.class) + headerSize + alignedSize;
         this.collectionSize = HdfFixedPoint.of(newSize);
 
-        GlobalHeapObject obj = new GlobalHeapObject(nextObjectId, 1, objectSize, bytes);
+        // Reference count now set to 0
+        GlobalHeapObject obj = new GlobalHeapObject(nextObjectId, 0, objectSize, bytes);
         objects.put(nextObjectId, obj);
         int objectId = nextObjectId;
         nextObjectId++;
@@ -129,15 +131,40 @@ public class HdfGlobalHeap {
         buffer.put(SIGNATURE.getBytes());
         buffer.put((byte) VERSION);
         buffer.put(new byte[3]);
-        long totalSize = 16;
-        for (GlobalHeapObject obj : objects.values()) {
-            totalSize += 16 + obj.getObjectSize() + (8 - (obj.getObjectSize() % 8)) % 8;
-        }
+        long totalSize = calculateAlignedTotalSize();
         buffer.putLong(totalSize);
 
         for (GlobalHeapObject obj : objects.values()) {
             obj.writeToByteBuffer(buffer);
         }
+    }
+
+    // Helper method to calculate total heap size aligned to 4K
+    private long calculateAlignedTotalSize() {
+        long totalSize = 16;
+        for (GlobalHeapObject obj : objects.values()) {
+            totalSize += 16 + obj.getObjectSize() + getPadding(obj.getObjectSize());
+        }
+        return alignTo(totalSize, ALIGNMENT);
+    }
+
+    // Method to get the required ByteBuffer size
+    public long getWriteBufferSize() {
+        return calculateAlignedTotalSize();
+    }
+
+    // Align to 4K
+    private static long alignTo(long size, int alignment) {
+        return (size + alignment - 1) & ~(alignment - 1);
+    }
+
+    // Utility method for 8-byte padding
+    private static int getPadding(int size) {
+        return (8 - (size % 8)) % 8;
+    }
+
+    private static int alignToEightBytes(int size) {
+        return (size + 7) & ~7;
     }
 
     @Override
@@ -176,13 +203,13 @@ public class HdfGlobalHeap {
         public static GlobalHeapObject readFromByteBuffer(ByteBuffer buffer) {
             int objectId = Short.toUnsignedInt(buffer.getShort());
             int referenceCount = Short.toUnsignedInt(buffer.getShort());
-            buffer.getInt();
+            buffer.getInt(); // Reserved
             int objectSize = (int) buffer.getLong();
 
             byte[] data = (objectId == 0) ? new byte[0] : new byte[objectSize];
             if (objectId != 0) {
                 buffer.get(data);
-                buffer.position(buffer.position() + (8 - (objectSize % 8)) % 8);
+                buffer.position(buffer.position() + getPadding(objectSize));
             }
             return new GlobalHeapObject(objectId, referenceCount, objectSize, data);
         }
@@ -190,11 +217,11 @@ public class HdfGlobalHeap {
         public void writeToByteBuffer(ByteBuffer buffer) {
             buffer.putShort((short) objectId);
             buffer.putShort((short) referenceCount);
-            buffer.putInt(0);
+            buffer.putInt(0); // Reserved
             buffer.putLong(objectSize);
             if (objectId != 0) {
                 buffer.put(data);
-                int padding = (8 - (objectSize % 8)) % 8;
+                int padding = getPadding(objectSize);
                 if (padding > 0) {
                     buffer.put(new byte[padding]);
                 }

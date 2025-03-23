@@ -98,7 +98,7 @@ public class HdfCompoundApp {
         final String FILE_NAME = "compound_example.h5";
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "CompoundData";
-        final int NUM_RECORDS = 1000;
+        final int NUM_RECORDS = 1;
 
         try {
             // Create a new HDF5 file
@@ -222,7 +222,7 @@ public class HdfCompoundApp {
                 CompoundExample instance = CompoundExample.builder()
                         .recordId(count + 1000L)
                         .fixedStr("FixedData")
-                        .varStr("varData:"+Math.random()*1900)
+                        .varStr("varData:"+(int)(Math.random()*1900))
                         .floatVal(3.14F)
                         .doubleVal(2.718D)
                         .int8_Val((byte) -1)
