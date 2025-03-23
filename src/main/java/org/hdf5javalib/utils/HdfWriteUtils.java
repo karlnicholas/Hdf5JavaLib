@@ -170,6 +170,9 @@ public class HdfWriteUtils {
         } else if (fieldType == BigInteger.class) {
             byte[] bytes = ((BigInteger) value).toByteArray();
             reverseBytesInPlace(bytes);
+            if (bytes.length > size) {
+                bytes = trimTrailingZeros(bytes);
+            }
             temp.put(bytes, 0, bytes.length);
         } else if (fieldType == BigDecimal.class) {
             byte[] bytes = ((BigDecimal) value).unscaledValue().toByteArray();

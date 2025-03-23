@@ -66,7 +66,6 @@ public class HdfGlobalHeap {
         long newSize = collectionSize.getInstance(Long.class) + headerSize + alignedSize;
         this.collectionSize = HdfFixedPoint.of(newSize);
 
-        // Reference count now set to 0
         GlobalHeapObject obj = new GlobalHeapObject(nextObjectId, 0, objectSize, bytes);
         objects.put(nextObjectId, obj);
         int objectId = nextObjectId;
@@ -137,14 +136,25 @@ public class HdfGlobalHeap {
         for (GlobalHeapObject obj : objects.values()) {
             obj.writeToByteBuffer(buffer);
         }
+        // Add null terminator with remaining size, matching C++
+        long usedSize = 16; // Header
+        for (GlobalHeapObject obj : objects.values()) {
+            usedSize += 16 + obj.getObjectSize() + getPadding(obj.getObjectSize());
+        }
+        long remainingSize = ALIGNMENT - usedSize;
+        buffer.putShort((short) 0); // Object ID 0
+        buffer.putShort((short) 0); // Reference count 0
+        buffer.putInt(0); // Reserved
+        buffer.putLong(remainingSize); // Remaining size in 4K block
     }
 
     // Helper method to calculate total heap size aligned to 4K
     private long calculateAlignedTotalSize() {
-        long totalSize = 16;
+        long totalSize = 16; // Header
         for (GlobalHeapObject obj : objects.values()) {
             totalSize += 16 + obj.getObjectSize() + getPadding(obj.getObjectSize());
         }
+        totalSize += 16; // Null terminator entry
         return alignTo(totalSize, ALIGNMENT);
     }
 

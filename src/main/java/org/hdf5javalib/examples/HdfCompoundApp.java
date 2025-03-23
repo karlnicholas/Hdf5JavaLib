@@ -2,6 +2,7 @@ package org.hdf5javalib.examples;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
@@ -33,6 +34,7 @@ import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointData
 /**
  * Hello world!
  */
+@Slf4j
 public class HdfCompoundApp {
     public static void main(String[] args) {
         new HdfCompoundApp().run();
@@ -42,6 +44,17 @@ public class HdfCompoundApp {
         try {
             HdfFileReader reader = new HdfFileReader();
             String filePath = HdfCompoundApp.class.getResource("/compound_example_gpt.h5").getFile();
+            try (FileInputStream fis = new FileInputStream(filePath)) {
+                FileChannel channel = fis.getChannel();
+                reader.readFile(channel);
+                tryCompoundTestSpliterator(channel, reader);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            HdfFileReader reader = new HdfFileReader();
+            String filePath = HdfCompoundApp.class.getResource("/compound_example.h5").getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
@@ -72,7 +85,7 @@ public class HdfCompoundApp {
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
-        tryHdfApiCompound();
+//        tryHdfApiCompound();
     }
 
     private void writeVersionAttribute(HdfDataSet dataset) {
@@ -98,7 +111,8 @@ public class HdfCompoundApp {
         final String FILE_NAME = "compound_example.h5";
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "CompoundData";
-        final int NUM_RECORDS = 1;
+        final int NUM_RECORDS = 10;
+        final int CYCLE_LENGTH = 10;
 
         try {
             // Create a new HDF5 file
@@ -218,22 +232,25 @@ public class HdfCompoundApp {
             // Write to dataset
             dataset.write(() -> {
                 int count = countHolder.getAndIncrement();
-                if (count >= NUM_RECORDS) return  ByteBuffer.allocate(0);
+                if (count >= NUM_RECORDS) return ByteBuffer.allocate(0);
+                BigDecimal bfVal = BigDecimal.valueOf(count + 1)
+                        .add(BigDecimal.valueOf((count % 4) * 0.25));
+                log.debug("bfVal = {}", bfVal);
                 CompoundExample instance = CompoundExample.builder()
                         .recordId(count + 1000L)
                         .fixedStr("FixedData")
-                        .varStr("varData:"+(int)(Math.random()*1900))
+                        .varStr("varData:" + (int)(Math.random() * 1900))
                         .floatVal(3.14F)
                         .doubleVal(2.718D)
-                        .int8_Val((byte) -1)
-                        .uint8_Val((short) (2^8-1))
-                        .int16_Val((short) -1)
-                        .uint16_Val(2^16-1)
-                        .int32_Val(-1)
-                        .uint32_Val((long) (2^32-1))
-                        .int64_Val((long) -1)
-                        .uint64_Val(BigInteger.valueOf(2^64-1))
-                        .bitfieldVal(BigDecimal.valueOf(1.5))
+                        .int8_Val(int8_Val(count))
+                        .uint8_Val(uint8_Val(count))
+                        .int16_Val(int16_Val(count))
+                        .uint16_Val(uint16_Val(count))
+                        .int32_Val(int32_Val(count))
+                        .uint32_Val(uint32_Val(count))
+                        .int64_Val(int64_Val(count))
+                        .uint64_Val(uint64_Val(count))
+                        .bitfieldVal(bfVal)
                         .build();
                 buffer.clear();
                 HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, buffer, CompoundExample.class);
@@ -330,4 +347,82 @@ public class HdfCompoundApp {
         new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), MonitoringData.class).stream().forEach(System.out::println);
     }
 
+    private static final int CYCLE_LENGTH = 10;
+
+    // Signed byte: -128 to 127
+    public static byte int8_Val(int index) {
+        double min = Byte.MIN_VALUE;  // -128
+        double max = Byte.MAX_VALUE;  // 127
+        double step = (max - min) / (CYCLE_LENGTH - 1);
+        double value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
+        return (byte) value;
+    }
+
+    // Unsigned byte: 0 to 255
+    public static short uint8_Val(int index) {
+        int min = 0;
+        int max = 255;
+        int range = max - min;
+        int step = range / (CYCLE_LENGTH - 1);
+        int value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
+        return (short) value; // Short to hold 0-255
+    }
+
+    // Signed short: -32768 to 32767
+    public static short int16_Val(int index) {
+        double min = Short.MIN_VALUE;  // -32768
+        double max = Short.MAX_VALUE;  // 32767
+        double step = (max - min) / (CYCLE_LENGTH - 1);
+        double value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
+        return (short) value;
+    }
+
+    // Unsigned short: 0 to 65535
+    public static int uint16_Val(int index) {
+        int min = 0;
+        int max = 65535;
+        int range = max - min;
+        int step = range / (CYCLE_LENGTH - 1);
+        int value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
+        return value; // Int to hold 0-65535
+    }
+
+    // Signed int: -2147483648 to 2147483647
+    public static int int32_Val(int index) {
+        double min = Integer.MIN_VALUE;  // -2147483648
+        double max = Integer.MAX_VALUE;  // 2147483647
+        double step = (max - min) / (CYCLE_LENGTH - 1);
+        double value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
+        return (int) value;
+    }
+
+    // Unsigned int: 0 to 4294967295
+    public static long uint32_Val(int index) {
+        long min = 0;
+        long max = 4294967295L;
+        long range = max - min;
+        long step = range / (CYCLE_LENGTH - 1);
+        long value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
+        return value; // Long to hold 0-4294967295
+    }
+
+    // Signed long: -9223372036854775808 to 9223372036854775807
+    public static long int64_Val(int index) {
+        double min = Long.MIN_VALUE;  // -9223372036854775808
+        double max = Long.MAX_VALUE;  // 9223372036854775807
+        double step = (max - min) / (CYCLE_LENGTH - 1);
+        double value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
+        return (long) value;
+    }
+
+    // Unsigned long: 0 to 18446744073709551615
+    public static BigInteger uint64_Val(int index) {
+        BigInteger min = BigInteger.ZERO;
+        BigInteger max = new BigInteger("18446744073709551615");
+        BigInteger range = max.subtract(min);
+        BigInteger step = range.divide(BigInteger.valueOf(CYCLE_LENGTH - 1));
+        BigInteger value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max :
+                min.add(BigInteger.valueOf(index % CYCLE_LENGTH).multiply(step));
+        return value; // BigInteger to hold 0-18446744073709551615
+    }
 }

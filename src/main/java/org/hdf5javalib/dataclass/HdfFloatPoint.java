@@ -20,7 +20,7 @@ public class HdfFloatPoint implements HdfData {
 
     @Override
     public void writeValueToByteBuffer(ByteBuffer buffer) {
-
+        buffer.put(bytes);
     }
 
     @Override
