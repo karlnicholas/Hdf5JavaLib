@@ -233,7 +233,6 @@ public class HdfCompoundApp {
             dataset.write(() -> {
                 int count = countHolder.getAndIncrement();
                 if (count >= NUM_RECORDS) return ByteBuffer.allocate(0);
-                BigDecimal bfVal = BigDecimal.valueOf(count + 1).add(BigDecimal.valueOf((count % 4) * 0.25));
                 CompoundExample instance = CompoundExample.builder()
                         .recordId(count + 1000L)
                         .fixedStr("FixedData")
@@ -248,7 +247,7 @@ public class HdfCompoundApp {
                         .uint32_Val(uint32_Val(count))
                         .int64_Val(int64_Val(count))
                         .uint64_Val(uint64_Val(count))
-                        .bitfieldVal(bfVal)
+                        .bitfieldVal(BigDecimal.valueOf(count + 1).add(BigDecimal.valueOf((count % 4) * 0.25)))
                         .build();
                 buffer.clear();
                 HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, buffer, CompoundExample.class);
