@@ -158,14 +158,10 @@ public class HdfWriteUtils {
         if (fieldType == Byte.class || fieldType == byte.class) {
             temp.put((Byte) value);
         } else if (fieldType == Short.class || fieldType == short.class) {
-//            if (size < 2) throw new IllegalArgumentException("Short requires at least 2 bytes, got " + size);
             temp.putShort((Short) value);
-
         } else if (fieldType == Integer.class || fieldType == int.class) {
-//            if (size < 4) throw new IllegalArgumentException("Integer requires at least 4 bytes, got " + size);
             temp.putInt((Integer) value);
         } else if (fieldType == Long.class || fieldType == long.class) {
-//            if (size < 8) throw new IllegalArgumentException("Long requires at least 8 bytes, got " + size);
             temp.putLong((Long) value);
         } else if (fieldType == BigInteger.class) {
             byte[] bytes = ((BigInteger) value).toByteArray();
@@ -175,8 +171,23 @@ public class HdfWriteUtils {
             }
             temp.put(bytes, 0, bytes.length);
         } else if (fieldType == BigDecimal.class) {
-            byte[] bytes = ((BigDecimal) value).unscaledValue().toByteArray();
+            BigDecimal bdValue = (BigDecimal) value;
+            // Scale by 2^bitOffset to match fixed-point representation
+            BigDecimal scaledValue = bdValue.multiply(BigDecimal.valueOf(1L << datatype.getBitOffset()));
+            BigInteger intValue = scaledValue.toBigInteger();
+
+            // Apply bitPrecision mask if necessary
+            short bitPrecision = datatype.getBitPrecision();
+            if (bitPrecision > 0 && bitPrecision < size * 8) {
+                BigInteger mask = BigInteger.ONE.shiftLeft(bitPrecision).subtract(BigInteger.ONE);
+                intValue = intValue.and(mask);
+            }
+
+            byte[] bytes = intValue.toByteArray();
             reverseBytesInPlace(bytes);
+            if (bytes.length > size) {
+                bytes = trimTrailingZeros(bytes);
+            }
             temp.put(bytes, 0, bytes.length);
         } else {
             throw new IllegalArgumentException("Field " + fieldType.getName() + " not supported for FixedPointDatatype");
@@ -184,10 +195,9 @@ public class HdfWriteUtils {
 
         byte[] bytes = trimTrailingZeros(temp.array());
         if (bytes.length > size) {
-                throw new IllegalArgumentException("Value " + value + " too large for " + size + " bytes");
+            throw new IllegalArgumentException("Value " + value + " too large for " + size + " bytes");
         }
-        //TODO: write as little endian
-        if ( datatype.isBigEndian()) {
+        if (datatype.isBigEndian()) {
             reverseBytesInPlace(bytes);
         }
         byte[] result = new byte[size];
