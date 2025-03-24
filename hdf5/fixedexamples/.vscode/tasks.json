@@ -7,9 +7,9 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "C:/Users/karln/projects/hdf5/fixedexamples/writescalar.cpp",
+                "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/fixedexamples/writescalar.cpp",
                 "-o",
-                "C:/Users/karln/projects/hdf5/fixedexamples/writescalar.exe",
+                "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/fixedexamples/writescalar.exe",
                 "-I", "C:/msys64/mingw64/include",
                 "-L", "C:/msys64/mingw64/lib",
                 "-lhdf5_cpp",
@@ -32,9 +32,9 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "C:/Users/karln/projects/hdf5/fixedexamples/writevector.cpp",
+                "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/fixedexamples/writevector.cpp",
                 "-o",
-                "C:/Users/karln/projects/hdf5/fixedexamples/writevector.exe",
+                "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/fixedexamples/writevector.exe",
                 "-I", "C:/msys64/mingw64/include",
                 "-L", "C:/msys64/mingw64/lib",
                 "-lhdf5_cpp",

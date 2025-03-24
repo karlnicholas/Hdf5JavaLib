@@ -7,9 +7,9 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "C:/Users/karln/projects/hdf5/ASCII-UTF8/ascii-dataset.cpp",
+                "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/ASCII-UTF8/ascii-dataset.cpp",
                 "-o",
-                "C:/Users/karln/projects/hdf5/ASCII-UTF8/ascii-dataset.exe",
+                "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/ASCII-UTF8/ascii-dataset.exe",
                 "-I", "C:/msys64/mingw64/include",
                 "-L", "C:/msys64/mingw64/lib",
                 "-lhdf5_cpp",
@@ -32,9 +32,9 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "C:/Users/karln/projects/hdf5/ASCII-UTF8/utf8-dataset.cpp",
+                "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/ASCII-UTF8/utf8-dataset.cpp",
                 "-o",
-                "C:/Users/karln/projects/hdf5/ASCII-UTF8/utf8-dataset.exe",
+                "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/ASCII-UTF8/utf8-dataset.exe",
                 "-I", "C:/msys64/mingw64/include",
                 "-L", "C:/msys64/mingw64/lib",
                 "-lhdf5_cpp",
