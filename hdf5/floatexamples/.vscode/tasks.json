@@ -1,0 +1,30 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "Build Monitoring",
+            "command": "C:/msys64/mingw64/bin/g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "C:/Users/karln/projects/hdf5/floatexamples/monitoring.cpp",
+                "-o",
+                "C:/Users/karln/projects/hdf5/floatexamples/monitoring.exe",
+                "-I", "C:/msys64/mingw64/include",
+                "-L", "C:/msys64/mingw64/lib",
+                "-lhdf5_cpp",
+                "-lhdf5"
+            ],
+            "options": {
+                "cwd": "C:/msys64/mingw64/bin"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Builds monitoring.exe with debug symbols."
+        }
+    ],
+    "version": "2.0.0"
+}

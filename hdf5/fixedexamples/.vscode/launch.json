@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Write Scalar",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "C:/Users/karln/projects/hdf5/fixedexamples/writescalar.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "C:/Users/karln/projects/hdf5/fixedexamples",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "preLaunchTask": "Build Write Scalar"
+        },
+        {
+            "name": "Run Write Vector",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "C:/Users/karln/projects/hdf5/fixedexamples/writevector.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "C:/Users/karln/projects/hdf5/fixedexamples",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "preLaunchTask": "Build Write Vector"
+        }
+    ]
+}

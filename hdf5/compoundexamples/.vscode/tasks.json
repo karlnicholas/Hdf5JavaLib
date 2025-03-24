@@ -1,0 +1,78 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "Build Reader",
+            "command": "C:/msys64/mingw64/bin/g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "C:/Users/karln/projects/hdf5/compoundexamples/reader.cpp",
+                "C:/Users/karln/projects/hdf5/compoundexamples/common.cpp",
+                "-o",
+                "C:/Users/karln/projects/hdf5/compoundexamples/reader.exe",
+                "-I", "C:/Users/karln/projects/hdf5/compoundexamples",
+                "-I", "C:/msys64/mingw64/include",
+                "-L", "C:/msys64/mingw64/lib",
+                "-lhdf5_cpp",
+                "-lhdf5"
+            ],
+            "options": {
+                "cwd": "C:/msys64/mingw64/bin"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Builds reader.exe with debug symbols."
+        },
+        {
+            "type": "cppbuild",
+            "label": "Build Writer",
+            "command": "C:/msys64/mingw64/bin/g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "C:/Users/karln/projects/hdf5/compoundexamples/writer.cpp",
+                "C:/Users/karln/projects/hdf5/compoundexamples/common.cpp",
+                "-o",
+                "C:/Users/karln/projects/hdf5/compoundexamples/writer.exe",
+                "-I", "C:/Users/karln/projects/hdf5/compoundexamples",
+                "-I", "C:/msys64/mingw64/include",
+                "-L", "C:/msys64/mingw64/lib",
+                "-lhdf5_cpp",
+                "-lhdf5"
+            ],
+            "options": {
+                "cwd": "C:/msys64/mingw64/bin"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": "build",
+            "detail": "Builds writer.exe with debug symbols."
+        },
+        {
+            "type": "cppbuild",
+            "label": "Build C Writer",
+            "command": "C:/msys64/mingw64/bin/gcc.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "C:/Users/karln/projects/hdf5/compoundexamples/cwriter.c",
+                "-o",
+                "C:/Users/karln/projects/hdf5/compoundexamples/cwriter.exe",
+                "-I", "C:/msys64/mingw64/include",
+                "-L", "C:/msys64/mingw64/lib",
+                "-lhdf5",
+                "-lm"
+            ],
+            "options": {
+                "cwd": "C:/msys64/mingw64/bin"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": "build",
+            "detail": "Builds cwriter.exe with debug symbols."
+        }
+    ],
+    "version": "2.0.0"
+}

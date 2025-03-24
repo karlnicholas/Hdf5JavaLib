@@ -1,0 +1,47 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Reader",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "C:/Users/karln/projects/hdf5/compoundexamples/reader.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "C:/Users/karln/projects/hdf5/compoundexamples",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "preLaunchTask": "Build Reader"
+        },
+        {
+            "name": "Run Writer",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "C:/Users/karln/projects/hdf5/compoundexamples/writer.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "C:/Users/karln/projects/hdf5/compoundexamples",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "preLaunchTask": "Build Writer"
+        },
+        {
+            "name": "Run C Writer",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "C:/Users/karln/projects/hdf5/compoundexamples/cwriter.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "C:/Users/karln/projects/hdf5/compoundexamples",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "preLaunchTask": "Build C Writer"
+        }
+    ]
+}

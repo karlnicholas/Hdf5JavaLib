@@ -1,0 +1,52 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "Build Write Scalar",
+            "command": "C:/msys64/mingw64/bin/g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "C:/Users/karln/projects/hdf5/fixedexamples/writescalar.cpp",
+                "-o",
+                "C:/Users/karln/projects/hdf5/fixedexamples/writescalar.exe",
+                "-I", "C:/msys64/mingw64/include",
+                "-L", "C:/msys64/mingw64/lib",
+                "-lhdf5_cpp",
+                "-lhdf5"
+            ],
+            "options": {
+                "cwd": "C:/msys64/mingw64/bin"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Builds writescalar.exe with debug symbols."
+        },
+        {
+            "type": "cppbuild",
+            "label": "Build Write Vector",
+            "command": "C:/msys64/mingw64/bin/g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "C:/Users/karln/projects/hdf5/fixedexamples/writevector.cpp",
+                "-o",
+                "C:/Users/karln/projects/hdf5/fixedexamples/writevector.exe",
+                "-I", "C:/msys64/mingw64/include",
+                "-L", "C:/msys64/mingw64/lib",
+                "-lhdf5_cpp",
+                "-lhdf5"
+            ],
+            "options": {
+                "cwd": "C:/msys64/mingw64/bin"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": "build",
+            "detail": "Builds writevector.exe with debug symbols."
+        }
+    ],
+    "version": "2.0.0"
+}

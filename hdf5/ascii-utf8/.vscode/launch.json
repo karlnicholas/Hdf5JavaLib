@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run ASCII Dataset",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "C:/Users/karln/projects/hdf5/ASCII-UTF8/ascii-dataset.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "C:/Users/karln/projects/hdf5/ASCII-UTF8",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "preLaunchTask": "Build ASCII Dataset"
+        },
+        {
+            "name": "Run UTF8 Dataset",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "C:/Users/karln/projects/hdf5/ASCII-UTF8/utf8-dataset.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "C:/Users/karln/projects/hdf5/ASCII-UTF8",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "preLaunchTask": "Build UTF8 Dataset"
+        }
+    ]
+}

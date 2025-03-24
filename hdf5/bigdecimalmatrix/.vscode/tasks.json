@@ -1,0 +1,30 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "Build Weather Data",
+            "command": "C:/msys64/mingw64/bin/g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "C:/Users/karln/projects/hdf5/bigdecimalmatrix/weatherdata.cpp",
+                "-o",
+                "C:/Users/karln/projects/hdf5/bigdecimalmatrix/weatherdata.exe",
+                "-I", "C:/msys64/mingw64/include",
+                "-L", "C:/msys64/mingw64/lib",
+                "-lhdf5_cpp",
+                "-lhdf5"
+            ],
+            "options": {
+                "cwd": "C:/msys64/mingw64/bin"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Builds weatherdata.exe with debug symbols."
+        }
+    ],
+    "version": "2.0.0"
+}

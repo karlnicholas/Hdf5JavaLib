@@ -1,0 +1,52 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "Build ASCII Dataset",
+            "command": "C:/msys64/mingw64/bin/g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "C:/Users/karln/projects/hdf5/ASCII-UTF8/ascii-dataset.cpp",
+                "-o",
+                "C:/Users/karln/projects/hdf5/ASCII-UTF8/ascii-dataset.exe",
+                "-I", "C:/msys64/mingw64/include",
+                "-L", "C:/msys64/mingw64/lib",
+                "-lhdf5_cpp",
+                "-lhdf5"
+            ],
+            "options": {
+                "cwd": "C:/msys64/mingw64/bin"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Builds ascii-dataset.exe with debug symbols."
+        },
+        {
+            "type": "cppbuild",
+            "label": "Build UTF8 Dataset",
+            "command": "C:/msys64/mingw64/bin/g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "C:/Users/karln/projects/hdf5/ASCII-UTF8/utf8-dataset.cpp",
+                "-o",
+                "C:/Users/karln/projects/hdf5/ASCII-UTF8/utf8-dataset.exe",
+                "-I", "C:/msys64/mingw64/include",
+                "-L", "C:/msys64/mingw64/lib",
+                "-lhdf5_cpp",
+                "-lhdf5"
+            ],
+            "options": {
+                "cwd": "C:/msys64/mingw64/bin"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": "build",
+            "detail": "Builds utf8-dataset.exe with debug symbols."
+        }
+    ],
+    "version": "2.0.0"
+}

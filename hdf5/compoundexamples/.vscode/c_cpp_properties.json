@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "MINGW64",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
+            "includePath": [
+                "C:/Users/karln/projects/hdf5/compoundexamples/**",
+                "C:/msys64/mingw64/include/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "_CONSOLE"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}

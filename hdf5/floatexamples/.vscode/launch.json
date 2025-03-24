@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Monitoring",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "C:/Users/karln/projects/hdf5/floatexamples/monitoring.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "C:/Users/karln/projects/hdf5/floatexamples",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "preLaunchTask": "Build Monitoring"
+        }
+    ]
+}
