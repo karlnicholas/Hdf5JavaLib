@@ -8,7 +8,6 @@ import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +19,6 @@ public class VariableLengthDatatype implements HdfDatatype {
     private final int size;
     private final int baseType;
     private HdfGlobalHeap globalHeap;
-    private byte[] messageBytes;
     // In your HdfDataType/FixedPointDatatype class
     private static final Map<Class<?>, HdfConverter<VariableLengthDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
@@ -44,17 +42,10 @@ public class VariableLengthDatatype implements HdfDatatype {
         if ( tempBytes[0] == 0x10) {
             byte[] t2 = new byte[4];
             buffer.get(t2);
-            byte[] newTempBytes = new byte[tempBytes.length + t2.length]; // 8 + 4 = 12 bytes
-            System.arraycopy(tempBytes, 0, newTempBytes, 0, tempBytes.length); // Copy tempBytes
-            System.arraycopy(t2, 0, newTempBytes, tempBytes.length, t2.length); // Copy t2
-            tempBytes = newTempBytes; // Reassign tempBytes to the new combined array
         }
 
         int baseType = 0;
-
-        VariableLengthDatatype variableLengthDatatype =  new VariableLengthDatatype(classAndVersion, classBitField, size, baseType);
-        variableLengthDatatype.messageBytes = tempBytes;
-        return variableLengthDatatype;
+        return new VariableLengthDatatype(classAndVersion, classBitField, size, baseType);
     }
 
     public static BitSet createClassBitField(PaddingType paddingType, CharacterSet charSet) {
@@ -125,8 +116,8 @@ public class VariableLengthDatatype implements HdfDatatype {
 
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-//        byte[] bytes = {0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00};
-        buffer.put(messageBytes);
+        byte[] bytes = {0x19, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
+        buffer.put(bytes);
     }
 
     // Inner Enum for Padding Type (Bits 0-3)

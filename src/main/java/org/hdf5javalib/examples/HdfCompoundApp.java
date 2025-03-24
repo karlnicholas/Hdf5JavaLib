@@ -43,7 +43,7 @@ public class HdfCompoundApp {
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = HdfCompoundApp.class.getResource("/compound_example_ex.h5").getFile();
+            String filePath = HdfCompoundApp.class.getResource("/compound_example.h5").getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
