@@ -113,8 +113,10 @@ public abstract class HdfMessage {
             byte[] messageData = new byte[size];
             buffer.get(messageData);
 
+            HdfMessage hdfMessage = createMessageInstance(type, flags, messageData, offsetSize, lengthSize, ()-> Arrays.copyOfRange(messageData, 8, messageData.length));
+            log.debug("Read: hdfMessage.sizeMessageData() + 8 = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData()+8);
             // Add the message to the list
-            messages.add(createMessageInstance(type, flags, messageData, offsetSize, lengthSize, ()-> Arrays.copyOfRange(messageData, 8, messageData.length)));
+            messages.add(hdfMessage);
 
         }
         return messages;

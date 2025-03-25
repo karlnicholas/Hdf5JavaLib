@@ -65,7 +65,7 @@ public class HdfFile {
         return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage, bufferAllocation.getDataGroupAddress());
     }
 
-    protected void recomputeBufferAllocation(HdfDataSet dataSet) {
+    protected void recomputeGlobalHeapAddress(HdfDataSet dataSet) {
         HdfFixedPoint dimensionSize = dataSet.getDataObjectHeaderPrefix().findMessageByType(DataLayoutMessage.class).orElseThrow().getDimensionSizes()[0];
         bufferAllocation.computeGlobalHeapAddress(dimensionSize.getInstance(Long.class));
     }

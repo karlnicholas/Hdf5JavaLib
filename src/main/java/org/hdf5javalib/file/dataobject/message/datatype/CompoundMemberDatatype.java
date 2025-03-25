@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
@@ -8,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
 
 @Getter
+@Slf4j
 public class CompoundMemberDatatype implements HdfDatatype {
     private final String name;
     private final int offset;
@@ -31,6 +33,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
             case VLEN -> computeVariableLengthMessageDataSize(name);
             default -> throw new IllegalStateException("Unexpected datatype class: " + type.getDatatypeClass());
         };
+//        log.debug("CompoundMemberDatatype {}", this);
     }
 
     private short computeFloatMessageDataSize(String name) {
@@ -78,6 +81,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
                 ", dimensionPermutation=" + dimensionPermutation +
                 ", dimensionSizes=" + java.util.Arrays.toString(dimensionSizes) +
                 ", type=" + type +
+                ", sizeMessageData=" + sizeMessageData +
                 '}';
     }
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {

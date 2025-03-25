@@ -18,7 +18,7 @@ import static org.hdf5javalib.file.dataobject.message.HdfMessage.readMessagesFro
 @Getter
 public class HdfObjectHeaderPrefixV1 {
     private final int version;                // 1 byte
-    private final int totalHeaderMessages;    // 2 bytes
+//    private final int totalHeaderMessages;    // 2 bytes
     private final long objectReferenceCount;  // 4 bytes
     private final long objectHeaderSize;      // 4 bytes
     // level 2A1A
@@ -26,9 +26,9 @@ public class HdfObjectHeaderPrefixV1 {
     private final List<HdfMessage> headerMessages;
 
     // Constructor for application-defined values
-    public HdfObjectHeaderPrefixV1(int version, int totalHeaderMessages, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> headerMessages) {
+    public HdfObjectHeaderPrefixV1(int version, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> headerMessages) {
         this.version = version;
-        this.totalHeaderMessages = totalHeaderMessages;
+//        this.totalHeaderMessages = totalHeaderMessages;
         this.objectReferenceCount = objectReferenceCount;
         this.objectHeaderSize = objectHeaderSize;
         this.headerMessages = headerMessages;
@@ -73,7 +73,7 @@ public class HdfObjectHeaderPrefixV1 {
         }
 
         // Create the instance
-        return new HdfObjectHeaderPrefixV1(version, totalHeaderMessages, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages);
+        return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages);
     }
 
     public void writeToByteBuffer(ByteBuffer buffer) {
@@ -84,7 +84,7 @@ public class HdfObjectHeaderPrefixV1 {
         buffer.put((byte) 0);
 
         // Write total header messages (2 bytes, little-endian)
-        buffer.putShort((short) totalHeaderMessages);
+        buffer.putShort((short) headerMessages.size());
 
         // Write object reference count (4 bytes, little-endian)
         buffer.putInt((int) objectReferenceCount);
@@ -127,7 +127,7 @@ public class HdfObjectHeaderPrefixV1 {
         StringBuilder builder = new StringBuilder();
         builder.append("HdfObjectHeaderPrefixV1 {")
                 .append(" Version: ").append(version)
-                .append(" Total Header Messages: ").append(totalHeaderMessages)
+                .append(" Total Header Messages: ").append(headerMessages.size())
                 .append(" Object Reference Count: ").append(objectReferenceCount)
                 .append(" Object Header Size: ").append(objectHeaderSize);
                 // Parse header messages

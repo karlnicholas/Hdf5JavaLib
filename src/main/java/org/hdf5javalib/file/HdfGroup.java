@@ -70,7 +70,7 @@ public class HdfGroup {
         HdfFixedPoint localHeap = HdfFixedPoint.of(localHeapAddress);
 
         // (short) (bTreeAddress.getDatatype().getSize() + localHeapAddress.getDatatype().getSize()
-        objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 1, 24,
+        objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 24,
                 Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte)0,(short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))));
 
         // Define a root group
