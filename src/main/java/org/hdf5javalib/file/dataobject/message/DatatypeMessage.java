@@ -117,7 +117,7 @@ public class DatatypeMessage extends HdfMessage {
 
     @Override
     public String toString() {
-        return "DatatypeMessage{hdfDatatype=" + hdfDatatype + '}';
+        return "DatatypeMessage("+(getSizeMessageData()+8)+"){hdfDatatype=" + hdfDatatype + '}';
     }
 
     @Override

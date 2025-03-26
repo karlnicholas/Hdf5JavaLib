@@ -153,7 +153,7 @@ public class DataLayoutMessage extends HdfMessage {
 
     @Override
     public String toString() {
-        return "DataLayoutMessage{" +
+        return "DataLayoutMessage("+(getSizeMessageData()+8)+"){" +
                 "version=" + version +
                 ", layoutClass=" + layoutClass +
                 ", dataAddress=" + (layoutClass == 1 || layoutClass == 2 ? dataAddress : "N/A") +

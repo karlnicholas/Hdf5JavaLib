@@ -105,9 +105,9 @@ public class HdfDataSet {
 
         int objectReferenceCount = 1;
         int objectHeaderSize = 0;
-        for( HdfMessage headerMessage: headerMessages ) {
-            log.trace("Write: headerMessage.getSizeMessageData() + 8 = {} {}", headerMessage.getMessageType(), headerMessage.getSizeMessageData() + 8);
-            objectHeaderSize += headerMessage.getSizeMessageData() + 8;
+        for( HdfMessage hdfMessage: headerMessages ) {
+            log.trace("Write: hdfMessage.getSizeMessageData() + 8 = {} {}", hdfMessage.getMessageType(), hdfMessage.getSizeMessageData() + 8);
+            objectHeaderSize += hdfMessage.getSizeMessageData() + 8;
         }
         if ( objectHeaderSize + 8 > currentObjectHeaderSize) {
             currentObjectHeaderSize = hdfGroup.getHdfFile().getBufferAllocation().expandDataGroupStorageSize(objectHeaderSize);

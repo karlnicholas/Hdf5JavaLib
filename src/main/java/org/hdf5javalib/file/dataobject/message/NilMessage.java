@@ -49,7 +49,7 @@ public class NilMessage extends HdfMessage {
 
     @Override
     public String toString() {
-        return "NilMessage{" + super.getSizeMessageData() + "}";
+        return "NilMessage("+(getSizeMessageData()+8)+"){}";
     }
 
     @Override

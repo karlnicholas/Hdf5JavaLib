@@ -126,7 +126,7 @@ public class DataspaceMessage extends HdfMessage {
 
     @Override
     public String toString() {
-        return "DataspaceMessage{" +
+        return "DataspaceMessage("+(getSizeMessageData()+8)+"){" +
                 "version=" + version +
                 ", dimensionality=" + dimensionality +
                 ", flags=" + parsedFlags +

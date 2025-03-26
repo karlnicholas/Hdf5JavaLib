@@ -111,7 +111,7 @@ public class AttributeMessage extends HdfMessage {
 
     @Override
     public String toString() {
-        return "AttributeMessage{" +
+        return "AttributeMessage("+(getSizeMessageData()+8)+"){" +
                 "version=" + version +
                 ", name='" + name + '\'' +
                 ", value='" + value + '\'' +

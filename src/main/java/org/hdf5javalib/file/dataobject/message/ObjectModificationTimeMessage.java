@@ -79,7 +79,7 @@ public class ObjectModificationTimeMessage extends HdfMessage {
 
     @Override
     public String toString() {
-        return "ObjectModificationTimeMessage{" +
+        return "ObjectModificationTimeMessage("+(getSizeMessageData()+8)+"){" +
                 "version=" + version +
                 ", secondsAfterEpoch=" + Instant.ofEpochSecond(secondsAfterEpoch).toString() +
                 '}';

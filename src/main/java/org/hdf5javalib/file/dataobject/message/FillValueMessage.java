@@ -116,7 +116,7 @@ public class FillValueMessage extends HdfMessage {
 
     @Override
     public String toString() {
-        return "FillValueMessage{" +
+        return "FillValueMessage("+(getSizeMessageData()+8)+"){" +
                 "version=" + version +
                 ", spaceAllocationTime=" + spaceAllocationTime +
                 ", fillValueWriteTime=" + fillValueWriteTime +
