@@ -108,7 +108,7 @@ public class StringDatatype implements HdfDatatype {
 
     @Override
     public short getSizeMessageData() {
-        return 0;
+        return 0+8;
     }
 
 
