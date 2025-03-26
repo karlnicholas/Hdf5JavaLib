@@ -65,14 +65,7 @@ public class StringDatatype implements HdfDatatype {
     }
 
     public String toString(byte[] bytes) {
-        byte[] workingBytes = new byte[size];
-        int workingEnd = Math.min(size, bytes.length);
-        System.arraycopy(bytes, 0, workingBytes, 0, workingEnd);
-
-        // Pad with spaces if SPACE_PAD and bytes is shorter than size
-        if (getPaddingType() == PaddingType.SPACE_PAD && workingEnd < size) {
-            Arrays.fill(workingBytes, workingEnd, size, (byte) ' ');
-        }
+        byte[] workingBytes = getWorkingBytes(bytes);
 
         // Count non-0x00 bytes
         int validLength = 0;
@@ -94,6 +87,18 @@ public class StringDatatype implements HdfDatatype {
         return new String(cleanBytes,
                 getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
 
+    }
+
+    public byte[] getWorkingBytes(byte[] bytes) {
+        byte[] workingBytes = new byte[size];
+        int workingEnd = Math.min(size, bytes.length);
+        System.arraycopy(bytes, 0, workingBytes, 0, workingEnd);
+
+        // Pad with spaces if SPACE_PAD and bytes is shorter than size
+        if (getPaddingType() == PaddingType.SPACE_PAD && workingEnd < size) {
+            Arrays.fill(workingBytes, workingEnd, size, (byte) ' ');
+        }
+        return workingBytes;
     }
 
     @Override

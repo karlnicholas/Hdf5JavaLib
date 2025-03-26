@@ -59,7 +59,7 @@ public class HdfDataSet {
         headerMessages.add(dataTypeMessage);
 
         // Add FillValue message
-        FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 0, 1,
+        FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 2, 1,
                 0,
                 new byte[0], (byte)1, (short)8);
         headerMessages.add(fillValueMessage);

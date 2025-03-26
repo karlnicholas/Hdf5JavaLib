@@ -3,6 +3,7 @@ package org.hdf5javalib.dataclass;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * HDFString. Stored bytes are not null terminated even if null termination is set in classBitField.
@@ -32,9 +33,15 @@ public class HdfString implements HdfData {
 
     // Get the HDF byte[] representation for storage, always returns a copy
     public byte[] getBytes() {
-        byte[] copy = new byte[datatype.getSize()];
-        System.arraycopy(bytes, 0, copy, 0, bytes.length);
-        return copy;
+        return datatype.getWorkingBytes(bytes);
+
+//        byte[] copy = new byte[datatype.getSize()];
+//        StringDatatype.PaddingType paddingType = datatype.getPaddingType();
+//        if ( paddingType == StringDatatype.PaddingType.SPACE_PAD) {
+//
+//        }
+//        System.arraycopy(bytes, 0, copy, 0, bytes.length);
+//        return copy;
     }
 
     // String representation for debugging and user-friendly output
