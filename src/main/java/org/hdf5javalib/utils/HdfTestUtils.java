@@ -1,6 +1,5 @@
 package org.hdf5javalib.utils;
 
-import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
