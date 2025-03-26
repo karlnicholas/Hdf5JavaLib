@@ -114,7 +114,7 @@ public abstract class HdfMessage {
             buffer.get(messageData);
 
             HdfMessage hdfMessage = createMessageInstance(type, flags, messageData, offsetSize, lengthSize, ()-> Arrays.copyOfRange(messageData, 8, messageData.length));
-            log.debug("Read: hdfMessage.sizeMessageData() + 8 = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData()+8);
+            log.trace("Read: hdfMessage.sizeMessageData() + 8 = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData()+8);
             // Add the message to the list
             messages.add(hdfMessage);
 
