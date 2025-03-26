@@ -30,6 +30,20 @@
             "preLaunchTask": "Build Writer"
         },
         {
+            "name": "Run WriterNoAttr",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/compoundexamples/writernoattr.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/compoundexamples",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "preLaunchTask": "Build WriterNoAttr"
+        },
+        {
             "name": "Run C Writer",
             "type": "cppdbg",
             "request": "launch",

@@ -49,6 +49,30 @@
             },
             "problemMatcher": ["$gcc"],
             "group": "build",
+            "detail": "Builds writernoattr.exe with debug symbols."
+        },
+        {
+            "type": "cppbuild",
+            "label": "Build WriterNoAttr",
+            "command": "C:/msys64/mingw64/bin/g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/compoundexamples/writernoattr.cpp",
+                "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/compoundexamples/common.cpp",
+                "-o",
+                "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/compoundexamples/writernoattr.exe",
+                "-I", "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/compoundexamples",
+                "-I", "C:/msys64/mingw64/include",
+                "-L", "C:/msys64/mingw64/lib",
+                "-lhdf5_cpp",
+                "-lhdf5"
+            ],
+            "options": {
+                "cwd": "C:/msys64/mingw64/bin"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": "build",
             "detail": "Builds writer.exe with debug symbols."
         },
         {

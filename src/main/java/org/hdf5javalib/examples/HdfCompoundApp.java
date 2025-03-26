@@ -1,7 +1,9 @@
 package org.hdf5javalib.examples;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
@@ -52,17 +54,17 @@ public class HdfCompoundApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        try {
-            HdfFileReader reader = new HdfFileReader();
-            String filePath = HdfCompoundApp.class.getResource("/compound_example_new.h5").getFile();
-            try (FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
-                tryCompoundTestSpliterator(channel, reader);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            HdfFileReader reader = new HdfFileReader();
+//            String filePath = HdfCompoundApp.class.getResource("/compound_example_new.h5").getFile();
+//            try (FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+//                tryCompoundTestSpliterator(channel, reader);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 //        try {
 //            HdfFileReader reader = new HdfFileReader();
 //            String filePath = HdfCompoundApp.class.getResource("/env_monitoring_labels.h5").getFile();
@@ -263,6 +265,8 @@ public class HdfCompoundApp {
 
     @Data
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class CompoundExample {
         private Long recordId;
         private String fixedStr;
@@ -298,15 +302,15 @@ public class HdfCompoundApp {
                 .limit(10)
                 .forEach(c -> System.out.println("Row: " + c.getMembers()));
 
-//        System.out.println("Ten BigDecimals = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream()
-//                        .filter(c->c.getMembers().get(0).getInstance(Long.class).longValue() < 1010 )
-//                .map(c->c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
-//
-//        System.out.println("Ten Rows:");
-//        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), CompoundExample.class)
-//                .stream()
-//                .filter(c -> c.getRecordId() < 1010)
-//                .forEach(c -> System.out.println("Row: " + c));
+        System.out.println("Ten BigDecimals = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfCompound.class).stream()
+                        .filter(c->c.getMembers().get(0).getInstance(Long.class).longValue() < 1010 )
+                .map(c->c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
+
+        System.out.println("Ten Rows:");
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), CompoundExample.class)
+                .stream()
+                .filter(c -> c.getRecordId() < 1010)
+                .forEach(c -> System.out.println("Row: " + c));
     }
 
     public void tryCompoundSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {

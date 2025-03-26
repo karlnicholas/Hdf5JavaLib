@@ -31,6 +31,14 @@ int main() {
         DataSpace dataspace(1, dims);
         DataSet dataset = file.createDataSet(DATASET_NAME, compound_type, dataspace);
 
+        // ✅ ADD ATTRIBUTE: "GIT root revision"
+        H5std_string attribute_value = "Revision: , URL: ";
+        StrType attr_type(PredType::C_S1, attribute_value.size());
+        DataSpace attr_space(H5S_SCALAR);
+        Attribute attribute = dataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
+        attribute.write(attr_type, attribute_value);
+        attribute.close();
+
         std::vector<Record> records(NUM_RECORDS);
         std::vector<std::string> varStrings(NUM_RECORDS);
         std::random_device rd;
