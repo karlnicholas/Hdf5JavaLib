@@ -150,6 +150,9 @@ public class HdfGlobalHeap {
 
     // Helper method to calculate total heap size aligned to 4K
     private long calculateAlignedTotalSize() {
+        if ( objects == null ) {
+            return 0;
+        }
         long totalSize = 16; // Header
         for (GlobalHeapObject obj : objects.values()) {
             totalSize += 16 + obj.getObjectSize() + getPadding(obj.getObjectSize());

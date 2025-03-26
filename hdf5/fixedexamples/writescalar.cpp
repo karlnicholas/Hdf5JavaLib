@@ -21,7 +21,7 @@ int main() {
         DataSpace dataspace(1, dims);
 
         // Create the dataset named "data" with integer type
-        DataSet dataset = file.createDataSet("data", PredType::NATIVE_INT, dataspace);
+        DataSet dataset = file.createDataSet("scalar", PredType::NATIVE_INT, dataspace);
 
         // Write the random integer to the dataset
         dataset.write(&random_value, PredType::NATIVE_INT);

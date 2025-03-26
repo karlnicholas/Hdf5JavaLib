@@ -44,20 +44,20 @@ public class HdfFixedPointApp {
         new HdfFixedPointApp().run();
     }
     private void run() {
+//        try {
+//            HdfFileReader reader = new HdfFileReader();
+//            String filePath = Objects.requireNonNull(HdfCompoundApp.class.getResource("/scalar.h5")).getFile();
+//            try(FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+//                tryScalarDataSpliterator(channel, reader);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(HdfCompoundApp.class.getResource("/singleint.h5")).getFile();
-            try(FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
-                tryScalarDataSpliterator(channel, reader);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/randomints.h5")).getFile();
+            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector.h5")).getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
@@ -68,19 +68,30 @@ public class HdfFixedPointApp {
         }
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/weather_data.h5")).getFile();
+            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector_new.h5")).getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-//                tryMatrixSpliterator(channel, reader);
+                tryVectorSpliterator(channel, reader);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        tryHdfApiInts("randomintseach.h5", this::writeEach);
-        tryHdfApiInts("randomintsall.h5", this::writeAll);
-        tryHdfApiMatrixInts("weather_data_each.h5", this::writeEachMatrix);
-        tryHdfApiMatrixInts("weather_data_all.h5", this::writeAllMatrix);
+//        try {
+//            HdfFileReader reader = new HdfFileReader();
+//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/weatherdata.h5")).getFile();
+//            try(FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+////                tryMatrixSpliterator(channel, reader);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//        tryHdfApiInts("vector_each.h5", this::writeEach);
+//        tryHdfApiInts("vector_all.h5", this::writeAll);
+//        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);
+//        tryHdfApiMatrixInts("weatherdata_all.h5", this::writeAllMatrix);
     }
 
     private void tryScalarDataSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
@@ -221,7 +232,7 @@ public class HdfFixedPointApp {
 
     private void tryHdfApiInts(String FILE_NAME, Consumer<WriterParams> writer) {
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
-        final String DATASET_NAME = "temperature";
+        final String DATASET_NAME = "vector";
         final int NUM_RECORDS = 100;
 
         try {

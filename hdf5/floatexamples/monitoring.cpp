@@ -11,7 +11,7 @@ struct EnvData {
 };
 
 int main() {
-    H5File file("env_monitoring.h5", H5F_ACC_TRUNC);
+    H5File file("monitoring.h5", H5F_ACC_TRUNC);
 
     // Define compound datatype
     CompType datatype(sizeof(EnvData));

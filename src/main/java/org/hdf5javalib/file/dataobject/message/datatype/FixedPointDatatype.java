@@ -88,7 +88,7 @@ public class FixedPointDatatype implements HdfDatatype {
 
     @Override
     public short getSizeMessageData() {
-        return (short) size;
+        return (short) (8 + 8);
     }
 
     @Override

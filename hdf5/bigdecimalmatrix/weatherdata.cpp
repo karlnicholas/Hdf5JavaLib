@@ -5,8 +5,8 @@
 #include <vector>
 #include <string>
 
-const H5std_string FILE_NAME("weather_data.h5");
-const H5std_string DATA_DATASET("Data");
+const H5std_string FILE_NAME("weatherdata.h5");
+const H5std_string DATA_DATASET("weatherdata");
 
 int main() {
     try {

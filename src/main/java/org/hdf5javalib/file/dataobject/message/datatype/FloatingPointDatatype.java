@@ -75,7 +75,7 @@ public class FloatingPointDatatype implements HdfDatatype {
 
     @Override
     public short getSizeMessageData() {
-        return (short) size;
+        return (short) (12 + 8);
     }
 
     // Public method to add user-defined converters
