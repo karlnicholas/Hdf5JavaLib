@@ -44,6 +44,15 @@ public class HdfDataSet {
         createInitialMessages(dataSpaceMessage);
     }
 
+    public HdfDataSet(HdfGroup hdfGroup, String datasetName, HdfDatatype hdfDatatype, HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix) {
+        this.hdfGroup = hdfGroup;
+        this.datasetName = datasetName;
+        this.hdfDatatype = hdfDatatype;
+        this.attributes = new ArrayList<>();
+        this.dataObjectHeaderPrefix = dataObjectHeaderPrefix;
+        dataObjectHeaderPrefix.findMessageByType(AttributeMessage.class).ifPresent(attributes::add);
+    }
+
     private void createInitialMessages(DataspaceMessage dataSpaceMessage) {
         int currentObjectHeaderSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
         List<HdfMessage> headerMessages = new ArrayList<>();

@@ -1,160 +1,365 @@
 package org.hdf5javalib.datasource;
 
-import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
+import org.hdf5javalib.file.HdfDataSet;
+import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-/**
- * A data source for reading raw fixed-point data from HDF5 files into arrays of type T.
- * Optimized for bulk reading and streaming of raw data without mapping to a specific class.
- *
- * @param <T> the type of object returned by streaming or bulk reading operations
- */
-public class TypedDataSource<T> extends AbstractTypedStreamingSource<T> {
+public class TypedDataSource<T> {
+    private final HdfDataSet dataset;
+    private final FileChannel fileChannel;
+    private final long startOffset;
     private final Class<T> dataClass;
+    private final int[] dimensions;
+    private final int elementSize;
 
-    /**
-     * Constructs a DataClassDataSource for reading raw data from an HDF5 file.
-     *
-     * @param headerPrefixV1 the HDF5 object header prefix
-     * @param fileChannel the FileChannel for streaming
-     * @param startOffset the byte offset where the dataset begins
-     * @param dataClass the Class object representing the type T
-     * @throws IllegalStateException if metadata is missing
-     * @throws IllegalArgumentException if dimensionality is unsupported
-     */
-    public TypedDataSource(HdfObjectHeaderPrefixV1 headerPrefixV1, FileChannel fileChannel, long startOffset, Class<T> dataClass) {
-        super(headerPrefixV1, fileChannel, startOffset);
+    public TypedDataSource(HdfDataSet dataset, FileChannel fileChannel, long startOffset, Class<T> dataClass) {
+        this.dataset = dataset;
+        this.fileChannel = fileChannel;
+        this.startOffset = startOffset;
         this.dataClass = dataClass;
+        this.elementSize = dataset.getHdfDatatype().getSize();
+        this.dimensions = extractDimensions(dataset.getDataObjectHeaderPrefix()
+                .findMessageByType(DataspaceMessage.class)
+                .orElseThrow(() -> new IllegalStateException("DataspaceMessage not found")));
     }
 
-    /**
-     * Reads the entire dataset into an array of T objects in memory.
-     *
-     * @return an array of T containing all records
-     * @throws IOException if an I/O error occurs
-     * @throws IllegalStateException if no FileChannel was provided
-     */
-    public T[] readAll() throws IOException {
-        if (fileChannel == null) {
-            throw new IllegalStateException("Reading all data requires a FileChannel; use the appropriate constructor.");
-        }
-        long totalSize = sizeForReadBuffer * readsAvailable;
-        if (totalSize > Integer.MAX_VALUE) {
-            throw new IllegalStateException("Dataset size exceeds maximum array capacity: " + totalSize);
-        }
-
-        ByteBuffer buffer = ByteBuffer.allocate((int) totalSize).order(ByteOrder.LITTLE_ENDIAN);
-        synchronized (fileChannel) {
-            fileChannel.position(startOffset);
-            int totalBytesRead = 0;
-            while (totalBytesRead < totalSize) {
-                int bytesRead = fileChannel.read(buffer);
-                if (bytesRead == -1) {
-                    throw new IOException("Unexpected EOF after " + totalBytesRead + " bytes; expected " + totalSize);
-                }
-                totalBytesRead += bytesRead;
-            }
-        }
-        buffer.flip();
-
-        @SuppressWarnings("unchecked")
-        T[] result = (T[]) Array.newInstance(dataClass, readsAvailable);
-        for (int i = 0; i < readsAvailable; i++) {
-            result[i] = populateFromBufferRaw(buffer);
+    private int[] extractDimensions(DataspaceMessage dataspace) {
+        HdfFixedPoint[] dims = dataspace.getDimensions();
+        int[] result = new int[dims.length];
+        for (int i = 0; i < dims.length; i++) {
+            result[i] = dims[i].getInstance(Long.class).intValue();
         }
         return result;
     }
 
-    @Override
-    public T[][] readAllMatrix() throws IOException {
-        validate2D();
-        if (fileChannel == null) {
-            throw new IllegalStateException("Reading matrix data requires a FileChannel; use the appropriate constructor.");
+    private ByteBuffer readBytes(long offset, long size) throws IOException {
+        if (size > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("Size too large: " + size);
         }
-        long totalSize = sizeForReadBuffer * readsAvailable;
-        if (totalSize > Integer.MAX_VALUE) {
-            throw new IllegalStateException("Dataset size exceeds maximum array capacity: " + totalSize);
-        }
-
-        ByteBuffer buffer = ByteBuffer.allocate((int) totalSize).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
         synchronized (fileChannel) {
-            fileChannel.position(startOffset);
-            int totalBytesRead = 0;
-            while (totalBytesRead < totalSize) {
-                int bytesRead = fileChannel.read(buffer);
-                if (bytesRead == -1) {
-                    throw new IOException("Unexpected EOF after " + totalBytesRead + " bytes; expected " + totalSize);
-                }
-                totalBytesRead += bytesRead;
+            fileChannel.position(startOffset + offset);
+            int bytesRead = fileChannel.read(buffer);
+            if (bytesRead != size) {
+                throw new IOException("Failed to read the expected number of bytes: read " + bytesRead + ", expected " + size);
             }
+            buffer.flip();
+            return buffer;
         }
-        buffer.flip();
-
-        @SuppressWarnings("unchecked")
-        T[][] result = (T[][]) Array.newInstance(dataClass, readsAvailable, elementsPerRecord);
-        for (int i = 0; i < readsAvailable; i++) {
-            result[i] = populateRowFromBufferRaw(buffer);
-        }
-        return result;
     }
 
-    @Override
-    public Stream<T> stream() {
-        if (fileChannel == null) {
-            throw new IllegalStateException("Streaming requires a FileChannel; use the appropriate constructor.");
-        }
-        return StreamSupport.stream(new DataClassSpliterator(startOffset, endOffset), false);
-    }
-
-    @Override
-    public Stream<T> parallelStream() {
-        if (fileChannel == null) {
-            throw new IllegalStateException("Streaming requires a FileChannel; use the appropriate constructor.");
-        }
-        return StreamSupport.stream(new DataClassSpliterator(startOffset, endOffset), true);
-    }
-
-    @Override
-    public Stream<T[]> streamMatrix() {
-        validate2D();
-        if (fileChannel == null) {
-            throw new IllegalStateException("Streaming matrix requires a FileChannel; use the appropriate constructor.");
-        }
-        return StreamSupport.stream(new DataClassSpliterator(startOffset, endOffset, true).asMatrixSpliterator(), false);
-    }
-
-    @Override
-    public Stream<T[]> parallelStreamMatrix() {
-        validate2D();
-        if (fileChannel == null) {
-            throw new IllegalStateException("Streaming matrix requires a FileChannel; use the appropriate constructor.");
-        }
-        return StreamSupport.stream(new DataClassSpliterator(startOffset, endOffset, true).asMatrixSpliterator(), true);
-    }
-
-    @Override
-    protected T populateFromBufferRaw(ByteBuffer buffer) {
-        byte[] bytes = new byte[datatype.getSize()];
+    private T populateElement(ByteBuffer buffer) {
+        byte[] bytes = new byte[elementSize];
         buffer.get(bytes);
-        return datatype.getInstance(dataClass, bytes);
+        return dataset.getHdfDatatype().getInstance(dataClass, bytes);
     }
 
-    @Override
-    protected T[] populateRowFromBufferRaw(ByteBuffer buffer) {
+    private T[] populateVector(ByteBuffer buffer, int length) {
         @SuppressWarnings("unchecked")
-        T[] row = (T[]) Array.newInstance(dataClass, elementsPerRecord);
-        for (int j = 0; j < elementsPerRecord; j++) {
-            byte[] bytes = new byte[datatype.getSize()];
-            buffer.get(bytes);
-            row[j] = datatype.getInstance(dataClass, bytes);
+        T[] vector = (T[]) Array.newInstance(dataClass, length);
+        for (int i = 0; i < length; i++) {
+            vector[i] = populateElement(buffer);
         }
-        return row;
+        return vector;
+    }
+
+    private T[][] populateMatrix(ByteBuffer buffer, int rows, int cols) {
+        @SuppressWarnings("unchecked")
+        T[][] matrix = (T[][]) Array.newInstance(dataClass, rows, cols);
+        for (int i = 0; i < rows; i++) {
+            matrix[i] = populateVector(buffer, cols);
+        }
+        return matrix;
+    }
+
+    private T[][][] populateTensor(ByteBuffer buffer, int depth, int rows, int cols) {
+        @SuppressWarnings("unchecked")
+        T[][][] tensor = (T[][][]) Array.newInstance(dataClass, depth, rows, cols);
+        for (int d = 0; d < depth; d++) {
+            tensor[d] = populateMatrix(buffer, rows, cols);
+        }
+        return tensor;
+    }
+
+    // --- Scalar (0D) Methods ---
+
+    public T readScalar() throws IOException {
+        if (dimensions.length != 0) {
+            throw new IllegalStateException("Dataset must be 0D");
+        }
+        ByteBuffer buffer = readBytes(0, elementSize);
+        return populateElement(buffer);
+    }
+
+    public Stream<T> streamScalar() {
+        if (dimensions.length != 0) {
+            throw new IllegalStateException("Dataset must be 0D");
+        }
+        try {
+            return Stream.of(readScalar());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    public Stream<T> parallelStreamScalar() {
+        return streamScalar(); // Parallelism not applicable for single element
+    }
+
+    // --- Vector (1D) Methods ---
+
+    public T[] readVector() throws IOException {
+        if (dimensions.length != 1) {
+            throw new IllegalStateException("Dataset must be 1D");
+        }
+        int size = dimensions[0];
+        ByteBuffer buffer = readBytes(0, elementSize * size);
+        return populateVector(buffer, size);
+    }
+
+    public Stream<T> streamVector() {
+        if (dimensions.length != 1) {
+            throw new IllegalStateException("Dataset must be 1D");
+        }
+        return StreamSupport.stream(new VectorSpliterator(0, dimensions[0], elementSize), false);
+    }
+
+    public Stream<T> parallelStreamVector() {
+        if (dimensions.length != 1) {
+            throw new IllegalStateException("Dataset must be 1D");
+        }
+        return StreamSupport.stream(new VectorSpliterator(0, dimensions[0], elementSize), true);
+    }
+
+    // --- Matrix (2D) Methods ---
+
+    public T[][] readMatrix() throws IOException {
+        if (dimensions.length != 2) {
+            throw new IllegalStateException("Dataset must be 2D");
+        }
+        int rows = dimensions[0];
+        int cols = dimensions[1];
+        ByteBuffer buffer = readBytes(0, elementSize * rows * cols);
+        return populateMatrix(buffer, rows, cols);
+    }
+
+    public Stream<T[]> streamMatrix() {
+        if (dimensions.length != 2) {
+            throw new IllegalStateException("Dataset must be 2D");
+        }
+        long rowSize = elementSize * dimensions[1];
+        return StreamSupport.stream(new MatrixSpliterator(0, dimensions[0], rowSize, dimensions[1]), false);
+    }
+
+    public Stream<T[]> parallelStreamMatrix() {
+        if (dimensions.length != 2) {
+            throw new IllegalStateException("Dataset must be 2D");
+        }
+        long rowSize = elementSize * dimensions[1];
+        return StreamSupport.stream(new MatrixSpliterator(0, dimensions[0], rowSize, dimensions[1]), true);
+    }
+
+    // --- Tensor (3D) Methods ---
+
+    public T[][][] readTensor() throws IOException {
+        if (dimensions.length != 3) {
+            throw new IllegalStateException("Dataset must be 3D");
+        }
+        int depth = dimensions[0];
+        int rows = dimensions[1];
+        int cols = dimensions[2];
+        ByteBuffer buffer = readBytes(0, elementSize * depth * rows * cols);
+        return populateTensor(buffer, depth, rows, cols);
+    }
+
+    public Stream<T[][]> streamTensor() {
+        if (dimensions.length != 3) {
+            throw new IllegalStateException("Dataset must be 3D");
+        }
+        long sliceSize = elementSize * dimensions[1] * dimensions[2];
+        return StreamSupport.stream(new TensorSpliterator(0, dimensions[0], sliceSize, dimensions[1], dimensions[2]), false);
+    }
+
+    public Stream<T[][]> parallelStreamTensor() {
+        if (dimensions.length != 3) {
+            throw new IllegalStateException("Dataset must be 3D");
+        }
+        long sliceSize = elementSize * dimensions[1] * dimensions[2];
+        return StreamSupport.stream(new TensorSpliterator(0, dimensions[0], sliceSize, dimensions[1], dimensions[2]), true);
+    }
+
+    // --- Flattened (N > 3) Methods ---
+
+    public T[] readFlattened() throws IOException {
+        if (dimensions.length <= 3) {
+            throw new IllegalStateException("Use specific methods for 0D-3D");
+        }
+        int totalElements = 1;
+        for (int dim : dimensions) {
+            totalElements *= dim;
+        }
+        ByteBuffer buffer = readBytes(0, elementSize * totalElements);
+        return populateVector(buffer, totalElements);
+    }
+
+    public Stream<T> streamFlattened() {
+        if (dimensions.length <= 3) {
+            throw new IllegalStateException("Use specific methods for 0D-3D");
+        }
+        int totalElements = 1;
+        for (int dim : dimensions) {
+            totalElements *= dim;
+        }
+        return StreamSupport.stream(new FlattenedSpliterator(0, totalElements, elementSize), false);
+    }
+
+    public Stream<T> parallelStreamFlattened() {
+        if (dimensions.length <= 3) {
+            throw new IllegalStateException("Use specific methods for 0D-3D");
+        }
+        int totalElements = 1;
+        for (int dim : dimensions) {
+            totalElements *= dim;
+        }
+        return StreamSupport.stream(new FlattenedSpliterator(0, totalElements, elementSize), true);
+    }
+
+    // --- Spliterators ---
+
+    private abstract class AbstractSpliterator<R> implements Spliterator<R> {
+        private long currentIndex;
+        private final long limit;
+        private final long recordSize;
+
+        public AbstractSpliterator(long start, long limit, long recordSize) {
+            this.currentIndex = start;
+            this.limit = limit;
+            this.recordSize = recordSize;
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super R> action) {
+            if (currentIndex >= limit) {
+                return false;
+            }
+            try {
+                long offset = currentIndex * recordSize;
+                ByteBuffer buffer = readBytes(offset, recordSize);
+                R record = populateRecord(buffer);
+                action.accept(record);
+                currentIndex++;
+                return true;
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+
+        @Override
+        public Spliterator<R> trySplit() {
+            long remaining = limit - currentIndex;
+            if (remaining <= 1) {
+                return null;
+            }
+            long splitIndex = currentIndex + remaining / 2;
+            Spliterator<R> newSpliterator = createNewSpliterator(currentIndex, splitIndex, recordSize);
+            currentIndex = splitIndex;
+            return newSpliterator;
+        }
+
+        @Override
+        public long estimateSize() {
+            return limit - currentIndex;
+        }
+
+        @Override
+        public int characteristics() {
+            return ORDERED | NONNULL | SIZED | SUBSIZED;
+        }
+
+        protected abstract R populateRecord(ByteBuffer buffer);
+        protected abstract Spliterator<R> createNewSpliterator(long start, long end, long recordSize);
+    }
+
+    private class VectorSpliterator extends AbstractSpliterator<T> {
+        public VectorSpliterator(long start, long limit, long recordSize) {
+            super(start, limit, recordSize);
+        }
+
+        @Override
+        protected T populateRecord(ByteBuffer buffer) {
+            return populateElement(buffer);
+        }
+
+        @Override
+        protected Spliterator<T> createNewSpliterator(long start, long end, long recordSize) {
+            return new VectorSpliterator(start, end, recordSize);
+        }
+    }
+
+    private class MatrixSpliterator extends AbstractSpliterator<T[]> {
+        private final int cols;
+
+        public MatrixSpliterator(long start, long limit, long recordSize, int cols) {
+            super(start, limit, recordSize);
+            this.cols = cols;
+        }
+
+        @Override
+        protected T[] populateRecord(ByteBuffer buffer) {
+            return populateVector(buffer, cols);
+        }
+
+        @Override
+        protected Spliterator<T[]> createNewSpliterator(long start, long end, long recordSize) {
+            return new MatrixSpliterator(start, end, recordSize, cols);
+        }
+    }
+
+    private class TensorSpliterator extends AbstractSpliterator<T[][]> {
+        private final int rows;
+        private final int cols;
+
+        public TensorSpliterator(long start, long limit, long recordSize, int rows, int cols) {
+            super(start, limit, recordSize);
+            this.rows = rows;
+            this.cols = cols;
+        }
+
+        @Override
+        protected T[][] populateRecord(ByteBuffer buffer) {
+            return populateMatrix(buffer, rows, cols);
+        }
+
+        @Override
+        protected Spliterator<T[][]> createNewSpliterator(long start, long end, long recordSize) {
+            return new TensorSpliterator(start, end, recordSize, rows, cols);
+        }
+    }
+
+    private class FlattenedSpliterator extends AbstractSpliterator<T> {
+        public FlattenedSpliterator(long start, long limit, long recordSize) {
+            super(start, limit, recordSize);
+        }
+
+        @Override
+        protected T populateRecord(ByteBuffer buffer) {
+            return populateElement(buffer);
+        }
+
+        @Override
+        protected Spliterator<T> createNewSpliterator(long start, long end, long recordSize) {
+            return new FlattenedSpliterator(start, end, recordSize);
+        }
     }
 }

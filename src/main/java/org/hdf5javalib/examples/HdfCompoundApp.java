@@ -294,34 +294,34 @@ public class HdfCompoundApp {
 
 
     public void tryCompoundTestSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        System.out.println("Count = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), HdfCompound.class).stream().count());
+        System.out.println("Count = " + new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), HdfCompound.class).streamVector().count());
 
         System.out.println("Ten Rows:");
-        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), HdfCompound.class)
-                .stream()
+        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), HdfCompound.class)
+                .streamVector()
                 .limit(10)
                 .forEach(c -> System.out.println("Row: " + c.getMembers()));
 
-        System.out.println("Ten BigDecimals = " + new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), HdfCompound.class).stream()
+        System.out.println("Ten BigDecimals = " + new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), HdfCompound.class).streamVector()
                         .filter(c->c.getMembers().get(0).getInstance(Long.class).longValue() < 1010 )
                 .map(c->c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
 
         System.out.println("Ten Rows:");
-        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), CompoundExample.class)
-                .stream()
+        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), CompoundExample.class)
+                .streamVector()
                 .filter(c -> c.getRecordId() < 1010)
                 .forEach(c -> System.out.println("Row: " + c));
     }
 
     public void tryCompoundSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        TypedDataSource<MonitoringData> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), MonitoringData.class);
-        MonitoringData[] allData = dataSource.readAll();
+        TypedDataSource<MonitoringData> dataSource = new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), MonitoringData.class);
+        MonitoringData[] allData = dataSource.readVector();
         System.out.println("*** readAll: \r\n" + Arrays.asList(allData).stream().map(Object::toString).collect(Collectors.joining("\n")));
-        System.out.println("*** stream: \r\n" + dataSource.stream().map(Object::toString).collect(Collectors.joining("\n")));
-        System.out.println("\"*** parallelStream: \r\n" + dataSource.parallelStream().map(Object::toString).collect(Collectors.joining("\n")));
+        System.out.println("*** stream: \r\n" + dataSource.streamVector().map(Object::toString).collect(Collectors.joining("\n")));
+        System.out.println("\"*** parallelStream: \r\n" + dataSource.parallelStreamVector().map(Object::toString).collect(Collectors.joining("\n")));
 
-        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), HdfCompound.class).stream().forEach(System.out::println);
-        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), String.class).stream().forEach(System.out::println);
+        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), HdfCompound.class).streamVector().forEach(System.out::println);
+        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), String.class).streamVector().forEach(System.out::println);
     }
 
 
@@ -340,7 +340,7 @@ public class HdfCompoundApp {
             });
             return monitoringData;
         });
-        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), MonitoringData.class).stream().forEach(System.out::println);
+        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), MonitoringData.class).streamVector().forEach(System.out::println);
     }
 
     private static final int CYCLE_LENGTH = 10;

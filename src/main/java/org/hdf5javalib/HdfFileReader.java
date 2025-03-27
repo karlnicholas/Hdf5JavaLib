@@ -3,6 +3,7 @@ package org.hdf5javalib;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.dataclass.HdfString;
+import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfGroup;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.file.dataobject.message.DataLayoutMessage;
@@ -24,13 +25,15 @@ public class HdfFileReader {
     private HdfSuperblock superblock;
     // level 1
     private HdfGroup rootGroup;
-    // level 2A1
-    private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
-    // parsed Datatype
-    private HdfDatatype dataType;
+    // well, well, well
+    private HdfDataSet dataSet;
+//    // level 2A1
+//    private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
+//    // parsed Datatype
+//    private HdfDatatype dataType;
     private long dataAddress = 0;
     private long dimensionSize = 0;
-    private long dimension = 0;
+//    private long dimension = 0;
 
     public void readFile(FileChannel fileChannel) throws IOException {
         // Parse the superblock at the beginning of the file
@@ -92,12 +95,15 @@ public class HdfFileReader {
         for( int i=0; i < symbolTableNode.getNumberOfSymbols(); ++i ) {
             HdfSymbolTableEntry ste = symbolTableNode.getSymbolTableEntries().get(i);
             HdfString datasetName = localHeapContents.parseStringAtOffset(ste.getLinkNameOffset());
+            HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
+            // parsed Datatype
+            HdfDatatype dataType = null;
             // Parse the Data Object Header Prefix next in line
 //        fileChannel.position(fileOffsets.getObjectHeaderAddress().toBigInteger().longValue());
-            long dataLObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
-            fileChannel.position(dataLObjectHeaderAddress);
+            long dataObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
+            fileChannel.position(dataObjectHeaderAddress);
             dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
-            log.debug("{}", datasetName + "@" + dataLObjectHeaderAddress + " = " + dataObjectHeaderPrefix);
+            log.debug("{}", datasetName + "@" + dataObjectHeaderAddress + " = " + dataObjectHeaderPrefix);
 
             for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
                 if (message instanceof DatatypeMessage dataTypeMessage) {
@@ -105,10 +111,11 @@ public class HdfFileReader {
                 } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
                     dataAddress = dataLayoutMessage.getDataAddress().getInstance(Long.class);
                     dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getInstance(Long.class);
-                } else if (message instanceof DataspaceMessage dataSpaceMessage) {
-                    dimension = dataSpaceMessage.getDimensions()[0].getInstance(Long.class);
+//                } else if (message instanceof DataspaceMessage dataSpaceMessage) {
+//                    dimension = dataSpaceMessage.getDimensions()[0].getInstance(Long.class);
                 }
             }
+            dataSet = new HdfDataSet(rootGroup, datasetName.getInstance(String.class), dataType, dataObjectHeaderPrefix);
 
         }
 
