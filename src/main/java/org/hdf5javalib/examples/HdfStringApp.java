@@ -84,11 +84,11 @@ public class HdfStringApp {
 
     private void tryStringSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
 
-        TypedDataSource<String> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), String.class);
+        TypedDataSource<String> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), String.class);
         String[] allData = dataSource.readAll();
         System.out.println("String stream = " + Arrays.stream(allData).toList());
         System.out.println("String stream = " + dataSource.stream().toList());
-        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfString.class);
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), HdfString.class);
     }
 
     private void tryHdfApiStrings(String FILE_NAME, Consumer<WriterParams> writer, BitSet classBitField, int size) {

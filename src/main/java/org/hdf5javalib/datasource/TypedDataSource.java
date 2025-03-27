@@ -23,15 +23,14 @@ public class TypedDataSource<T> extends AbstractTypedStreamingSource<T> {
      * Constructs a DataClassDataSource for reading raw data from an HDF5 file.
      *
      * @param headerPrefixV1 the HDF5 object header prefix
-     * @param scale the scale for BigDecimal values; 0 for BigInteger
      * @param fileChannel the FileChannel for streaming
      * @param startOffset the byte offset where the dataset begins
      * @param dataClass the Class object representing the type T
      * @throws IllegalStateException if metadata is missing
      * @throws IllegalArgumentException if dimensionality is unsupported
      */
-    public TypedDataSource(HdfObjectHeaderPrefixV1 headerPrefixV1, int scale, FileChannel fileChannel, long startOffset, Class<T> dataClass) {
-        super(headerPrefixV1, scale, fileChannel, startOffset);
+    public TypedDataSource(HdfObjectHeaderPrefixV1 headerPrefixV1, FileChannel fileChannel, long startOffset, Class<T> dataClass) {
+        super(headerPrefixV1, fileChannel, startOffset);
         this.dataClass = dataClass;
     }
 
@@ -66,9 +65,42 @@ public class TypedDataSource<T> extends AbstractTypedStreamingSource<T> {
         buffer.flip();
 
         @SuppressWarnings("unchecked")
-        T[] result = (T[]) Array.newInstance(dataClass, readsAvailable); // Create array of type T
+        T[] result = (T[]) Array.newInstance(dataClass, readsAvailable);
         for (int i = 0; i < readsAvailable; i++) {
             result[i] = populateFromBufferRaw(buffer);
+        }
+        return result;
+    }
+
+    @Override
+    public T[][] readAllMatrix() throws IOException {
+        validate2D();
+        if (fileChannel == null) {
+            throw new IllegalStateException("Reading matrix data requires a FileChannel; use the appropriate constructor.");
+        }
+        long totalSize = sizeForReadBuffer * readsAvailable;
+        if (totalSize > Integer.MAX_VALUE) {
+            throw new IllegalStateException("Dataset size exceeds maximum array capacity: " + totalSize);
+        }
+
+        ByteBuffer buffer = ByteBuffer.allocate((int) totalSize).order(ByteOrder.LITTLE_ENDIAN);
+        synchronized (fileChannel) {
+            fileChannel.position(startOffset);
+            int totalBytesRead = 0;
+            while (totalBytesRead < totalSize) {
+                int bytesRead = fileChannel.read(buffer);
+                if (bytesRead == -1) {
+                    throw new IOException("Unexpected EOF after " + totalBytesRead + " bytes; expected " + totalSize);
+                }
+                totalBytesRead += bytesRead;
+            }
+        }
+        buffer.flip();
+
+        @SuppressWarnings("unchecked")
+        T[][] result = (T[][]) Array.newInstance(dataClass, readsAvailable, elementsPerRecord);
+        for (int i = 0; i < readsAvailable; i++) {
+            result[i] = populateRowFromBufferRaw(buffer);
         }
         return result;
     }
@@ -90,9 +122,39 @@ public class TypedDataSource<T> extends AbstractTypedStreamingSource<T> {
     }
 
     @Override
+    public Stream<T[]> streamMatrix() {
+        validate2D();
+        if (fileChannel == null) {
+            throw new IllegalStateException("Streaming matrix requires a FileChannel; use the appropriate constructor.");
+        }
+        return StreamSupport.stream(new DataClassSpliterator(startOffset, endOffset, true).asMatrixSpliterator(), false);
+    }
+
+    @Override
+    public Stream<T[]> parallelStreamMatrix() {
+        validate2D();
+        if (fileChannel == null) {
+            throw new IllegalStateException("Streaming matrix requires a FileChannel; use the appropriate constructor.");
+        }
+        return StreamSupport.stream(new DataClassSpliterator(startOffset, endOffset, true).asMatrixSpliterator(), true);
+    }
+
+    @Override
     protected T populateFromBufferRaw(ByteBuffer buffer) {
         byte[] bytes = new byte[datatype.getSize()];
         buffer.get(bytes);
         return datatype.getInstance(dataClass, bytes);
+    }
+
+    @Override
+    protected T[] populateRowFromBufferRaw(ByteBuffer buffer) {
+        @SuppressWarnings("unchecked")
+        T[] row = (T[]) Array.newInstance(dataClass, elementsPerRecord);
+        for (int j = 0; j < elementsPerRecord; j++) {
+            byte[] bytes = new byte[datatype.getSize()];
+            buffer.get(bytes);
+            row[j] = datatype.getInstance(dataClass, bytes);
+        }
+        return row;
     }
 }

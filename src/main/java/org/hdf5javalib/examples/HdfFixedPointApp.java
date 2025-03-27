@@ -34,6 +34,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Hello world!
@@ -66,28 +67,28 @@ public class HdfFixedPointApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        try {
-            HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector_new.h5")).getFile();
-            try(FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
-                tryVectorSpliterator(channel, reader);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 //        try {
 //            HdfFileReader reader = new HdfFileReader();
-//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/weatherdata.h5")).getFile();
+//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector_new.h5")).getFile();
 //            try(FileInputStream fis = new FileInputStream(filePath)) {
 //                FileChannel channel = fis.getChannel();
 //                reader.readFile(channel);
-////                tryMatrixSpliterator(channel, reader);
+//                tryVectorSpliterator(channel, reader);
 //            }
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
+        try {
+            HdfFileReader reader = new HdfFileReader();
+            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/weatherdata.h5")).getFile();
+            try(FileInputStream fis = new FileInputStream(filePath)) {
+                FileChannel channel = fis.getChannel();
+                reader.readFile(channel);
+                tryMatrixSpliterator(channel, reader);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 //        tryHdfApiInts("vector_each.h5", this::writeEach);
 //        tryHdfApiInts("vector_all.h5", this::writeAll);
 //        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);
@@ -95,19 +96,19 @@ public class HdfFixedPointApp {
     }
 
     private void tryScalarDataSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), BigInteger.class);
+        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), BigInteger.class);
         BigInteger[] allData = dataSource.readAll();
         System.out.println("Scalar readAll stats = " + Arrays.stream(allData)
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
         System.out.println("Scalar streaming list = " + dataSource.stream().toList());
         System.out.println("Scalar parallelStreaming list = " + dataSource.parallelStream().toList());
-        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), HdfFixedPoint.class).stream().forEach(System.out::println);
-        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), String.class).stream().forEach(System.out::println);
-        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), BigDecimal.class).stream().forEach(System.out::println);
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), HdfFixedPoint.class).stream().forEach(System.out::println);
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), String.class).stream().forEach(System.out::println);
+        new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), BigDecimal.class).stream().forEach(System.out::println);
     }
 
     public void tryVectorSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), 0, fileChannel, reader.getDataAddress(), BigInteger.class);
+        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), BigInteger.class);
         BigInteger[] allData = dataSource.readAll();
         System.out.println("Vector readAll stats  = " + Arrays.stream(allData).collect(Collectors.summarizingInt(BigInteger::intValue)));
         System.out.println("Vector streaming stats = " + dataSource.stream()
@@ -116,38 +117,38 @@ public class HdfFixedPointApp {
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
     }
 
-//    private void tryMatrixSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-//        TypedMatrixDataSource<BigDecimal> dataSource = new TypedMatrixDataSource<>(reader.getDataObjectHeaderPrefix(), 2, fileChannel, reader.getDataAddress(), BigDecimal.class);
-//        BigDecimal[][] allData = dataSource.readAll();
-//        // Print the matrix values
-//        System.out.println("Matrix readAll() = ");
-//        for (BigDecimal[] allDatum : allData) {
-//            for (BigDecimal bigDecimal : allDatum) {
-//                System.out.print(bigDecimal.setScale(2, RoundingMode.HALF_UP) + " ");
-//            }
-//            System.out.println(); // New line after each row
-//        }
-//
-//        Stream<BigDecimal[]> stream = dataSource.stream();
-//        // Print all values
-//        System.out.println("Matrix stream() = ");
-//        stream.forEach(array -> {
-//            for (BigDecimal value : array) {
-//                System.out.print(value.setScale(2, RoundingMode.HALF_UP) + " ");
-//            }
-//            System.out.println(); // Newline after each array
-//        });
-//        Stream<BigDecimal[]> parallelStream = dataSource.parallelStream();
-//
-//        // Print all values in order
-//        System.out.println("Matrix parallelStream() = ");
-//        parallelStream.forEachOrdered(array -> {
-//            for (BigDecimal value : array) {
-//                System.out.print(value.setScale(2, RoundingMode.HALF_UP) + " ");
-//            }
-//            System.out.println();
-//        });
-//    }
+    private void tryMatrixSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
+        TypedDataSource<BigDecimal> dataSource = new TypedDataSource<>(reader.getDataObjectHeaderPrefix(), fileChannel, reader.getDataAddress(), BigDecimal.class);
+        BigDecimal[][] allData = dataSource.readAllMatrix();
+        // Print the matrix values
+        System.out.println("Matrix readAll() = ");
+        for (BigDecimal[] allDatum : allData) {
+            for (BigDecimal bigDecimal : allDatum) {
+                System.out.print(bigDecimal.setScale(2, RoundingMode.HALF_UP) + " ");
+            }
+            System.out.println(); // New line after each row
+        }
+
+        Stream<BigDecimal[]> stream = dataSource.streamMatrix();
+        // Print all values
+        System.out.println("Matrix stream() = ");
+        stream.forEach(array -> {
+            for (BigDecimal value : array) {
+                System.out.print(value.setScale(2, RoundingMode.HALF_UP) + " ");
+            }
+            System.out.println(); // Newline after each array
+        });
+        Stream<BigDecimal[]> parallelStream = dataSource.parallelStreamMatrix();
+
+        // Print all values in order
+        System.out.println("Matrix parallelStream() = ");
+        parallelStream.forEachOrdered(array -> {
+            for (BigDecimal value : array) {
+                System.out.print(value.setScale(2, RoundingMode.HALF_UP) + " ");
+            }
+            System.out.println();
+        });
+    }
 
     private void tryHdfApiMatrixInts(String FILE_NAME, Consumer<MatrixWriterParams> writer) {
         String filePath = "/weatherdata.csv";
