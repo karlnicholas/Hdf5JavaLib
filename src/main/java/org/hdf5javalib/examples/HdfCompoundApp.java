@@ -87,7 +87,7 @@ public class HdfCompoundApp {
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
-//        tryHdfApiCompound();
+        tryHdfApiCompound();
     }
 
     private void writeVersionAttribute(HdfDataSet dataset) {
@@ -133,7 +133,7 @@ public class HdfCompoundApp {
                     new CompoundMemberDatatype("varStr", 24, 0, 0, new int[4],
                             new VariableLengthDatatype(
                                     VariableLengthDatatype.createClassAndVersion(),
-                                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_PAD, VariableLengthDatatype.CharacterSet.ASCII),
+                                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_TERMINATE, VariableLengthDatatype.CharacterSet.ASCII),
                                     (short) 16,
                                     0)),
                     new CompoundMemberDatatype("floatVal", 40, 0, 0, new int[4],

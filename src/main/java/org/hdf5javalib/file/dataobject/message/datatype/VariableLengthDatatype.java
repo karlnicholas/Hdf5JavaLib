@@ -116,7 +116,7 @@ public class VariableLengthDatatype implements HdfDatatype {
 
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        byte[] bytes = {0x19, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
+        byte[] bytes = {0x13, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
         buffer.put(bytes);
     }
 
