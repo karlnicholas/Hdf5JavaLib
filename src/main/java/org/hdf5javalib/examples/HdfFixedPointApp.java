@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -118,6 +119,9 @@ public class HdfFixedPointApp {
         final BigInteger[] flattenedData = dataSource.readFlattened();
         int[] shape = dataSource.getShape();
         System.out.println("Vector flattenedData stats = " + IntStream.rangeClosed(0, FlattenedArrayUtils.totalSize(shape)-1).mapToObj(i->FlattenedArrayUtils.getElement(flattenedData, shape, i)).collect(Collectors.summarizingInt(BigInteger::intValue)));
+        System.out.print("FlattenedData Streamed Reduced = ");
+        BigInteger bdReduced = (BigInteger) FlattenedArrayUtils.reduceAlongAxis(dataSource.streamFlattened(), shape, 0, BigInteger::max, BigInteger.class);
+        System.out.println(bdReduced + " ");
     }
 
     private void tryMatrixSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
@@ -159,6 +163,21 @@ public class HdfFixedPointApp {
                 System.out.print(FlattenedArrayUtils.getElement(flattenedData, shape, r, c).setScale(2, RoundingMode.HALF_UP) + " ");
             }
             System.out.println();
+        }
+
+        System.out.println("FlattenedData Streamed = ");
+        BigDecimal[][] bdMatrix = (BigDecimal[][]) FlattenedArrayUtils.streamToNDArray(dataSource.streamFlattened(), shape, BigDecimal.class);
+        for(int r = 0; r < shape[0]; r++){
+            for(int c = 0; c < shape[1]; c++){
+                System.out.print(bdMatrix[r][c].setScale(2, RoundingMode.HALF_UP) + " ");
+            }
+            System.out.println();
+        }
+
+        System.out.println("FlattenedData Streamed Reduced = ");
+        BigDecimal[] bdReduced = (BigDecimal[]) FlattenedArrayUtils.reduceAlongAxis(dataSource.streamFlattened(), shape, 0, BigDecimal::max, BigDecimal.class);
+        for(int c = 0; c < shape[1]; c++){
+            System.out.print(bdReduced[c].setScale(2, RoundingMode.HALF_UP) + " ");
         }
     }
 

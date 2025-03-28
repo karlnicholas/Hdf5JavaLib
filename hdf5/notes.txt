@@ -1,3 +1,6 @@
+
+
+==============
 "C:\Program Files\Java\jdk-17\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2021.3.2\lib\idea_rt.jar=50942" -Dfile.encoding=UTF-8 -classpath C:\Users\karln\IdeaProjects\Hdf5JavaLib\target\classes;C:\Users\karln\.m2\repository\org\projectlombok\lombok\1.18.36\lombok-1.18.36.jar;C:\Users\karln\.m2\repository\org\apache\commons\commons-csv\1.12.0\commons-csv-1.12.0.jar;C:\Users\karln\.m2\repository\commons-io\commons-io\2.17.0\commons-io-2.17.0.jar;C:\Users\karln\.m2\repository\commons-codec\commons-codec\1.17.1\commons-codec-1.17.1.jar;C:\Users\karln\.m2\repository\org\slf4j\slf4j-api\2.0.17\slf4j-api-2.0.17.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar org.hdf5javalib.examples.HdfStringApp
 2025-03-26 15:34:50 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=2128, driverInformationAddress=-1
 	rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderAddress=96, cacheType=1, bTreeAddress=136, nameHeapAddress=680}}
