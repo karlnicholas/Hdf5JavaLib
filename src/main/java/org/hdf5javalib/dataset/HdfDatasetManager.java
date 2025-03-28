@@ -51,7 +51,7 @@ public class HdfDatasetManager {
         DataspaceMessage dataSpaceMessage = new DataspaceMessage(
                 1,                              // Version
                 (byte) dimensions.length,      // Number of dimensions
-                1,                              // Flags
+                DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), // Flags
                 hdfDimensions,                 // Dimensions
                 hdfDimensions,                 // Max dimensions (same as dims for simplicity)
                 false,                         // Permutation indices flag

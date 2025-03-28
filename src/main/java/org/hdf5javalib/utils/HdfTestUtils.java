@@ -1,5 +1,6 @@
 package org.hdf5javalib.utils;
 
+import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
@@ -21,9 +22,10 @@ public class HdfTestUtils {
         // to 8 byte boundary
         dataTypeMessageSize += ((dataTypeMessageSize + 7) & ~7);
         DatatypeMessage dt = new DatatypeMessage(attributeType, (byte)1, dataTypeMessageSize);
+        HdfFixedPoint[] hdfDimensions = {};
         // scalar, 1 string
         short dataSpaceMessageSize = 8;
-        DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false, (byte)0, dataSpaceMessageSize);
+        DataspaceMessage ds = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), null, null, false, (byte)0, dataSpaceMessageSize);
         HdfString hdfString = new HdfString(ATTRIBUTE_VALUE.getBytes(), attributeType);
         dataset.createAttribute(ATTRIBUTE_NAME, dt, ds, hdfString);
     }

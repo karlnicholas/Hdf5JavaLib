@@ -59,6 +59,17 @@ public class HdfFixedPointApp {
         }
         try {
             HdfFileReader reader = new HdfFileReader();
+            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/scalar_new.h5")).getFile();
+            try(FileInputStream fis = new FileInputStream(filePath)) {
+                FileChannel channel = fis.getChannel();
+                reader.readFile(channel);
+                tryScalarDataSpliterator(channel, reader);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            HdfFileReader reader = new HdfFileReader();
             String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector.h5")).getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
@@ -90,6 +101,7 @@ public class HdfFixedPointApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        tryHdfApiScalar("scalar.h5");
 //        tryHdfApiInts("vector_each.h5", this::writeEach);
 //        tryHdfApiInts("vector_all.h5", this::writeAll);
 //        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);
@@ -240,7 +252,7 @@ public class HdfFixedPointApp {
                     dataSpaceMessageSize += maxDimension.getDatatype().getSize();
                 }
             }
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 2, 1, hdfDimensions, hdfDimensions, false, (byte)0, dataSpaceMessageSize);
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 2, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, dataSpaceMessageSize);
 
             FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
@@ -256,6 +268,44 @@ public class HdfFixedPointApp {
 
             // auto close
 
+            System.out.println("HDF5 file " + FILE_NAME + " created and written successfully!");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void tryHdfApiScalar(String FILE_NAME) {
+        final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
+        final String DATASET_NAME = "FixedPointValue";
+
+        try {
+            // Create a new HDF5 file
+            HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
+
+            // Create data space
+            HdfFixedPoint[] hdfDimensions = {};
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, (short) 8);
+
+            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
+                    FixedPointDatatype.createClassAndVersion(),
+                    FixedPointDatatype.createClassBitField( false, false, false, true),
+                    (short)4, (short)0, (short)32);
+
+            // Create dataset
+            HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
+
+//            HdfTestUtils.writeVersionAttribute(dataset);
+
+            ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
+            HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) 42), fixedPointDatatype, byteBuffer);
+            byteBuffer.flip();
+            // Write to dataset
+            dataset.write(byteBuffer);
+
+            dataset.close();
+            file.close();
+
+            // auto close
             System.out.println("HDF5 file " + FILE_NAME + " created and written successfully!");
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -284,7 +334,7 @@ public class HdfFixedPointApp {
                     dataSpaceMessageSize += maxDimension.getDatatype().getSize();
                 }
             }
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false, (byte)0, dataSpaceMessageSize);
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, dataSpaceMessageSize);
 
             FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),

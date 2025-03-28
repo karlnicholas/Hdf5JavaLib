@@ -102,9 +102,11 @@ public class HdfCompoundApp {
         // to 8 byte boundary
         dataTypeMessageSize += ((dataTypeMessageSize + 7) & ~7);
         DatatypeMessage dt = new DatatypeMessage(attributeType, (byte)1, dataTypeMessageSize);
+        HdfFixedPoint[] hdfDimensions = {};
         // scalar, 1 string
         short dataspaceMessageSize = 8;
-        DataspaceMessage ds = new DataspaceMessage(1, 0, 0, null, null, false, (byte)0, dataspaceMessageSize);
+        DataspaceMessage ds = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false),
+                hdfDimensions, hdfDimensions, false, (byte)0, dataspaceMessageSize);
         HdfString hdfString = new HdfString(ATTRIBUTE_VALUE.getBytes(), attributeType);
         dataset.createAttribute(ATTRIBUTE_NAME, dt, ds, hdfString);
     }
@@ -216,7 +218,7 @@ public class HdfCompoundApp {
                     dataspaceMessageSize += maxDimension.getDatatype().getSize();
                 }
             }
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, 1, hdfDimensions, hdfDimensions, false, (byte)0, dataspaceMessageSize);
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, dataspaceMessageSize);
 
             // Create dataset
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, compoundType, dataSpaceMessage);
