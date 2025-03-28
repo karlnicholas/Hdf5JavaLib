@@ -3,6 +3,7 @@ package org.hdf5javalib.datasource;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.utils.FlattenedArrayUtils;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -128,7 +129,7 @@ public class TypedDataSource<T> {
             throw new IllegalStateException("Dataset must be 1D");
         }
         int size = dimensions[0];
-        ByteBuffer buffer = readBytes(0, elementSize * size);
+        ByteBuffer buffer = readBytes(0, (long) elementSize * size);
         return populateVector(buffer, size);
     }
 
@@ -154,7 +155,7 @@ public class TypedDataSource<T> {
         }
         int rows = dimensions[0];
         int cols = dimensions[1];
-        ByteBuffer buffer = readBytes(0, elementSize * rows * cols);
+        ByteBuffer buffer = readBytes(0, (long) elementSize * rows * cols);
         return populateMatrix(buffer, rows, cols);
     }
 
@@ -162,7 +163,7 @@ public class TypedDataSource<T> {
         if (dimensions.length != 2) {
             throw new IllegalStateException("Dataset must be 2D");
         }
-        long rowSize = elementSize * dimensions[1];
+        long rowSize = (long) elementSize * dimensions[1];
         return StreamSupport.stream(new MatrixSpliterator(0, dimensions[0], rowSize, dimensions[1]), false);
     }
 
@@ -170,7 +171,7 @@ public class TypedDataSource<T> {
         if (dimensions.length != 2) {
             throw new IllegalStateException("Dataset must be 2D");
         }
-        long rowSize = elementSize * dimensions[1];
+        long rowSize = (long) elementSize * dimensions[1];
         return StreamSupport.stream(new MatrixSpliterator(0, dimensions[0], rowSize, dimensions[1]), true);
     }
 
@@ -183,7 +184,7 @@ public class TypedDataSource<T> {
         int depth = dimensions[0];
         int rows = dimensions[1];
         int cols = dimensions[2];
-        ByteBuffer buffer = readBytes(0, elementSize * depth * rows * cols);
+        ByteBuffer buffer = readBytes(0, (long) elementSize * depth * rows * cols);
         return populateTensor(buffer, depth, rows, cols);
     }
 
@@ -191,7 +192,7 @@ public class TypedDataSource<T> {
         if (dimensions.length != 3) {
             throw new IllegalStateException("Dataset must be 3D");
         }
-        long sliceSize = elementSize * dimensions[1] * dimensions[2];
+        long sliceSize = (long) elementSize * dimensions[1] * dimensions[2];
         return StreamSupport.stream(new TensorSpliterator(0, dimensions[0], sliceSize, dimensions[1], dimensions[2]), false);
     }
 
@@ -199,34 +200,25 @@ public class TypedDataSource<T> {
         if (dimensions.length != 3) {
             throw new IllegalStateException("Dataset must be 3D");
         }
-        long sliceSize = elementSize * dimensions[1] * dimensions[2];
+        long sliceSize = (long) elementSize * dimensions[1] * dimensions[2];
         return StreamSupport.stream(new TensorSpliterator(0, dimensions[0], sliceSize, dimensions[1], dimensions[2]), true);
     }
 
-// --- Flattened Methods ---
+    // --- Flattened Methods ---
 
     public T[] readFlattened() throws IOException {
-        int totalElements = dimensions.length == 0 ? 1 : 1; // 0D case: 1 element
-        for (int dim : dimensions) {
-            totalElements *= dim;
-        }
-        ByteBuffer buffer = readBytes(0, elementSize * totalElements);
+        int totalElements = FlattenedArrayUtils.totalSize(dimensions);
+        ByteBuffer buffer = readBytes(0, (long) elementSize * totalElements);
         return populateVector(buffer, totalElements);
     }
 
     public Stream<T> streamFlattened() {
-        int totalElements = dimensions.length == 0 ? 1 : 1; // 0D case: 1 element
-        for (int dim : dimensions) {
-            totalElements *= dim;
-        }
+        int totalElements = FlattenedArrayUtils.totalSize(dimensions);
         return StreamSupport.stream(new FlattenedSpliterator(0, totalElements, elementSize), false);
     }
 
     public Stream<T> parallelStreamFlattened() {
-        int totalElements = dimensions.length == 0 ? 1 : 1; // 0D case: 1 element
-        for (int dim : dimensions) {
-            totalElements *= dim;
-        }
+        int totalElements = FlattenedArrayUtils.totalSize(dimensions);
         return StreamSupport.stream(new FlattenedSpliterator(0, totalElements, elementSize), true);
     }
 
