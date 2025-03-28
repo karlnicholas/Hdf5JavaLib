@@ -34,6 +34,10 @@ public class TypedDataSource<T> {
                 .orElseThrow(() -> new IllegalStateException("DataspaceMessage not found")));
     }
 
+    public int[] getShape() {
+        return dimensions.clone();
+    }
+
     private int[] extractDimensions(DataspaceMessage dataspace) {
         HdfFixedPoint[] dims = dataspace.getDimensions();
         int[] result = new int[dims.length];
@@ -199,13 +203,10 @@ public class TypedDataSource<T> {
         return StreamSupport.stream(new TensorSpliterator(0, dimensions[0], sliceSize, dimensions[1], dimensions[2]), true);
     }
 
-    // --- Flattened (N > 3) Methods ---
+// --- Flattened Methods ---
 
     public T[] readFlattened() throws IOException {
-        if (dimensions.length <= 3) {
-            throw new IllegalStateException("Use specific methods for 0D-3D");
-        }
-        int totalElements = 1;
+        int totalElements = dimensions.length == 0 ? 1 : 1; // 0D case: 1 element
         for (int dim : dimensions) {
             totalElements *= dim;
         }
@@ -214,10 +215,7 @@ public class TypedDataSource<T> {
     }
 
     public Stream<T> streamFlattened() {
-        if (dimensions.length <= 3) {
-            throw new IllegalStateException("Use specific methods for 0D-3D");
-        }
-        int totalElements = 1;
+        int totalElements = dimensions.length == 0 ? 1 : 1; // 0D case: 1 element
         for (int dim : dimensions) {
             totalElements *= dim;
         }
@@ -225,10 +223,7 @@ public class TypedDataSource<T> {
     }
 
     public Stream<T> parallelStreamFlattened() {
-        if (dimensions.length <= 3) {
-            throw new IllegalStateException("Use specific methods for 0D-3D");
-        }
-        int totalElements = 1;
+        int totalElements = dimensions.length == 0 ? 1 : 1; // 0D case: 1 element
         for (int dim : dimensions) {
             totalElements *= dim;
         }

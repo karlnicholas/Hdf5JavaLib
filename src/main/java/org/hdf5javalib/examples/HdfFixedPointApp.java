@@ -12,6 +12,7 @@ import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
+import org.hdf5javalib.utils.FlattenedArrayUtils;
 import org.hdf5javalib.utils.HdfTestUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
@@ -27,14 +28,13 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Hello world!
@@ -115,6 +115,9 @@ public class HdfFixedPointApp {
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
         System.out.println("Vector parallel streaming stats = " + dataSource.parallelStreamVector()
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
+        final BigInteger[] flattenedData = dataSource.readFlattened();
+        int[] shape = dataSource.getShape();
+        System.out.println("Vector flattenedData stats = " + IntStream.rangeClosed(0, FlattenedArrayUtils.totalSize(shape)-1).mapToObj(i->FlattenedArrayUtils.getElement(flattenedData, shape, i)).collect(Collectors.summarizingInt(BigInteger::intValue)));
     }
 
     private void tryMatrixSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
@@ -147,7 +150,16 @@ public class HdfFixedPointApp {
                 System.out.print(value.setScale(2, RoundingMode.HALF_UP) + " ");
             }
             System.out.println();
-        });
+        });// Print all values in order
+        final BigDecimal[] flattenedData = dataSource.readFlattened();
+        int[] shape = dataSource.getShape();
+        System.out.println("FlattenedData = ");
+        for(int r = 0; r < shape[0]; r++){
+            for(int c = 0; c < shape[1]; c++){
+                System.out.print(FlattenedArrayUtils.getElement(flattenedData, shape, r, c).setScale(2, RoundingMode.HALF_UP) + " ");
+            }
+            System.out.println();
+        }
     }
 
     private void tryHdfApiMatrixInts(String FILE_NAME, Consumer<MatrixWriterParams> writer) {
