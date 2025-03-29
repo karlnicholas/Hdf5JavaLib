@@ -121,4 +121,34 @@ public class HdfFileReader {
 
         log.debug("Parsing complete. NEXT: {}", fileChannel.position());
     }
+
+    public HdfDataSet getDataset(FileChannel fileChannel, String datasetName) throws IOException {
+        HdfGroupSymbolTableNode symbolTableNode = rootGroup.getSymbolTableNode();
+        HdfLocalHeapContents localHeapContents = rootGroup.getLocalHeapContents();
+        short offsetSize = superblock.getOffsetSize();
+        short lengthSize = superblock.getLengthSize();
+        for( int i=0; i < symbolTableNode.getNumberOfSymbols(); ++i ) {
+            HdfSymbolTableEntry ste = symbolTableNode.getSymbolTableEntries().get(i);
+            HdfString aDatasetName = localHeapContents.parseStringAtOffset(ste.getLinkNameOffset());
+            if ( aDatasetName.equals(datasetName) ) {
+                HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
+                // parsed Datatype
+                HdfDatatype dataType = null;
+                // Parse the Data Object Header Prefix next in line
+                long dataObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
+                fileChannel.position(dataObjectHeaderAddress);
+                dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
+                log.debug("{}", datasetName + "@" + dataObjectHeaderAddress + " = " + dataObjectHeaderPrefix);
+
+                for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
+                    if (message instanceof DatatypeMessage dataTypeMessage) {
+                        dataType = dataTypeMessage.getHdfDatatype();
+                        return new HdfDataSet(rootGroup, aDatasetName.getInstance(String.class), dataType, dataObjectHeaderPrefix);
+                    }
+                }
+            }
+
+        }
+        throw new UnsupportedEncodingException("No dataset named " + datasetName);
+    }
 }

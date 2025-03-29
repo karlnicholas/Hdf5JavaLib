@@ -9,6 +9,7 @@ import org.hdf5javalib.file.dataobject.message.*;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
@@ -20,7 +21,7 @@ import java.util.function.Supplier;
 
 @Getter
 @Slf4j
-public class HdfDataSet {
+public class HdfDataSet implements Closeable {
     private final HdfGroup hdfGroup;
     private final String datasetName;
     private final HdfDatatype hdfDatatype;
@@ -158,6 +159,7 @@ public class HdfDataSet {
 
     }
 
+    @Override
     public void close() {
         int currentObjectHeaderSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
         List<HdfMessage> headerMessages = this.dataObjectHeaderPrefix.getHeaderMessages();
