@@ -28,6 +28,20 @@
             "MIMode": "gdb",
             "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
             "preLaunchTask": "Build Write Vector"
+        },
+        {
+            "name": "Run Write TicTacToe",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/fixedexamples/tictactoe.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/fixedexamples",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "preLaunchTask": "Build Write TicTacToe"
         }
     ]
 }

@@ -46,39 +46,39 @@ public class HdfFixedPointApp {
         new HdfFixedPointApp().run();
     }
     private void run() {
-        try {
-            HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/scalar.h5")).getFile();
-            try(FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
-                tryScalarDataSpliterator(channel, reader);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/scalar_new.h5")).getFile();
-            try(FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
-                tryScalarDataSpliterator(channel, reader);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector.h5")).getFile();
-            try(FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
-                tryVectorSpliterator(channel, reader);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            HdfFileReader reader = new HdfFileReader();
+//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/scalar.h5")).getFile();
+//            try(FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+//                tryScalarDataSpliterator(channel, reader);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//        try {
+//            HdfFileReader reader = new HdfFileReader();
+//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/scalar_new.h5")).getFile();
+//            try(FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+//                tryScalarDataSpliterator(channel, reader);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//        try {
+//            HdfFileReader reader = new HdfFileReader();
+//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector.h5")).getFile();
+//            try(FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+//                tryVectorSpliterator(channel, reader);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 //        try {
 //            HdfFileReader reader = new HdfFileReader();
 //            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector_new.h5")).getFile();
@@ -90,18 +90,29 @@ public class HdfFixedPointApp {
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
+//        try {
+//            HdfFileReader reader = new HdfFileReader();
+//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/weatherdata.h5")).getFile();
+//            try(FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+//                tryMatrixSpliterator(channel, reader);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/weatherdata.h5")).getFile();
+            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/tictactoe_4d_state.h5")).getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                tryMatrixSpliterator(channel, reader);
+                try4DSpliterator(channel, reader);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        tryHdfApiScalar("scalar.h5");
+//        tryHdfApiScalar("scalar.h5");
 //        tryHdfApiInts("vector_each.h5", this::writeEach);
 //        tryHdfApiInts("vector_all.h5", this::writeAll);
 //        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);
@@ -191,6 +202,49 @@ public class HdfFixedPointApp {
         for(int c = 0; c < shape[1]; c++){
             System.out.print(bdReduced[c].setScale(2, RoundingMode.HALF_UP) + " ");
         }
+    }
+
+    private void try4DSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
+        TypedDataSource<Integer> dataSource = new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), Integer.class);
+        // Print all values in order
+        final Integer[] flattenedData = dataSource.readFlattened();
+        int[] shape = dataSource.getShape();
+        System.out.println("FlattenedData = ");
+        for (int s = 0; s < shape[3]; s++) {
+            for(int x = 0; x < shape[0]; x++){
+                for(int y = 0; y < shape[1]; y++){
+                    for(int z = 0; z < shape[2]; z++) {
+                        System.out.print("" + x + " " + y + " " + z + ":" + s + ":" + FlattenedArrayUtils.getElement(flattenedData, shape, x, y, z, s) + " ");
+                        System.out.println();
+                    }
+                }
+            }
+        }
+
+        // get cube at step 0
+        int[][] sliceStep0 = {
+                {},    // full x
+                {},     // full y
+                {},     // full z
+                {0}  // step 0
+        };
+        Integer[][][] step0 = (Integer[][][])FlattenedArrayUtils.sliceStream(dataSource.streamFlattened(), dataSource.getShape(), sliceStep0, Integer.class);
+        System.out.println("Step 0:");
+        for (int x = 0; x < shape[0]; x++) {
+            for (int y = 0; y < shape[1]; y++) {
+                for (int z = 0; z < shape[2]; z++) {
+                    Integer value = step0[x][y][z];
+                    System.out.printf("(%d %d %d) %s%n", x, y, z, value);
+                }
+            }
+        }
+
+        System.out.println("Pieces = ");
+        List<FlattenedArrayUtils.MatchingEntry<Integer>> pieces = FlattenedArrayUtils.filterToCoordinateList(dataSource.streamFlattened(), shape, i -> i != 0);
+        pieces.sort((a, b) -> Integer.compare(a.coordinates[3], b.coordinates[3]));
+        pieces.forEach(entry -> {
+            System.out.printf("Coords %s → Value: %s%n", Arrays.toString(entry.coordinates), entry.value);
+        });
     }
 
     private void tryHdfApiMatrixInts(String FILE_NAME, Consumer<MatrixWriterParams> writer) {

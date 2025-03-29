@@ -46,7 +46,30 @@
             "problemMatcher": ["$gcc"],
             "group": "build",
             "detail": "Builds writevector.exe with debug symbols."
+        },
+        {
+            "type": "cppbuild",
+            "label": "Build Write TicTacToe",
+            "command": "C:/msys64/mingw64/bin/g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/fixedexamples/tictactoe.cpp",
+                "-o",
+                "C:/Users/karln/IdeaProjects/Hdf5JavaLib/hdf5/fixedexamples/tictactoe.exe",
+                "-I", "C:/msys64/mingw64/include",
+                "-L", "C:/msys64/mingw64/lib",
+                "-lhdf5_cpp",
+                "-lhdf5"
+            ],
+            "options": {
+                "cwd": "C:/msys64/mingw64/bin"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": "build",
+            "detail": "Builds tictactoe.exe with debug symbols."
         }
+
     ],
     "version": "2.0.0"
 }
