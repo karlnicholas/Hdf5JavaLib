@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Build Active File",
+        "type": "shell",
+        "command": "C:/msys64/mingw64/bin/g++.exe",
+        "args": [
+          "-g",
+          "${file}",
+          "-o",
+          "${fileDirname}/${fileBasenameNoExtension}.exe",
+          "-IC:/msys64/mingw64/include",
+          "-IC:/msys64/mingw64/include/hdf5",
+          "-LC:/msys64/mingw64/lib",
+          "-lhdf5_cpp",
+          "-lhdf5",
+          "-lz"
+        ],
+        "problemMatcher": ["$gcc"],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "detail": "Builds currently open file with HDF5 support"
+      }
+    ]
+  }
+  
