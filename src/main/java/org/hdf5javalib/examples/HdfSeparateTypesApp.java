@@ -3,15 +3,20 @@ package org.hdf5javalib.examples;
 import lombok.Builder;
 import lombok.Data;
 import org.hdf5javalib.HdfFileReader;
-import org.hdf5javalib.dataclass.HdfVariableLength;
+import org.hdf5javalib.dataclass.*;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.file.HdfDataSet;
+import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Hello world!
@@ -25,66 +30,46 @@ public class HdfSeparateTypesApp {
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(this.getClass().getResource("/vlen_types_example.h5")).getFile();
+            String filePath = Objects.requireNonNull(this.getClass().getResource("/all_types_separate.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-//                try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
-//                    displayData(channel, dataSet, HdfFixedPoint.class);
-//                    displayData(channel, dataSet, Integer.class);
-//                    displayData(channel, dataSet, Long.class);
-//                    displayData(channel, dataSet, BigInteger.class);
-//                    displayData(channel, dataSet, BigDecimal.class);
-//                    displayData(channel, dataSet, String.class);
-//                }
-//                try ( HdfDataSet dataSet = reader.findDataset("float", channel, reader.getRootGroup()) ) {
-//                    displayData(channel, dataSet, HdfFloatPoint.class);
-//                    displayData(channel, dataSet, Float.class);
-//                    displayData(channel, dataSet, Double.class);
-//                    displayData(channel, dataSet, String.class);
-//                }
-//                try ( HdfDataSet dataSet = reader.findDataset("string", channel, reader.getRootGroup()) ) {
-//                    displayData(channel, dataSet, HdfString.class);
-//                    displayData(channel, dataSet, String.class);
-//                }
-//                try ( HdfDataSet dataSet = reader.findDataset("compound", channel, reader.getRootGroup()) ) {
-//                    displayData(channel, dataSet, HdfCompound.class);
-//                    displayData(channel, dataSet, Compound.class);
-//                    displayData(channel, dataSet, String.class);
-//                    CompoundDatatype.addConverter(CustomerCompound.class, (bytes, compoundDataType)->{
-//                        Map<String, HdfCompoundMember> nameToMember = compoundDataType.getInstance(HdfCompound.class, bytes)
-//                                .getMembers()
-//                                .stream()
-//                                .collect(Collectors.toMap(m -> m.getDatatype().getName(), m -> m));
-//                        return CustomerCompound.builder()
-//                                .name("Name")
-//                                .someShort(nameToMember.get("a").getInstance(Short.class))
-//                                .someDouble(nameToMember.get("b").getInstance(Double.class))
-//                                .build();
-//                    });
-//                    displayData(channel, dataSet, CustomerCompound.class);
-//                }
-                try ( HdfDataSet dataSet = reader.findDataset("vlen_int", channel, reader.getRootGroup()) ) {
-                    displayData(channel, dataSet, HdfVariableLength.class);
+                try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
+                    displayData(channel, dataSet, HdfFixedPoint.class);
+                    displayData(channel, dataSet, Integer.class);
+                    displayData(channel, dataSet, Long.class);
+                    displayData(channel, dataSet, BigInteger.class);
+                    displayData(channel, dataSet, BigDecimal.class);
                     displayData(channel, dataSet, String.class);
-                    displayData(channel, dataSet, Object.class);
                 }
-                try ( HdfDataSet dataSet = reader.findDataset("vlen_float", channel, reader.getRootGroup()) ) {
-                    displayData(channel, dataSet, HdfVariableLength.class);
+                try ( HdfDataSet dataSet = reader.findDataset("float", channel, reader.getRootGroup()) ) {
+                    displayData(channel, dataSet, HdfFloatPoint.class);
+                    displayData(channel, dataSet, Float.class);
+                    displayData(channel, dataSet, Double.class);
                     displayData(channel, dataSet, String.class);
-                    displayData(channel, dataSet, Object.class);
                 }
-                try ( HdfDataSet dataSet = reader.findDataset("vlen_double", channel, reader.getRootGroup()) ) {
-                    displayData(channel, dataSet, HdfVariableLength.class);
+                try ( HdfDataSet dataSet = reader.findDataset("string", channel, reader.getRootGroup()) ) {
+                    displayData(channel, dataSet, HdfString.class);
                     displayData(channel, dataSet, String.class);
-                    displayData(channel, dataSet, Object.class);
                 }
-                try ( HdfDataSet dataSet = reader.findDataset("vlen_string", channel, reader.getRootGroup()) ) {
-                    displayData(channel, dataSet, HdfVariableLength.class);
+                try ( HdfDataSet dataSet = reader.findDataset("compound", channel, reader.getRootGroup()) ) {
+                    displayData(channel, dataSet, HdfCompound.class);
+                    displayData(channel, dataSet, Compound.class);
                     displayData(channel, dataSet, String.class);
-                    displayData(channel, dataSet, Object.class);
+                    CompoundDatatype.addConverter(CustomerCompound.class, (bytes, compoundDataType)->{
+                        Map<String, HdfCompoundMember> nameToMember = compoundDataType.getInstance(HdfCompound.class, bytes)
+                                .getMembers()
+                                .stream()
+                                .collect(Collectors.toMap(m -> m.getDatatype().getName(), m -> m));
+                        return CustomerCompound.builder()
+                                .name("Name")
+                                .someShort(nameToMember.get("a").getInstance(Short.class))
+                                .someDouble(nameToMember.get("b").getInstance(Double.class))
+                                .build();
+                    });
+                    displayData(channel, dataSet, CustomerCompound.class);
                 }
-                try ( HdfDataSet dataSet = reader.findDataset("vlen_short", channel, reader.getRootGroup()) ) {
+                try ( HdfDataSet dataSet = reader.findDataset("vlen", channel, reader.getRootGroup()) ) {
                     displayData(channel, dataSet, HdfVariableLength.class);
                     displayData(channel, dataSet, String.class);
                     displayData(channel, dataSet, Object.class);
