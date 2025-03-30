@@ -6,6 +6,7 @@ import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -32,7 +33,61 @@ public class VariableLengthDatatype implements HdfDatatype {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfVariableLength.class, HdfVariableLength::new);
         CONVERTERS.put(HdfData.class, HdfVariableLength::new);
+        CONVERTERS.put(Object.class, (bytes, dt) -> dt.toObjectArray(bytes));
 //        CONVERTERS.put(Object.class, (bytes, dt) -> dt.toObjectArray(bytes));
+    }
+
+    private Object toObjectArray(byte[] bytes) {
+        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
+        int count = buffer.getInt();
+        long offset = buffer.getLong();
+        int index = buffer.getInt();
+
+        byte[] workingBytes = globalHeap.getDataBytes(count, offset, index);
+        int datatypeSize = hdfDatatype.getSize();
+
+        return switch (hdfDatatype.getDatatypeClass()) {
+            case FIXED -> {
+                Integer[] result = new Integer[count];
+                for (int i = 0; i < count; i++) {
+                    byte[] slice = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
+                    result[i] = hdfDatatype.getInstance(Integer.class, slice);
+                }
+                yield result;
+            }
+            case FLOAT -> {
+                Float[] result = new Float[count];
+                for (int i = 0; i < count; i++) {
+                    byte[] slice = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
+                    result[i] = hdfDatatype.getInstance(Float.class, slice);
+                }
+                yield result;
+            }
+            case STRING, ENUM -> {
+                String[] result = new String[count];
+                for (int i = 0; i < count; i++) {
+                    byte[] slice = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
+                    result[i] = hdfDatatype.getInstance(String.class, slice);
+                }
+                yield result;
+            }
+            case COMPOUND -> {
+                Map<String, Object>[] result = new Map[count];
+                for (int i = 0; i < count; i++) {
+                    byte[] slice = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
+                    result[i] = hdfDatatype.getInstance(Map.class, slice);
+                }
+                yield result;
+            }
+            case VLEN, ARRAY, BITFIELD, OPAQUE, REFERENCE, TIME -> {
+                Object[] result = new Object[count];
+                for (int i = 0; i < count; i++) {
+                    byte[] slice = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
+                    result[i] = hdfDatatype.getInstance(Object.class, slice);
+                }
+                yield result;
+            }
+        };
     }
 
     public VariableLengthDatatype(byte classAndVersion, BitSet classBitField, int size, HdfDatatype hdfDatatype) {
@@ -117,14 +172,10 @@ public class VariableLengthDatatype implements HdfDatatype {
         int index = buffer.getInt();
 
         byte[] workingBytes = globalHeap.getDataBytes(count, offset, index);
-        int datatypeSize = hdfDatatype.getSize();
         if ( getClassBitField().get(0)) {
-            byte[] valueBytes = new byte[count];
-            for (int i = 0; i < count; i++) {
-                valueBytes[i] = hdfDatatype.getInstance(Byte.class, Arrays.copyOfRange(workingBytes, i * datatypeSize, i * datatypeSize + datatypeSize));
-            }
-            return new String(valueBytes, getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
+            return new String(workingBytes, getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
         } else {
+            int datatypeSize = hdfDatatype.getSize();
             String[] resultArray = new String[count];
             for (int i = 0; i < count; i++) {
                 resultArray[i] = hdfDatatype.getInstance(String.class, Arrays.copyOfRange(workingBytes, i * datatypeSize, i * datatypeSize + datatypeSize));

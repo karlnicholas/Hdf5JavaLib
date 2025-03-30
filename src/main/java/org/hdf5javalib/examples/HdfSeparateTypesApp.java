@@ -10,6 +10,7 @@ import org.hdf5javalib.file.HdfDataSet;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -66,22 +67,27 @@ public class HdfSeparateTypesApp {
                 try ( HdfDataSet dataSet = reader.findDataset("vlen_int", channel, reader.getRootGroup()) ) {
                     displayData(channel, dataSet, HdfVariableLength.class);
                     displayData(channel, dataSet, String.class);
+                    displayData(channel, dataSet, Object.class);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("vlen_float", channel, reader.getRootGroup()) ) {
                     displayData(channel, dataSet, HdfVariableLength.class);
                     displayData(channel, dataSet, String.class);
+                    displayData(channel, dataSet, Object.class);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("vlen_double", channel, reader.getRootGroup()) ) {
                     displayData(channel, dataSet, HdfVariableLength.class);
                     displayData(channel, dataSet, String.class);
+                    displayData(channel, dataSet, Object.class);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("vlen_string", channel, reader.getRootGroup()) ) {
                     displayData(channel, dataSet, HdfVariableLength.class);
                     displayData(channel, dataSet, String.class);
+                    displayData(channel, dataSet, Object.class);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("vlen_short", channel, reader.getRootGroup()) ) {
                     displayData(channel, dataSet, HdfVariableLength.class);
                     displayData(channel, dataSet, String.class);
+                    displayData(channel, dataSet, Object.class);
                 }
             }
         } catch (IOException e) {
@@ -104,11 +110,30 @@ public class HdfSeparateTypesApp {
         private Double someDouble;
     }
 
-
     private <T> void displayData(FileChannel fileChannel, HdfDataSet dataSet, Class<T> clazz) throws IOException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(dataSet, fileChannel, clazz);
-        System.out.println(clazz.getSimpleName() + " read = " + dataSource.readScalar());
-        System.out.println(clazz.getSimpleName() + " stream = " + dataSource.streamScalar().findFirst().orElseThrow());
+
+        T result = dataSource.readScalar();
+        System.out.println(clazz.getSimpleName() + " read = " + displayValue(result));
+
+        result = dataSource.streamScalar().findFirst().orElseThrow();
+        System.out.println(clazz.getSimpleName() + " stream = " + displayValue(result));
     }
 
+    private String displayValue(Object value) {
+        if (value == null) return "null";
+        Class<?> clazz = value.getClass();
+        if (!clazz.isArray()) return value.toString();
+
+        if (clazz == int[].class) return Arrays.toString((int[]) value);
+        if (clazz == float[].class) return Arrays.toString((float[]) value);
+        if (clazz == double[].class) return Arrays.toString((double[]) value);
+        if (clazz == long[].class) return Arrays.toString((long[]) value);
+        if (clazz == short[].class) return Arrays.toString((short[]) value);
+        if (clazz == byte[].class) return Arrays.toString((byte[]) value);
+        if (clazz == char[].class) return Arrays.toString((char[]) value);
+        if (clazz == boolean[].class) return Arrays.toString((boolean[]) value);
+
+        return Arrays.deepToString((Object[]) value); // For Object[] or nested Object[][]
+    }
 }
