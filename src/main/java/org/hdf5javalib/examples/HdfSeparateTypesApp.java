@@ -1,28 +1,13 @@
 package org.hdf5javalib.examples;
 
-import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import org.hdf5javalib.HdfFileReader;
-import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.file.HdfDataSet;
-import org.hdf5javalib.file.HdfFile;
-import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
-import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
-import org.hdf5javalib.utils.HdfTestUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 /**
  * Hello world!
@@ -51,7 +36,7 @@ public class HdfSeparateTypesApp {
     }
 
     private void displayData(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {
-        TypedDataSource<Integer> dataSource = new TypedDataSource<>(dataSet, fileChannel, dataSet.getDataAddress(), Integer.class);
+        TypedDataSource<Integer> dataSource = new TypedDataSource<>(dataSet, fileChannel, Integer.class);
         Integer allData = dataSource.readScalar();
         System.out.println("String stream = " + allData);
     }

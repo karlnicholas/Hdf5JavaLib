@@ -19,15 +19,15 @@ import java.util.stream.StreamSupport;
 public class TypedDataSource<T> {
     private final HdfDataSet dataset;
     private final FileChannel fileChannel;
-    private final long startOffset;
+//    private final long startOffset;
     private final Class<T> dataClass;
     private final int[] dimensions;
     private final int elementSize;
 
-    public TypedDataSource(HdfDataSet dataset, FileChannel fileChannel, long startOffset, Class<T> dataClass) {
+    public TypedDataSource(HdfDataSet dataset, FileChannel fileChannel, Class<T> dataClass) {
         this.dataset = dataset;
         this.fileChannel = fileChannel;
-        this.startOffset = startOffset;
+//        this.startOffset = startOffset;
         this.dataClass = dataClass;
         this.elementSize = dataset.getHdfDatatype().getSize();
         this.dimensions = extractDimensions(dataset.getDataObjectHeaderPrefix()
@@ -54,7 +54,7 @@ public class TypedDataSource<T> {
         }
         ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
         synchronized (fileChannel) {
-            fileChannel.position(startOffset + offset);
+            fileChannel.position(dataset.getDataAddress() + offset);
             int bytesRead = fileChannel.read(buffer);
             if (bytesRead != size) {
                 throw new IOException("Failed to read the expected number of bytes: read " + bytesRead + ", expected " + size);

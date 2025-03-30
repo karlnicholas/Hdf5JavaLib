@@ -30,12 +30,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * Hello world!
@@ -107,7 +105,9 @@ public class HdfFixedPointApp {
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                try4DSpliterator(channel, reader);
+                try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
+                    display4DData(channel, dataSet);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -119,20 +119,20 @@ public class HdfFixedPointApp {
 //        tryHdfApiMatrixInts("weatherdata_all.h5", this::writeAllMatrix);
     }
 
-    private void tryScalarDataSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), BigInteger.class);
+    private void tryScalarDataSpliterator(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {
+        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(dataSet, fileChannel, BigInteger.class);
         BigInteger allData = dataSource.readScalar();
         System.out.println("Scalar readAll stats = " + Stream.of(allData)
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
         System.out.println("Scalar streaming list = " + dataSource.streamScalar().toList());
         System.out.println("Scalar parallelStreaming list = " + dataSource.parallelStreamScalar().toList());
-        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), HdfFixedPoint.class).streamScalar().forEach(System.out::println);
-        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), String.class).streamScalar().forEach(System.out::println);
-        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), BigDecimal.class).streamScalar().forEach(System.out::println);
+        new TypedDataSource<>(dataSet, fileChannel, HdfFixedPoint.class).streamScalar().forEach(System.out::println);
+        new TypedDataSource<>(dataSet, fileChannel, String.class).streamScalar().forEach(System.out::println);
+        new TypedDataSource<>(dataSet, fileChannel, BigDecimal.class).streamScalar().forEach(System.out::println);
     }
 
-    public void tryVectorSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), BigInteger.class);
+    public void tryVectorSpliterator(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {
+        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(dataSet, fileChannel, BigInteger.class);
         BigInteger[] allData = dataSource.readVector();
         System.out.println("Vector readAll stats  = " + Arrays.stream(allData).collect(Collectors.summarizingInt(BigInteger::intValue)));
         System.out.println("Vector streaming stats = " + dataSource.streamVector()
@@ -147,8 +147,8 @@ public class HdfFixedPointApp {
         System.out.println(bdReduced + " ");
     }
 
-    private void tryMatrixSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        TypedDataSource<BigDecimal> dataSource = new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), BigDecimal.class);
+    private void tryMatrixSpliterator(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {
+        TypedDataSource<BigDecimal> dataSource = new TypedDataSource<>(dataSet, fileChannel, BigDecimal.class);
         BigDecimal[][] allData = dataSource.readMatrix();
         // Print the matrix values
         System.out.println("Matrix readAll() = ");
@@ -204,8 +204,8 @@ public class HdfFixedPointApp {
         }
     }
 
-    private void try4DSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        TypedDataSource<Integer> dataSource = new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), Integer.class);
+    private void display4DData(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {
+        TypedDataSource<Integer> dataSource = new TypedDataSource<>(dataSet, fileChannel, Integer.class);
         // Print all values in order
         final Integer[] flattenedData = dataSource.readFlattened();
         int[] shape = dataSource.getShape();

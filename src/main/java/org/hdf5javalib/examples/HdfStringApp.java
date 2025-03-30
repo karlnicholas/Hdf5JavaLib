@@ -40,7 +40,9 @@ public class HdfStringApp {
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                tryStringSpliterator(channel, reader);
+                try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
+                    displayStringData(channel, dataSet);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -51,7 +53,9 @@ public class HdfStringApp {
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                tryStringSpliterator(channel, reader);
+                try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
+                    displayStringData(channel, dataSet);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -62,7 +66,9 @@ public class HdfStringApp {
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                tryStringSpliterator(channel, reader);
+                try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
+                    displayStringData(channel, dataSet);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -73,7 +79,9 @@ public class HdfStringApp {
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                tryStringSpliterator(channel, reader);
+                try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
+                    displayStringData(channel, dataSet);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -82,13 +90,13 @@ public class HdfStringApp {
 //        tryHdfApiStrings("string_utf8_each.h5", this::writeEach, StringDatatype.createClassBitField( StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.UTF8), 12);
     }
 
-    private void tryStringSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
+    private void displayStringData(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {
 
-        TypedDataSource<String> dataSource = new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), String.class);
+        TypedDataSource<String> dataSource = new TypedDataSource<>(dataSet, fileChannel, String.class);
         String[] allData = dataSource.readVector();
         System.out.println("String stream = " + Arrays.stream(allData).toList());
         System.out.println("String stream = " + dataSource.streamVector().toList());
-        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), HdfString.class);
+        new TypedDataSource<>(dataSet, fileChannel, HdfString.class);
     }
 
     private void tryHdfApiStrings(String FILE_NAME, Consumer<WriterParams> writer, BitSet classBitField, int size) {

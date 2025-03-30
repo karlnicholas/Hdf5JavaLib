@@ -49,7 +49,9 @@ public class HdfCompoundApp {
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                tryCompoundTestSpliterator(channel, reader);
+                try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
+                    displayData(channel, dataSet);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -295,39 +297,39 @@ public class HdfCompoundApp {
     }
 
 
-    public void tryCompoundTestSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        System.out.println("Count = " + new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), HdfCompound.class).streamVector().count());
+    public void displayData(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {
+        System.out.println("Count = " + new TypedDataSource<>(dataSet, fileChannel, HdfCompound.class).streamVector().count());
 
         System.out.println("Ten Rows:");
-        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), HdfCompound.class)
+        new TypedDataSource<>(dataSet, fileChannel, HdfCompound.class)
                 .streamVector()
                 .limit(10)
                 .forEach(c -> System.out.println("Row: " + c.getMembers()));
 
-        System.out.println("Ten BigDecimals = " + new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), HdfCompound.class).streamVector()
+        System.out.println("Ten BigDecimals = " + new TypedDataSource<>(dataSet, fileChannel, HdfCompound.class).streamVector()
                         .filter(c->c.getMembers().get(0).getInstance(Long.class).longValue() < 1010 )
                 .map(c->c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
 
         System.out.println("Ten Rows:");
-        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), CompoundExample.class)
+        new TypedDataSource<>(dataSet, fileChannel, CompoundExample.class)
                 .streamVector()
                 .filter(c -> c.getRecordId() < 1010)
                 .forEach(c -> System.out.println("Row: " + c));
     }
 
-    public void tryCompoundSpliterator(FileChannel fileChannel, HdfFileReader reader) throws IOException {
-        TypedDataSource<MonitoringData> dataSource = new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), MonitoringData.class);
+    public void tryCompoundSpliterator(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {
+        TypedDataSource<MonitoringData> dataSource = new TypedDataSource<>(dataSet, fileChannel, MonitoringData.class);
         MonitoringData[] allData = dataSource.readVector();
         System.out.println("*** readAll: \r\n" + Arrays.asList(allData).stream().map(Object::toString).collect(Collectors.joining("\n")));
         System.out.println("*** stream: \r\n" + dataSource.streamVector().map(Object::toString).collect(Collectors.joining("\n")));
         System.out.println("\"*** parallelStream: \r\n" + dataSource.parallelStreamVector().map(Object::toString).collect(Collectors.joining("\n")));
 
-        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), HdfCompound.class).streamVector().forEach(System.out::println);
-        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), String.class).streamVector().forEach(System.out::println);
+        new TypedDataSource<>(dataSet, fileChannel, HdfCompound.class).streamVector().forEach(System.out::println);
+        new TypedDataSource<>(dataSet, fileChannel, String.class).streamVector().forEach(System.out::println);
     }
 
 
-    private void tryCustomSpliterator(FileChannel fileChannel, HdfFileReader reader) {
+    private void tryCustomSpliterator(FileChannel fileChannel, HdfDataSet dataSet) {
         CompoundDatatype.addConverter(MonitoringData.class, (bytes, datatype) -> {
             MonitoringData monitoringData = new MonitoringData();
             datatype.getMembers().forEach(member -> {
@@ -342,7 +344,7 @@ public class HdfCompoundApp {
             });
             return monitoringData;
         });
-        new TypedDataSource<>(reader.getDataSet(), fileChannel, reader.getDataAddress(), MonitoringData.class).streamVector().forEach(System.out::println);
+        new TypedDataSource<>(dataSet, fileChannel, MonitoringData.class).streamVector().forEach(System.out::println);
     }
 
     private static final int CYCLE_LENGTH = 10;
