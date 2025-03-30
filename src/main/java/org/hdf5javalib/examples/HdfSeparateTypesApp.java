@@ -1,20 +1,22 @@
 package org.hdf5javalib.examples;
 
+import lombok.Builder;
 import lombok.Data;
 import org.hdf5javalib.HdfFileReader;
-import org.hdf5javalib.dataclass.HdfCompound;
-import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.dataclass.HdfFloatPoint;
-import org.hdf5javalib.dataclass.HdfString;
+import org.hdf5javalib.dataclass.*;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.file.HdfDataSet;
+import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.channels.FileChannel;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Hello world!
@@ -54,6 +56,22 @@ public class HdfSeparateTypesApp {
                     displayData(channel, dataSet, HdfCompound.class);
                     displayData(channel, dataSet, Compound.class);
                     displayData(channel, dataSet, String.class);
+                    CompoundDatatype.addConverter(CustomerCompound.class, (bytes, compoundDataType)->{
+                        Map<String, HdfCompoundMember> nameToMember = compoundDataType.getInstance(HdfCompound.class, bytes)
+                                .getMembers()
+                                .stream()
+                                .collect(Collectors.toMap(m -> m.getDatatype().getName(), m -> m));
+                        return CustomerCompound.builder()
+                                .name("Name")
+                                .someShort(nameToMember.get("a").getInstance(Short.class))
+                                .someDouble(nameToMember.get("b").getInstance(Double.class))
+                                .build();
+                    });
+                    displayData(channel, dataSet, CustomerCompound.class);
+                }
+                try ( HdfDataSet dataSet = reader.findDataset("vlen", channel, reader.getRootGroup()) ) {
+                    displayData(channel, dataSet, HdfVariableLength.class);
+                    displayData(channel, dataSet, String.class);
                 }
             }
         } catch (IOException e) {
@@ -67,6 +85,15 @@ public class HdfSeparateTypesApp {
         private Short a;
         private Double b;
     }
+
+    @Data
+    @Builder
+    public static class CustomerCompound {
+        private String name;
+        private Short someShort;
+        private Double someDouble;
+    }
+
 
     private <T> void displayData(FileChannel fileChannel, HdfDataSet dataSet, Class<T> clazz) throws IOException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(dataSet, fileChannel, clazz);

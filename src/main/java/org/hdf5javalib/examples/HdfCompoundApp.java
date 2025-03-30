@@ -49,7 +49,7 @@ public class HdfCompoundApp {
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
+                try ( HdfDataSet dataSet = reader.findDataset("data", channel, reader.getRootGroup()) ) {
                     displayData(channel, dataSet);
                 }
             }

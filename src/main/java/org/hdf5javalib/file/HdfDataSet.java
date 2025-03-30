@@ -52,6 +52,7 @@ public class HdfDataSet implements Closeable {
         this.attributes = new ArrayList<>();
         this.dataObjectHeaderPrefix = dataObjectHeaderPrefix;
         dataObjectHeaderPrefix.findMessageByType(AttributeMessage.class).ifPresent(attributes::add);
+        dataObjectHeaderPrefix.findMessageByType(DatatypeMessage.class).ifPresent();
     }
 
     private void createInitialMessages(DataspaceMessage dataSpaceMessage) {

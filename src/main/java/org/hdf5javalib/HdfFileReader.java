@@ -88,6 +88,7 @@ public class HdfFileReader {
                     // Assuming a way to check if it’s a dataset (e.g., header type field)
                     DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
                     return new HdfDataSet(rootGroup, datasetName.toString(), dataType.getHdfDatatype(), header);
+
                 }
             }
         }
