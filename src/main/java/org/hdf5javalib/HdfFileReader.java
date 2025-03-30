@@ -84,6 +84,7 @@ public class HdfFileReader {
                     long dataObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
                     fileChannel.position(dataObjectHeaderAddress);
                     HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
+                    log.debug("FOUND {}@{}\r\n{}", datasetName, dataObjectHeaderAddress, header);
                     // Assuming a way to check if it’s a dataset (e.g., header type field)
                     DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
                     return new HdfDataSet(rootGroup, datasetName.toString(), dataType.getHdfDatatype(), header);

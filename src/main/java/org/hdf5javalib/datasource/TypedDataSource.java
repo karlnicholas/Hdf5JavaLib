@@ -54,7 +54,7 @@ public class TypedDataSource<T> {
         }
         ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
         synchronized (fileChannel) {
-            fileChannel.position(dataset.getDataAddress() + offset);
+            fileChannel.position(dataset.getDataAddress().getInstance(Long.class) + offset);
             int bytesRead = fileChannel.read(buffer);
             if (bytesRead != size) {
                 throw new IOException("Failed to read the expected number of bytes: read " + bytesRead + ", expected " + size);

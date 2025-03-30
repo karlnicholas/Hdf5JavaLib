@@ -240,7 +240,7 @@ public class HdfSuperblock {
                 ", freeSpaceAddress=" + freeSpaceAddress +
                 ", endOfFileAddress=" + endOfFileAddress +
                 ", driverInformationAddress=" + driverInformationAddress +
-                "\r\n\trootGroupSymbolTableEntry=" + rootGroupSymbolTableEntry +
+                "\r\nrootGroupSymbolTableEntry=" + rootGroupSymbolTableEntry +
                 '}';
     }
 }

@@ -27,7 +27,7 @@ public class HdfDataSet implements Closeable {
     private final HdfDatatype hdfDatatype;
     private final List<AttributeMessage> attributes;
 //    private final DataspaceMessage dataSpaceMessage;
-    private long dataAddress;
+//    private long dataAddress;
     private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
 
     /*
@@ -161,6 +161,7 @@ public class HdfDataSet implements Closeable {
 
     @Override
     public void close() {
+        if (hdfGroup.getHdfFile() == null) return;
         int currentObjectHeaderSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
         List<HdfMessage> headerMessages = this.dataObjectHeaderPrefix.getHeaderMessages();
         int objectHeaderSize = getObjectHeaderSize(headerMessages);
@@ -240,11 +241,15 @@ public class HdfDataSet implements Closeable {
     }
 
     public void write(Supplier<ByteBuffer> bufferSupplier) throws IOException {
-        dataAddress = hdfGroup.write(bufferSupplier, this);
+        hdfGroup.write(bufferSupplier, this);
     }
 
     public void write(ByteBuffer byteBuffer) throws IOException {
-        dataAddress = hdfGroup.write(byteBuffer, this);
+        hdfGroup.write(byteBuffer, this);
+    }
+
+    public HdfFixedPoint getDataAddress() {
+        return dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class).orElseThrow().getDataAddress();
     }
 
     public void writeToBuffer(ByteBuffer buffer) {

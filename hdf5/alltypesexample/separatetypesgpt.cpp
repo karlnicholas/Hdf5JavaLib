@@ -24,9 +24,10 @@ int main() {
     file.createDataSet("/time", PredType::NATIVE_INT64, scalar).write(&time_val, PredType::NATIVE_INT64);
 
     // 4. String (fixed-length)
-    const char* str = "Hello HDF5";
+    // const char* str = "Hello HDF5";
+    char string[16] = "Hello HDF5!";
     StrType str_type(PredType::C_S1, 16);
-    file.createDataSet("/string", str_type, scalar).write(str, str_type);
+    file.createDataSet("/string", str_type, scalar).write(string, str_type);
 
     // 5. Bit Field (use HDF5's built-in bitfield type)
     uint8_t bits = 0b10101010;

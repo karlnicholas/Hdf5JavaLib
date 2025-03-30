@@ -134,7 +134,7 @@ public class HdfObjectHeaderPrefixV1 {
 //        dataObjectHeaderMessages.forEach(hm->builder.append("\r\n\t" + hm));
         for( HdfMessage message: headerMessages) {
             String ms = message.toString();
-            builder.append("\r\n\t\t").append(ms);
+            builder.append("\r\n").append(ms);
         }
         builder.append("}");
 

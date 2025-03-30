@@ -73,7 +73,7 @@ public class HdfGroupSymbolTableNode {
                 "signature='" + signature + '\'' +
                 ", version=" + version +
                 ", numberOfSymbols=" + numberOfSymbols +
-                ", symbolTableEntries=\r\n\t\t" + symbolTableEntries +
+                ", symbolTableEntries=\r\n" + symbolTableEntries +
                 "\r\n}";
     }
 

@@ -158,7 +158,7 @@ public class CompoundDatatype implements HdfDatatype {
                 .append(", size: ").append(size)
                 .append(", ");
         members.forEach(member->{
-            builder.append("\r\n\t");
+            builder.append("\r\n");
             builder.append(member);
         });
         return builder.toString();

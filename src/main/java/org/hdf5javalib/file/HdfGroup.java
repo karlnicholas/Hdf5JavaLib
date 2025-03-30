@@ -163,12 +163,12 @@ public class HdfGroup {
     public String toString() {
         return "HdfGroup{" +
                 "name='" + name + '\'' +
-                "\r\n\tobjectHeader=" + objectHeader +
-                "\r\n\tbTree=" + bTree +
-                "\r\n\tlocalHeap=" + localHeap +
-                "\r\n\tlocalHeapContents=" + localHeapContents +
+                "\r\nobjectHeader=" + objectHeader +
+                "\r\nbTree=" + bTree +
+                "\r\nlocalHeap=" + localHeap +
+                "\r\nlocalHeapContents=" + localHeapContents +
 //                "\r\n\tsymbolTableNode=" + symbolTableNode +
-                (dataSet != null ? "\r\n\tdataSet=" + dataSet.getDataObjectHeaderPrefix() : "") +
+                (dataSet != null ? "\r\ndataSet=" + dataSet.getDataObjectHeaderPrefix() : "") +
                 "}";
     }
 
