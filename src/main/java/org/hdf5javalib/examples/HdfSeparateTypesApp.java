@@ -54,20 +54,20 @@ public class HdfSeparateTypesApp {
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("compound", channel, reader.getRootGroup()) ) {
                     displayData(channel, dataSet, HdfCompound.class);
-                    displayData(channel, dataSet, Compound.class);
                     displayData(channel, dataSet, String.class);
-                    CompoundDatatype.addConverter(CustomerCompound.class, (bytes, compoundDataType)->{
+                    displayData(channel, dataSet, Compound.class);
+                    CompoundDatatype.addConverter(CustomCompound.class, (bytes, compoundDataType)->{
                         Map<String, HdfCompoundMember> nameToMember = compoundDataType.getInstance(HdfCompound.class, bytes)
                                 .getMembers()
                                 .stream()
                                 .collect(Collectors.toMap(m -> m.getDatatype().getName(), m -> m));
-                        return CustomerCompound.builder()
+                        return CustomCompound.builder()
                                 .name("Name")
                                 .someShort(nameToMember.get("a").getInstance(Short.class))
                                 .someDouble(nameToMember.get("b").getInstance(Double.class))
                                 .build();
                     });
-                    displayData(channel, dataSet, CustomerCompound.class);
+                    displayData(channel, dataSet, CustomCompound.class);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("vlen", channel, reader.getRootGroup()) ) {
                     displayData(channel, dataSet, HdfVariableLength.class);
@@ -89,7 +89,7 @@ public class HdfSeparateTypesApp {
 
     @Data
     @Builder
-    public static class CustomerCompound {
+    public static class CustomCompound {
         private String name;
         private Short someShort;
         private Double someDouble;
@@ -99,10 +99,20 @@ public class HdfSeparateTypesApp {
         TypedDataSource<T> dataSource = new TypedDataSource<>(dataSet, fileChannel, clazz);
 
         T result = dataSource.readScalar();
-        System.out.println(clazz.getSimpleName() + " read = " + displayValue(result));
+        System.out.println(displayType(clazz, result) + " read = " + displayValue(result));
 
         result = dataSource.streamScalar().findFirst().orElseThrow();
-        System.out.println(clazz.getSimpleName() + " stream = " + displayValue(result));
+        System.out.println(displayType(clazz, result) + " stream = " + displayValue(result));
+    }
+
+    private String displayType(Class<?> declaredType, Object actualValue) {
+        if (actualValue == null) return declaredType.getSimpleName();
+        Class<?> actualClass = actualValue.getClass();
+        if (actualClass.isArray()) {
+            Class<?> componentType = actualClass.getComponentType();
+            return declaredType.getSimpleName() + "(" + componentType.getSimpleName() + "[])";
+        }
+        return declaredType.getSimpleName();
     }
 
     private String displayValue(Object value) {

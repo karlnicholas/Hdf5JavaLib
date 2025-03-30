@@ -7,6 +7,7 @@ import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.lang.reflect.Array;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -48,10 +49,10 @@ public class VariableLengthDatatype implements HdfDatatype {
 
         return switch (hdfDatatype.getDatatypeClass()) {
             case FIXED -> {
-                Integer[] result = new Integer[count];
+                BigDecimal[] result = new BigDecimal[count];
                 for (int i = 0; i < count; i++) {
                     byte[] slice = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
-                    result[i] = hdfDatatype.getInstance(Integer.class, slice);
+                    result[i] = hdfDatatype.getInstance(BigDecimal.class, slice);
                 }
                 yield result;
             }
