@@ -3,7 +3,6 @@ package org.hdf5javalib.dataclass;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 /**
  * HDFString. Stored bytes are not null terminated even if null termination is set in classBitField.

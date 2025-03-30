@@ -1,8 +1,8 @@
 package org.hdf5javalib.datasource;
 
+import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
-import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.utils.FlattenedArrayUtils;
@@ -21,7 +21,6 @@ import java.util.stream.StreamSupport;
 public class TypedDataSource<T> {
     private final HdfDataSet dataset;
     private final FileChannel fileChannel;
-//    private final long startOffset;
     private final Class<T> dataClass;
     private final int[] dimensions;
     private final int elementSize;
@@ -31,7 +30,6 @@ public class TypedDataSource<T> {
         this.dataset = dataset;
         this.fileChannel = fileChannel;
         this.globalHeap = new HdfGlobalHeap(this::initializeGlobalHeap);
-//        this.startOffset = startOffset;
         this.dataClass = dataClass;
         this.elementSize = dataset.getHdfDatatype().getSize();
         this.dimensions = extractDimensions(dataset.getDataObjectHeaderPrefix()
