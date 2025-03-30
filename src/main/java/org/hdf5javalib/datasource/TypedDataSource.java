@@ -3,6 +3,8 @@ package org.hdf5javalib.datasource;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.utils.FlattenedArrayUtils;
 
 import java.io.IOException;
@@ -23,20 +25,33 @@ public class TypedDataSource<T> {
     private final Class<T> dataClass;
     private final int[] dimensions;
     private final int elementSize;
+    private final HdfGlobalHeap globalHeap;
 
     public TypedDataSource(HdfDataSet dataset, FileChannel fileChannel, Class<T> dataClass) {
         this.dataset = dataset;
         this.fileChannel = fileChannel;
+        this.globalHeap = new HdfGlobalHeap(this::initializeGlobalHeap);
 //        this.startOffset = startOffset;
         this.dataClass = dataClass;
         this.elementSize = dataset.getHdfDatatype().getSize();
         this.dimensions = extractDimensions(dataset.getDataObjectHeaderPrefix()
                 .findMessageByType(DataspaceMessage.class)
                 .orElseThrow(() -> new IllegalStateException("DataspaceMessage not found")));
+        dataset.getDataObjectHeaderPrefix().findMessageByType(DatatypeMessage.class).orElseThrow().getHdfDatatype().setGlobalHeap(globalHeap);
+
     }
 
     public int[] getShape() {
         return dimensions.clone();
+    }
+
+    private void initializeGlobalHeap(int length, long offset, int index) {
+        try {
+            fileChannel.position(offset);
+            globalHeap.readFromFileChannel(fileChannel, (short)8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private int[] extractDimensions(DataspaceMessage dataspace) {

@@ -139,7 +139,11 @@ public class HdfCompoundApp {
                                     VariableLengthDatatype.createClassAndVersion(),
                                     VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_TERMINATE, VariableLengthDatatype.CharacterSet.ASCII),
                                     (short) 16,
-                                    0)),
+                                    new FixedPointDatatype(
+                                            FixedPointDatatype.createClassAndVersion(),
+                                            FixedPointDatatype.createClassBitField(false, false, false, false),
+                                            1, (short) 0, (short) 0
+                                    ))),
                     new CompoundMemberDatatype("floatVal", 40, 0, 0, new int[4],
                             new FloatingPointDatatype(
                                     FloatingPointDatatype.createClassAndVersion(),
