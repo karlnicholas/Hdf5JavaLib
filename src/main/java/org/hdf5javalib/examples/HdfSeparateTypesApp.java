@@ -40,7 +40,7 @@ public class HdfSeparateTypesApp {
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                try ( HdfDataSet dataSet = reader.getDataset(channel, "fixed_point") ) {
+                try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
                     displayData(channel, dataSet);
                 }
             }

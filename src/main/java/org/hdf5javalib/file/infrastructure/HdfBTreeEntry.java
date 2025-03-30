@@ -7,4 +7,5 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 public class HdfBTreeEntry {
     private final HdfFixedPoint key;
     private final HdfFixedPoint childPointer;
+    private final HdfGroupSymbolTableNode symbolTableNode;
 }

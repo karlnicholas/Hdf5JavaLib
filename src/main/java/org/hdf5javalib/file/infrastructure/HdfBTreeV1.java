@@ -62,7 +62,7 @@ public class HdfBTreeV1 {
         this.entries = new ArrayList<>();
     }
 
-    public int addGroup(HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents) {
+    public int addGroup(HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents, HdfGroupSymbolTableNode symbolTableNode) {
         // Ensure we do not exceed the max number of entries (groupLeafNodeK = 4)
         if (entriesUsed >= 4) {
             throw new IllegalStateException("Cannot add more than 4 groups to this B-tree node.");
@@ -71,9 +71,10 @@ public class HdfBTreeV1 {
         // Store objectName in the heap & get its offset
         int linkNameOffset = localHeap.addToHeap(objectName, localHeapContents);
 //        HdfFixedPoint localHeapOffset = localHeap.getFreeListOffset();
+//        HdfGroupSymbolTableNode symbolTableNode = new HdfGroupSymbolTableNode("SNOD", 1, 0, new ArrayList<>());
 
         // Insert `HdfBTreeEntry` for the new group
-        HdfBTreeEntry newEntry = new HdfBTreeEntry(HdfFixedPoint.of(linkNameOffset), objectAddress);
+        HdfBTreeEntry newEntry = new HdfBTreeEntry(HdfFixedPoint.of(linkNameOffset), objectAddress, symbolTableNode);
         entries.add(newEntry);
 
         // Increment entriesUsed (since we successfully added an entry)
@@ -131,7 +132,17 @@ public class HdfBTreeV1 {
         for (int i = 0; i < entriesUsed; i++) {
             HdfFixedPoint childPointer = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8)); // Read childPointer first
             HdfFixedPoint key = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8)); // Read key after childPointer
-            entries.add(new HdfBTreeEntry(key, childPointer));
+            //
+            long snodAddress = childPointer.getInstance(Long.class);
+            fileChannel.position(snodAddress);
+            HdfGroupSymbolTableNode symbolTableNode = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
+            int entriesToRead = symbolTableNode.getNumberOfSymbols();
+            for(int e=0; e <entriesToRead; ++e) {
+                HdfSymbolTableEntry symbolTableEntry  = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
+                symbolTableNode.getSymbolTableEntries().add(symbolTableEntry);
+            }
+
+            entries.add(new HdfBTreeEntry(key, childPointer, symbolTableNode));
         }
 
         return new HdfBTreeV1(
@@ -172,6 +183,9 @@ public class HdfBTreeV1 {
         for (HdfBTreeEntry entry : entries) {
             writeFixedPointToBuffer(buffer, entry.getChildPointer());  // Write child pointer
             writeFixedPointToBuffer(buffer, entry.getKey());  // Write key
+//            buffer.position((int) hdfFile.getBufferAllocation().getSnodAddress());
+            buffer.position(entry.getChildPointer().getInstance(Integer.class));
+            entry.getSymbolTableNode().writeToBuffer(buffer);
         }
     }
 

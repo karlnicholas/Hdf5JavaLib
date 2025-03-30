@@ -6,16 +6,11 @@ import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfGroup;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
-import org.hdf5javalib.file.dataobject.message.DataLayoutMessage;
-import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
-import org.hdf5javalib.file.dataobject.message.HdfMessage;
-import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.infrastructure.*;
 import org.hdf5javalib.file.metadata.HdfSuperblock;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 
 @Getter
@@ -25,14 +20,13 @@ public class HdfFileReader {
     private HdfSuperblock superblock;
     // level 1
     private HdfGroup rootGroup;
-    // well, well, well
-    private HdfDataSet dataSet;
+//    // level 2A1
 //    // level 2A1
 //    private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
 //    // parsed Datatype
 //    private HdfDatatype dataType;
-    private long dataAddress = 0;
-    private long dimensionSize = 0;
+//    private long dataAddress = 0;
+//    private long dimensionSize = 0;
 //    private long dimension = 0;
 
     public void readFile(FileChannel fileChannel) throws IOException {
@@ -66,89 +60,36 @@ public class HdfFileReader {
         fileChannel.position(bTreeAddress);
         HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
 
-        // get datasets?
-        if ( bTree.getEntriesUsed() != 1) {
-            throw new UnsupportedEncodingException("Only one btree entry is currently supported");
-        }
-        HdfBTreeEntry hdfBTreeEntry = bTree.getEntries().get(0);
-        long snodAddress = hdfBTreeEntry.getChildPointer().getInstance(Long.class);
-        fileChannel.position(snodAddress);
-        HdfGroupSymbolTableNode symbolTableNode = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
-        int entriesToRead = symbolTableNode.getNumberOfSymbols();
-        for(int i=0; i <entriesToRead; ++i) {
-            HdfSymbolTableEntry symbolTableEntry  = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
-            symbolTableNode.getSymbolTableEntries().add(symbolTableEntry);
-        }
         rootGroup = new HdfGroup(
                 null,
                 "",
                 objectHeader,
                 bTree,
                 localHeap,
-                localHeapContents,
-                symbolTableNode
+                localHeapContents
         );
 
 
         log.debug("{}", rootGroup);
 
-        for( int i=0; i < symbolTableNode.getNumberOfSymbols(); ++i ) {
-            HdfSymbolTableEntry ste = symbolTableNode.getSymbolTableEntries().get(i);
-            HdfString datasetName = localHeapContents.parseStringAtOffset(ste.getLinkNameOffset());
-            HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
-            // parsed Datatype
-            HdfDatatype dataType = null;
-            // Parse the Data Object Header Prefix next in line
-//        fileChannel.position(fileOffsets.getObjectHeaderAddress().toBigInteger().longValue());
-            long dataObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
-            fileChannel.position(dataObjectHeaderAddress);
-            dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
-            log.debug("{}", datasetName + "@" + dataObjectHeaderAddress + " = " + dataObjectHeaderPrefix);
-
-            for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
-                if (message instanceof DatatypeMessage dataTypeMessage) {
-                    dataType = dataTypeMessage.getHdfDatatype();
-                } else if (message instanceof DataLayoutMessage dataLayoutMessage) {
-                    dataAddress = dataLayoutMessage.getDataAddress().getInstance(Long.class);
-                    dimensionSize = dataLayoutMessage.getDimensionSizes()[0].getInstance(Long.class);
-//                } else if (message instanceof DataspaceMessage dataSpaceMessage) {
-//                    dimension = dataSpaceMessage.getDimensions()[0].getInstance(Long.class);
-                }
-            }
-            dataSet = new HdfDataSet(rootGroup, datasetName.getInstance(String.class), dataType, dataObjectHeaderPrefix);
-
-        }
-
         log.debug("Parsing complete. NEXT: {}", fileChannel.position());
     }
 
-    public HdfDataSet getDataset(FileChannel fileChannel, String datasetName) throws IOException {
-        HdfGroupSymbolTableNode symbolTableNode = rootGroup.getSymbolTableNode();
-        HdfLocalHeapContents localHeapContents = rootGroup.getLocalHeapContents();
-        short offsetSize = superblock.getOffsetSize();
-        short lengthSize = superblock.getLengthSize();
-        for( int i=0; i < symbolTableNode.getNumberOfSymbols(); ++i ) {
-            HdfSymbolTableEntry ste = symbolTableNode.getSymbolTableEntries().get(i);
-            HdfString aDatasetName = localHeapContents.parseStringAtOffset(ste.getLinkNameOffset());
-            if ( aDatasetName.equals(datasetName) ) {
-                HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
-                // parsed Datatype
-                HdfDatatype dataType = null;
-                // Parse the Data Object Header Prefix next in line
-                long dataObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
-                fileChannel.position(dataObjectHeaderAddress);
-                dataObjectHeaderPrefix = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
-                log.debug("{}", datasetName + "@" + dataObjectHeaderAddress + " = " + dataObjectHeaderPrefix);
-
-                for (HdfMessage message : dataObjectHeaderPrefix.getHeaderMessages()) {
-                    if (message instanceof DatatypeMessage dataTypeMessage) {
-                        dataType = dataTypeMessage.getHdfDatatype();
-                        return new HdfDataSet(rootGroup, aDatasetName.getInstance(String.class), dataType, dataObjectHeaderPrefix);
-                    }
+    public HdfDataSet findDataset(String targetName, FileChannel fileChannel, HdfGroup hdfGroup) throws IOException {
+        for (HdfBTreeEntry entry : hdfGroup.getBTree().getEntries()) {
+            HdfGroupSymbolTableNode symbolTableNode = entry.getSymbolTableNode();
+            for (HdfSymbolTableEntry ste : symbolTableNode.getSymbolTableEntries()) {
+                HdfString datasetName = hdfGroup.getLocalHeapContents().parseStringAtOffset(ste.getLinkNameOffset());
+                if (datasetName.toString().equals(targetName)) {
+                    long dataObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
+                    fileChannel.position(dataObjectHeaderAddress);
+                    HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
+                    // Assuming a way to check if it’s a dataset (e.g., header type field)
+                    DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
+                    return new HdfDataSet(rootGroup, datasetName.toString(), dataType.getHdfDatatype(), header);
                 }
             }
-
         }
-        throw new UnsupportedEncodingException("No dataset named " + datasetName);
+        throw new IllegalArgumentException("No such dataset: " + targetName);
     }
 }

@@ -154,6 +154,7 @@ public class FlattenedArrayUtils {
         Array.set(current, coord[coord.length - 1], value);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Object reduceAlongAxis(
             Stream<T> stream, int[] shape, int axis, BinaryOperator<T> reducer, Class<T> clazz) {
 
