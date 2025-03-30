@@ -77,18 +77,18 @@ public class HdfSeparateTypesApp {
                     displayData(channel, dataSet, HdfVariableLength.class);
                     displayData(channel, dataSet, String.class);
                 }
-//                try ( HdfDataSet dataSet = reader.findDataset("vlen_double", channel, reader.getRootGroup()) ) {
-////                    displayData(channel, dataSet, HdfVariableLength.class);
-////                    displayData(channel, dataSet, String.class);
-//                }
-                try ( HdfDataSet dataSet = reader.findDataset("vlen_str", channel, reader.getRootGroup()) ) {
+                try ( HdfDataSet dataSet = reader.findDataset("vlen_double", channel, reader.getRootGroup()) ) {
                     displayData(channel, dataSet, HdfVariableLength.class);
                     displayData(channel, dataSet, String.class);
                 }
-//                try ( HdfDataSet dataSet = reader.findDataset("vlen_short", channel, reader.getRootGroup()) ) {
-////                    displayData(channel, dataSet, HdfVariableLength.class);
-////                    displayData(channel, dataSet, String.class);
-//                }
+                try ( HdfDataSet dataSet = reader.findDataset("vlen_string", channel, reader.getRootGroup()) ) {
+                    displayData(channel, dataSet, HdfVariableLength.class);
+                    displayData(channel, dataSet, String.class);
+                }
+                try ( HdfDataSet dataSet = reader.findDataset("vlen_short", channel, reader.getRootGroup()) ) {
+                    displayData(channel, dataSet, HdfVariableLength.class);
+                    displayData(channel, dataSet, String.class);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

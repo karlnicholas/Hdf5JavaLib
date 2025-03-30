@@ -11,9 +11,8 @@ int main() {
         // Create a new HDF5 file
         H5File file("vlen_types_example.h5", H5F_ACC_TRUNC);
 
-        // Define dataspace (1 record for each dataset)
-        hsize_t dims[1] = {1};
-        DataSpace dataspace(1, dims);
+        // Define dataspace (H5S_SCALAR)
+        hid_t space = H5Screate(H5S_SCALAR);
 
         // 1. VLEN Integer Array
         {
@@ -21,7 +20,7 @@ int main() {
             VarLenType vlenIntType(PredType::NATIVE_INT);
 
             // Create dataset
-            DataSet dataset = file.createDataSet("vlen_int", vlenIntType, dataspace);
+            DataSet dataset = file.createDataSet("vlen_int", vlenIntType, space);
 
             // Prepare data
             std::vector<int> intData = {1, 2, 3, 4, 5};
@@ -36,7 +35,7 @@ int main() {
         // 2. VLEN Float Array
         {
             VarLenType vlenFloatType(PredType::NATIVE_FLOAT);
-            DataSet dataset = file.createDataSet("vlen_float", vlenFloatType, dataspace);
+            DataSet dataset = file.createDataSet("vlen_float", vlenFloatType, space);
 
             std::vector<float> floatData = {1.1f, 2.2f, 3.3f};
             hvl_t data[1];
@@ -49,7 +48,7 @@ int main() {
         // 3. VLEN Double Array
         {
             VarLenType vlenDoubleType(PredType::NATIVE_DOUBLE);
-            DataSet dataset = file.createDataSet("vlen_double", vlenDoubleType, dataspace);
+            DataSet dataset = file.createDataSet("vlen_double", vlenDoubleType, space);
 
             std::vector<double> doubleData = {1.234, 5.678, 9.101};
             hvl_t data[1];
@@ -62,7 +61,7 @@ int main() {
         // 4. VLEN String
         {
             StrType vlenStrType(PredType::C_S1, H5T_VARIABLE);
-            DataSet dataset = file.createDataSet("vlen_string", vlenStrType, dataspace);
+            DataSet dataset = file.createDataSet("vlen_string", vlenStrType, space);
 
             const char* strData[1] = {"Hello, Variable Length String!"};
             dataset.write(strData, vlenStrType);
@@ -71,7 +70,7 @@ int main() {
         // 5. VLEN Short Array
         {
             VarLenType vlenShortType(PredType::NATIVE_SHORT);
-            DataSet dataset = file.createDataSet("vlen_short", vlenShortType, dataspace);
+            DataSet dataset = file.createDataSet("vlen_short", vlenShortType, space);
 
             std::vector<short> shortData = {10, 20, 30};
             hvl_t data[1];
