@@ -64,7 +64,7 @@ public class FlattenedArrayUtils {
      * @throws IndexOutOfBoundsException if an index is out of bounds
      */
     public static <T> T getElement(T[] data, int[] shape, int... indices) {
-        int flatIndex = findElement(shape, indices);;
+        int flatIndex = findElement(shape, indices);
         return data[flatIndex];
     }
 

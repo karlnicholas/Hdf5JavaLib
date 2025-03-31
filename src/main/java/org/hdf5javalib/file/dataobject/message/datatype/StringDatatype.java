@@ -40,6 +40,7 @@ public class StringDatatype implements HdfDatatype {
         return BitSet.valueOf(new long[] {((long) charSet.value << 4) + paddingType.value});
     }
 
+    @SuppressWarnings("SameReturnValue")
     public static byte createClassAndVersion() {
         return 0x13;
     }

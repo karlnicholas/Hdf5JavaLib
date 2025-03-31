@@ -26,8 +26,6 @@ public class HdfDataSet implements Closeable {
     private final String datasetName;
     private final HdfDatatype hdfDatatype;
     private final List<AttributeMessage> attributes;
-//    private final DataspaceMessage dataSpaceMessage;
-//    private long dataAddress;
     private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
 
     /*

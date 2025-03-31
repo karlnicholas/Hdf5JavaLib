@@ -22,14 +22,6 @@ public class HdfFileReader {
     private HdfSuperblock superblock;
     // level 1
     private HdfGroup rootGroup;
-//    // level 2A1
-//    // level 2A1
-//    private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
-//    // parsed Datatype
-//    private HdfDatatype dataType;
-//    private long dataAddress = 0;
-//    private long dimensionSize = 0;
-//    private long dimension = 0;
 
     public void readFile(FileChannel fileChannel) throws IOException {
         // Parse the superblock at the beginning of the file

@@ -95,7 +95,7 @@ public class DataspaceMessage extends HdfMessage {
         buffer.put((byte) dimensionality);
 
         // Encode BitSet as single byte
-        byte encoded = flags.length() == 0 ? 0 : flags.toByteArray()[0];
+        byte encoded = flags.isEmpty() ? 0 : flags.toByteArray()[0];
         buffer.put(encoded);
 
         buffer.put(new byte[5]);

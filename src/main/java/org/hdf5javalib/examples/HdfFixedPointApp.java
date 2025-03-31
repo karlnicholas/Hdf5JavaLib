@@ -28,10 +28,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -244,10 +241,8 @@ public class HdfFixedPointApp {
 
         System.out.println("Pieces = ");
         List<FlattenedArrayUtils.MatchingEntry<Integer>> pieces = FlattenedArrayUtils.filterToCoordinateList(dataSource.streamFlattened(), shape, i -> i != 0);
-        pieces.sort((a, b) -> Integer.compare(a.coordinates[3], b.coordinates[3]));
-        pieces.forEach(entry -> {
-            System.out.printf("Coords %s → Value: %s%n", Arrays.toString(entry.coordinates), entry.value);
-        });
+        pieces.sort(Comparator.comparingInt(a -> a.coordinates[3]));
+        pieces.forEach(entry -> System.out.printf("Coords %s → Value: %s%n", Arrays.toString(entry.coordinates), entry.value));
     }
 
     private void tryHdfApiMatrixInts(String FILE_NAME, Consumer<MatrixWriterParams> writer) {
@@ -299,7 +294,7 @@ public class HdfFixedPointApp {
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS), HdfFixedPoint.of(NUM_DATAPOINTS)};
 
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 2, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, computeDataSpaceMessageSize(hdfDimensions));
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 2, DataspaceMessage.buildFlagSet(true, false), hdfDimensions, hdfDimensions, false, (byte)0, computeDataSpaceMessageSize(hdfDimensions));
 
             FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
@@ -346,7 +341,7 @@ public class HdfFixedPointApp {
 
             // Create data space
             HdfFixedPoint[] hdfDimensions = {};
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, (short) 8);
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(false, false), hdfDimensions, hdfDimensions, false, (byte)0, (short) 8);
 
             FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
@@ -386,7 +381,7 @@ public class HdfFixedPointApp {
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
 
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, computeDataSpaceMessageSize(hdfDimensions));
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(true, false), hdfDimensions, hdfDimensions, false, (byte)0, computeDataSpaceMessageSize(hdfDimensions));
 
             FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),

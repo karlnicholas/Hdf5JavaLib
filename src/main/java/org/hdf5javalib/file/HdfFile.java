@@ -34,7 +34,7 @@ public class HdfFile {
         this.fileName = fileName;
         this.openOptions = openOptions;
         this.bufferAllocation = new HdfBufferAllocation();
-        this.globalHeap = new HdfGlobalHeap(() -> bufferAllocation.getGlobalHeapAddress());
+        this.globalHeap = new HdfGlobalHeap(bufferAllocation::getGlobalHeapAddress);
 
         // 100320
         superblock = new HdfSuperblock(0, 0, 0, 0,

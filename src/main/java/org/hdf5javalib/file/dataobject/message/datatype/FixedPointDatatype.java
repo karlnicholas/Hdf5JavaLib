@@ -71,6 +71,7 @@ public class FixedPointDatatype implements HdfDatatype {
         return classBitField;
     }
 
+    @SuppressWarnings("SameReturnValue")
     public static byte createClassAndVersion() {
         return 0x10;
     }
@@ -217,11 +218,10 @@ public class FixedPointDatatype implements HdfDatatype {
             throw new IllegalArgumentException("Bytes or size wrong for Byte, got " + bytes.length+":"+size);
         }
 
-        byte value = bytes[0];
-//        if (!isSigned() && value < 0) {
+        //        if (!isSigned() && value < 0) {
 //            throw new ArithmeticException("Unsigned value out of range for signed Byte: " + value);
 //        }
-        return value;
+        return bytes[0];
     }
 
     public BigInteger toBigInteger(byte[] bytes) {

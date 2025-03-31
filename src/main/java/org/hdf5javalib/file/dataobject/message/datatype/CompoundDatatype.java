@@ -57,6 +57,7 @@ public class CompoundDatatype implements HdfDatatype {
         return bitSet;
     }
 
+    @SuppressWarnings("SameReturnValue")
     public static byte createClassAndVersion() {
         return 0x16;
     }

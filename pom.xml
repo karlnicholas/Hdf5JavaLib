@@ -8,7 +8,7 @@
   <packaging>jar</packaging>
 
   <name>HDF5JavaLib</name>
-  <url>http://maven.apache.org</url>
+  <url>https:///maven.apache.org</url>
 
   <properties>
     <maven.compiler.source>17</maven.compiler.source>

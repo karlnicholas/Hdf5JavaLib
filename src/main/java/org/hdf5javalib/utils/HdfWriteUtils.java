@@ -39,9 +39,7 @@ public class HdfWriteUtils {
             // Store in **little-endian format** by reversing byte order
             if ( value.getDatatype().isBigEndian() && buffer.order() == ByteOrder.BIG_ENDIAN
             || !value.getDatatype().isBigEndian() && buffer.order() == ByteOrder.LITTLE_ENDIAN) {
-                for (int i = 0; i < copySize; i++) {
-                    bytesToWrite[i] = valueBytes[i];
-                }
+                System.arraycopy(valueBytes, 0, bytesToWrite, 0, copySize);
             } else {
                 for (int i = 0; i < copySize; i++) {
                     bytesToWrite[i] = valueBytes[copySize - 1 - i];
@@ -64,9 +62,7 @@ public class HdfWriteUtils {
 
             // Store in **little-endian format** by reversing byte order
             if ( buffer.order() == ByteOrder.BIG_ENDIAN ) {
-                for (int i = 0; i < copySize; i++) {
-                    bytesToWrite[i] = valueBytes[i];
-                }
+                System.arraycopy(valueBytes, 0, bytesToWrite, 0, copySize);
             } else {
                 for (int i = 0; i < copySize; i++) {
                     bytesToWrite[i] = valueBytes[copySize - 1 - i];

@@ -300,7 +300,7 @@ public class HdfCompoundApp {
                 .forEach(c -> System.out.println("Row: " + c.getMembers()));
 
         System.out.println("Ten BigDecimals = " + new TypedDataSource<>(dataSet, fileChannel, HdfCompound.class).streamVector()
-                        .filter(c->c.getMembers().get(0).getInstance(Long.class).longValue() < 1010 )
+                        .filter(c-> c.getMembers().get(0).getInstance(Long.class) < 1010 )
                 .map(c->c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
 
         System.out.println("Ten Rows:");
@@ -376,8 +376,7 @@ public class HdfCompoundApp {
         int max = 65535;
         int range = max - min;
         int step = range / (CYCLE_LENGTH - 1);
-        int value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
-        return value; // Int to hold 0-65535
+        return (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step; // Int to hold 0-65535
     }
 
     // Signed int: -2147483648 to 2147483647
@@ -395,8 +394,7 @@ public class HdfCompoundApp {
         long max = 4294967295L;
         long range = max - min;
         long step = range / (CYCLE_LENGTH - 1);
-        long value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
-        return value; // Long to hold 0-4294967295
+        return (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step; // Long to hold 0-4294967295
     }
 
     // Signed long: -9223372036854775808 to 9223372036854775807
@@ -414,8 +412,7 @@ public class HdfCompoundApp {
         BigInteger max = new BigInteger("18446744073709551615");
         BigInteger range = max.subtract(min);
         BigInteger step = range.divide(BigInteger.valueOf(CYCLE_LENGTH - 1));
-        BigInteger value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max :
-                min.add(BigInteger.valueOf(index % CYCLE_LENGTH).multiply(step));
-        return value; // BigInteger to hold 0-18446744073709551615
+        return (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max :
+                min.add(BigInteger.valueOf(index % CYCLE_LENGTH).multiply(step)); // BigInteger to hold 0-18446744073709551615
     }
 }

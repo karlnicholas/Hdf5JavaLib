@@ -53,7 +53,7 @@ public class HdfTestUtils {
 
         System.out.print(displayType(clazz, resultArray) + " stream = [");
         String joined = dataSource.streamVector()
-                .map(t->displayValue(t))
+                .map(HdfTestUtils::displayValue)
                 .collect(Collectors.joining(", "));
         System.out.print(joined);
         System.out.println("]");

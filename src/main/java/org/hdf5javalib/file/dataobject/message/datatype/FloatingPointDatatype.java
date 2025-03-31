@@ -64,6 +64,7 @@ public class FloatingPointDatatype implements HdfDatatype {
         return classBitField;
     }
 
+    @SuppressWarnings("SameReturnValue")
     public static byte createClassAndVersion() {
         return 0x11;
     }
@@ -149,9 +150,8 @@ public class FloatingPointDatatype implements HdfDatatype {
         double mantissaValue = 1.0 + (double) mantissa / (1L << mantissaSize); // Normalize mantissa
 
         // Combine: sign * mantissa * 2^exponent
-        double value = sign * mantissaValue * Math.pow(2, exponent);
 
-        return value;
+        return sign * mantissaValue * Math.pow(2, exponent);
     }
 
     public ByteOrder getByteOrder() {
@@ -289,12 +289,12 @@ public class FloatingPointDatatype implements HdfDatatype {
         public static ByteOrder getByteOrder(BitSet bitSet) {
             int value = (bitSet.get(BYTE_ORDER_HIGH) ? 0b10 : 0) |
                     (bitSet.get(BYTE_ORDER_LOW) ? 0b01 : 0);
-            switch (value) {
-                case 0b00: return ByteOrder.LITTLE_ENDIAN;
-                case 0b01: return ByteOrder.BIG_ENDIAN;
-                case 0b11: return ByteOrder.VAX_ENDIAN;
-                default: throw new IllegalStateException("Reserved byte order value: " + value);
-            }
+            return switch (value) {
+                case 0b00 -> ByteOrder.LITTLE_ENDIAN;
+                case 0b01 -> ByteOrder.BIG_ENDIAN;
+                case 0b11 -> ByteOrder.VAX_ENDIAN;
+                default -> throw new IllegalStateException("Reserved byte order value: " + value);
+            };
         }
 
         /**
@@ -324,13 +324,13 @@ public class FloatingPointDatatype implements HdfDatatype {
         public static MantissaNormalization getMantissaNormalization(BitSet bitSet) {
             int value = (bitSet.get(MANTISSA_NORM_HIGH) ? 0b10 : 0) |
                     (bitSet.get(MANTISSA_NORM_LOW) ? 0b01 : 0);
-            switch (value) {
-                case 0: return MantissaNormalization.NONE;
-                case 1: return MantissaNormalization.ALWAYS_SET;
-                case 2: return MantissaNormalization.IMPLIED_SET;
-                case 3: return MantissaNormalization.RESERVED;
-                default: throw new IllegalStateException("Invalid mantissa norm value: " + value);
-            }
+            return switch (value) {
+                case 0 -> MantissaNormalization.NONE;
+                case 1 -> MantissaNormalization.ALWAYS_SET;
+                case 2 -> MantissaNormalization.IMPLIED_SET;
+                case 3 -> MantissaNormalization.RESERVED;
+                default -> throw new IllegalStateException("Invalid mantissa norm value: " + value);
+            };
         }
 
         /**
