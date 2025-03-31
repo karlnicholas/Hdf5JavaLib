@@ -14,6 +14,7 @@ import static org.hdf5javalib.file.dataobject.message.datatype.EnumDatatype.pars
 import static org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype.parseFixedPointType;
 import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype.parseFloatingPointType;
 import static org.hdf5javalib.file.dataobject.message.datatype.OpaqueDatatype.parseOpaqueDatatype;
+import static org.hdf5javalib.file.dataobject.message.datatype.ReferenceDatatype.parseReferenceDatatype;
 import static org.hdf5javalib.file.dataobject.message.datatype.StringDatatype.parseStringType;
 import static org.hdf5javalib.file.dataobject.message.datatype.TimeDatatype.parseTimeType;
 import static org.hdf5javalib.file.dataobject.message.datatype.VariableLengthDatatype.parseVariableLengthDatatype;
@@ -118,6 +119,7 @@ public class DatatypeMessage extends HdfMessage {
             case BITFIELD -> parseBitFieldType(classAndVersion, classBitField, size, buffer);
             case OPAQUE -> parseOpaqueDatatype(classAndVersion, classBitField, size, buffer);
             case COMPOUND -> new CompoundDatatype(classAndVersion, classBitField, size, buffer);
+            case REFERENCE -> parseReferenceDatatype(classAndVersion, classBitField, size, buffer);
             case ENUM -> parseEnumDatatype(classAndVersion, classBitField, size, buffer);
             case VLEN -> parseVariableLengthDatatype(classAndVersion, classBitField, size, buffer);
             case ARRAY -> parseArrayDatatype(classAndVersion, classBitField, size, buffer);
