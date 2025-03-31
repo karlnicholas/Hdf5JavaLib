@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
 
+import static org.hdf5javalib.file.dataobject.message.datatype.ArrayDatatype.parseArrayDatatype;
 import static org.hdf5javalib.file.dataobject.message.datatype.BitFieldDatatype.parseBitFieldType;
 import static org.hdf5javalib.file.dataobject.message.datatype.EnumDatatype.parseEnumDatatype;
 import static org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype.parseFixedPointType;
@@ -93,13 +94,9 @@ public class DatatypeMessage extends HdfMessage {
     public static HdfDatatype getHdfDatatype(ByteBuffer buffer) {
         // Parse Version and Datatype Class (packed into a single byte)
         byte classAndVersion = buffer.get();
-        byte version = (byte) ((classAndVersion >> 4) & 0x0F); // Top 4 bits
-        byte dataTypeClass = (byte) (classAndVersion & 0x0F);  // Bottom 4 bits
-        if ( version != 1 ) {
-            throw new UnsupportedOperationException("Unsupported version: " + version);
-        }
-
-        // Parse Class Bit Field (24 bits)
+//        byte version = (byte) ((classAndVersion >> 4) & 0x0F); // Top 4 bits
+//        byte dataTypeClass = (byte) (classAndVersion & 0x0F);  // Bottom 4 bits
+//        // Parse Class Bit Field (24 bits)
         byte[] classBits = new byte[3];
         buffer.get(classBits);
         BitSet classBitField = BitSet.valueOf(new long[]{
@@ -123,6 +120,7 @@ public class DatatypeMessage extends HdfMessage {
             case COMPOUND -> new CompoundDatatype(classAndVersion, classBitField, size, buffer);
             case ENUM -> parseEnumDatatype(classAndVersion, classBitField, size, buffer);
             case VLEN -> parseVariableLengthDatatype(classAndVersion, classBitField, size, buffer);
+            case ARRAY -> parseArrayDatatype(classAndVersion, classBitField, size, buffer);
             default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
         };
     }

@@ -81,11 +81,11 @@ public class HdfSeparateTypesApp {
 //                    });
 //                    HdfTestUtils.displayScalarData(channel, dataSet, CustomCompound.class);
 //                }
-                try ( HdfDataSet dataSet = reader.findDataset("opaque", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfOpaque.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, byte[].class);
-                }
+//                try ( HdfDataSet dataSet = reader.findDataset("opaque", channel, reader.getRootGroup()) ) {
+//                    HdfTestUtils.displayScalarData(channel, dataSet, HdfOpaque.class);
+//                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
+//                    HdfTestUtils.displayScalarData(channel, dataSet, byte[].class);
+//                }
 //                try ( HdfDataSet dataSet = reader.findDataset("enum", channel, reader.getRootGroup()) ) {
 //                    HdfTestUtils.displayScalarData(channel, dataSet, HdfEnum.class);
 //                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
@@ -95,6 +95,11 @@ public class HdfSeparateTypesApp {
 //                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
 //                    HdfTestUtils.displayScalarData(channel, dataSet, Object.class);
 //                }
+                try ( HdfDataSet dataSet = reader.findDataset("array", channel, reader.getRootGroup()) ) {
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfArray.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfData[].class);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
