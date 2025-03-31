@@ -7,7 +7,6 @@ import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
-import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;

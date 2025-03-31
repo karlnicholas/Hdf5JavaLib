@@ -3,7 +3,7 @@ package org.hdf5javalib.examples;
 import lombok.Builder;
 import lombok.Data;
 import org.hdf5javalib.HdfFileReader;
-import org.hdf5javalib.dataclass.*;
+import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.utils.HdfTestUtils;
 
