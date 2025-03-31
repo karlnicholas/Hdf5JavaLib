@@ -12,6 +12,8 @@ import org.hdf5javalib.file.metadata.HdfSuperblock;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Slf4j
@@ -85,7 +87,6 @@ public class HdfFileReader {
                     fileChannel.position(dataObjectHeaderAddress);
                     HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
                     log.debug("FOUND {}@{}\r\n{}", datasetName, dataObjectHeaderAddress, header);
-                    // Assuming a way to check if it’s a dataset (e.g., header type field)
                     DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
                     return new HdfDataSet(rootGroup, datasetName.toString(), dataType.getHdfDatatype(), header);
 
@@ -93,5 +94,21 @@ public class HdfFileReader {
             }
         }
         throw new IllegalArgumentException("No such dataset: " + targetName);
+    }
+
+    public List<HdfDataSet> getDatasets(FileChannel fileChannel, HdfGroup hdfGroup) throws IOException {
+        List<HdfDataSet> dataSets = new ArrayList<>();
+        for (HdfBTreeEntry entry : hdfGroup.getBTree().getEntries()) {
+            HdfGroupSymbolTableNode symbolTableNode = entry.getSymbolTableNode();
+            for (HdfSymbolTableEntry ste : symbolTableNode.getSymbolTableEntries()) {
+                HdfString datasetName = hdfGroup.getLocalHeapContents().parseStringAtOffset(ste.getLinkNameOffset());
+                    long dataObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
+                    fileChannel.position(dataObjectHeaderAddress);
+                    HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
+                    DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
+                    dataSets.add( new HdfDataSet(rootGroup, datasetName.toString(), dataType.getHdfDatatype(), header));
+            }
+        }
+        return dataSets;
     }
 }

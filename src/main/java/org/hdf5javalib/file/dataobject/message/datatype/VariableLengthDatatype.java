@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfVariableLength;
+import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -15,10 +15,6 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype.parseFixedPointType;
-import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype.parseFloatingPointType;
-import static org.hdf5javalib.file.dataobject.message.datatype.StringDatatype.parseStringType;
 
 @Getter
 @Slf4j
@@ -35,60 +31,6 @@ public class VariableLengthDatatype implements HdfDatatype {
         CONVERTERS.put(HdfVariableLength.class, HdfVariableLength::new);
         CONVERTERS.put(HdfData.class, HdfVariableLength::new);
         CONVERTERS.put(Object.class, (bytes, dt) -> dt.toObjectArray(bytes));
-//        CONVERTERS.put(Object.class, (bytes, dt) -> dt.toObjectArray(bytes));
-    }
-
-    private Object toObjectArray(byte[] bytes) {
-        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
-        int count = buffer.getInt();
-        long offset = buffer.getLong();
-        int index = buffer.getInt();
-
-        byte[] workingBytes = globalHeap.getDataBytes(count, offset, index);
-        int datatypeSize = hdfDatatype.getSize();
-
-        return switch (hdfDatatype.getDatatypeClass()) {
-            case FIXED -> {
-                BigDecimal[] result = new BigDecimal[count];
-                for (int i = 0; i < count; i++) {
-                    byte[] slice = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
-                    result[i] = hdfDatatype.getInstance(BigDecimal.class, slice);
-                }
-                yield result;
-            }
-            case FLOAT -> {
-                Float[] result = new Float[count];
-                for (int i = 0; i < count; i++) {
-                    byte[] slice = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
-                    result[i] = hdfDatatype.getInstance(Float.class, slice);
-                }
-                yield result;
-            }
-            case STRING, ENUM -> {
-                String[] result = new String[count];
-                for (int i = 0; i < count; i++) {
-                    byte[] slice = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
-                    result[i] = hdfDatatype.getInstance(String.class, slice);
-                }
-                yield result;
-            }
-            case COMPOUND -> {
-                Map<String, Object>[] result = new Map[count];
-                for (int i = 0; i < count; i++) {
-                    byte[] slice = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
-                    result[i] = hdfDatatype.getInstance(Map.class, slice);
-                }
-                yield result;
-            }
-            case VLEN, ARRAY, BITFIELD, OPAQUE, REFERENCE, TIME -> {
-                Object[] result = new Object[count];
-                for (int i = 0; i < count; i++) {
-                    byte[] slice = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
-                    result[i] = hdfDatatype.getInstance(Object.class, slice);
-                }
-                yield result;
-            }
-        };
     }
 
     public VariableLengthDatatype(byte classAndVersion, BitSet classBitField, int size, HdfDatatype hdfDatatype) {
@@ -98,44 +40,8 @@ public class VariableLengthDatatype implements HdfDatatype {
         this.hdfDatatype = hdfDatatype;
     }
 
-
-    // TODO: No idea what's going on here
     public static VariableLengthDatatype parseVariableLengthDatatype(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
-        // string here, else
-        // parse a fixed-point that describes single bytes
-        // parse again datatype stuff, lets copy for now.
-        // Parse Version and Datatype Class (packed into a single byte)
-        byte typeClassAndVersion = buffer.get();
-        byte version = (byte) ((typeClassAndVersion >> 4) & 0x0F); // Top 4 bits
-        byte dataTypeClass = (byte) (typeClassAndVersion & 0x0F);  // Bottom 4 bits
-        if ( version != 1 ) {
-            throw new UnsupportedOperationException("Unsupported version: " + version);
-        }
-
-        // Parse Class Bit Field (24 bits)
-        byte[] classBits = new byte[3];
-        buffer.get(classBits);
-        BitSet typeClassBitField = BitSet.valueOf(new long[]{
-                ((long) classBits[2] & 0xFF) << 16 | ((long) classBits[1] & 0xFF) << 8 | ((long) classBits[0] & 0xFF)
-        });
-
-        // Parse Size (unsigned 4 bytes)
-        int typeSize = buffer.getInt();
-        HdfDatatype hdfDatatype = parseMessageDataType(typeClassAndVersion, typeClassBitField, typeSize, buffer);
-        log.trace("VLEN: hdfDatatype: " + hdfDatatype);
-        return new VariableLengthDatatype(classAndVersion, classBitField, size, hdfDatatype);
-    }
-
-    private static HdfDatatype parseMessageDataType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
-        HdfDatatype.DatatypeClass dataTypeClass = HdfDatatype.DatatypeClass.fromValue(classAndVersion & 0x0F);
-        return switch (dataTypeClass) {
-            case FIXED -> parseFixedPointType(classAndVersion, classBitField, size, buffer);
-            case FLOAT -> parseFloatingPointType(classAndVersion, classBitField, size, buffer);
-            case STRING -> parseStringType(classAndVersion, classBitField, size, buffer);
-            case COMPOUND -> new CompoundDatatype(classAndVersion, classBitField, size, buffer);
-            case VLEN -> parseVariableLengthDatatype(classAndVersion, classBitField, size, buffer);
-            default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
-        };
+        return new VariableLengthDatatype(classAndVersion, classBitField, size, DatatypeMessage.getHdfDatatype(buffer));
     }
 
     public static BitSet createClassBitField(PaddingType paddingType, CharacterSet charSet) {
@@ -183,6 +89,22 @@ public class VariableLengthDatatype implements HdfDatatype {
             }
             return Arrays.toString(resultArray);
         }
+    }
+
+    private Object toObjectArray(byte[] bytes) {
+        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
+        int count = buffer.getInt();
+        long offset = buffer.getLong();
+        int index = buffer.getInt();
+
+        byte[] workingBytes = globalHeap.getDataBytes(count, offset, index);
+        int datatypeSize = hdfDatatype.getSize();
+        HdfData[] result = new HdfData[count];
+        for (int i = 0; i < count; i++) {
+            byte[] slice = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
+            result[i] = hdfDatatype.getInstance(HdfData.class, slice);
+        }
+        return result;
     }
 
     @Override

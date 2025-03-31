@@ -82,6 +82,11 @@ public class DatatypeMessage extends HdfMessage {
 //    public static HdfMessage parseHeaderMessage(byte[] data) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
+        HdfDatatype hdfDatatype = getHdfDatatype(buffer);
+        return new DatatypeMessage(hdfDatatype, flags, (short) data.length);
+    }
+
+    public static HdfDatatype getHdfDatatype(ByteBuffer buffer) {
         // Parse Version and Datatype Class (packed into a single byte)
         byte classAndVersion = buffer.get();
         byte version = (byte) ((classAndVersion >> 4) & 0x0F); // Top 4 bits
@@ -99,8 +104,7 @@ public class DatatypeMessage extends HdfMessage {
 
         // Parse Size (unsigned 4 bytes)
         int size = buffer.getInt();
-        HdfDatatype hdfDatatype = parseMessageDataType(classAndVersion, classBitField, size, buffer);
-        return new DatatypeMessage(hdfDatatype, flags, (short) data.length);
+        return parseMessageDataType(classAndVersion, classBitField, size, buffer);
     }
 
     private static HdfDatatype parseMessageDataType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {

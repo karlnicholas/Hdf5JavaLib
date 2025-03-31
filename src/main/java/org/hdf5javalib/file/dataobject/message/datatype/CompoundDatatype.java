@@ -2,6 +2,7 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfCompound;
+import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.lang.reflect.Field;
@@ -91,22 +92,7 @@ public class CompoundDatatype implements HdfDatatype {
                 dimensionSizes[j] = buffer.getInt();
             }
 
-            byte classAndVersion = buffer.get();
-            byte version = (byte) ((classAndVersion >> 4) & 0x0F);
-            if ( version != 1 ) {
-                throw new UnsupportedOperationException("Unsupported version: " + version);
-            }
-            byte dataTypeClass = (byte) (classAndVersion & 0x0F);
-
-            byte[] classBits = new byte[3];
-            buffer.get(classBits);
-            BitSet classBitField = BitSet.valueOf(new long[]{
-                    ((long) classBits[2] & 0xFF) << 16 | ((long) classBits[1] & 0xFF) << 8 | ((long) classBits[0] & 0xFF)
-            });
-
-            int size = buffer.getInt();
-            HdfDatatype hdfDatatype = parseCompoundDataType(classAndVersion, dataTypeClass, classBitField, size, buffer);
-            CompoundMemberDatatype compoundMemberDatatype = new CompoundMemberDatatype(name, offset, dimensionality, dimensionPermutation, dimensionSizes, hdfDatatype);
+            CompoundMemberDatatype compoundMemberDatatype = new CompoundMemberDatatype(name, offset, dimensionality, dimensionPermutation, dimensionSizes, DatatypeMessage.getHdfDatatype(buffer));
 
             members.add(compoundMemberDatatype);
         }
