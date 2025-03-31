@@ -55,13 +55,13 @@ public class HdfSeparateTypesApp {
 //                    HdfTestUtils.displayScalarData(channel, dataSet, BigInteger.class);
 //                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
 //                }
-                try ( HdfDataSet dataSet = reader.findDataset("bitfield", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfBitField.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, BitSet.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
-                }
 //                try ( HdfDataSet dataSet = reader.findDataset("string", channel, reader.getRootGroup()) ) {
 //                    HdfTestUtils.displayScalarData(channel, dataSet, HdfString.class);
+//                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
+//                }
+//                try ( HdfDataSet dataSet = reader.findDataset("bitfield", channel, reader.getRootGroup()) ) {
+//                    HdfTestUtils.displayScalarData(channel, dataSet, HdfBitField.class);
+//                    HdfTestUtils.displayScalarData(channel, dataSet, BitSet.class);
 //                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
 //                }
 //                try ( HdfDataSet dataSet = reader.findDataset("compound", channel, reader.getRootGroup()) ) {
@@ -81,6 +81,10 @@ public class HdfSeparateTypesApp {
 //                    });
 //                    HdfTestUtils.displayScalarData(channel, dataSet, CustomCompound.class);
 //                }
+                try ( HdfDataSet dataSet = reader.findDataset("enum", channel, reader.getRootGroup()) ) {
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfEnum.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
+                }
 //                try ( HdfDataSet dataSet = reader.findDataset("vlen", channel, reader.getRootGroup()) ) {
 //                    HdfTestUtils.displayScalarData(channel, dataSet, HdfVariableLength.class);
 //                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
