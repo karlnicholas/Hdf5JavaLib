@@ -24,11 +24,19 @@ int main() {
         float floating_point = 3.14f;
         floating_point_ds.write(&floating_point, PredType::NATIVE_FLOAT);
 
-        // 2: Time (int64 as proxy)
-        DataSet time_ds = file.createDataSet("/time", PredType::NATIVE_INT64, scalar_space);
-        int64_t time = 1698765432;
-        time_ds.write(&time, PredType::NATIVE_INT64);
-
+        // 2: Time (datatype class 2: TIME)
+        // 3. Time (HDF5 Class 2 Time datatype)
+        int64_t time_val = 1672531200; // 2023-01-01T00:00:00Z
+        hid_t time_tid = H5Tcreate(H5T_TIME, 8); // Create Time datatype with 8-byte size
+        if (time_tid < 0) {
+            throw H5::DataTypeIException("H5Tcreate", "Failed to create Time datatype");
+        }
+        H5Tset_precision(time_tid, 64); // 64-bit precision
+        H5Tset_order(time_tid, H5T_ORDER_LE); // Little-endian
+        DataType time_type(time_tid); // Wrap in C++ DataType object
+        file.createDataSet("/time", time_type, scalar_space).write(&time_val, time_type);
+        H5Tclose(time_tid); // Clean up the raw hid_t
+        
         // 3: String (16-char fixed-length)
         StrType str_type(PredType::C_S1, 16);
         DataSet string_ds = file.createDataSet("/string", str_type, scalar_space);
