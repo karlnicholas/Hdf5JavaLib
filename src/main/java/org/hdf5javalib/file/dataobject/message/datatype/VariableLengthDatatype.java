@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfVariableLength;
@@ -21,8 +22,9 @@ public class VariableLengthDatatype implements HdfDatatype {
     private final byte classAndVersion;
     private final BitSet classBitField;
     private final int size;
+    @Setter
     private HdfGlobalHeap globalHeap;
-    private HdfDatatype hdfDatatype;
+    private final HdfDatatype hdfDatatype;
     // In your HdfDataType/FixedPointDatatype class
     private static final Map<Class<?>, HdfConverter<VariableLengthDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
@@ -84,7 +86,7 @@ public class VariableLengthDatatype implements HdfDatatype {
             int datatypeSize = hdfDatatype.getSize();
             String[] resultArray = new String[count];
             for (int i = 0; i < count; i++) {
-                resultArray[i] = hdfDatatype.getInstance(String.class, Arrays.copyOfRange(workingBytes, i * datatypeSize, i * datatypeSize + datatypeSize));
+                resultArray[i] = hdfDatatype.getInstance(String.class, Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1 ) * datatypeSize));
             }
             return Arrays.toString(resultArray);
         }
@@ -100,8 +102,7 @@ public class VariableLengthDatatype implements HdfDatatype {
         int datatypeSize = hdfDatatype.getSize();
         HdfData[] result = new HdfData[count];
         for (int i = 0; i < count; i++) {
-            byte[] slice = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
-            result[i] = hdfDatatype.getInstance(HdfData.class, slice);
+            result[i] = hdfDatatype.getInstance(HdfData.class, Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize));
         }
         return result;
     }
@@ -239,10 +240,6 @@ public class VariableLengthDatatype implements HdfDatatype {
 
     public CharacterSet getCharacterSet() {
         return CharacterSet.fromBitSet(classBitField);
-    }
-
-    public void setGlobalHeap(HdfGlobalHeap globalHeap) {
-        this.globalHeap = globalHeap;
     }
 
 }

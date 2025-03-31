@@ -1,5 +1,6 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
+import lombok.Getter;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
@@ -22,6 +23,7 @@ public interface HdfDatatype {
     String toString(byte[] bytes);
 
     // Enum defined within the interface
+    @Getter
     enum DatatypeClass {
         FIXED(0),    // HDF5 integer types
         FLOAT(1),      // HDF5 floating-point types
@@ -39,10 +41,6 @@ public interface HdfDatatype {
 
         DatatypeClass(int value) {
             this.value = value;
-        }
-
-        public int getValue() {
-            return value;
         }
 
         // Optional: Lookup by value if needed for parsing
