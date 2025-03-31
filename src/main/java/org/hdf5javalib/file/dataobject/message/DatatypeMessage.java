@@ -118,8 +118,8 @@ public class DatatypeMessage extends HdfMessage {
             case FLOAT -> parseFloatingPointType(classAndVersion, classBitField, size, buffer);
             case TIME -> parseTimeType(classAndVersion, classBitField, size, buffer);
             case STRING -> parseStringType(classAndVersion, classBitField, size, buffer);
-            case OPAQUE -> parseOpaqueDatatype(classAndVersion, classBitField, size, buffer);
             case BITFIELD -> parseBitFieldType(classAndVersion, classBitField, size, buffer);
+            case OPAQUE -> parseOpaqueDatatype(classAndVersion, classBitField, size, buffer);
             case COMPOUND -> new CompoundDatatype(classAndVersion, classBitField, size, buffer);
             case ENUM -> parseEnumDatatype(classAndVersion, classBitField, size, buffer);
             case VLEN -> parseVariableLengthDatatype(classAndVersion, classBitField, size, buffer);
