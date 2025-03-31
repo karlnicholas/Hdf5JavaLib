@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
 
+import static org.hdf5javalib.file.dataobject.message.datatype.BitFieldDatatype.parseBitFieldType;
 import static org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype.parseFixedPointType;
 import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype.parseFloatingPointType;
 import static org.hdf5javalib.file.dataobject.message.datatype.StringDatatype.parseStringType;
@@ -115,6 +116,7 @@ public class DatatypeMessage extends HdfMessage {
             case FLOAT -> parseFloatingPointType(classAndVersion, classBitField, size, buffer);
             case TIME -> parseTimeType(classAndVersion, classBitField, size, buffer);
             case STRING -> parseStringType(classAndVersion, classBitField, size, buffer);
+            case BITFIELD -> parseBitFieldType(classAndVersion, classBitField, size, buffer);
             case COMPOUND -> new CompoundDatatype(classAndVersion, classBitField, size, buffer);
             case VLEN -> parseVariableLengthDatatype(classAndVersion, classBitField, size, buffer);
             default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);

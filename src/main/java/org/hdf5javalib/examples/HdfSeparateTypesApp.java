@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.channels.FileChannel;
 import java.time.Instant;
+import java.util.BitSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -48,10 +49,15 @@ public class HdfSeparateTypesApp {
 //                    HdfTestUtils.displayScalarData(channel, dataSet, Double.class);
 //                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
 //                }
-                try ( HdfDataSet dataSet = reader.findDataset("time", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfTime.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, Long.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, BigInteger.class);
+//                try ( HdfDataSet dataSet = reader.findDataset("time", channel, reader.getRootGroup()) ) {
+//                    HdfTestUtils.displayScalarData(channel, dataSet, HdfTime.class);
+//                    HdfTestUtils.displayScalarData(channel, dataSet, Long.class);
+//                    HdfTestUtils.displayScalarData(channel, dataSet, BigInteger.class);
+//                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
+//                }
+                try ( HdfDataSet dataSet = reader.findDataset("bitfield", channel, reader.getRootGroup()) ) {
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfBitField.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, BitSet.class);
                     HdfTestUtils.displayScalarData(channel, dataSet, String.class);
                 }
 //                try ( HdfDataSet dataSet = reader.findDataset("string", channel, reader.getRootGroup()) ) {
