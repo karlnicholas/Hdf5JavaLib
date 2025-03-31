@@ -213,18 +213,7 @@ public class HdfCompoundApp {
 
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
-            short dataspaceMessageSize = 8;
-            if ( hdfDimensions != null ) {
-                for (HdfFixedPoint dimension : hdfDimensions) {
-                    dataspaceMessageSize += dimension.getDatatype().getSize();
-                }
-            }
-            if ( hdfDimensions != null ) {
-                for (HdfFixedPoint maxDimension : hdfDimensions) {
-                    dataspaceMessageSize += maxDimension.getDatatype().getSize();
-                }
-            }
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, dataspaceMessageSize);
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointApp.computeDataSpaceMessageSize(hdfDimensions));
 
             // Create dataset
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, compoundType, dataSpaceMessage);

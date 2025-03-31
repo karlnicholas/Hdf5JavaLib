@@ -64,6 +64,11 @@ public class FlattenedArrayUtils {
      * @throws IndexOutOfBoundsException if an index is out of bounds
      */
     public static <T> T getElement(T[] data, int[] shape, int... indices) {
+        int flatIndex = findElement(shape, indices);;
+        return data[flatIndex];
+    }
+
+    private static int findElement(int[] shape, int[] indices) {
         if (indices.length != shape.length) {
             throw new IllegalArgumentException("Number of indices must match shape length");
         }
@@ -75,7 +80,7 @@ public class FlattenedArrayUtils {
             }
             flatIndex += indices[i] * strides[i];
         }
-        return data[flatIndex];
+        return flatIndex;
     }
 
     /**
@@ -89,17 +94,7 @@ public class FlattenedArrayUtils {
      * @throws IndexOutOfBoundsException if an index is out of bounds
      */
     public static <T> void setElement(T[] data, int[] shape, T value, int... indices) {
-        if (indices.length != shape.length) {
-            throw new IllegalArgumentException("Number of indices must match shape length");
-        }
-        int[] strides = computeStrides(shape);
-        int flatIndex = 0;
-        for (int i = 0; i < indices.length; i++) {
-            if (indices[i] < 0 || indices[i] >= shape[i]) {
-                throw new IndexOutOfBoundsException("Index " + indices[i] + " out of bounds for dimension " + i);
-            }
-            flatIndex += indices[i] * strides[i];
-        }
+        int flatIndex = findElement(shape, indices);
         data[flatIndex] = value;
     }
 

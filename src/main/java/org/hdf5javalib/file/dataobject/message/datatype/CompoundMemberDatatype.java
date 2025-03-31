@@ -2,6 +2,7 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
@@ -98,15 +99,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
             buffer.putInt(ds);
         }
 
-        // Datatype general information
-        buffer.put(type.getClassAndVersion());    // 1
-        // copy 3 bytes for ClassBitField
-        byte[] bytes = type.getClassBitField().toByteArray();
-        byte[] result = new byte[3];
-        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
-        buffer.put(result);         // 3
-        buffer.putInt(type.getSize());        // 4
-        type.writeDefinitionToByteBuffer(buffer);
+        DatatypeMessage.writeDatatypeProperties(buffer, type);
     }
 
     @Override

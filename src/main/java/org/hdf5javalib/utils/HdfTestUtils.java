@@ -2,12 +2,17 @@ package org.hdf5javalib.utils;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
+import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.stream.Collectors;
 
 public class HdfTestUtils {
     public static void writeVersionAttribute(HdfDataSet dataset) {
@@ -30,4 +35,54 @@ public class HdfTestUtils {
         dataset.createAttribute(ATTRIBUTE_NAME, dt, ds, hdfString);
     }
 
+    public static <T> void displayScalarData(FileChannel fileChannel, HdfDataSet dataSet, Class<T> clazz) throws IOException {
+        TypedDataSource<T> dataSource = new TypedDataSource<>(dataSet, fileChannel, clazz);
+
+        T result = dataSource.readScalar();
+        System.out.println(displayType(clazz, result) + " read   = " + displayValue(result));
+
+        result = dataSource.streamScalar().findFirst().orElseThrow();
+        System.out.println(displayType(clazz, result) + " stream = " + displayValue(result));
+    }
+
+    public static <T> void displayVectorData(FileChannel fileChannel, HdfDataSet dataSet, Class<T> clazz) throws IOException {
+        TypedDataSource<T> dataSource = new TypedDataSource<>(dataSet, fileChannel, clazz);
+
+        T[] resultArray = dataSource.readVector();
+        System.out.println(displayType(clazz, resultArray) + " read   = " + displayValue(resultArray));
+
+        System.out.print(displayType(clazz, resultArray) + " stream = [");
+        String joined = dataSource.streamVector()
+                .map(t->displayValue(t))
+                .collect(Collectors.joining(", "));
+        System.out.print(joined);
+        System.out.println("]");
+    }
+
+    private static String displayType(Class<?> declaredType, Object actualValue) {
+        if (actualValue == null) return declaredType.getSimpleName();
+        Class<?> actualClass = actualValue.getClass();
+        if (actualClass.isArray()) {
+            Class<?> componentType = actualClass.getComponentType();
+            return declaredType.getSimpleName() + "(" + componentType.getSimpleName() + "[])";
+        }
+        return declaredType.getSimpleName();
+    }
+
+    private static String displayValue(Object value) {
+        if (value == null) return "null";
+        Class<?> clazz = value.getClass();
+        if (!clazz.isArray()) return value.toString();
+
+        if (clazz == int[].class) return Arrays.toString((int[]) value);
+        if (clazz == float[].class) return Arrays.toString((float[]) value);
+        if (clazz == double[].class) return Arrays.toString((double[]) value);
+        if (clazz == long[].class) return Arrays.toString((long[]) value);
+        if (clazz == short[].class) return Arrays.toString((short[]) value);
+        if (clazz == byte[].class) return Arrays.toString((byte[]) value);
+        if (clazz == char[].class) return Arrays.toString((char[]) value);
+        if (clazz == boolean[].class) return Arrays.toString((boolean[]) value);
+
+        return Arrays.deepToString((Object[]) value); // For Object[] or nested Object[][]
+    }
 }

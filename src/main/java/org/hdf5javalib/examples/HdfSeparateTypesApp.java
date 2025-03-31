@@ -4,16 +4,15 @@ import lombok.Builder;
 import lombok.Data;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.*;
-import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
+import org.hdf5javalib.utils.HdfTestUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.channels.FileChannel;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -35,27 +34,27 @@ public class HdfSeparateTypesApp {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
                 try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
-                    displayData(channel, dataSet, HdfFixedPoint.class);
-                    displayData(channel, dataSet, Integer.class);
-                    displayData(channel, dataSet, Long.class);
-                    displayData(channel, dataSet, BigInteger.class);
-                    displayData(channel, dataSet, BigDecimal.class);
-                    displayData(channel, dataSet, String.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfFixedPoint.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, Integer.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, Long.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, BigInteger.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, BigDecimal.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("float", channel, reader.getRootGroup()) ) {
-                    displayData(channel, dataSet, HdfFloatPoint.class);
-                    displayData(channel, dataSet, Float.class);
-                    displayData(channel, dataSet, Double.class);
-                    displayData(channel, dataSet, String.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfFloatPoint.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, Float.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, Double.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("string", channel, reader.getRootGroup()) ) {
-                    displayData(channel, dataSet, HdfString.class);
-                    displayData(channel, dataSet, String.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfString.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("compound", channel, reader.getRootGroup()) ) {
-                    displayData(channel, dataSet, HdfCompound.class);
-                    displayData(channel, dataSet, String.class);
-                    displayData(channel, dataSet, Compound.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfCompound.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, Compound.class);
                     CompoundDatatype.addConverter(CustomCompound.class, (bytes, compoundDataType)->{
                         Map<String, HdfCompoundMember> nameToMember = compoundDataType.getInstance(HdfCompound.class, bytes)
                                 .getMembers()
@@ -67,12 +66,12 @@ public class HdfSeparateTypesApp {
                                 .someDouble(nameToMember.get("b").getInstance(Double.class))
                                 .build();
                     });
-                    displayData(channel, dataSet, CustomCompound.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, CustomCompound.class);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("vlen", channel, reader.getRootGroup()) ) {
-                    displayData(channel, dataSet, HdfVariableLength.class);
-                    displayData(channel, dataSet, String.class);
-                    displayData(channel, dataSet, Object.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfVariableLength.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, Object.class);
                 }
             }
         } catch (IOException e) {
@@ -95,40 +94,4 @@ public class HdfSeparateTypesApp {
         private Double someDouble;
     }
 
-    private <T> void displayData(FileChannel fileChannel, HdfDataSet dataSet, Class<T> clazz) throws IOException {
-        TypedDataSource<T> dataSource = new TypedDataSource<>(dataSet, fileChannel, clazz);
-
-        T result = dataSource.readScalar();
-        System.out.println(displayType(clazz, result) + " read = " + displayValue(result));
-
-        result = dataSource.streamScalar().findFirst().orElseThrow();
-        System.out.println(displayType(clazz, result) + " stream = " + displayValue(result));
-    }
-
-    private String displayType(Class<?> declaredType, Object actualValue) {
-        if (actualValue == null) return declaredType.getSimpleName();
-        Class<?> actualClass = actualValue.getClass();
-        if (actualClass.isArray()) {
-            Class<?> componentType = actualClass.getComponentType();
-            return declaredType.getSimpleName() + "(" + componentType.getSimpleName() + "[])";
-        }
-        return declaredType.getSimpleName();
-    }
-
-    private String displayValue(Object value) {
-        if (value == null) return "null";
-        Class<?> clazz = value.getClass();
-        if (!clazz.isArray()) return value.toString();
-
-        if (clazz == int[].class) return Arrays.toString((int[]) value);
-        if (clazz == float[].class) return Arrays.toString((float[]) value);
-        if (clazz == double[].class) return Arrays.toString((double[]) value);
-        if (clazz == long[].class) return Arrays.toString((long[]) value);
-        if (clazz == short[].class) return Arrays.toString((short[]) value);
-        if (clazz == byte[].class) return Arrays.toString((byte[]) value);
-        if (clazz == char[].class) return Arrays.toString((char[]) value);
-        if (clazz == boolean[].class) return Arrays.toString((boolean[]) value);
-
-        return Arrays.deepToString((Object[]) value); // For Object[] or nested Object[][]
-    }
 }

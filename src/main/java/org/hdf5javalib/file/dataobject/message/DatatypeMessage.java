@@ -133,6 +133,10 @@ public class DatatypeMessage extends HdfMessage {
     }
 
     public void writeInfoToByteBuffer(ByteBuffer buffer) {
+        writeDatatypeProperties(buffer, hdfDatatype);
+    }
+
+    public static void writeDatatypeProperties(ByteBuffer buffer, HdfDatatype hdfDatatype) {
         // needed for compoundtype but duplicate when fixedpoint type
         // Datatype general information
         buffer.put(hdfDatatype.getClassAndVersion());    // 1
