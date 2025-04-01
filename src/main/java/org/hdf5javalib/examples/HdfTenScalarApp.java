@@ -43,7 +43,6 @@ public class HdfTenScalarApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-//        tryHdfApiStrings("string_ascii_all.h5", this::writeAll, StringDatatype.createClassBitField(StringDatatype.PaddingType.SPACE_PAD, StringDatatype.CharacterSet.ASCII), 8);
     }
 
     @Data
