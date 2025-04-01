@@ -2,6 +2,7 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfCompound;
+import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
@@ -10,22 +11,20 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype.parseFixedPointType;
-import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype.parseFloatingPointType;
-import static org.hdf5javalib.file.dataobject.message.datatype.StringDatatype.parseStringType;
-import static org.hdf5javalib.file.dataobject.message.datatype.VariableLengthDatatype.parseVariableLengthDatatype;
-
 @Getter
 public class CompoundDatatype implements HdfDatatype {
     private final byte classAndVersion;
     private final BitSet classBitField; // Number of members in the compound datatype
     private final int size;
     private List<CompoundMemberDatatype> members;     // Member definitions
-    // In your HdfDataType/FixedPointDatatype class
+
     private static final Map<Class<?>, HdfConverter<CompoundDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfCompound.class, HdfCompound::new);
+        CONVERTERS.put(HdfData.class, HdfCompound::new);
+        CONVERTERS.put(byte[][].class, (bytes, dt) -> dt.toByteArrayArray(bytes));
+        CONVERTERS.put(HdfData[].class, (bytes, dt) -> dt.toHdfDataArray(bytes));
     }
 
     // New application-level constructor
@@ -99,17 +98,6 @@ public class CompoundDatatype implements HdfDatatype {
         }
     }
 
-    public static HdfDatatype parseCompoundDataType(byte classAndVersion, byte dataTypeClass, BitSet classBitField, int size, ByteBuffer buffer) {
-         return switch (dataTypeClass) {
-            case 0 -> parseFixedPointType(classAndVersion, classBitField, size, buffer);
-            case 1 -> parseFloatingPointType(classAndVersion, classBitField, size, buffer );
-            case 3 -> parseStringType(classAndVersion, classBitField, size, buffer);
-    //            case 6 -> parseCompoundDataType(version, size, classBitField, name, buffer);
-            case 9 -> parseVariableLengthDatatype(classAndVersion, classBitField, size, buffer);
-            default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
-        };
-    }
-
     private static String readNullTerminatedString(ByteBuffer buffer) {
         StringBuilder nameBuilder = new StringBuilder();
         byte b;
@@ -124,10 +112,34 @@ public class CompoundDatatype implements HdfDatatype {
         buffer.position(buffer.position() + padding);
     }
 
+    // Existing private method for byte[][] conversion
+    private byte[][] toByteArrayArray(byte[] bytes) {
+        byte[][] result = new byte[members.size()][];
+        for (int i = 0; i < members.size(); i++) {
+            CompoundMemberDatatype member = members.get(i);
+            int offset = member.getOffset();
+            int memberSize = member.getSize();
+            result[i] = Arrays.copyOfRange(bytes, offset, offset + memberSize);
+        }
+        return result;
+    }
+
+    // Updated private method for HdfData[] conversion
+    private HdfData[] toHdfDataArray(byte[] bytes) {
+        HdfData[] result = new HdfData[members.size()];
+        for (int i = 0; i < members.size(); i++) {
+            CompoundMemberDatatype member = members.get(i);
+            int offset = member.getOffset();
+            int memberSize = member.getSize();
+            byte[] memberBytes = Arrays.copyOfRange(bytes, offset, offset + memberSize);
+            result[i] = member.getInstance(HdfData.class, memberBytes);
+        }
+        return result;
+    }
 
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        for (CompoundMemberDatatype member: members) {
+        for (CompoundMemberDatatype member : members) {
             member.writeDefinitionToByteBuffer(buffer);
         }
     }
@@ -144,7 +156,7 @@ public class CompoundDatatype implements HdfDatatype {
                 .append(" classBitField: ").append(classBitField)
                 .append(", size: ").append(size)
                 .append(", ");
-        members.forEach(member->{
+        members.forEach(member -> {
             builder.append("\r\n");
             builder.append(member);
         });
@@ -154,11 +166,12 @@ public class CompoundDatatype implements HdfDatatype {
     @Override
     public short getSizeMessageData() {
         short size = 0;
-        for(CompoundMemberDatatype member: members) {
+        for (CompoundMemberDatatype member : members) {
             size += member.getSizeMessageData();
         }
         return size;
     }
+
     // Public method to add user-defined converters
     public static <T> void addConverter(Class<T> clazz, HdfConverter<CompoundDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
@@ -193,7 +206,6 @@ public class CompoundDatatype implements HdfDatatype {
     public <T> T toPOJO(Class<T> clazz, byte[] bytes) {
         Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));
         Map<String, CompoundMemberDatatype> nameToMemberMap = members.stream().collect(Collectors.toMap(CompoundMemberDatatype::getName, compoundMember -> compoundMember));
-        // sanity checking.
         try {
             T instance = clazz.getDeclaredConstructor().newInstance();
             for (CompoundMemberDatatype member : nameToMemberMap.values()) {
@@ -222,9 +234,8 @@ public class CompoundDatatype implements HdfDatatype {
 
     @Override
     public String toString(byte[] bytes) {
-        return members.stream().map(m->
-            m.toString(Arrays.copyOfRange(bytes, m.getOffset(), m.getOffset() + m.getSize()))
+        return members.stream().map(m ->
+                m.toString(Arrays.copyOfRange(bytes, m.getOffset(), m.getOffset() + m.getSize()))
         ).collect(Collectors.joining(", "));
     }
-
 }

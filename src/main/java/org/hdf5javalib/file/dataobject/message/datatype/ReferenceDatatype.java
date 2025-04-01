@@ -45,7 +45,7 @@ public class ReferenceDatatype implements HdfDatatype {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfReference.class, HdfReference::new);
         CONVERTERS.put(HdfData.class, HdfReference::new);
-        CONVERTERS.put(byte[].class, (bytes, dt) -> bytes.clone()); // Raw reference bytes
+        CONVERTERS.put(byte[].class, (bytes, dt) -> bytes); // Raw reference bytes
     }
 
     public ReferenceDatatype(byte classAndVersion, BitSet classBitField, int size) {

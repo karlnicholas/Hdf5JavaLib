@@ -27,13 +27,14 @@ public class FixedPointDatatype implements HdfDatatype {
     static {
         CONVERTERS.put(BigDecimal.class, (bytes, dt) -> dt.toBigDecimal(bytes));
         CONVERTERS.put(BigInteger.class, (bytes, dt) -> dt.toBigInteger(bytes));
-        CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
-        CONVERTERS.put(HdfFixedPoint.class, HdfFixedPoint::new);
-        CONVERTERS.put(HdfData.class, HdfFixedPoint::new);
         CONVERTERS.put(Long.class, (bytes, dt) -> dt.toLong(bytes));
         CONVERTERS.put(Integer.class, (bytes, dt) -> dt.toInteger(bytes));
         CONVERTERS.put(Short.class, (bytes, dt) -> dt.toShort(bytes));
         CONVERTERS.put(Byte.class, (bytes, dt) -> dt.toByte(bytes));
+        CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
+        CONVERTERS.put(HdfFixedPoint.class, HdfFixedPoint::new);
+        CONVERTERS.put(HdfData.class, HdfFixedPoint::new);
+        CONVERTERS.put(byte[].class, (bytes, dt) -> bytes);
     }
 
     public FixedPointDatatype(byte classAndVersion, BitSet classBitField, int size, short bitOffset, short bitPrecision) {

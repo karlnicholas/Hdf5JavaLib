@@ -28,6 +28,7 @@ public class TimeDatatype implements HdfDatatype {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfTime.class, HdfTime::new);
         CONVERTERS.put(HdfData.class, HdfTime::new);
+        CONVERTERS.put(byte[].class, (bytes, dt) -> bytes); // Raw reference bytes
     }
 
     public TimeDatatype(byte classAndVersion, BitSet classBitField, int size, short bitPrecision) {

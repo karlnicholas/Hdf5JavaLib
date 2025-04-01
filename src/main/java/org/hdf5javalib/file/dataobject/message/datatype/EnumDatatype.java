@@ -28,6 +28,7 @@ public class EnumDatatype implements HdfDatatype {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfEnum.class, HdfEnum::new);
         CONVERTERS.put(HdfData.class, HdfEnum::new);
+        CONVERTERS.put(byte[].class, (bytes, dt) -> bytes);
     }
 
     public EnumDatatype(byte classAndVersion, BitSet classBitField, int size,

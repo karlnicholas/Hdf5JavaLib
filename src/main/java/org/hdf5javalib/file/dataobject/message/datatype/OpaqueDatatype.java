@@ -23,7 +23,7 @@ public class OpaqueDatatype implements HdfDatatype {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfOpaque.class, HdfOpaque::new);
         CONVERTERS.put(HdfData.class, HdfOpaque::new);
-        CONVERTERS.put(byte[].class, (bytes, dt) -> bytes.clone()); // Raw bytes access
+        CONVERTERS.put(byte[].class, (bytes, dt) -> bytes); // Raw bytes access
     }
 
     public OpaqueDatatype(byte classAndVersion, BitSet classBitField, int size, String asciiTag) {

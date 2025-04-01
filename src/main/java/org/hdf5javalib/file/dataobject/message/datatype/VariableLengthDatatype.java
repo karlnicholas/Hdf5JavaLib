@@ -32,6 +32,7 @@ public class VariableLengthDatatype implements HdfDatatype {
         CONVERTERS.put(HdfVariableLength.class, HdfVariableLength::new);
         CONVERTERS.put(HdfData.class, HdfVariableLength::new);
         CONVERTERS.put(Object.class, (bytes, dt) -> dt.toObjectArray(bytes));
+        CONVERTERS.put(byte[].class, (bytes, dt) -> bytes); // Raw reference bytes
     }
 
     public VariableLengthDatatype(byte classAndVersion, BitSet classBitField, int size, HdfDatatype hdfDatatype) {

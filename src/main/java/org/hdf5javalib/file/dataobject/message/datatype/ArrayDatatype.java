@@ -28,6 +28,7 @@ public class ArrayDatatype implements HdfDatatype {
         CONVERTERS.put(HdfArray.class, HdfArray::new);
         CONVERTERS.put(HdfData.class, HdfArray::new);
         CONVERTERS.put(HdfData[].class, (bytes, dt) -> dt.toHdfDataArray(bytes));
+        CONVERTERS.put(byte[][].class, (bytes, dt) -> dt.toByteArrayArray(bytes));
     }
 
     public ArrayDatatype(byte classAndVersion, BitSet classBitField, int size, int dimensionality,
@@ -139,6 +140,21 @@ public class ArrayDatatype implements HdfDatatype {
             array[i] = baseType.getInstance(HdfData.class, elementBytes);
         }
         return array;
+    }
+
+    // New private method for byte[][] conversion
+    private byte[][] toByteArrayArray(byte[] bytes) {
+        if (bytes.length != size) {
+            throw new IllegalArgumentException("Byte array length (" + bytes.length +
+                    ") does not match datatype size (" + size + ")");
+        }
+        int elementSize = baseType.getSize();
+        int totalElements = size / elementSize;
+        byte[][] result = new byte[totalElements][];
+        for (int i = 0; i < totalElements; i++) {
+            result[i] = Arrays.copyOfRange(bytes, i * elementSize, (i + 1) * elementSize);
+        }
+        return result;
     }
 
     @Override

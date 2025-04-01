@@ -24,6 +24,7 @@ public class BitFieldDatatype implements HdfDatatype {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfBitField.class, HdfBitField::new);
         CONVERTERS.put(HdfData.class, HdfBitField::new);
+        CONVERTERS.put(byte[].class, (bytes, dt) -> bytes);
     }
 
     public BitFieldDatatype(byte classAndVersion, BitSet classBitField, int size, short bitOffset, short bitPrecision) {

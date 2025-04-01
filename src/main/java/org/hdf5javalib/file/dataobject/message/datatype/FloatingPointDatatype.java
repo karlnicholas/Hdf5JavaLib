@@ -31,6 +31,7 @@ public class FloatingPointDatatype implements HdfDatatype {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfFloatPoint.class, HdfFloatPoint::new);
         CONVERTERS.put(HdfData.class, HdfFloatPoint::new);
+        CONVERTERS.put(byte[].class, (bytes, dt) -> bytes);
     }
 
     public FloatingPointDatatype(byte classAndVersion, BitSet classBitField, int size, short bitOffset, short bitPrecision, byte exponentLocation, byte exponentSize, byte mantissaLocation, byte mantissaSize, int exponentBias) {

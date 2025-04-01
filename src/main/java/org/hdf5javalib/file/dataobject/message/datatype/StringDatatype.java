@@ -23,6 +23,7 @@ public class StringDatatype implements HdfDatatype {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfString.class, HdfString::new);
         CONVERTERS.put(HdfData.class, HdfString::new);
+        CONVERTERS.put(byte[].class, (bytes, dt) -> bytes); // Raw reference bytes
     }
 
     public StringDatatype(byte classAndVersion, BitSet classBitField, int size) {
