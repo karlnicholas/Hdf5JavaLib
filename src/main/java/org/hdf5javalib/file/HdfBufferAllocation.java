@@ -1,6 +1,8 @@
 package org.hdf5javalib.file;
 
 import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.file.infrastructure.HdfLocalHeapContents;
 
 @Getter
 public class HdfBufferAllocation {
@@ -20,6 +22,34 @@ public class HdfBufferAllocation {
 //        if ( lastAddressUsed > metaDataSize) {
 //            throw new IllegalStateException("lastAddressUsed > dataAddress, " + lastAddressUsed + dataAddress);
 //        }
+    }
+
+    public HeapResizeResult resizeHeap(HdfLocalHeapContents oldContents, int freeListOffset,
+                                       int requiredSpace) {
+        // Stub: Full implementation later
+        byte[] oldHeapData = oldContents.getHeapData();
+        int currentSize = oldHeapData.length; // Assumes this is tracked correctly
+        int newSize = currentSize * 2; // Doubling logic here
+        byte[] newHeapData = new byte[newSize];
+        System.arraycopy(oldHeapData, 0, newHeapData, 0, oldHeapData.length);
+        HdfLocalHeapContents newContents = new HdfLocalHeapContents(newHeapData);
+        HdfFixedPoint newAddress = HdfFixedPoint.of(this.localHeapContentsAddress);
+        this.localHeapContentsAddress += newSize;
+        return new HeapResizeResult(newContents, newAddress);
+    }
+
+    // Result class
+    public static class HeapResizeResult {
+        private final HdfLocalHeapContents newContents;
+        private final HdfFixedPoint newAddress;
+
+        public HeapResizeResult(HdfLocalHeapContents newContents, HdfFixedPoint newAddress) {
+            this.newContents = newContents;
+            this.newAddress = newAddress;
+        }
+
+        public HdfLocalHeapContents getNewContents() { return newContents; }
+        public HdfFixedPoint getNewAddress() { return newAddress; }
     }
 
     public void setDataGroupAndContinuationStorageSize(int objectHeaderSize, int continueSize) {
