@@ -3,6 +3,7 @@ package org.hdf5javalib.file.infrastructure;
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
+import org.hdf5javalib.file.HdfBufferAllocation;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -62,14 +63,14 @@ public class HdfBTreeV1 {
         this.entries = new ArrayList<>();
     }
 
-    public int addGroup(HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents, HdfGroupSymbolTableNode symbolTableNode) {
+    public int addGroup(HdfBufferAllocation hdfBufferAllocation, HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents, HdfGroupSymbolTableNode symbolTableNode) {
         // Ensure we do not exceed the max number of entries (groupLeafNodeK = 4)
         if (entriesUsed >= 4) {
             throw new IllegalStateException("Cannot add more than 4 groups to this B-tree node.");
         }
 
         // Store objectName in the heap & get its offset
-        int linkNameOffset = localHeap.addToHeap(objectName, localHeapContents);
+        int linkNameOffset = localHeap.addToHeap(objectName, localHeapContents, hdfBufferAllocation);
 //        HdfFixedPoint localHeapOffset = localHeap.getFreeListOffset();
 //        HdfGroupSymbolTableNode symbolTableNode = new HdfGroupSymbolTableNode("SNOD", 1, 0, new ArrayList<>());
 

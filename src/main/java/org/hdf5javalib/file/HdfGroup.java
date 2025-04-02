@@ -59,7 +59,12 @@ public class HdfGroup {
 
         localHeap = new HdfLocalHeap(HdfFixedPoint.of(localHeapContentsSize), HdfFixedPoint.of(hdfFile.getBufferAllocation().getLocalHeapContentsAddress()));
         localHeapContents = new HdfLocalHeapContents(heapData);
-        localHeap.addToHeap(new HdfString(new byte[0], new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0)), localHeapContents);
+//        localHeap.addToHeap(new HdfString(new byte[0], new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0)), localHeapContents);
+        localHeap.addToHeap(
+                new HdfString(new byte[0], new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0))
+                , localHeapContents,
+                hdfFile.getBufferAllocation()
+        );
 
         // Define a B-Tree for group indexing
         bTree = new HdfBTreeV1("TREE", 0, 0, 0,
@@ -82,7 +87,7 @@ public class HdfGroup {
         // this poosibly changes addresses for anything after the dataGroupAddress, which includes the SNOD address.
         dataSet = new HdfDataSet(this, datasetName, hdfDatatype, dataSpaceMessage);
         HdfGroupSymbolTableNode symbolTableNode = new HdfGroupSymbolTableNode("SNOD", 1, 0, new ArrayList<>());
-        int linkNameOffset = bTree.addGroup(hdfDatasetName, HdfFixedPoint.of(hdfFile.getBufferAllocation().getSnodAddress()),
+        int linkNameOffset = bTree.addGroup(hdfFile.getBufferAllocation(), hdfDatasetName, HdfFixedPoint.of(hdfFile.getBufferAllocation().getSnodAddress()),
                 localHeap,
                 localHeapContents,
                 symbolTableNode);
