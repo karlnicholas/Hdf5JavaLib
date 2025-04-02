@@ -5,8 +5,9 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.infrastructure.HdfLocalHeapContents;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @Getter
 public class HdfFileAllocation {
@@ -16,37 +17,124 @@ public class HdfFileAllocation {
     private static final int ALIGNMENT = 8; // HDF5 often uses 8-byte alignment
 
     public enum AllocationType {
-        SUPERBLOCK(true, 96),           // Fixed size per spec
-        OBJECT_HEADER_PREFIX(true, 40), // Initial group metadata
-        BTREE(true, 544),              // 32 header + 512 storage
-        LOCAL_HEAP(true, 120),         // 32 header + 88 contents
-        DATA_GROUP(true, 272),         // 16 header + 256 storage
-        SNOD(true, 328),              // 8 header + 320 (10 * 32) entries
-        MESSAGE_CONTINUATION(true, 0), // Grows as needed
-        DATA_SEGMENT(true, 256),       // Default dataset size
-        GLOBAL_HEAP(false, 256);       // Default global heap size
+        SUPERBLOCK,
+        OBJECT_HEADER_PREFIX,
+        BTREE,
+        LOCAL_HEAP,
+        LOCAL_HEAP_CONTENTS,
+        DATA_GROUP,
+        SNOD,
+        MESSAGE_CONTINUATION,
+        DATA_SEGMENT,
+        GLOBAL_HEAP
+    }
 
+    public interface AllocationPolicy {
+        boolean isMinimum();
+        long getDefaultSize();
+        long calculateNewSize(long currentSize, long requiredSpace);
+    }
+
+    private static class FixedSizePolicy implements AllocationPolicy {
+        private final boolean isMinimum;
+        private final long size;
+
+        FixedSizePolicy(boolean isMinimum, long size) {
+            this.isMinimum = isMinimum;
+            this.size = size;
+        }
+
+        @Override
+        public boolean isMinimum() { return isMinimum; }
+        @Override
+        public long getDefaultSize() { return size; }
+        @Override
+        public long calculateNewSize(long currentSize, long requiredSpace) { return currentSize; }
+    }
+
+    private static class DoublingSizePolicy implements AllocationPolicy {
         private final boolean isMinimum;
         private final long defaultSize;
 
-        AllocationType(boolean isMinimum, long defaultSize) {
+        DoublingSizePolicy(boolean isMinimum, long defaultSize) {
             this.isMinimum = isMinimum;
             this.defaultSize = defaultSize;
         }
 
+        @Override
         public boolean isMinimum() { return isMinimum; }
+        @Override
         public long getDefaultSize() { return defaultSize; }
+        @Override
+        public long calculateNewSize(long currentSize, long requiredSpace) {
+            return Math.max(currentSize * 2, currentSize + requiredSpace);
+        }
     }
 
+    private static class ChunkedSizePolicy implements AllocationPolicy {
+        private final boolean isMinimum;
+        private final long defaultSize;
+        private final long chunkSize;
+
+        ChunkedSizePolicy(boolean isMinimum, long defaultSize, long chunkSize) {
+            this.isMinimum = isMinimum;
+            this.defaultSize = defaultSize;
+            this.chunkSize = chunkSize;
+        }
+
+        @Override
+        public boolean isMinimum() { return isMinimum; }
+        @Override
+        public long getDefaultSize() { return defaultSize; }
+        @Override
+        public long calculateNewSize(long currentSize, long requiredSpace) {
+            long increment = ((requiredSpace + chunkSize - 1) / chunkSize) * chunkSize;
+            return currentSize + increment;
+        }
+    }
+
+    private static class ExactSizePolicy implements AllocationPolicy {
+        private final boolean isMinimum;
+        private final long defaultSize;
+
+        ExactSizePolicy(boolean isMinimum, long defaultSize) {
+            this.isMinimum = isMinimum;
+            this.defaultSize = defaultSize;
+        }
+
+        @Override
+        public boolean isMinimum() { return isMinimum; }
+        @Override
+        public long getDefaultSize() { return defaultSize; }
+        @Override
+        public long calculateNewSize(long currentSize, long requiredSpace) { return requiredSpace; }
+    }
+
+    private final Map<AllocationType, AllocationPolicy> allocationPolicies = new HashMap<>();
+
     public HdfFileAllocation() {
+        initializePolicies();
         initializeMinimumAllocations();
         recalculateAddresses();
     }
 
+    private void initializePolicies() {
+        allocationPolicies.put(AllocationType.SUPERBLOCK, new FixedSizePolicy(true, 96));
+        allocationPolicies.put(AllocationType.OBJECT_HEADER_PREFIX, new FixedSizePolicy(true, 40));
+        allocationPolicies.put(AllocationType.BTREE, new FixedSizePolicy(true, 544));
+        allocationPolicies.put(AllocationType.LOCAL_HEAP, new FixedSizePolicy(true, 120));
+        allocationPolicies.put(AllocationType.LOCAL_HEAP_CONTENTS, new DoublingSizePolicy(false, 88));
+        allocationPolicies.put(AllocationType.DATA_GROUP, new FixedSizePolicy(true, 272));
+        allocationPolicies.put(AllocationType.SNOD, new FixedSizePolicy(false, 328));
+        allocationPolicies.put(AllocationType.MESSAGE_CONTINUATION, new ExactSizePolicy(true, 0));
+        allocationPolicies.put(AllocationType.DATA_SEGMENT, new ChunkedSizePolicy(true, 256, 256));
+        allocationPolicies.put(AllocationType.GLOBAL_HEAP, new DoublingSizePolicy(false, 256));
+    }
+
     private void initializeMinimumAllocations() {
-        for (AllocationType type : AllocationType.values()) {
-            if (type.isMinimum()) {
-                addAllocation(type);
+        for (Map.Entry<AllocationType, AllocationPolicy> entry : allocationPolicies.entrySet()) {
+            if (entry.getValue().isMinimum()) {
+                addAllocation(entry.getKey());
             }
         }
     }
@@ -57,12 +145,12 @@ public class HdfFileAllocation {
             alloc.setAddress(currentAddress);
             if (alloc.getSize() > 0) {
                 currentAddress += alloc.getSize();
-                currentAddress = alignAddress(currentAddress); // Ensure 8-byte alignment
+                currentAddress = alignAddress(currentAddress);
             }
         }
         lastAddressUsed = currentAddress;
         if (lastAddressUsed < MIN_FILE_SIZE) {
-            Allocation dataSegment = getAllocation(AllocationType.DATA_SEGMENT).orElseThrow();
+            Allocation dataSegment = getAllocation(AllocationType.DATA_SEGMENT, 0);
             dataSegment.setAddress(MIN_FILE_SIZE);
             lastAddressUsed = MIN_FILE_SIZE;
             currentAddress = MIN_FILE_SIZE;
@@ -89,14 +177,14 @@ public class HdfFileAllocation {
 
     public void addAllocation(AllocationType type) {
         int index = countInstances(type);
-        long size = type.getDefaultSize(); // Use default size from enum
+        long size = allocationPolicies.get(type).getDefaultSize();
         allocations.add(new Allocation(type, 0, size, index));
         recalculateAddresses();
     }
 
     public boolean removeAllocation(AllocationType type, int index) {
-        Allocation toRemove = getAllocation(type, index).orElse(null);
-        if (toRemove != null && !type.isMinimum()) {
+        Allocation toRemove = getAllocation(type, index);
+        if (toRemove != null && !allocationPolicies.get(type).isMinimum()) {
             allocations.remove(toRemove);
             recalculateAddresses();
             return true;
@@ -105,79 +193,88 @@ public class HdfFileAllocation {
     }
 
     public void resizeAllocation(AllocationType type, int index, long requiredSpace) {
-        getAllocation(type, index).ifPresent(alloc -> {
-            long currentSize = alloc.getSize();
-            long newSize = calculateNewSize(type, currentSize, requiredSpace);
-            alloc.setSize(newSize);
-            recalculateAddresses();
-        });
+        Allocation alloc = getAllocation(type, index);
+        long currentSize = alloc.getSize();
+        long newSize = allocationPolicies.get(type).calculateNewSize(currentSize, requiredSpace);
+        alloc.setSize(newSize);
+        recalculateAddresses();
     }
 
-    private long calculateNewSize(AllocationType type, long currentSize, long requiredSpace) {
-        switch (type) {
-            case LOCAL_HEAP:
-            case GLOBAL_HEAP:
-                // Double size or add required space, whichever is larger
-                return Math.max(currentSize * 2, currentSize + requiredSpace);
-            case DATA_SEGMENT:
-                // Add required space in 256-byte increments
-                long increment = ((requiredSpace + 255) / 256) * 256;
-                return currentSize + increment;
-            case MESSAGE_CONTINUATION:
-                // Exact size needed
-                return requiredSpace;
-            default:
-                // Fixed-size types don’t resize
-                return currentSize;
+    public Allocation getAllocation(AllocationType type, int index) {
+        for (Allocation alloc : allocations) {
+            if (alloc.getType() == type && alloc.getIndex() == index) {
+                return alloc;
+            }
         }
+        throw new IllegalArgumentException("No allocation found for type " + type + " at index " + index);
     }
 
-    public Optional<Allocation> getAllocation(AllocationType type, int index) {
-        return allocations.stream()
-                .filter(a -> a.getType() == type && a.getIndex() == index)
-                .findFirst();
-    }
-
-    public Optional<Allocation> getAllocation(AllocationType type) {
+    public Allocation getAllocation(AllocationType type) {
         return getAllocation(type, 0);
     }
 
-    public HeapResizeResult resizeHeap(HdfLocalHeapContents oldContents, int freeListOffset,
-                                       int requiredSpace) {
-        Allocation localHeap = getAllocation(AllocationType.LOCAL_HEAP).orElseThrow();
+    public HeapResizeResult resizeHeap(HdfLocalHeapContents oldContents, int freeListOffset, int requiredSpace) {
+        Allocation localHeapContents = getAllocation(AllocationType.LOCAL_HEAP_CONTENTS, 0);
         byte[] oldHeapData = oldContents.getHeapData();
         int currentSize = oldHeapData.length;
-        long newSize = calculateNewSize(AllocationType.LOCAL_HEAP, currentSize, requiredSpace);
+        long newSize = allocationPolicies.get(AllocationType.LOCAL_HEAP_CONTENTS).calculateNewSize(currentSize, requiredSpace);
         byte[] newHeapData = new byte[(int) newSize];
         System.arraycopy(oldHeapData, 0, newHeapData, 0, oldHeapData.length);
         HdfLocalHeapContents newContents = new HdfLocalHeapContents(newHeapData);
-        resizeAllocation(AllocationType.LOCAL_HEAP, 0, newSize - currentSize + requiredSpace);
-        return new HeapResizeResult(newContents, HdfFixedPoint.of(localHeap.getAddress()));
+        resizeAllocation(AllocationType.LOCAL_HEAP_CONTENTS, 0, requiredSpace);
+        return new HeapResizeResult(newContents, HdfFixedPoint.of(localHeapContents.getAddress()));
     }
 
-    public void setDataGroupAndContinuationStorageSize(int objectHeaderSize, int continueSize) {
+    public void setDataGroupAndContinuationStorageSize(long objectHeaderSize, long continueSize) {
         resizeAllocation(AllocationType.DATA_GROUP, 0, 16 + objectHeaderSize);
         resizeAllocation(AllocationType.MESSAGE_CONTINUATION, 0, continueSize);
     }
 
     public int expandDataGroupStorageSize(int objectHeaderSize) {
-        Allocation dataGroup = getAllocation(AllocationType.DATA_GROUP).orElseThrow();
-        long newSize = calculateNewSize(AllocationType.DATA_GROUP, dataGroup.getSize(), 16 + objectHeaderSize);
-        resizeAllocation(AllocationType.DATA_GROUP, 0, newSize);
+        Allocation dataGroup = getAllocation(AllocationType.DATA_GROUP, 0);
+        long newSize = allocationPolicies.get(AllocationType.DATA_GROUP).calculateNewSize(dataGroup.getSize(), 16 + objectHeaderSize);
+        resizeAllocation(AllocationType.DATA_GROUP, 0, 16 + objectHeaderSize);
         return (int) (newSize - 16);
     }
 
-    public void computeGlobalHeapAddress() {
-        Allocation dataSegment = getAllocation(AllocationType.DATA_SEGMENT).orElseThrow();
+    public void computeGlobalHeap(long requiredSize) {
+        Allocation dataSegment = getAllocation(AllocationType.DATA_SEGMENT, 0);
         long globalHeapAddress = dataSegment.getAddress() + dataSegment.getSize();
-        addAllocation(AllocationType.GLOBAL_HEAP);
-        getAllocation(AllocationType.GLOBAL_HEAP).ifPresent(alloc -> alloc.setAddress(globalHeapAddress));
+        Allocation globalHeap;
+        try {
+            globalHeap = getAllocation(AllocationType.GLOBAL_HEAP, 0);
+            resizeAllocation(AllocationType.GLOBAL_HEAP, 0, requiredSize);
+        } catch (IllegalArgumentException e) {
+            long initialSize = allocationPolicies.get(AllocationType.GLOBAL_HEAP).calculateNewSize(0, requiredSize);
+            globalHeap = new Allocation(AllocationType.GLOBAL_HEAP, globalHeapAddress, initialSize, 0);
+            allocations.add(globalHeap);
+        }
+        globalHeap.setAddress(globalHeapAddress);
+        recalculateAddresses();
+    }
+
+    public HeapResizeResult createLocalHeapContents(long requiredSize) {
+        Allocation localHeapContents;
+        try {
+            localHeapContents = getAllocation(AllocationType.LOCAL_HEAP_CONTENTS, 0);
+            resizeAllocation(AllocationType.LOCAL_HEAP_CONTENTS, 0, requiredSize);
+        } catch (IllegalArgumentException e) {
+            long initialSize = allocationPolicies.get(AllocationType.LOCAL_HEAP_CONTENTS).calculateNewSize(0, requiredSize);
+            localHeapContents = new Allocation(AllocationType.LOCAL_HEAP_CONTENTS, 0, initialSize, 0);
+            allocations.add(localHeapContents);
+            recalculateAddresses();
+        }
+        byte[] heapData = new byte[(int) localHeapContents.getSize()];
+        HdfLocalHeapContents newContents = new HdfLocalHeapContents(heapData);
+        return new HeapResizeResult(newContents, HdfFixedPoint.of(localHeapContents.getAddress()));
+    }
+
+    public HeapResizeResult createLocalHeapContents() {
+        return createLocalHeapContents(allocationPolicies.get(AllocationType.LOCAL_HEAP_CONTENTS).getDefaultSize());
     }
 
     private int countInstances(AllocationType type) {
-        return (int) allocations.stream()
-                .filter(a -> a.getType() == type)
-                .count();
+        return (int) allocations.stream().filter(a -> a.getType() == type).count();
     }
 
     public void dumpAllocations() {

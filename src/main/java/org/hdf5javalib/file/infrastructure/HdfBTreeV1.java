@@ -184,7 +184,6 @@ public class HdfBTreeV1 {
         for (HdfBTreeEntry entry : entries) {
             writeFixedPointToBuffer(buffer, entry.getChildPointer());  // Write child pointer
             writeFixedPointToBuffer(buffer, entry.getKey());  // Write key
-//            buffer.position((int) hdfFile.getBufferAllocation().getSnodAddress());
             buffer.position(entry.getChildPointer().getInstance(Integer.class));
             entry.getSymbolTableNode().writeToBuffer(buffer);
         }

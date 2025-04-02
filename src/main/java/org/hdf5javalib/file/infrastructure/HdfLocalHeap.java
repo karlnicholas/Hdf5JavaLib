@@ -36,7 +36,7 @@ public class HdfLocalHeap {
     }
 
     public int addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents,
-                         HdfFileAllocation bufferAllocation) {
+                         HdfFileAllocation fileAllocation) {
         byte[] objectNameBytes = objectName.getBytes();
         int freeListOffset = this.freeListOffset.getInstance(Long.class).intValue();
         byte[] heapData = localHeapContents.getHeapData();
@@ -51,7 +51,7 @@ public class HdfLocalHeap {
                 ((objectNameBytes.length + 7) & ~7) - objectNameBytes.length + 16);
         if (requiredSpace > freeBlockSize) {
             // Call resizeHeap, assuming HdfFileAllocation knows current size
-            HdfFileAllocation.HeapResizeResult result = bufferAllocation.resizeHeap(
+            HdfFileAllocation.HeapResizeResult result = fileAllocation.resizeHeap(
                     localHeapContents, freeListOffset, requiredSpace);
             localHeapContents = result.getNewContents();
             this.dataSegmentSize = HdfFixedPoint.of(result.getNewContents().getHeapData().length);

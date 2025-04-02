@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static org.hdf5javalib.file.HdfFileAllocation.AllocationType;
+
 @Getter
 @Slf4j
 public class HdfDataSet implements Closeable {
@@ -53,7 +55,7 @@ public class HdfDataSet implements Closeable {
     }
 
     private void createInitialMessages(DataspaceMessage dataSpaceMessage) {
-        int currentObjectHeaderSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
+        long currentObjectHeaderSize = hdfGroup.getHdfFile().getFileAllocation().getAllocation(AllocationType.DATA_GROUP).getSize();
         List<HdfMessage> headerMessages = new ArrayList<>();
         headerMessages.add(dataSpaceMessage);
 
@@ -100,7 +102,7 @@ public class HdfDataSet implements Closeable {
         }
 
         DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1,
-                HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()),
+                HdfFixedPoint.of(hdfGroup.getHdfFile().getFileAllocation().getAllocation(AllocationType.DATA_SEGMENT).getAddress()),
                 hdfDimensionSizes,
                 0, null, HdfFixedPoint.undefined((short)8), (byte)0, dataLayoutMessageSize);
         headerMessages.add(dataLayoutMessage);
@@ -115,10 +117,10 @@ public class HdfDataSet implements Closeable {
         int objectReferenceCount = 1;
         int objectHeaderSize = getObjectHeaderSize(headerMessages);
         if ( objectHeaderSize > currentObjectHeaderSize) {
-            currentObjectHeaderSize = hdfGroup.getHdfFile().getBufferAllocation().expandDataGroupStorageSize(objectHeaderSize);
+            currentObjectHeaderSize = hdfGroup.getHdfFile().getFileAllocation().expandDataGroupStorageSize(objectHeaderSize);
         }
         // redo addresses already set.
-        dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
+        dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getFileAllocation().getAllocation(AllocationType.DATA_SEGMENT).getAddress()));
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, objectReferenceCount, Math.max(objectHeaderSize, currentObjectHeaderSize), headerMessages);
         hdfGroup.getHdfFile().recomputeGlobalHeapAddress(this);
     }
@@ -148,7 +150,7 @@ public class HdfDataSet implements Closeable {
      */
     private void updateForAttribute() {
 
-        int currentObjectHeaderSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
+        long currentObjectHeaderSize = hdfGroup.getHdfFile().getFileAllocation().getAllocation(AllocationType.OBJECT_HEADER_PREFIX).getSize();
         List<HdfMessage> headerMessages = this.dataObjectHeaderPrefix.getHeaderMessages();
         int objectHeaderSize = getObjectHeaderSize(headerMessages);
         int attributeSize = getAttributeSize();
@@ -160,7 +162,7 @@ public class HdfDataSet implements Closeable {
     @Override
     public void close() {
         if (hdfGroup.getHdfFile() == null) return;
-        int currentObjectHeaderSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
+        long currentObjectHeaderSize = hdfGroup.getHdfFile().getFileAllocation().getAllocation(AllocationType.DATA_GROUP).getSize();
         List<HdfMessage> headerMessages = this.dataObjectHeaderPrefix.getHeaderMessages();
         int objectHeaderSize = getObjectHeaderSize(headerMessages);
         int attributeSize = getAttributeSize();
@@ -188,30 +190,30 @@ public class HdfDataSet implements Closeable {
             headerMessages.clear();
             headerMessages.addAll(updatedHeaderMessages);
 
-            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getMessageContinuationAddress()));
+            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(hdfGroup.getHdfFile().getFileAllocation().getAllocation(AllocationType.MESSAGE_CONTINUATION).getAddress()));
             objectHeaderContinuationMessage.setContinuationSize(HdfFixedPoint.of(continueSize));
             // set the object header size.
         } else if ( objectHeaderSize + attributeSize  < currentObjectHeaderSize ) {
             if ( !attributes.isEmpty() ) {
                 headerMessages.addAll(attributes);
             }
-            int nilSize = currentObjectHeaderSize - (objectHeaderSize + attributeSize) - 8;
-            headerMessages.add(new NilMessage(nilSize, (byte)0, (short)nilSize));
+            long nilSize = currentObjectHeaderSize - (objectHeaderSize + attributeSize) - 8;
+            headerMessages.add(new NilMessage((int) nilSize, (byte)0, (short)nilSize));
         }
         DataLayoutMessage dataLayoutMessage = dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class).orElseThrow();
         // redo addresses already set.
-        dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
+        dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getFileAllocation().getAllocation(AllocationType.DATA_SEGMENT).getAddress()));
 //        this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, Math.max(objectHeaderSize, currentObjectHeaderSize), headerMessages);
         hdfGroup.getHdfFile().recomputeGlobalHeapAddress(this);
     }
 
-    private boolean checkContinuationMessageNeeded(int objectHeaderSize, int attributeSize, List<HdfMessage> headerMessages, int currentObjectHeaderSize) {
+    private boolean checkContinuationMessageNeeded(int objectHeaderSize, int attributeSize, List<HdfMessage> headerMessages, long currentObjectHeaderSize) {
         if ( objectHeaderSize + attributeSize > currentObjectHeaderSize) {
             HdfMessage dataspaceMessage = headerMessages.get(0);
             if ( !(dataspaceMessage instanceof DataspaceMessage)) {
                 throw new IllegalArgumentException("Dataspace message not found: " + dataspaceMessage.getClass().getName());
             }
-            hdfGroup.getHdfFile().getBufferAllocation().setDataGroupAndContinuationStorageSize(currentObjectHeaderSize, dataspaceMessage.getSizeMessageData() + 8 + attributeSize);
+            hdfGroup.getHdfFile().getFileAllocation().setDataGroupAndContinuationStorageSize(currentObjectHeaderSize, dataspaceMessage.getSizeMessageData() + 8 + attributeSize);
             // set the object header size.
             // redo addresses already set.
             hdfGroup.getHdfFile().recomputeGlobalHeapAddress(this);
