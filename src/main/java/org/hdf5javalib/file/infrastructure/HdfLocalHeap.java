@@ -3,7 +3,7 @@ package org.hdf5javalib.file.infrastructure;
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
-import org.hdf5javalib.file.HdfBufferAllocation;
+import org.hdf5javalib.file.HdfFileAllocation;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -36,7 +36,7 @@ public class HdfLocalHeap {
     }
 
     public int addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents,
-                         HdfBufferAllocation bufferAllocation) {
+                         HdfFileAllocation bufferAllocation) {
         byte[] objectNameBytes = objectName.getBytes();
         int freeListOffset = this.freeListOffset.getInstance(Long.class).intValue();
         byte[] heapData = localHeapContents.getHeapData();
@@ -46,12 +46,12 @@ public class HdfLocalHeap {
                 .order(ByteOrder.LITTLE_ENDIAN)
                 .getInt();
 
-        // Check if there’s enough space; if not, request resize from HdfBufferAllocation
+        // Check if there’s enough space; if not, request resize from HdfFileAllocation
         int requiredSpace = objectNameBytes.length + ((objectNameBytes.length == 0) ? 8 :
                 ((objectNameBytes.length + 7) & ~7) - objectNameBytes.length + 16);
         if (requiredSpace > freeBlockSize) {
-            // Call resizeHeap, assuming HdfBufferAllocation knows current size
-            HdfBufferAllocation.HeapResizeResult result = bufferAllocation.resizeHeap(
+            // Call resizeHeap, assuming HdfFileAllocation knows current size
+            HdfFileAllocation.HeapResizeResult result = bufferAllocation.resizeHeap(
                     localHeapContents, freeListOffset, requiredSpace);
             localHeapContents = result.getNewContents();
             this.dataSegmentSize = HdfFixedPoint.of(result.getNewContents().getHeapData().length);

@@ -27,13 +27,13 @@ public class HdfFile {
     // initial setup without Dataset
     private final HdfSuperblock superblock;
     private final HdfGroup rootGroup;
-    private final HdfBufferAllocation bufferAllocation;
+    private final HdfFileAllocation bufferAllocation;
     private final HdfGlobalHeap globalHeap;
 
     public HdfFile(String fileName, StandardOpenOption[] openOptions) {
         this.fileName = fileName;
         this.openOptions = openOptions;
-        this.bufferAllocation = new HdfBufferAllocation();
+        this.bufferAllocation = new HdfFileAllocation();
         this.globalHeap = new HdfGlobalHeap(bufferAllocation::getGlobalHeapAddress);
 
         // 100320
