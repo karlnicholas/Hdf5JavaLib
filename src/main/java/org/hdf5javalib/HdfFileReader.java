@@ -281,8 +281,8 @@ public class HdfFileReader {
                             // Check if it's a dataset by looking for DatatypeMessage
                             Optional<DatatypeMessage> dataTypeOpt = header.findMessageByType(DatatypeMessage.class);
                             if (dataTypeOpt.isPresent()) {
-                                log.debug("Collecting Dataset {}@{}", linkName, dataObjectHeaderAddress);
                                 DatatypeMessage dataType = dataTypeOpt.get();
+                                log.debug("Dataset {}@{}\r\n{}", linkName, dataObjectHeaderAddress, header);
                                 dataSets.add(new HdfDataSet(rootGroup, linkName.toString(), dataType.getHdfDatatype(), header));
                             } else {
                                 // It's some other linked object (like another group), ignore for getDatasets.

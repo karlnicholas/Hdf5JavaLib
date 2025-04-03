@@ -3,6 +3,12 @@ package org.hdf5javalib.file.infrastructure;
 import lombok.Getter; // Use Getter instead of Data if setters aren't needed/wanted
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 
+// These would be imports in a real scenario
+// Assuming HdfGroupSymbolTableNode and HdfBTreeV1 also have toString() methods
+// import org.hdf5javalib.file.infrastructure.HdfGroupSymbolTableNode;
+// import org.hdf5javalib.file.infrastructure.HdfBTreeV1;
+
+
 @Getter // Using Getter only
 public class HdfBTreeEntry {
     private final HdfFixedPoint key;
@@ -10,7 +16,6 @@ public class HdfBTreeEntry {
 
     // Payload: Only one of these should be non-null
     private final HdfGroupSymbolTableNode symbolTableNode; // Populated if parent nodeLevel == 0
-
     private final HdfBTreeV1 childBTree; // Populated if parent nodeLevel > 0
 
     // Constructor for Leaf Node Entries (points to SNOD)
@@ -36,5 +41,26 @@ public class HdfBTreeEntry {
 
     public boolean isInternalEntry() {
         return this.childBTree != null;
+    }
+
+    // Modified toString() to print the full payload content
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("HdfBTreeEntry{");
+        sb.append("key=").append(key);
+        sb.append(", childPointer=").append(childPointer);
+
+        // Append the payload by calling its toString() method
+        if (isLeafEntry()) {
+            sb.append(", payload(SNOD)=").append(symbolTableNode); // Calls symbolTableNode.toString()
+        } else if (isInternalEntry()) {
+            sb.append(", payload(ChildBTree)=").append(childBTree); // Calls childBTree.toString()
+        } else {
+            // This case shouldn't happen with the current constructors
+            sb.append(", payload=<empty/unknown>");
+        }
+
+        sb.append('}');
+        return sb.toString();
     }
 }

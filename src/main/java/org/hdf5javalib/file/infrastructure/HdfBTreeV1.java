@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.infrastructure;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfFileAllocation;
@@ -19,6 +20,7 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 
 @Getter
+@Slf4j
 public class HdfBTreeV1 {
     private final String signature;
     private final int nodeType;
@@ -77,33 +79,30 @@ public class HdfBTreeV1 {
         return readFromFileChannelRecursive(fileChannel, initialAddress, offsetSize, lengthSize, new HashMap<>());
     }
 
-    // --- Recursive Helper Method ---
+    // --- Recursive Helper Method --- MODIFIED ---
     private static HdfBTreeV1 readFromFileChannelRecursive(FileChannel fileChannel,
                                                            long nodeAddress,
                                                            short offsetSize,
                                                            short lengthSize,
                                                            Map<Long, HdfBTreeV1> visitedNodes // Cycle detection/cache
-    ) throws IOException {
+    ) throws IOException { // Throws standard exceptions
 
-        // --- Cycle Detection / Cache ---
+        // --- Cycle Detection ---
         if (visitedNodes.containsKey(nodeAddress)) {
-            System.err.println("Warning: Detected potential cycle or re-visit of BTree node at address " + nodeAddress + ". Returning cached node.");
-            return visitedNodes.get(nodeAddress); // Return previously read node
+            throw new IllegalStateException("Cycle detected or node re-visited: BTree node address "
+                    + nodeAddress + " encountered again during recursive read.");
         }
 
-        long originalPos = fileChannel.position(); // Save original position before we seek
-        fileChannel.position(nodeAddress); // Seek to the node we need to read
-        long startPos = nodeAddress; // For logging/error messages
+        // --- Position and Read Header ---
+        // Let IO operations throw IOException directly if they fail.
+        fileChannel.position(nodeAddress);
+        long startPos = nodeAddress; // For error messages
 
-        // System.out.println("DEBUG: Recursively reading BTree Node at: " + startPos);
-
-        // Read Header
         int headerSize = 8 + offsetSize + offsetSize;
         ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(java.nio.ByteOrder.LITTLE_ENDIAN);
         int headerBytesRead = fileChannel.read(headerBuffer);
         if (headerBytesRead != headerSize) {
-            fileChannel.position(originalPos); // Restore position on error
-            throw new IOException("Could not read BTree header at position " + startPos);
+            throw new IOException("Could not read complete BTree header (" + headerSize + " bytes) at position " + startPos + ". Read only " + headerBytesRead + " bytes.");
         }
         headerBuffer.flip();
 
@@ -111,130 +110,133 @@ public class HdfBTreeV1 {
         headerBuffer.get(signatureBytes);
         String signature = new String(signatureBytes);
         if (!"TREE".equals(signature)) {
-            fileChannel.position(originalPos); // Restore position on error
-            throw new IllegalArgumentException("Invalid B-tree node signature: " + signature + " at position " + startPos);
+            // Original: Threw IllegalArgumentException. Keeping similar concept. IOException is also suitable.
+            // FIX: Throw exception for invalid format. Using IOException for consistency with other read errors.
+            throw new IOException("Invalid B-tree node signature: '" + signature + "' at position " + startPos);
         }
 
         int nodeType = Byte.toUnsignedInt(headerBuffer.get());
         int nodeLevel = Byte.toUnsignedInt(headerBuffer.get());
         int entriesUsed = Short.toUnsignedInt(headerBuffer.getShort());
 
-        BitSet emptyBitset = new BitSet();
+        BitSet emptyBitset = new BitSet(); // Placeholder from original
         HdfFixedPoint leftSiblingAddress = HdfFixedPoint.checkUndefined(headerBuffer, offsetSize) ? HdfFixedPoint.undefined(headerBuffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(headerBuffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
         HdfFixedPoint rightSiblingAddress = HdfFixedPoint.checkUndefined(headerBuffer, offsetSize) ? HdfFixedPoint.undefined(headerBuffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(headerBuffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
 
-        // Read Key/Pointer block
+        // --- Read Key/Pointer Block ---
         int entriesDataSize = lengthSize + (entriesUsed * (offsetSize + lengthSize));
-        ByteBuffer entriesBuffer = ByteBuffer.allocate(entriesDataSize).order(java.nio.ByteOrder.LITTLE_ENDIAN);
-        int entryBytesRead = fileChannel.read(entriesBuffer);
-        if (entryBytesRead != entriesDataSize) {
-            fileChannel.position(originalPos); // Restore position on error
-            throw new IOException("Could not read BTree entries data block (" + entriesDataSize + " bytes) at position " + fileChannel.position());
+        // Add minimal sanity checks based on potential issues
+        if (entriesUsed < 0 || entriesDataSize < lengthSize) {
+            throw new IOException("Invalid BTree node parameters at position " + startPos + ": entriesUsed=" + entriesUsed);
         }
-        entriesBuffer.flip();
+        long currentPosBeforeEntries = fileChannel.position();
+        long fileSize = fileChannel.size();
+        if (currentPosBeforeEntries + entriesDataSize > fileSize) {
+            throw new IOException("Calculated BTree entriesDataSize (" + entriesDataSize + ") exceeds available file size at position " + currentPosBeforeEntries + " (Node: " + startPos + ")");
+        }
+
+        ByteBuffer entriesBuffer = ByteBuffer.allocate(entriesDataSize).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        if (entriesDataSize > 0) {
+            int entryBytesRead = fileChannel.read(entriesBuffer);
+            if (entryBytesRead != entriesDataSize) {
+                // FIX: Throw clear IOException for incomplete read.
+                throw new IOException("Could not read complete BTree entries data block (" + entriesDataSize + " bytes) at position " + currentPosBeforeEntries + ". Read only " + entryBytesRead + " bytes.");
+            }
+            entriesBuffer.flip();
+        } else if (entriesUsed > 0) {
+            // Should be caught by entriesUsed < 0 check, but defensive.
+            throw new IOException("BTree node at " + startPos + " has entriesUsed=" + entriesUsed + " but entriesDataSize is 0.");
+        }
+
 
         HdfFixedPoint keyZero = HdfFixedPoint.readFromByteBuffer(entriesBuffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
 
         List<HdfBTreeEntry> entries = new ArrayList<>(entriesUsed);
-        long filePosAfterEntriesBlock = fileChannel.position(); // Position AFTER reading the entries buffer from the channel
+        long filePosAfterEntriesBlock = fileChannel.position(); // Position after this node's entry block
 
-
-        // --- Create a placeholder node and add to visited map BEFORE recursion ---
-        // This helps break cycles if node refers back to itself or an ancestor
-        // We'll populate the entries list below.
+        // --- Prepare Node and Mark Visited ---
         HdfBTreeV1 currentNode = new HdfBTreeV1(signature, nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries);
-        visitedNodes.put(nodeAddress, currentNode);
+        visitedNodes.put(nodeAddress, currentNode); // Mark before recursion
 
-
+        // --- Process Entries ---
         for (int i = 0; i < entriesUsed; i++) {
             HdfFixedPoint childPointer = HdfFixedPoint.readFromByteBuffer(entriesBuffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
             HdfFixedPoint key = HdfFixedPoint.readFromByteBuffer(entriesBuffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
-
             long childAddress = childPointer.getInstance(Long.class);
             HdfBTreeEntry entry = null;
 
+            // Check address validity
+            if (childAddress < -1L || (childAddress != -1L && childAddress >= fileSize)) {
+                throw new IOException("Invalid child address " + childAddress + " in BTree entry " + i
+                        + " at node " + startPos + " (Level " + nodeLevel + "). File size is " + fileSize);
+            }
+
             if (nodeLevel == 0) { // --- LEAF level node ---
-                HdfGroupSymbolTableNode snod = null;
-                if (childAddress != -1L) { // Assuming -1L is undefined
-                    long currentFilePosBeforeSnod = fileChannel.position(); // Save before SNOD jump
-                    try {
-                        fileChannel.position(childAddress);
-                        snod = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
-                        int snodEntriesToRead = snod.getNumberOfSymbols();
-                        for (int e = 0; e < snodEntriesToRead; ++e) {
-                            HdfSymbolTableEntry snodEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
-                            snod.getSymbolTableEntries().add(snodEntry);
-                        }
-                        entry = new HdfBTreeEntry(key, childPointer, snod); // Create entry with SNOD
-                    } catch (IOException e) {
-                        System.err.println("Error reading Symbol Table Node (or entries) at address " + childAddress + " for BTree leaf entry " + i + ": " + e.getMessage());
-                        entry = new HdfBTreeEntry(key, childPointer, (HdfGroupSymbolTableNode) null); // Entry with null SNOD on error
-                    } finally {
-                        // Restore position to after the BTree entries block, regardless of SNOD read success/failure
-                        fileChannel.position(filePosAfterEntriesBlock);
-                    }
-                } else {
-                    System.err.println("Warning: BTree Leaf entry " + i + " (Level 0) has undefined child address. Creating entry with null SNOD.");
-                    entry = new HdfBTreeEntry(key, childPointer, (HdfGroupSymbolTableNode) null); // Entry with null SNOD
-                }
-
-            } else { // --- INTERNAL level node (nodeLevel > 0) ---
-                HdfBTreeV1 childNode = null;
                 if (childAddress != -1L) {
-                    try {
-                        // --- Recursive Call ---
-                        // Pass the child address and the visited map down
-                        // Position will be handled inside the recursive call
-                        childNode = readFromFileChannelRecursive(fileChannel, childAddress, offsetSize, lengthSize, visitedNodes);
-                        entry = new HdfBTreeEntry(key, childPointer, childNode); // Create entry with child BTree
-                    } catch (IOException e) {
-                        System.err.println("Error recursively reading child BTree Node at address " + childAddress + " for BTree internal entry " + i + ": " + e.getMessage());
-                        entry = new HdfBTreeEntry(key, childPointer, (HdfBTreeV1) null); // Entry with null child on error
+                    fileChannel.position(childAddress);
+                    HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
+                    int snodEntriesToRead = snod.getNumberOfSymbols();
+                    for (int e = 0; e < snodEntriesToRead; ++e) {
+                        HdfSymbolTableEntry snodEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
+                        snod.getSymbolTableEntries().add(snodEntry);
                     }
-                    // NOTE: Position is automatically restored after the recursive call finishes
-                    // because the recursive call itself restores the position it started with.
-                    // Ensure fileChannel position is correct for next iteration (should be after the main BTree entries block)
+                    entry = new HdfBTreeEntry(key, childPointer, snod);
+                    // Restore position for next BTree entry read *only if successful*
                     fileChannel.position(filePosAfterEntriesBlock);
-
                 } else {
-                    System.err.println("Warning: BTree Internal entry " + i + " (Level " + nodeLevel + ") has undefined child address. Creating entry with null child BTree.");
-                    entry = new HdfBTreeEntry(key, childPointer, (HdfBTreeV1) null); // Entry with null child BTree
+                    entry = new HdfBTreeEntry(key, childPointer, (HdfGroupSymbolTableNode) null);
+                }
+            } else { // --- INTERNAL level node (nodeLevel > 0) ---
+                if (childAddress != -1L) {
+                    HdfBTreeV1 childNode = readFromFileChannelRecursive(fileChannel, childAddress, offsetSize, lengthSize, visitedNodes);
+                    entry = new HdfBTreeEntry(key, childPointer, childNode);
+                    // Restore position for next BTree entry read *only if successful*
+                    fileChannel.position(filePosAfterEntriesBlock);
+                } else {
+                    entry = new HdfBTreeEntry(key, childPointer, (HdfBTreeV1) null);
                 }
             }
-            // Add the created entry (which might have null payload if read failed)
-            if (entry != null) {
-                entries.add(entry);
-            } else {
-                // Should not happen if logic above is correct, but as a failsafe:
-                System.err.println("INTERNAL ERROR: Failed to create HdfBTreeEntry for BTree node at "+startPos+", entry index "+i);
-            }
+            // Add entry to list - only happens if no exception was thrown above
+            entries.add(entry);
         }
-
-        // Restore the original file position that the channel had when this function was called
-        fileChannel.position(originalPos);
-
-        // Return the fully populated node (its `entries` list has been filled)
         return currentNode;
     }
 
-
-    // writeToByteBuffer would need significant changes to handle writing recursively
-    // public void writeToByteBuffer(ByteBuffer buffer) { ... }
-
-    // toString can remain, but might become very large if printed
     @Override
     public String toString() {
-        // Consider a less verbose toString for recursive structures
-        return "HdfBTreeV1{" +
-                "signature='" + signature + '\'' +
-                ", nodeType=" + nodeType +
-                ", nodeLevel=" + nodeLevel +
-                ", entriesUsed=" + entriesUsed +
-                ", leftSiblingAddress=" + leftSiblingAddress +
-                ", rightSiblingAddress=" + rightSiblingAddress +
-                ", keyZero=" + keyZero +
-                ", entries.size=" + entries.size() + // Avoid printing full recursive structure
-                '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append("HdfBTreeV1{");
+        sb.append("signature='").append(signature).append('\'');
+        sb.append(", nodeType=").append(nodeType);
+        sb.append(", nodeLevel=").append(nodeLevel);
+        sb.append(", entriesUsed=").append(entriesUsed);
+        sb.append(", leftSiblingAddress=").append(leftSiblingAddress);
+        sb.append(", rightSiblingAddress=").append(rightSiblingAddress);
+        sb.append(", keyZero=").append(keyZero);
+        sb.append(", entries=["); // Start listing entries
+
+        if (entries != null && !entries.isEmpty()) {
+            boolean first = true;
+            for (HdfBTreeEntry entry : entries) {
+                if (!first) {
+                    sb.append(", "); // Separator between entries
+                }
+                // Here, we call the toString() of HdfBTreeEntry
+                // If HdfBTreeEntry doesn't override toString, this calls Object.toString()
+                sb.append(entry); // Implicitly calls entry.toString()
+                first = false;
+            }
+        } else if (entries != null) {
+            // List is initialized but empty
+            sb.append("<empty>");
+        } else {
+            // List is null
+            sb.append("<null>");
+        }
+
+        sb.append("]"); // End listing entries
+        sb.append('}');
+        return sb.toString();
     }
 
     // Helper methods (Optional but Recommended)
