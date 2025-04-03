@@ -1,4 +1,27 @@
 
+2025-04-02 18:12:27 [main] DEBUG org.hdf5javalib.HdfFileReader - 
+HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=6232, driverInformationAddress=-1
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderAddress=96, cacheType=1, bTreeAddress=136, nameHeapAddress=680}}
+
+
+2025-04-02 18:12:27 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfGroup{name=''
+objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
+SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=2, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry(key=56, childPointer=1072, symbolTableNode=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderAddress=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderAddress=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderAddress=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderAddress=4096, cacheType=0}]
+}), HdfBTreeEntry(key=136, childPointer=5904, symbolTableNode=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+
+[HdfSymbolTableEntry{linkNameOffset=72, objectHeaderAddress=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderAddress=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderAddress=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderAddress=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderAddress=5632, cacheType=0}]
+})]}
+
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=176, freeListOffset=152, dataSegmentAddress=4912}
+localHeapContents=HdfLocalHeapContents{heapDataSize=176, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 100, 97, 116, 97, 115, 101, 116, 95, 49, 0, 0, 0, 0, 0, 0, 0, 100, 97, 116, 97, 115, 101, 116, 95]... (truncated)}}
+
+
+===============
+
 2025-04-01 15:20:59 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=6232, driverInformationAddress=-1
 
 rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderAddress=96, cacheType=1, bTreeAddress=136, nameHeapAddress=680}}
