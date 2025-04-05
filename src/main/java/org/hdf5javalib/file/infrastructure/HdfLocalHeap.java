@@ -18,21 +18,21 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 public class HdfLocalHeap {
     private final String signature;
     private final int version;
-    private HdfFixedPoint dataSegmentSize;
+    private HdfFixedPoint heapContentsSize;
     private HdfFixedPoint freeListOffset;
-    private HdfFixedPoint dataSegmentAddress;
+    private HdfFixedPoint heapContentsOffset;
 
-    public HdfLocalHeap(String signature, int version, HdfFixedPoint dataSegmentSize,
-                        HdfFixedPoint freeListOffset, HdfFixedPoint dataSegmentAddress) {
+    public HdfLocalHeap(String signature, int version, HdfFixedPoint heapContentsSize,
+                        HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset) {
         this.signature = signature;
         this.version = version;
-        this.dataSegmentSize = dataSegmentSize;
+        this.heapContentsSize = heapContentsSize;
         this.freeListOffset = freeListOffset;
-        this.dataSegmentAddress = dataSegmentAddress;
+        this.heapContentsOffset = heapContentsOffset;
     }
 
-    public HdfLocalHeap(HdfFixedPoint dataSegmentSize, HdfFixedPoint dataSegmentAddress) {
-        this("HEAP", 0, dataSegmentSize, HdfFixedPoint.of(0), dataSegmentAddress);
+    public HdfLocalHeap(HdfFixedPoint heapContentsSize, HdfFixedPoint heapContentsOffset) {
+        this("HEAP", 0, heapContentsSize, HdfFixedPoint.of(0), heapContentsOffset);
     }
 
     public int addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents,
@@ -51,11 +51,10 @@ public class HdfLocalHeap {
                 ((objectNameBytes.length + 7) & ~7) - objectNameBytes.length + 16);
         if (requiredSpace > freeBlockSize) {
             // Call resizeHeap, assuming HdfFileAllocation knows current size
-            HdfFileAllocation.HeapResizeResult result = fileAllocation.resizeHeap(
-                    localHeapContents, freeListOffset, requiredSpace);
-            localHeapContents = result.getNewContents();
-            this.dataSegmentSize = HdfFixedPoint.of(result.getNewContents().getHeapData().length);
-            this.dataSegmentAddress = result.getNewAddress();
+            long newSize = fileAllocation.expandLocalHeapContents();
+            localHeapContents = new HdfLocalHeapContents(new byte[(int) newSize]);
+            this.heapContentsSize = HdfFixedPoint.of(newSize);
+            this.heapContentsOffset = HdfFixedPoint.of(fileAllocation.getCurrentLocalHeapContentsOffset());
             heapData = localHeapContents.getHeapData(); // Refresh heapData
             freeBlockSize = ByteBuffer.wrap(heapData, freeListOffset + 8, 8)
                     .order(ByteOrder.LITTLE_ENDIAN)
@@ -129,9 +128,9 @@ public class HdfLocalHeap {
         return "HdfLocalHeap{" +
                 "signature='" + signature + '\'' +
                 ", version=" + version +
-                ", dataSegmentSize=" + dataSegmentSize +
+                ", dataSegmentSize=" + heapContentsSize +
                 ", freeListOffset=" + freeListOffset +
-                ", dataSegmentAddress=" + dataSegmentAddress +
+                ", dataSegmentAddress=" + heapContentsOffset +
                 '}';
     }
 
@@ -146,12 +145,12 @@ public class HdfLocalHeap {
         buffer.put(new byte[3]);
 
         // Step 4: Write Data Segment Size (lengthSize bytes, little-endian)
-        writeFixedPointToBuffer(buffer, dataSegmentSize);
+        writeFixedPointToBuffer(buffer, heapContentsSize);
 
         // Step 5: Write Free List Offset (lengthSize bytes, little-endian)
         writeFixedPointToBuffer(buffer, freeListOffset);
 
         // Step 6: Write Data Segment Address (offsetSize bytes, little-endian)
-        writeFixedPointToBuffer(buffer, dataSegmentAddress);
+        writeFixedPointToBuffer(buffer, heapContentsOffset);
     }
 }

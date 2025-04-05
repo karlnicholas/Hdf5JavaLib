@@ -46,8 +46,8 @@ public class HdfFileReader {
         fileChannel.position(localHeapAddress);
         HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
 
-        long dataSize = localHeap.getDataSegmentSize().getInstance(Long.class);
-        long dataSegmentAddress = localHeap.getDataSegmentAddress().getInstance(Long.class);
+        long dataSize = localHeap.getHeapContentsSize().getInstance(Long.class);
+        long dataSegmentAddress = localHeap.getHeapContentsOffset().getInstance(Long.class);
         fileChannel.position(dataSegmentAddress);
         HdfLocalHeapContents localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, (int) dataSize);
 

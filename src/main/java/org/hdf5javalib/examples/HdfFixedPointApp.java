@@ -99,20 +99,20 @@ public class HdfFixedPointApp {
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
-        try {
-            HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/tictactoe_4d_state.h5")).getFile();
-            try(FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
-                try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
-                    display4DData(channel, dataSet);
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-//        tryHdfApiScalar("scalar.h5");
+//        try {
+//            HdfFileReader reader = new HdfFileReader();
+//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/tictactoe_4d_state.h5")).getFile();
+//            try(FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                reader.readFile(channel);
+//                try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
+//                    display4DData(channel, dataSet);
+//                }
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+        tryHdfApiScalar("scalar.h5");
 //        tryHdfApiInts("vector_each.h5", this::writeEach);
 //        tryHdfApiInts("vector_all.h5", this::writeAll);
 //        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);

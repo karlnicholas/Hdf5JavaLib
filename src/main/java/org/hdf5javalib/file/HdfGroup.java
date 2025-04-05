@@ -17,8 +17,6 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static org.hdf5javalib.file.HdfFileAllocation.AllocationType;
-
 @Getter
 public class HdfGroup {
     private final HdfFile hdfFile;
@@ -51,12 +49,12 @@ public class HdfGroup {
     public HdfGroup(HdfFile hdfFile, String name, long btreeAddress, long localHeapAddress) {
         this.hdfFile = hdfFile;
         this.name = name;
-        long localHeapContentsSize = hdfFile.getFileAllocation().getAllocation(AllocationType.LOCAL_HEAP_CONTENTS).getSize();
+        long localHeapContentsSize = hdfFile.getFileAllocation().getCurrentLocalHeapContentsSize();
         byte[] heapData = new byte[(int) localHeapContentsSize];
         heapData[0] = (byte)0x1;
         heapData[8] = (byte)localHeapContentsSize;
 
-        localHeap = new HdfLocalHeap(HdfFixedPoint.of(localHeapContentsSize), HdfFixedPoint.of(hdfFile.getFileAllocation().getAllocation(AllocationType.LOCAL_HEAP_CONTENTS).getAddress()));
+        localHeap = new HdfLocalHeap(HdfFixedPoint.of(localHeapContentsSize), HdfFixedPoint.of(hdfFile.getFileAllocation().getCurrentLocalHeapContentsOffset()));
         localHeapContents = new HdfLocalHeapContents(heapData);
 //        localHeap.addToHeap(new HdfString(new byte[0], new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0)), localHeapContents);
         localHeap.addToHeap(
@@ -86,7 +84,7 @@ public class HdfGroup {
         // this poosibly changes addresses for anything after the dataGroupAddress, which includes the SNOD address.
         dataSet = new HdfDataSet(this, datasetName, hdfDatatype, dataSpaceMessage);
         HdfGroupSymbolTableNode symbolTableNode = new HdfGroupSymbolTableNode("SNOD", 1, 0, new ArrayList<>());
-        int linkNameOffset = bTree.addGroup(hdfFile.getFileAllocation(), hdfDatasetName, HdfFixedPoint.of(hdfFile.getFileAllocation().getAllocation(AllocationType.SNOD).getAddress()),
+        int linkNameOffset = bTree.addGroup(hdfFile.getFileAllocation(), hdfDatasetName, HdfFixedPoint.of(hdfFile.getFileAllocation().getInitialSnodOffset()),
                 localHeap,
                 localHeapContents,
                 symbolTableNode);
@@ -99,7 +97,8 @@ public class HdfGroup {
 
     public void writeToBuffer(ByteBuffer buffer) {
         // Write Object Header at position found in rootGroupEntry
-        long dataGroupAddress = hdfFile.getFileAllocation().getAllocation(AllocationType.OBJECT_HEADER_PREFIX).getAddress();
+        //         long dataGroupAddress = hdfFile.getBufferAllocation().getObjectHeaderPrefixAddress();
+        long dataGroupAddress = hdfFile.getFileAllocation().getInitialObjectHeaderOffset();
         buffer.position((int) dataGroupAddress);
         objectHeader.writeToByteBuffer(buffer);
 
@@ -107,8 +106,8 @@ public class HdfGroup {
         long bTreePosition = -1;
 
         // Try getting the Local Heap Address from the Root Symbol Table Entry
-        if (hdfFile.getFileAllocation().getAllocation(AllocationType.LOCAL_HEAP).getAddress() > 0) {
-            localHeapPosition = hdfFile.getFileAllocation().getAllocation(AllocationType.LOCAL_HEAP).getAddress();
+        if (hdfFile.getFileAllocation().getRootLocalHeapOffset() > 0) {
+            localHeapPosition = hdfFile.getFileAllocation().getCurrentLocalHeapContentsOffset();
         }
 
         // If not found or invalid, fallback to Object Header's SymbolTableMessage
@@ -139,7 +138,7 @@ public class HdfGroup {
         if (localHeapPosition != -1) {
             buffer.position((int) localHeapPosition); // Move to the correct position
             localHeap.writeToByteBuffer(buffer);
-            buffer.position(localHeap.getDataSegmentAddress().getInstance(Long.class).intValue());
+            buffer.position(localHeap.getHeapContentsOffset().getInstance(Long.class).intValue());
             localHeapContents.writeToByteBuffer(buffer);
         } else {
             throw new IllegalStateException("No valid Local Heap position found.");
@@ -147,7 +146,8 @@ public class HdfGroup {
 
         // need to writre the dataset
         if ( dataSet != null ) {
-            buffer.position((int) hdfFile.getFileAllocation().getAllocation(AllocationType.DATA_GROUP).getAddress());
+            // buffer.position((int) hdfFile.getBufferAllocation().getDataGroupAddress());
+            buffer.position((int) hdfFile.getFileAllocation().getDataOffset());
             dataSet.writeToBuffer(buffer);
         }
 
