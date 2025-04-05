@@ -14,25 +14,25 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 @Getter
 public class HdfSymbolTableEntry {
     private final HdfFixedPoint linkNameOffset;
-    private final HdfFixedPoint objectHeaderAddress;
+    private final HdfFixedPoint objectHeaderOffset;
     private final int cacheType;
-    private final HdfFixedPoint bTreeAddress;
-    private final HdfFixedPoint nameHeapAddress;
+    private final HdfFixedPoint bTreeOffset;
+    private final HdfFixedPoint localHeapOffset;
 
-    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfFixedPoint objectHeaderAddress, HdfFixedPoint bTreeAddress, HdfFixedPoint nameHeapAddress) {
+    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfFixedPoint objectHeaderOffset, HdfFixedPoint bTreeOffset, HdfFixedPoint localHeapOffset) {
         this.linkNameOffset = linkNameOffset;
-        this.objectHeaderAddress = objectHeaderAddress;
+        this.objectHeaderOffset = objectHeaderOffset;
         this.cacheType = 1;
-        this.bTreeAddress = bTreeAddress;
-        this.nameHeapAddress = nameHeapAddress;
+        this.bTreeOffset = bTreeOffset;
+        this.localHeapOffset = localHeapOffset;
     }
 
-    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfFixedPoint objectHeaderAddress) {
+    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfFixedPoint objectHeaderOffset) {
         this.linkNameOffset = linkNameOffset;
-        this.objectHeaderAddress = objectHeaderAddress;
+        this.objectHeaderOffset = objectHeaderOffset;
         this.cacheType = 0;
-        this.bTreeAddress = null;
-        this.nameHeapAddress = null;
+        this.bTreeOffset = null;
+        this.localHeapOffset = null;
     }
 
     public static HdfSymbolTableEntry fromFileChannel(FileChannel fileChannel, short offsetSize) throws IOException {
@@ -83,7 +83,7 @@ public class HdfSymbolTableEntry {
         writeFixedPointToBuffer(buffer, linkNameOffset);
 
         // Write Object Header Address (sizeOfOffsets bytes, little-endian)
-        writeFixedPointToBuffer(buffer, objectHeaderAddress);
+        writeFixedPointToBuffer(buffer, objectHeaderOffset);
 
         // Write Cache Type (4 bytes, little-endian)
         buffer.putInt(cacheType);
@@ -93,8 +93,8 @@ public class HdfSymbolTableEntry {
 
         // If cacheType == 1, write B-tree Address and Local Heap Address
         if (cacheType == 1) {
-            writeFixedPointToBuffer(buffer, bTreeAddress);
-            writeFixedPointToBuffer(buffer, nameHeapAddress);
+            writeFixedPointToBuffer(buffer, bTreeOffset);
+            writeFixedPointToBuffer(buffer, localHeapOffset);
         } else {
             // If cacheType != 1, write 16 bytes of reserved "scratch-pad" space
             buffer.put(new byte[16]);
@@ -105,15 +105,15 @@ public class HdfSymbolTableEntry {
     public String toString() {
         StringBuilder sb = new StringBuilder("HdfSymbolTableEntry{");
         sb.append("linkNameOffset=").append(linkNameOffset)
-                .append(", objectHeaderAddress=").append(objectHeaderAddress)
+                .append(", objectHeaderOffset=").append(objectHeaderOffset)
                 .append(", cacheType=").append(cacheType);
 
         switch (cacheType) {
             case 0:
                 break; // Base fields only
             case 1:
-                sb.append(", bTreeAddress=").append(bTreeAddress)
-                        .append(", nameHeapAddress=").append(nameHeapAddress);
+                sb.append(", bTreeOffset=").append(bTreeOffset)
+                        .append(", localHeapOffset=").append(localHeapOffset);
                 break;
             default:
                 throw new IllegalStateException("Unknown cache type: " + cacheType);

@@ -84,7 +84,7 @@ public class HdfGroup {
         // this poosibly changes addresses for anything after the dataGroupAddress, which includes the SNOD address.
         dataSet = new HdfDataSet(this, datasetName, hdfDatatype, dataSpaceMessage);
         HdfGroupSymbolTableNode symbolTableNode = new HdfGroupSymbolTableNode("SNOD", 1, 0, new ArrayList<>());
-        int linkNameOffset = bTree.addGroup(hdfFile.getFileAllocation(), hdfDatasetName, HdfFixedPoint.of(hdfFile.getFileAllocation().getInitialSnodOffset()),
+        int linkNameOffset = bTree.addGroup(hdfFile.getFileAllocation(), hdfDatasetName, HdfFixedPoint.of(hdfFile.getFileAllocation().getSnodOffset()),
                 localHeap,
                 localHeapContents,
                 symbolTableNode);
@@ -98,7 +98,7 @@ public class HdfGroup {
     public void writeToBuffer(ByteBuffer buffer) {
         // Write Object Header at position found in rootGroupEntry
         //         long dataGroupAddress = hdfFile.getBufferAllocation().getObjectHeaderPrefixAddress();
-        long dataGroupAddress = hdfFile.getFileAllocation().getInitialObjectHeaderOffset();
+        long dataGroupAddress = hdfFile.getFileAllocation().getDataObjectHeadOffset();
         buffer.position((int) dataGroupAddress);
         objectHeader.writeToByteBuffer(buffer);
 
@@ -106,7 +106,7 @@ public class HdfGroup {
         long bTreePosition = -1;
 
         // Try getting the Local Heap Address from the Root Symbol Table Entry
-        if (hdfFile.getFileAllocation().getRootLocalHeapOffset() > 0) {
+        if (hdfFile.getFileAllocation().getLocalHeapOffset() > 0) {
             localHeapPosition = hdfFile.getFileAllocation().getCurrentLocalHeapContentsOffset();
         }
 

@@ -79,7 +79,7 @@ public class HdfSuperblock {
     private final int groupInternalNodeK;
 
     private final HdfFixedPoint baseAddress;
-    private final HdfFixedPoint freeSpaceAddress;
+    private final HdfFixedPoint addressFileFreeSpaceInfo;
     @Setter
     private HdfFixedPoint endOfFileAddress;
     private final HdfFixedPoint driverInformationAddress;
@@ -95,7 +95,7 @@ public class HdfSuperblock {
             int groupLeafNodeK,
             int groupInternalNodeK,
             HdfFixedPoint baseAddress,
-            HdfFixedPoint freeSpaceAddress,
+            HdfFixedPoint addressFileFreeSpaceInfo,
             HdfFixedPoint endOfFileAddress,
             HdfFixedPoint driverInformationAddress,
             HdfSymbolTableEntry rootGroupSymbolTableEntry
@@ -109,7 +109,7 @@ public class HdfSuperblock {
         this.groupLeafNodeK = groupLeafNodeK;
         this.groupInternalNodeK = groupInternalNodeK;
         this.baseAddress = baseAddress;
-        this.freeSpaceAddress = freeSpaceAddress;
+        this.addressFileFreeSpaceInfo = addressFileFreeSpaceInfo;
         this.endOfFileAddress = endOfFileAddress;
         this.driverInformationAddress = driverInformationAddress;
         this.rootGroupSymbolTableEntry = rootGroupSymbolTableEntry;
@@ -218,7 +218,7 @@ public class HdfSuperblock {
 
         // Step 4: Address fields (sizeOfOffsets bytes each) in little-endian
         writeFixedPointToBuffer(buffer, baseAddress);         // Base Address
-        writeFixedPointToBuffer(buffer, freeSpaceAddress);    // Free space address
+        writeFixedPointToBuffer(buffer, addressFileFreeSpaceInfo);    // Free space address
         writeFixedPointToBuffer(buffer, endOfFileAddress);    // End-of-file address
         writeFixedPointToBuffer(buffer, driverInformationAddress); // Driver info block address
 
@@ -237,7 +237,7 @@ public class HdfSuperblock {
                 ", groupLeafNodeK=" + groupLeafNodeK +
                 ", groupInternalNodeK=" + groupInternalNodeK +
                 ", baseAddress=" + baseAddress +
-                ", freeSpaceAddress=" + freeSpaceAddress +
+                ", freeSpaceAddress=" + addressFileFreeSpaceInfo +
                 ", endOfFileAddress=" + endOfFileAddress +
                 ", driverInformationAddress=" + driverInformationAddress +
                 "\r\nrootGroupSymbolTableEntry=" + rootGroupSymbolTableEntry +

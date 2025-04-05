@@ -49,14 +49,14 @@ public class HdfFile {
                 new HdfSymbolTableEntry(
                         HdfFixedPoint.of(0),
                         // HdfFixedPoint.of(bufferAllocation.getObjectHeaderPrefixAddress()),
-                        HdfFixedPoint.of(fileAllocation.getRootObjectHeaderPrefixOffset()),
+                        HdfFixedPoint.of(fileAllocation.getObjectHeaderPrefixOffset()),
                         // HdfFixedPoint.of(bufferAllocation.getBtreeAddress()),
-                        HdfFixedPoint.of(fileAllocation.getRootBtreeOffset()),
+                        HdfFixedPoint.of(fileAllocation.getBtreeOffset()),
                         // HdfFixedPoint.of(bufferAllocation.getLocalHeapAddress())));
-                        HdfFixedPoint.of(fileAllocation.getRootLocalHeapOffset())));
+                        HdfFixedPoint.of(fileAllocation.getLocalHeapOffset())));
 
         // rootGroup = new HdfGroup(this, "", bufferAllocation.getBtreeAddress(), bufferAllocation.getLocalHeapAddress());
-        rootGroup = new HdfGroup(this, "", fileAllocation.getRootBtreeOffset(), fileAllocation.getRootLocalHeapOffset());
+        rootGroup = new HdfGroup(this, "", fileAllocation.getBtreeOffset(), fileAllocation.getLocalHeapOffset());
     }
 
     /**
@@ -69,7 +69,7 @@ public class HdfFile {
     public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
         hdfDatatype.setGlobalHeap(globalHeap);
         // return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage, bufferAllocation.getDataGroupAddress());
-        return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage, fileAllocation.getInitialObjectHeaderOffset());
+        return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage, fileAllocation.getDataObjectHeadOffset());
     }
 
     protected void recomputeGlobalHeapAddress(HdfDataSet dataSet) {
@@ -140,7 +140,7 @@ public class HdfFile {
         buffer.position((int) fileAllocation.getSuperblockOffset());
         superblock.writeToByteBuffer(buffer);
         // buffer.position((int) bufferAllocation.getObjectHeaderPrefixAddress());
-        buffer.position((int) fileAllocation.getRootObjectHeaderPrefixOffset());
+        buffer.position((int) fileAllocation.getObjectHeaderPrefixOffset());
         rootGroup.writeToBuffer(buffer);
         buffer.position(0);
 

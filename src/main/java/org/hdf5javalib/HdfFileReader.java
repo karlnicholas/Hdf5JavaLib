@@ -36,13 +36,13 @@ public class HdfFileReader {
 //
         // Get the object header address from the superblock
         // Parse the object header from the file using the superblock information
-        long objectHeaderAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeaderAddress().getInstance(Long.class);
+        long objectHeaderAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeaderOffset().getInstance(Long.class);
         fileChannel.position(objectHeaderAddress);
         HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
 
         // Parse the local heap using the file channel
         // Read data from file channel starting at the specified position
-        long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getNameHeapAddress().getInstance(Long.class);
+        long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getLocalHeapOffset().getInstance(Long.class);
         fileChannel.position(localHeapAddress);
         HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
 
@@ -51,7 +51,7 @@ public class HdfFileReader {
         fileChannel.position(dataSegmentAddress);
         HdfLocalHeapContents localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, (int) dataSize);
 
-        long bTreeAddress = superblock.getRootGroupSymbolTableEntry().getBTreeAddress().getInstance(Long.class);
+        long bTreeAddress = superblock.getRootGroupSymbolTableEntry().getBTreeOffset().getInstance(Long.class);
         fileChannel.position(bTreeAddress);
         HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
 
@@ -197,7 +197,7 @@ public class HdfFileReader {
                         HdfString linkName = heapContents.parseStringAtOffset(ste.getLinkNameOffset());
                         if (linkName != null && linkName.toString().equals(targetName)) {
                             // Found it by name! Now read its header.
-                            long dataObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
+                            long dataObjectHeaderAddress = ste.getObjectHeaderOffset().getInstance(Long.class);
                             long originalPos = fileChannel.position();
                             try {
                                 fileChannel.position(dataObjectHeaderAddress);
@@ -267,12 +267,12 @@ public class HdfFileReader {
                 HdfGroupSymbolTableNode snod = entry.getSymbolTableNode();
                 if (snod != null) {
                     for (HdfSymbolTableEntry ste : snod.getSymbolTableEntries()) {
-                        if (ste == null || ste.getLinkNameOffset() == null || ste.getObjectHeaderAddress() == null) continue;
+                        if (ste == null || ste.getLinkNameOffset() == null || ste.getObjectHeaderOffset() == null) continue;
 
                         HdfString linkName = heapContents.parseStringAtOffset(ste.getLinkNameOffset());
                         if (linkName == null) continue; // Skip if name couldn't be parsed
 
-                        long dataObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
+                        long dataObjectHeaderAddress = ste.getObjectHeaderOffset().getInstance(Long.class);
                         long originalPos = fileChannel.position();
                         try {
                             fileChannel.position(dataObjectHeaderAddress);
