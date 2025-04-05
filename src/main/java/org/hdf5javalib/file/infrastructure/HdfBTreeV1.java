@@ -265,7 +265,7 @@ public class HdfBTreeV1 {
                 writeFixedPointToBuffer(buffer, entry.getKey());
             }
             if (entry.getSymbolTableNode() != null) {
-                buffer.position(entry.getChildPointer().getInstance(Integer.class));
+                buffer.position(entry.getChildPointer().getInstance(Long.class).intValue());
                 entry.getSymbolTableNode().writeToBuffer(buffer);
             }
             // childBTree writing would need recursive logic if implemented

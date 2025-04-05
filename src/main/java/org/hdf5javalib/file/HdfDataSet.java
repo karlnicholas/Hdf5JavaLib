@@ -102,7 +102,7 @@ public class HdfDataSet implements Closeable {
 
         DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1,
                 // HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()),
-                HdfFixedPoint.of(hdfGroup.getHdfFile().getFileAllocation().getDataOffset()),
+                HdfFixedPoint.of(hdfGroup.getHdfFile().getFileAllocation().getDataObjectDataOffset()),
                 hdfDimensionSizes,
                 0, null, HdfFixedPoint.undefined((short)8), (byte)0, dataLayoutMessageSize);
         headerMessages.add(dataLayoutMessage);
@@ -123,7 +123,7 @@ public class HdfDataSet implements Closeable {
         }
         // redo addresses already set.
         // dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
-        dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getFileAllocation().getDataOffset()));
+        dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getFileAllocation().getDataObjectDataOffset()));
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, objectReferenceCount, Math.max(objectHeaderSize, currentObjectHeaderSize), headerMessages);
         hdfGroup.getHdfFile().recomputeGlobalHeapAddress(this);
     }
@@ -207,7 +207,7 @@ public class HdfDataSet implements Closeable {
         DataLayoutMessage dataLayoutMessage = dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class).orElseThrow();
         // redo addresses already set.
         // dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
-        dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getFileAllocation().getDataOffset()));
+        dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getFileAllocation().getDataObjectDataOffset()));
 //        this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, Math.max(objectHeaderSize, currentObjectHeaderSize), headerMessages);
         hdfGroup.getHdfFile().recomputeGlobalHeapAddress(this);
     }

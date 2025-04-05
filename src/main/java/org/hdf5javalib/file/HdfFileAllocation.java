@@ -35,21 +35,16 @@ public class HdfFileAllocation {
     private long localHeapOffset;
     private long localHeapContentsOffset;
     private long snodOffset;
-    private long dataObjectHeadOffset;
-    /** Offset for the continuation block associated with the first Data Object Header (if needed). */
-    private long dataObjectHeaderContinuationOffset; // Renamed from dataContinuationOffset
-
-    /** Represents a calculated starting point after the setup metadata block. */
-    private long dataOffset;
+    /** Offset for the Data Object Header block calculated immediately following the setup SNOD block. */
+    private long dataObjectHeaderOffset; // Renamed from dataObjectHeadOffset
+    private long dataObjectHeaderContinuationOffset;
+    private long dataObjectDataOffset;
 
     // --- Sizes (long) ---
     private final long btreeStorageSize = SETUP_BTREE_STORAGE_SIZE;
     private final long localHeapContentsSize = SETUP_LOCAL_HEAP_CONTENTS_SIZE;
     private final long snodStorageSize = SETUP_SNOD_V1_HEADER_SIZE + (DEFAULT_SETUP_SNOD_ENTRY_COUNT * SETUP_SNOD_V1_ENTRY_SIZE);
-
-    /** Total size allocated for the first Data Object Header block calculated during layout setup. */
     private long dataObjectHeaderSize = DATA_OBJECT_HEADER_MINIMUM_SIZE + 256L;
-    /** Size for the continuation block associated with the first Data Object Header. */
     private long dataObjectHeaderContinuationSize = 0L;
 
     // --- Tracking for Active/Expandable Structures ---
@@ -94,16 +89,15 @@ public class HdfFileAllocation {
         snodOffset = currentOffset;
 
         currentOffset += snodStorageSize;
-        dataObjectHeadOffset = currentOffset;
+        // Assign to the renamed field 'dataObjectHeaderOffset'
+        dataObjectHeaderOffset = currentOffset;
 
         currentOffset += dataObjectHeaderSize;
         if (dataObjectHeaderContinuationSize > 0L) {
-            // Use the renamed field 'dataObjectHeaderContinuationOffset'
             dataObjectHeaderContinuationOffset = currentOffset;
             currentOffset += dataObjectHeaderContinuationSize;
         } else {
-            // Use the renamed field 'dataObjectHeaderContinuationOffset'
-            dataObjectHeaderContinuationOffset = -1L; // Indicate no allocation
+            dataObjectHeaderContinuationOffset = -1L;
         }
 
         long endOfSetupBlock = currentOffset;
@@ -117,7 +111,7 @@ public class HdfFileAllocation {
             nextAvailableOffset = endOfSetupBlock;
         }
 
-        dataOffset = Math.max(MIN_DATA_OFFSET_THRESHOLD, endOfSetupBlock);
+        dataObjectDataOffset = Math.max(MIN_DATA_OFFSET_THRESHOLD, endOfSetupBlock);
         globalHeapOffset = -1L;
     }
 
@@ -126,7 +120,6 @@ public class HdfFileAllocation {
     /**
      * Sets the total size for the first Data Object header block calculated
      * during setup and recalculates the layout.
-     *
      * @param totalHeaderSize The total required size in bytes (must be >= {@value #DATA_OBJECT_HEADER_MINIMUM_SIZE}).
      */
     public void setDataObjectHeaderSize(long totalHeaderSize) {
@@ -140,7 +133,6 @@ public class HdfFileAllocation {
     /**
      * Sets the size for the continuation block associated with the first Data Object header
      * calculated during setup and recalculates the layout.
-     *
      * @param continuationSize The required size in bytes (must be non-negative).
      */
     public void setDataObjectHeaderContinuationSize(long continuationSize) {
@@ -154,7 +146,6 @@ public class HdfFileAllocation {
     /**
      * Sets the total size for the first Data Object header and the size for its
      * associated message continuation block, then recalculates the setup layout once.
-     *
      * @param totalHeaderSize The total required header size in bytes (must be >= {@value #DATA_OBJECT_HEADER_MINIMUM_SIZE}).
      * @param continuationSize The required continuation size in bytes (must be non-negative).
      */
@@ -219,14 +210,14 @@ public class HdfFileAllocation {
     /** Computes the starting offset of the Global Heap. */
     public void computeGlobalHeapOffset(long totalDataSegmentSize) {
         if (totalDataSegmentSize < 0L) { throw new IllegalArgumentException("Total data segment size cannot be negative."); }
-        if (dataOffset < 0L ) { throw new IllegalStateException("Data offset invalid."); }
-        this.globalHeapOffset = dataOffset + totalDataSegmentSize;
+        if (dataObjectDataOffset < 0L ) { throw new IllegalStateException("Data object data offset invalid."); }
+        this.globalHeapOffset = dataObjectDataOffset + totalDataSegmentSize;
         this.nextAvailableOffset = Math.max(this.nextAvailableOffset, this.globalHeapOffset);
     }
 
     // --- Getters ---
     // Lombok @Getter provides getters like: getObjectHeaderPrefixOffset(), getBtreeOffset(),
-    // getDataObjectHeadOffset(), getDataObjectHeaderContinuationOffset(), etc.
+    // getDataObjectHeaderOffset(), getDataObjectHeaderContinuationOffset(), getDataObjectDataOffset(), etc.
 
     /** Gets the total size allocated or reserved so far. */
     public long getTotalAllocatedSize() { return nextAvailableOffset; }

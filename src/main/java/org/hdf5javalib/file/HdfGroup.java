@@ -97,9 +97,9 @@ public class HdfGroup {
 
     public void writeToBuffer(ByteBuffer buffer) {
         // Write Object Header at position found in rootGroupEntry
-        //         long dataGroupAddress = hdfFile.getBufferAllocation().getObjectHeaderPrefixAddress();
-        long dataGroupAddress = hdfFile.getFileAllocation().getDataObjectHeadOffset();
-        buffer.position((int) dataGroupAddress);
+        //         long objectHeaderPrefixAddress = hdfFile.getBufferAllocation().getObjectHeaderPrefixAddress();
+        long objectHeaderPrefixAddress = hdfFile.getFileAllocation().getObjectHeaderPrefixOffset();
+        buffer.position((int) objectHeaderPrefixAddress);
         objectHeader.writeToByteBuffer(buffer);
 
         long localHeapPosition = -1;
@@ -147,7 +147,7 @@ public class HdfGroup {
         // need to writre the dataset
         if ( dataSet != null ) {
             // buffer.position((int) hdfFile.getBufferAllocation().getDataGroupAddress());
-            buffer.position((int) hdfFile.getFileAllocation().getDataOffset());
+            buffer.position((int) hdfFile.getFileAllocation().getDataObjectHeaderOffset());
             dataSet.writeToBuffer(buffer);
         }
 
