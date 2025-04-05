@@ -1,6 +1,6 @@
 package org.hdf5javalib.file.infrastructure;
 
-import lombok.Getter; // Use Getter instead of Data if setters aren't needed/wanted
+import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 
 // These would be imports in a real scenario

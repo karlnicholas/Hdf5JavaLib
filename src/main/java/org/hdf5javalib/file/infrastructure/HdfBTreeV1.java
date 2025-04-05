@@ -5,16 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfFileAllocation;
-// Imports kept minimal
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Map; // For recursion tracking
-import java.util.HashMap; // For recursion tracking
+import java.util.*;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 

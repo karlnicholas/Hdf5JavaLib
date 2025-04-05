@@ -3,20 +3,13 @@ package org.hdf5javalib.examples;
 import lombok.Builder;
 import lombok.Data;
 import org.hdf5javalib.HdfFileReader;
-import org.hdf5javalib.dataclass.*;
 import org.hdf5javalib.file.HdfDataSet;
-import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 import org.hdf5javalib.utils.HdfTestUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.nio.channels.FileChannel;
-import java.util.BitSet;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Hello world!

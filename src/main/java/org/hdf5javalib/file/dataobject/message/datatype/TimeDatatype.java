@@ -7,8 +7,6 @@ import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;

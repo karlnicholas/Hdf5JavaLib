@@ -10,14 +10,14 @@ import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.file.infrastructure.*;
 
-import static org.hdf5javalib.file.HdfFileAllocation.AllocationType;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import static org.hdf5javalib.file.HdfFileAllocation.AllocationType;
 
 @Getter
 public class HdfGroup {
