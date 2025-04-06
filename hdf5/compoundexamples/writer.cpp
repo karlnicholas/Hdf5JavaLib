@@ -91,7 +91,7 @@ int main() {
             records[i].recordId = 1000 + i;
             std::strncpy(records[i].fixedStr, "FixedData", sizeof(records[i].fixedStr) - 1);
             records[i].fixedStr[sizeof(records[i].fixedStr) - 1] = '\0';
-            varStrings[i] = "VariableDataString_" + std::to_string(dist(gen)) + "_Index" + std::to_string(i);
+            varStrings[i] = "varStr:" + std::to_string(dist(gen));
             records[i].varStr = const_cast<char*>(varStrings[i].c_str()); // Correct for dataset write
             records[i].floatVal = static_cast<float>(i) * 3.14f;
             records[i].doubleVal = static_cast<double>(i) * 2.718;
