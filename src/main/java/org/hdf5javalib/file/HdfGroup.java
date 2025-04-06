@@ -107,7 +107,7 @@ public class HdfGroup {
 
         // Try getting the Local Heap Address from the Root Symbol Table Entry
         if (hdfFile.getFileAllocation().getLocalHeapOffset() > 0) {
-            localHeapPosition = hdfFile.getFileAllocation().getCurrentLocalHeapContentsOffset();
+            localHeapPosition = hdfFile.getFileAllocation().getLocalHeapOffset();
         }
 
         // If not found or invalid, fallback to Object Header's SymbolTableMessage

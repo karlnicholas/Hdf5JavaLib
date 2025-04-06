@@ -44,17 +44,17 @@ public class HdfFixedPointApp {
         new HdfFixedPointApp().run();
     }
     private void run() {
-//        try {
-//            HdfFileReader reader = new HdfFileReader();
-//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/scalar.h5")).getFile();
-//            try(FileInputStream fis = new FileInputStream(filePath)) {
-//                FileChannel channel = fis.getChannel();
-//                reader.readFile(channel);
-//                tryScalarDataSpliterator(channel, reader);
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+        try {
+            HdfFileReader reader = new HdfFileReader();
+            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/scalar.h5")).getFile();
+            try(FileInputStream fis = new FileInputStream(filePath)) {
+                FileChannel channel = fis.getChannel();
+                reader.readFile(channel);
+                tryScalarDataSpliterator(channel, reader.findDataset("FixedPointValue", channel, reader.getRootGroup()));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 //        try {
 //            HdfFileReader reader = new HdfFileReader();
 //            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/scalar_new.h5")).getFile();
@@ -112,7 +112,7 @@ public class HdfFixedPointApp {
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
-        tryHdfApiScalar("scalar.h5");
+        tryHdfApiScalar("scalar_new.h5");
 //        tryHdfApiInts("vector_each.h5", this::writeEach);
 //        tryHdfApiInts("vector_all.h5", this::writeAll);
 //        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);

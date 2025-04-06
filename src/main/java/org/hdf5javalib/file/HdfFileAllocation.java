@@ -22,7 +22,7 @@ public class HdfFileAllocation {
     private static final long SETUP_BTREE_STORAGE_SIZE = 512L;
     private static final long SETUP_LOCAL_HEAP_HEADER_SIZE = 32L;
     private static final long SETUP_LOCAL_HEAP_CONTENTS_SIZE = 88L;
-    private static final long DATA_OBJECT_HEADER_MINIMUM_SIZE = 16L; // v1 minimum prefix
+    private static final long DATA_OBJECT_HEADER_MESSAGE_SIZE = 16L; // v1 minimum prefix
     private static final long SETUP_SNOD_V1_HEADER_SIZE = 8L;
     private static final long SETUP_SNOD_V1_ENTRY_SIZE = 32L;
     private static final long DEFAULT_SETUP_SNOD_ENTRY_COUNT = 10L;
@@ -44,7 +44,8 @@ public class HdfFileAllocation {
     private final long btreeStorageSize = SETUP_BTREE_STORAGE_SIZE;
     private final long localHeapContentsSize = SETUP_LOCAL_HEAP_CONTENTS_SIZE;
     private final long snodStorageSize = SETUP_SNOD_V1_HEADER_SIZE + (DEFAULT_SETUP_SNOD_ENTRY_COUNT * SETUP_SNOD_V1_ENTRY_SIZE);
-    private long dataObjectHeaderSize = DATA_OBJECT_HEADER_MINIMUM_SIZE + 256L;
+//    private long dataObjectHeaderSize = DATA_OBJECT_HEADER_MINIMUM_SIZE + 256L;
+    private long dataObjectHeaderSize = 256L;
     private long dataObjectHeaderContinuationSize = 0L;
 
     // --- Tracking for Active/Expandable Structures ---
@@ -63,9 +64,6 @@ public class HdfFileAllocation {
      * of the setup metadata block.
      */
     public HdfFileAllocation() {
-        if (this.dataObjectHeaderSize < DATA_OBJECT_HEADER_MINIMUM_SIZE) {
-            this.dataObjectHeaderSize = DATA_OBJECT_HEADER_MINIMUM_SIZE;
-        }
         calculateSetupLayout();
     }
 
@@ -86,13 +84,12 @@ public class HdfFileAllocation {
         localHeapContentsOffset = currentOffset;
 
         currentOffset += localHeapContentsSize;
+        dataObjectHeaderOffset = currentOffset;
+
+        currentOffset += DATA_OBJECT_HEADER_MESSAGE_SIZE + dataObjectHeaderSize;
         snodOffset = currentOffset;
 
         currentOffset += snodStorageSize;
-        // Assign to the renamed field 'dataObjectHeaderOffset'
-        dataObjectHeaderOffset = currentOffset;
-
-        currentOffset += dataObjectHeaderSize;
         if (dataObjectHeaderContinuationSize > 0L) {
             dataObjectHeaderContinuationOffset = currentOffset;
             currentOffset += dataObjectHeaderContinuationSize;
@@ -120,12 +117,9 @@ public class HdfFileAllocation {
     /**
      * Sets the total size for the first Data Object header block calculated
      * during setup and recalculates the layout.
-     * @param totalHeaderSize The total required size in bytes (must be >= {@value #DATA_OBJECT_HEADER_MINIMUM_SIZE}).
+     * @param totalHeaderSize The total required size in bytes.
      */
     public void setDataObjectHeaderSize(long totalHeaderSize) {
-        if (totalHeaderSize < DATA_OBJECT_HEADER_MINIMUM_SIZE) {
-            throw new IllegalArgumentException("Data Object Header size must be at least " + DATA_OBJECT_HEADER_MINIMUM_SIZE);
-        }
         this.dataObjectHeaderSize = totalHeaderSize;
         calculateSetupLayout();
     }
@@ -146,13 +140,10 @@ public class HdfFileAllocation {
     /**
      * Sets the total size for the first Data Object header and the size for its
      * associated message continuation block, then recalculates the setup layout once.
-     * @param totalHeaderSize The total required header size in bytes (must be >= {@value #DATA_OBJECT_HEADER_MINIMUM_SIZE}).
+     * @param totalHeaderSize The total required header size in bytes.
      * @param continuationSize The required continuation size in bytes (must be non-negative).
      */
     public void setDataObjectHeaderAndContinuationSizes(long totalHeaderSize, long continuationSize) {
-        if (totalHeaderSize < DATA_OBJECT_HEADER_MINIMUM_SIZE) {
-            throw new IllegalArgumentException("Data Object Header size must be at least " + DATA_OBJECT_HEADER_MINIMUM_SIZE);
-        }
         if (continuationSize < 0L) {
             throw new IllegalArgumentException("Message continuation size cannot be negative.");
         }
@@ -181,8 +172,7 @@ public class HdfFileAllocation {
     /** Allocates space for a new Object Header block (prefix + messages). */
     public long allocateNextObjectHeader(long messageStorageSize) {
         if (messageStorageSize < 0L) { throw new IllegalArgumentException("Message storage size cannot be negative."); }
-        long allocationSize = DATA_OBJECT_HEADER_MINIMUM_SIZE + messageStorageSize;
-        return allocateGenericBlock(allocationSize);
+        return allocateGenericBlock(messageStorageSize);
     }
 
     /** Allocates space for a new Message Continuation block. */

@@ -1,5 +1,287 @@
 
 
+025-04-06 11:00:04 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=2052, driverInformationAddress=-1
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
+2025-04-06 11:00:04 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfGroup{name=''
+objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
+SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=8, childPointer=800, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=1128, cacheType=0}]
+}}]}
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=712}
+localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 70, 105, 120, 101, 100, 80, 111, 105, 110, 116, 86, 97, 108, 117, 101, 0, 1, 0, 0, 0, 0, 0, 0, 0]... (truncated)}
+dataSet=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 272
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-06T15:00:04Z}
+NilMessage(168){}}}
+HDF5 file scalar.h5 created and written successfully!
+
+
+
+
+
+
+===============
+package org.hdf5javalib.file;
+
+import lombok.Getter;
+
+/**
+ * Calculates and stores the memory layout (addresses/offsets) of key structures
+ * within a simplified HDF5 file representation.
+ *
+ * This class helps determine the starting byte offset for various components like the
+ * superblock, object headers, B-trees, heaps, and the main data segment based on
+ * predefined or adjustable sizes.
+ *
+ * Addresses are calculated sequentially, starting from the superblock at offset 0.
+ * The layout can be recalculated if certain structure sizes (like the data group storage
+ * or message continuation space) change.
+ *
+ * Note: This represents a simplified layout and may not cover all complexities or
+ * variations found in real-world HDF5 files.
+ */
+@Getter // Lombok annotation to automatically generate getter methods for all fields
+public class HdfBufferAllocation {
+
+    // --- Constants for Fixed Sizes ---
+
+    /** The starting address of the HDF5 file (always 0). */
+    private static final long SUPERBLOCK_ADDRESS = 0;
+    /** The fixed size of the HDF5 superblock in bytes. */
+    private static final long SUPERBLOCK_SIZE = 96;
+    /** The fixed size of the Object Header Prefix in bytes. */
+    private static final int OBJECT_HEADER_PREFIX_SIZE = 40;
+    /** The fixed size of a B-tree node header in bytes. */
+    private static final int BTREE_NODE_SIZE = 32;
+    /** The fixed allocated storage size for B-tree nodes in bytes. */
+    private static final int BTREE_STORAGE_SIZE = 512;
+    /** The fixed size of the Local Heap header in bytes. */
+    private static final int LOCAL_HEAP_HEADER_SIZE = 32;
+    /** The fixed size allocated for the Local Heap contents in bytes. */
+    private static final int LOCAL_HEAP_CONTENTS_SIZE = 88;
+    /** The fixed size of the first data group's header/metadata in bytes. */
+    private static final int DATA_GROUP_HEADER_SIZE = 16;
+    /** The fixed size of the Symbol Table Node (SNOD) header in bytes. */
+    private static final int SNOD_HEADER_SIZE = 8;
+    /** The fixed size of a single SNOD entry in bytes. */
+    private static final int SNOD_ENTRY_SIZE = 32;
+    /** The fixed number of SNOD entries allocated space for. */
+    private static final int SNOD_ENTRY_COUNT = 10;
+    /** The fixed total size allocated for SNOD entries. */
+    private static final int SNOD_ENTRY_STORAGE_SIZE = SNOD_ENTRY_SIZE * SNOD_ENTRY_COUNT;
+    /** The minimum starting address for the main data segment (often for alignment or reserved space). */
+    private static final long MIN_DATA_ADDRESS = 2048;
+
+
+    // --- Calculated Addresses ---
+
+    /**
+     * The byte offset of the superblock (always 0).
+     * The superblock contains file-level metadata.
+     */
+    private final long superblockAddress = SUPERBLOCK_ADDRESS;
+
+    /**
+     * The byte offset where the Object Header Prefix begins.
+     * This typically contains metadata for the root group.
+     * Calculated relative to the superblock.
+     */
+    private long objectHeaderPrefixAddress;
+
+    /**
+     * The byte offset where the B-tree structure begins.
+     * Used for managing links within groups.
+     * Calculated relative to the Object Header Prefix.
+     */
+    private long btreeAddress;
+
+    /**
+     * The byte offset where the Local Heap header begins.
+     * Stores small, variable-sized metadata like object names.
+     * Calculated relative to the B-tree and its storage.
+     */
+    private long localHeapAddress;
+
+    /**
+     * The byte offset where the Local Heap contents begin.
+     * Calculated relative to the Local Heap header.
+     */
+    private long localHeapContentsAddress;
+
+    /**
+     * The byte offset where the first Data Group's metadata begins.
+     * Calculated relative to the Local Heap and its contents.
+     */
+    private long dataGroupAddress;
+
+    /**
+     * The byte offset where the Symbol Table Node (SNOD) begins.
+     * Manages entries for objects within a group.
+     * Calculated relative to the Data Group and its storage.
+     */
+    private long snodAddress;
+
+    /**
+     * The byte offset where the storage for message continuation blocks begins.
+     * These blocks hold header message data that doesn't fit in the main object header.
+     * Calculated relative to the SNOD and its entry storage.
+     */
+    private long messageContinuationAddress;
+
+    /**
+     * The calculated byte offset where the main dataset storage area begins.
+     * This is determined by the end of all preceding metadata structures,
+     * ensuring it starts at least at {@link #MIN_DATA_ADDRESS}.
+     */
+    private long dataAddress;
+
+    /**
+     * The calculated byte offset where the Global Heap begins.
+     * Stores larger shared objects referenced by multiple datasets/groups.
+     * This is calculated *after* the main data segment size is known,
+     * using the {@link #computeGlobalHeapAddress(Long)} method.
+     */
+    private long globalHeapAddress;
+
+
+    // --- Variable Sizes (Can be adjusted) ---
+
+    /**
+     * The allocated storage size for the first data group's object header messages in bytes.
+     * This can vary depending on the number and size of attributes, filters, etc.
+     * Defaults to 256. Can be changed via setters.
+     */
+    private int dataGroupStorageSize = 256;
+
+    /**
+     * The allocated size for message continuation blocks in bytes.
+     * Defaults to 0. Can be changed via setters.
+     */
+    private int messageContinuationSpace = 0;
+
+
+    // --- Constructor and Methods ---
+
+    /**
+     * Constructs a new {@code HdfBufferAllocation} instance and performs
+     * the initial calculation of all structure addresses based on default sizes.
+     */
+    public HdfBufferAllocation() {
+        recalc();
+    }
+
+    /**
+     * Recalculates the addresses of all HDF5 structures based on the current
+     * sizes. This method should be called whenever a size affecting the layout
+     * (like {@code dataGroupStorageSize} or {@code messageContinuationSpace}) is changed.
+     */
+    private void recalc() {
+        // Calculate addresses sequentially
+        objectHeaderPrefixAddress = superblockAddress + SUPERBLOCK_SIZE;
+        btreeAddress = objectHeaderPrefixAddress + OBJECT_HEADER_PREFIX_SIZE;
+        localHeapAddress = btreeAddress + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE;
+        localHeapContentsAddress = localHeapAddress + LOCAL_HEAP_HEADER_SIZE;
+        dataGroupAddress = localHeapContentsAddress + LOCAL_HEAP_CONTENTS_SIZE;
+        snodAddress = dataGroupAddress + DATA_GROUP_HEADER_SIZE + dataGroupStorageSize;
+
+        // Calculate the end address of the last metadata structure before data
+        long lastMetadataAddressUsed = snodAddress + SNOD_HEADER_SIZE + SNOD_ENTRY_STORAGE_SIZE;
+
+        // Set the start address for potential message continuation blocks
+        messageContinuationAddress = lastMetadataAddressUsed;
+
+        // Calculate the starting address for the main data segment
+        // It must be after the metadata and any continuation space,
+        // and meet the minimum offset requirement.
+        long potentialDataAddress = lastMetadataAddressUsed + messageContinuationSpace;
+        dataAddress = Math.max(MIN_DATA_ADDRESS, potentialDataAddress);
+
+        // Reset global heap address as it depends on data segment size,
+        // which might change implicitly due to layout shifts.
+        // It needs to be recomputed explicitly later.
+        globalHeapAddress = 0; // Or some other indicator that it's not yet computed
+    }
+
+    /**
+     * Updates the storage size allocated for the data group's object header messages
+     * and the space allocated for message continuation blocks, then recalculates the entire layout.
+     *
+     * @param dataGroupStorageSize The new size in bytes for the data group storage. Must be non-negative.
+     * @param messageContinuationSpace The new size in bytes for message continuation. Must be non-negative.
+     * @throws IllegalArgumentException if either size is negative.
+     */
+    public void setDataGroupAndContinuationStorageSize(int dataGroupStorageSize, int messageContinuationSpace) {
+        if (dataGroupStorageSize < 0 || messageContinuationSpace < 0) {
+            throw new IllegalArgumentException("Sizes cannot be negative.");
+        }
+        this.dataGroupStorageSize = dataGroupStorageSize;
+        this.messageContinuationSpace = messageContinuationSpace;
+        recalc();
+    }
+
+    /**
+     * Expands (or sets) the storage size allocated for the data group's object header messages
+     * and recalculates the layout.
+     *
+     * @param newDataGroupStorageSize The new size in bytes for the data group storage. Must be non-negative.
+     * @return The updated {@code dataGroupStorageSize}.
+     * @throws IllegalArgumentException if the size is negative.
+     */
+    public int setDataGroupStorageSize(int newDataGroupStorageSize) {
+         if (newDataGroupStorageSize < 0) {
+            throw new IllegalArgumentException("Size cannot be negative.");
+        }
+        this.dataGroupStorageSize = newDataGroupStorageSize;
+        recalc();
+        return this.dataGroupStorageSize; // Return the newly set size
+    }
+
+
+    /**
+     * Computes and stores the starting address of the Global Heap.
+     * The Global Heap typically follows the main data segment in the file.
+     * This method should be called *after* the size of the data segment is known
+     * and *after* the initial layout (including {@code dataAddress}) has been calculated.
+     *
+     * @param dataSegmentSize The total size of the data segment(s) in bytes. Must be non-negative.
+     * @throws IllegalArgumentException if dataSegmentSize is null or negative.
+     * @throws IllegalStateException if dataAddress has not been properly calculated (is zero or negative, which shouldn't happen after recalc).
+     */
+    public void computeGlobalHeapAddress(Long dataSegmentSize) {
+        if (dataSegmentSize == null || dataSegmentSize < 0) {
+            throw new IllegalArgumentException("Data segment size cannot be null or negative.");
+        }
+        // Ensure dataAddress is valid before computation
+        if (dataAddress <= 0 && MIN_DATA_ADDRESS > 0) {
+             // dataAddress should be at least MIN_DATA_ADDRESS after recalc, unless MIN_DATA_ADDRESS is 0.
+             // This check helps catch potential state issues if recalc() wasn't called or failed.
+            throw new IllegalStateException("Data address is not validly calculated. Ensure recalc() was performed.");
+        }
+        this.globalHeapAddress = dataAddress + dataSegmentSize;
+    }
+
+    // --- Getters ---
+    // Lombok's @Getter automatically creates public getters for all fields:
+    // getSuperblockAddress(), getSuperblockSize(), getObjectHeaderPrefixAddress(), etc.
+    // Explicit Javadoc comments on the fields serve as documentation for the getters.
+
+    // --- HDF5 File Structure Descriptions (from original comments, slightly adapted) ---
+    // Superblock: Contains metadata about file format versions, data storage, and offsets. Starts at byte 0.
+    // Object Header Prefix: Metadata for the first/root group (attributes, layout, etc.). Follows superblock.
+    // B-tree: Organizes links within groups for efficient access. Follows Object Header Prefix.
+    // Local Heap: Stores small metadata (object names, soft links). Follows B-tree storage.
+    // First Group (Data Group): Metadata header for the first group. Follows Local Heap contents.
+    // Data Group Storage: Variable space for the group's header messages. Follows group header.
+    // SNOD (Symbol Table Node): Organizes entries (datasets, subgroups) within the group. Follows Data Group Storage.
+    // SNOD Entries: Storage for individual SNOD entries. Follows SNOD header.
+    // Message Continuation: Optional space for oversized header messages. Follows SNOD entry storage.
+    // Data Segment: Where actual dataset raw data is stored. Starts after metadata/continuation, at least at MIN_DATA_ADDRESS.
+    // Global Heap: Storage for large, shared objects. Calculated to start after the data segment.
+}
 
 
 
