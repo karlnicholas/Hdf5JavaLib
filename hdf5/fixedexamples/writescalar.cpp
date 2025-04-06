@@ -1,4 +1,12 @@
-#include "H5Cpp.h"
+#include <iostream>
+#include <H5Cpp.h>
+#include <random>
+#include <vector>
+#include <cstring>  // For memcpy
+
+using namespace H5;
+const H5std_string ATTRIBUTE_NAME("GIT root revision");
+
 
 int main() {
     // Create or open an HDF5 file.
@@ -14,7 +22,15 @@ int main() {
     // Create the dataset with the fixed-point datatype.
     H5::DataSet dataset = file.createDataSet("FixedPointValue", intType, scalarSpace);
 
-    // Write a single fixed-point value.
+    // ✅ ADD ATTRIBUTE: "GIT root revision"
+    H5std_string attribute_value = "Revision: , URL: ";
+    StrType attr_type(PredType::C_S1, attribute_value.size());
+    DataSpace attr_space(H5S_SCALAR);
+    Attribute attribute = dataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
+    attribute.write(attr_type, attribute_value);
+    attribute.close();
+
+        // Write a single fixed-point value.
     int value = 42;
     dataset.write(&value, H5::PredType::NATIVE_INT);
 

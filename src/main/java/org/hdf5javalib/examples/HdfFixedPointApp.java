@@ -112,7 +112,7 @@ public class HdfFixedPointApp {
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
-        tryHdfApiScalar("scalar_new.h5");
+        tryHdfApiScalar("scalar.h5");
 //        tryHdfApiInts("vector_each.h5", this::writeEach);
 //        tryHdfApiInts("vector_all.h5", this::writeAll);
 //        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);
@@ -351,7 +351,7 @@ public class HdfFixedPointApp {
             // Create dataset
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
 
-//            HdfTestUtils.writeVersionAttribute(dataset);
+            HdfTestUtils.writeVersionAttribute(dataset);
 
             ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
             HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) 42), fixedPointDatatype, byteBuffer);

@@ -49,7 +49,7 @@ public class HdfCompoundApp {
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                try ( HdfDataSet dataSet = reader.findDataset("data", channel, reader.getRootGroup()) ) {
+                try ( HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup()) ) {
                     displayData(channel, dataSet);
                 }
             }
@@ -89,7 +89,7 @@ public class HdfCompoundApp {
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
-        tryHdfApiCompound();
+//        tryHdfApiCompound();
     }
 
     private void writeVersionAttribute(HdfDataSet dataset) {
@@ -241,7 +241,7 @@ public class HdfCompoundApp {
                         .uint32_Val(uint32_Val(count))
                         .int64_Val(int64_Val(count))
                         .uint64_Val(uint64_Val(count))
-                        .bitfieldVal(BigDecimal.valueOf(count + 1).add(BigDecimal.valueOf((count % 4) * 0.25)))
+                        .scaledUintVal(BigDecimal.valueOf(count + 1).add(BigDecimal.valueOf((count % 4) * 0.25)))
                         .build();
                 buffer.clear();
                 HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, buffer, CompoundExample.class);
@@ -278,7 +278,7 @@ public class HdfCompoundApp {
         private Integer uint16_Val;
         private Long uint32_Val;
         private BigInteger uint64_Val;
-        private BigDecimal bitfieldVal;
+        private BigDecimal scaledUintVal;
     }
 
     @Data
@@ -291,7 +291,7 @@ public class HdfCompoundApp {
 
 
     public void displayData(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {
-        System.out.println("Count = " + new TypedDataSource<>(dataSet, fileChannel, HdfCompound.class).streamVector().count());
+//        System.out.println("Count = " + new TypedDataSource<>(dataSet, fileChannel, HdfCompound.class).streamVector().count());
 
         System.out.println("Ten Rows:");
         new TypedDataSource<>(dataSet, fileChannel, HdfCompound.class)
@@ -308,6 +308,7 @@ public class HdfCompoundApp {
                 .streamVector()
                 .filter(c -> c.getRecordId() < 1010)
                 .forEach(c -> System.out.println("Row: " + c));
+        System.out.println("DONE");
     }
 
     public void tryCompoundSpliterator(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {

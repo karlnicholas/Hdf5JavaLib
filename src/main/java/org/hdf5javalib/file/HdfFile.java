@@ -119,7 +119,7 @@ public class HdfFile {
         // some convoluted logic for adding globalHeap data if needed
         ByteBuffer globalHeapBuffer = null;
         long globalHeapAddress = -1;
-        long globalHeapSize = globalHeap.getWriteBufferSize();
+        long globalHeapSize = globalHeap.getWriteBufferSize(-1);
         if ( globalHeapSize > 0 ) {
             globalHeapAddress = endOfFileAddress;
             endOfFileAddress += globalHeapSize;

@@ -81,7 +81,7 @@ public class VariableLengthDatatype implements HdfDatatype {
         long offset = buffer.getLong();
         int index = buffer.getInt();
 
-        byte[] workingBytes = globalHeap.getDataBytes(count, offset, index);
+        byte[] workingBytes = globalHeap.getDataBytes(offset, index);
         if ( getClassBitField().get(0)) {
             return new String(workingBytes, getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
         } else {
@@ -100,7 +100,7 @@ public class VariableLengthDatatype implements HdfDatatype {
         long offset = buffer.getLong();
         int index = buffer.getInt();
 
-        byte[] workingBytes = globalHeap.getDataBytes(count, offset, index);
+        byte[] workingBytes = globalHeap.getDataBytes(offset, index);
         int datatypeSize = hdfDatatype.getSize();
         HdfData[] result = new HdfData[count];
         for (int i = 0; i < count; i++) {

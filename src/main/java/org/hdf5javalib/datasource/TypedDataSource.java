@@ -43,7 +43,7 @@ public class TypedDataSource<T> {
         return dimensions.clone();
     }
 
-    private void initializeGlobalHeap(int length, long offset, int index) {
+    private void initializeGlobalHeap(long offset) {
         try {
             fileChannel.position(offset);
             globalHeap.readFromFileChannel(fileChannel, (short)8);

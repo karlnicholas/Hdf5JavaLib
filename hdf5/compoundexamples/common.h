@@ -1,7 +1,9 @@
+// common.h
 #ifndef COMMON_H
 #define COMMON_H
 
 #include <hdf5.h>
+#include <cstdint> // Include for fixed-width integer types like uint64_t etc.
 
 #define FILENAME "compound_example.h5"
 #define DATASETNAME "CompoundData"
@@ -10,7 +12,7 @@
 struct Record {
     uint64_t recordId;
     char fixedStr[10];
-    hvl_t varStr; // Variable-length string
+    char* varStr; // MODIFIED: Changed from hvl_t to char* for VLEN string
     float floatVal;
     double doubleVal;
     int8_t int8_Val;
@@ -21,7 +23,7 @@ struct Record {
     uint32_t uint32_Val;
     int64_t int64_Val;
     uint64_t uint64_Val;
-    uint64_t bitfieldVal; // Bitfield: offset 7, precision 57
+    uint64_t scaledUintVal; // Represents data that is a scaled 
 };
 
 #endif // COMMON_H
