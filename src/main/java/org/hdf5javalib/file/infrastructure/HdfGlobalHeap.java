@@ -1,16 +1,16 @@
 package org.hdf5javalib.file.infrastructure;
 
 // Added import for the singleton
-import org.hdf5javalib.file.HdfFileAllocation;
 
-import lombok.Getter; // Assuming used by other parts of your project
-import org.hdf5javalib.dataclass.HdfFixedPoint; // Assuming this class is available
+import lombok.Getter;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.file.HdfFileAllocation;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
-import java.util.BitSet; // Assuming needed by HdfFixedPoint
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
