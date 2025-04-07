@@ -27,15 +27,14 @@ public class HdfFile {
     // initial setup without Dataset
     private final HdfSuperblock superblock;
     private final HdfGroup rootGroup;
-    private final HdfFileAllocation fileAllocation;
     private final HdfGlobalHeap globalHeap;
 
     public HdfFile(String fileName, StandardOpenOption[] openOptions) {
+        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         this.fileName = fileName;
         this.openOptions = openOptions;
-        this.fileAllocation = new HdfFileAllocation();
         // this.globalHeap = new HdfGlobalHeap(bufferAllocation::getGlobalHeapAddress);
-        this.globalHeap = new HdfGlobalHeap(()->fileAllocation.getGlobalHeapOffset());
+        this.globalHeap = new HdfGlobalHeap();
 
         // 100320
         superblock = new HdfSuperblock(0, 0, 0, 0,
@@ -69,16 +68,17 @@ public class HdfFile {
     public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
         hdfDatatype.setGlobalHeap(globalHeap);
         // return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage, bufferAllocation.getDataGroupAddress());
-        return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage, fileAllocation.getDataObjectHeaderOffset());
+        return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage);
     }
 
-    protected void recomputeGlobalHeapAddress(HdfDataSet dataSet) {
-        HdfFixedPoint dimensionSize = dataSet.getDataObjectHeaderPrefix().findMessageByType(DataLayoutMessage.class).orElseThrow().getDimensionSizes()[0];
-        // bufferAllocation.computeGlobalHeapAddress(dimensionSize.getInstance(Long.class));
-        fileAllocation.computeGlobalHeapOffset(dimensionSize.getInstance(Long.class));
-    }
-
+//    protected void recomputeGlobalHeapAddress(HdfDataSet dataSet) {
+//        HdfFixedPoint dimensionSize = dataSet.getDataObjectHeaderPrefix().findMessageByType(DataLayoutMessage.class).orElseThrow().getDimensionSizes()[0];
+//        // bufferAllocation.computeGlobalHeapAddress(dimensionSize.getInstance(Long.class));
+//        fileAllocation.computeGlobalHeapOffset(dimensionSize.getInstance(Long.class));
+//    }
+//
     public long write(Supplier<ByteBuffer> bufferSupplier) throws IOException {
+        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
             // fileChannel.position(bufferAllocation.getDataAddress());
             fileChannel.position(fileAllocation.getDataObjectDataOffset());
@@ -94,6 +94,7 @@ public class HdfFile {
     }
 
     public long write(ByteBuffer buffer, HdfDataSet hdfDataSet) throws IOException {
+        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
             // fileChannel.position(bufferAllocation.getDataAddress());
             fileChannel.position(fileAllocation.getDataObjectDataOffset());
@@ -106,6 +107,7 @@ public class HdfFile {
     }
 
     public void close() throws IOException {
+        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         // long endOfFileAddress = bufferAllocation.getDataAddress();
         long endOfFileAddress = fileAllocation.getDataObjectDataOffset();
         HdfFixedPoint[] dimensionSizes = rootGroup.getDataSet().getDataObjectHeaderPrefix()

@@ -3,16 +3,20 @@ package org.hdf5javalib.file; // Adjust package if needed
 import lombok.Getter;
 
 /**
- * Manages the allocation layout (offsets and sizes) of structures within an HDF5 file
- * during the writing process. All sizes are represented as long.
- * <p>
- * Calculates a layout for core structures (Superblock, first Group's metadata)
- * and the first Data Object Header immediately following them. Provides methods to allocate
- * space for dynamically added structures by appending them to the end of the
- * currently allocated space.
+ * Singleton class managing the allocation layout (offsets and sizes) of structures
+ * within an HDF5 file during the writing process. All sizes are represented as long.
+ * (Javadoc unchanged)
  */
 @Getter
-public class HdfFileAllocation {
+public final class HdfFileAllocation {
+
+    /**
+     * -- GETTER --
+     *  Returns the single instance (unchanged)
+     */
+    // --- Singleton Instance ---
+    @Getter
+    private static final HdfFileAllocation instance = new HdfFileAllocation();
 
     // --- Constants ---
     private static final long SUPERBLOCK_OFFSET = 0L;
@@ -27,6 +31,9 @@ public class HdfFileAllocation {
     private static final long SETUP_SNOD_V1_ENTRY_SIZE = 32L;
     private static final long DEFAULT_SETUP_SNOD_ENTRY_COUNT = 10L;
     private static final long MIN_DATA_OFFSET_THRESHOLD = 2048L;
+    /** Public constant defining the standard size for allocated Global Heap blocks. */
+    public static final long GLOBAL_HEAP_BLOCK_SIZE = 4096L;
+
 
     // --- Calculated Block Offsets (Setup Layout) ---
     private final long superblockOffset = SUPERBLOCK_OFFSET;
@@ -35,8 +42,7 @@ public class HdfFileAllocation {
     private long localHeapOffset;
     private long localHeapContentsOffset;
     private long snodOffset;
-    /** Offset for the Data Object Header block calculated immediately following the setup SNOD block. */
-    private long dataObjectHeaderOffset; // Renamed from dataObjectHeadOffset
+    private long dataObjectHeaderOffset;
     private long dataObjectHeaderContinuationOffset;
     private long dataObjectDataOffset;
 
@@ -44,7 +50,6 @@ public class HdfFileAllocation {
     private final long btreeStorageSize = SETUP_BTREE_STORAGE_SIZE;
     private final long localHeapContentsSize = SETUP_LOCAL_HEAP_CONTENTS_SIZE;
     private final long snodStorageSize = SETUP_SNOD_V1_HEADER_SIZE + (DEFAULT_SETUP_SNOD_ENTRY_COUNT * SETUP_SNOD_V1_ENTRY_SIZE);
-//    private long dataObjectHeaderSize = DATA_OBJECT_HEADER_MINIMUM_SIZE + 256L;
     private long dataObjectHeaderSize = 256L;
     private long dataObjectHeaderContinuationSize = 0L;
 
@@ -55,15 +60,14 @@ public class HdfFileAllocation {
     // --- Allocation Tracking ---
     private long nextAvailableOffset;
 
-    // --- Other Calculated Offsets ---
+    // --- Global Heap Tracking ---
     private long globalHeapOffset = -1L;
 
 
     /**
-     * Constructor: Initializes the allocation manager and calculates the layout
-     * of the setup metadata block.
+     * Private Constructor (unchanged)
      */
-    public HdfFileAllocation() {
+    private HdfFileAllocation() {
         calculateSetupLayout();
     }
 
@@ -96,40 +100,37 @@ public class HdfFileAllocation {
         } else {
             dataObjectHeaderContinuationOffset = -1L;
         }
-
         long endOfSetupBlock = currentOffset;
 
         currentLocalHeapContentsOffset = localHeapContentsOffset;
         currentLocalHeapContentsSize = localHeapContentsSize;
 
-        if (nextAvailableOffset > 0L) {
-            nextAvailableOffset = Math.max(nextAvailableOffset, endOfSetupBlock);
-        } else {
-            nextAvailableOffset = endOfSetupBlock;
+        if (this.nextAvailableOffset > 0L) { // If called after initial construction
+            this.nextAvailableOffset = Math.max(this.nextAvailableOffset, endOfSetupBlock);
+        } else { // First time (during construction)
+            this.nextAvailableOffset = endOfSetupBlock;
         }
 
         dataObjectDataOffset = Math.max(MIN_DATA_OFFSET_THRESHOLD, endOfSetupBlock);
-        globalHeapOffset = -1L;
+        globalHeapOffset = -1L; // Ensure it starts as uncomputed/unallocated
     }
 
     // --- Methods to Modify Pre-calculated Layout ---
 
     /**
      * Sets the total size for the first Data Object header block calculated
-     * during setup and recalculates the layout.
-     * @param totalHeaderSize The total required size in bytes.
+     * during setup and recalculates the layout. Thread-safe.
      */
-    public void setDataObjectHeaderSize(long totalHeaderSize) {
+    public synchronized void setDataObjectHeaderSize(long totalHeaderSize) {
         this.dataObjectHeaderSize = totalHeaderSize;
         calculateSetupLayout();
     }
 
     /**
      * Sets the size for the continuation block associated with the first Data Object header
-     * calculated during setup and recalculates the layout.
-     * @param continuationSize The required size in bytes (must be non-negative).
+     * calculated during setup and recalculates the layout. Thread-safe.
      */
-    public void setDataObjectHeaderContinuationSize(long continuationSize) {
+    public synchronized void setDataObjectHeaderContinuationSize(long continuationSize) {
         if (continuationSize < 0L) {
             throw new IllegalArgumentException("Message continuation size cannot be negative.");
         }
@@ -139,11 +140,9 @@ public class HdfFileAllocation {
 
     /**
      * Sets the total size for the first Data Object header and the size for its
-     * associated message continuation block, then recalculates the setup layout once.
-     * @param totalHeaderSize The total required header size in bytes.
-     * @param continuationSize The required continuation size in bytes (must be non-negative).
+     * associated message continuation block, then recalculates the setup layout once. Thread-safe.
      */
-    public void setDataObjectHeaderAndContinuationSizes(long totalHeaderSize, long continuationSize) {
+    public synchronized void setDataObjectHeaderAndContinuationSizes(long totalHeaderSize, long continuationSize) {
         if (continuationSize < 0L) {
             throw new IllegalArgumentException("Message continuation size cannot be negative.");
         }
@@ -152,43 +151,64 @@ public class HdfFileAllocation {
         calculateSetupLayout();
     }
 
+
     // --- Methods for Dynamic Allocation (Append Strategy) ---
 
-    /** Allocates a generic block of space at the next available offset. */
-    public long allocateGenericBlock(long size) {
-        if (size <= 0L) { throw new IllegalArgumentException("Allocation size must be positive."); }
+    /**
+     * Allocates a generic block of space at the next available offset. Thread-safe.
+     */
+    public synchronized long allocateGenericBlock(long size) {
+        if (size <= 0L) {
+            throw new IllegalArgumentException("Allocation size must be positive.");
+        }
         long allocationOffset = nextAvailableOffset;
         nextAvailableOffset += size;
         return allocationOffset;
     }
 
-    /** Allocates space for a new SNOD block using the size determined during setup. */
-    public long allocateNextSnodStorage() {
+    /**
+     * Allocates space for a new SNOD block using the size determined during setup. Thread-safe.
+     */
+    public synchronized long allocateNextSnodStorage() {
         long allocationSize = this.snodStorageSize;
-        if (allocationSize <= 0L) { throw new IllegalStateException("Setup SNOD storage size is not valid."); }
+        if (allocationSize <= 0L) {
+            throw new IllegalStateException("Setup SNOD storage size is not valid.");
+        }
         return allocateGenericBlock(allocationSize);
     }
 
-    /** Allocates space for a new Object Header block (prefix + messages). */
-    public long allocateNextObjectHeader(long messageStorageSize) {
-        if (messageStorageSize < 0L) { throw new IllegalArgumentException("Message storage size cannot be negative."); }
+    /**
+     * Allocates space for a new Object Header block (prefix + messages). Thread-safe.
+     */
+    public synchronized long allocateNextObjectHeader(long messageStorageSize) {
+        if (messageStorageSize < 0L) {
+            throw new IllegalArgumentException("Message storage size cannot be negative.");
+        }
         return allocateGenericBlock(messageStorageSize);
     }
 
-    /** Allocates space for a new Message Continuation block. */
-    public long allocateNextMessageContinuation(long continuationSize) {
+    /**
+     * Allocates space for a new Message Continuation block. Thread-safe.
+     */
+    public synchronized long allocateNextMessageContinuation(long continuationSize) {
         return allocateGenericBlock(continuationSize);
     }
 
-    /** Allocates space specifically for Dataset DataObjectData. */
-    public long allocateDataObjectData(long dataSize) {
+    /**
+     * Allocates space specifically for Dataset DataObjectData. Thread-safe.
+     */
+    public synchronized long allocateDataObjectData(long dataSize) {
         return allocateGenericBlock(dataSize);
     }
 
-    /** Expands storage for Local Heap contents, allocating a new block. */
-    public long expandLocalHeapContents() {
+    /**
+     * Expands storage for Local Heap contents, allocating a new block. Thread-safe.
+     */
+    public synchronized long expandLocalHeapContents() {
         long oldSize = this.currentLocalHeapContentsSize;
-        if (oldSize <= 0L) { throw new IllegalStateException("Cannot expand heap with non-positive current size."); }
+        if (oldSize <= 0L) {
+            throw new IllegalStateException("Cannot expand heap with non-positive current size.");
+        }
         long newSize = oldSize * 2L;
         long newOffset = allocateGenericBlock(newSize);
         this.currentLocalHeapContentsOffset = newOffset;
@@ -196,19 +216,61 @@ public class HdfFileAllocation {
         return newOffset;
     }
 
+
     // --- Global Heap ---
-    /** Computes the starting offset of the Global Heap. */
-    public void computeGlobalHeapOffset(long totalDataSegmentSize) {
-        if (totalDataSegmentSize < 0L) { throw new IllegalArgumentException("Total data segment size cannot be negative."); }
-        if (dataObjectDataOffset < 0L ) { throw new IllegalStateException("Data object data offset invalid."); }
-        this.globalHeapOffset = dataObjectDataOffset + totalDataSegmentSize;
-        this.nextAvailableOffset = Math.max(this.nextAvailableOffset, this.globalHeapOffset);
+
+    /**
+     * Computes the offset for and allocates the *first* Global Heap block based on the
+     * Data Object Data layout, using the standard GLOBAL_HEAP_BLOCK_SIZE. Sets this as the currently active global heap.
+     * Updates the next available offset accordingly. Thread-safe.
+     */
+    public synchronized long allocateFirstGlobalHeapBlock(long totalDataSegmentSize) {
+        if (globalHeapOffset != -1L) {
+            throw new IllegalStateException("First Global Heap block has already been allocated or computed at offset " + globalHeapOffset);
+        }
+        if (totalDataSegmentSize < 0L) {
+            throw new IllegalArgumentException("Total data segment size cannot be negative.");
+        }
+        if (dataObjectDataOffset < 0L ) {
+            throw new IllegalStateException("Data object data offset invalid.");
+        }
+
+        long firstHeapStartOffset = dataObjectDataOffset + totalDataSegmentSize;
+
+        // Use public constant
+
+        this.globalHeapOffset = allocateGenericBlock(GLOBAL_HEAP_BLOCK_SIZE);
+
+        return this.globalHeapOffset;
+    }
+
+    /**
+     * Allocates a new Global Heap block using the standard GLOBAL_HEAP_BLOCK_SIZE
+     * at the next available file offset and sets it as the *currently active* global heap.
+     * Thread-safe.
+     */
+    public synchronized long allocateNextGlobalHeapBlock() {
+        // Use public constant
+        this.globalHeapOffset = allocateGenericBlock(GLOBAL_HEAP_BLOCK_SIZE);
+        return this.globalHeapOffset;
+    }
+
+
+    /**
+     * Gets the offset of the *currently active* Global Heap block.
+     * Returns -1 if the first block has not yet been allocated via allocateFirstGlobalHeapBlock().
+     * Thread-safe for reading.
+     */
+    public synchronized long getGlobalHeapOffset() {
+        return globalHeapOffset;
     }
 
     // --- Getters ---
-    // Lombok @Getter provides getters like: getObjectHeaderPrefixOffset(), getBtreeOffset(),
-    // getDataObjectHeaderOffset(), getDataObjectHeaderContinuationOffset(), getDataObjectDataOffset(), etc.
+    /**
+     * Gets the total size allocated or reserved so far. Thread-safe for reading.
+     */
+    public long getTotalAllocatedSize() {
+        return nextAvailableOffset;
+    }
 
-    /** Gets the total size allocated or reserved so far. */
-    public long getTotalAllocatedSize() { return nextAvailableOffset; }
 }

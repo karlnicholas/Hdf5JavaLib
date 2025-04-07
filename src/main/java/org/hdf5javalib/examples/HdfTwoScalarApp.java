@@ -15,15 +15,15 @@ import java.util.Objects;
  * Hello world!
  *
  */
-public class HdfTenScalarApp {
+public class HdfTwoScalarApp {
     public static void main(String[] args) {
-        new HdfTenScalarApp().run();
+        new HdfTwoScalarApp().run();
     }
 
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(this.getClass().getResource("/scalar_datasets.h5")).getFile();
+            String filePath = Objects.requireNonNull(this.getClass().getResource("/two_scalar_datasets.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);

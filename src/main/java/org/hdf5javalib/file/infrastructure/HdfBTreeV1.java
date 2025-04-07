@@ -238,12 +238,12 @@ public class HdfBTreeV1 {
     public boolean isLeafLevelNode() { return this.nodeLevel == 0; }
     public boolean isInternalLevelNode() { return this.nodeLevel > 0; }
 
-    public int addGroup(HdfFileAllocation hdfFileAllocation, HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents, HdfGroupSymbolTableNode symbolTableNode) {
+    public int addGroup(HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents, HdfGroupSymbolTableNode symbolTableNode) {
         if (entriesUsed >= 4) {
             throw new IllegalStateException("Cannot add more than 4 groups to this B-tree node.");
         }
 
-        int linkNameOffset = localHeap.addToHeap(objectName, localHeapContents, hdfFileAllocation);
+        int linkNameOffset = localHeap.addToHeap(objectName, localHeapContents);
         HdfBTreeEntry newEntry = new HdfBTreeEntry(HdfFixedPoint.of(linkNameOffset), objectAddress, symbolTableNode);
         entries.add(newEntry);
         entriesUsed++;

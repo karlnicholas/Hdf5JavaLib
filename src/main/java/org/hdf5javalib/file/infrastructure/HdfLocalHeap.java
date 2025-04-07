@@ -35,8 +35,8 @@ public class HdfLocalHeap {
         this("HEAP", 0, heapContentsSize, HdfFixedPoint.of(0), heapContentsOffset);
     }
 
-    public int addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents,
-                         HdfFileAllocation fileAllocation) {
+    public int addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents) {
+        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         byte[] objectNameBytes = objectName.getBytes();
         int freeListOffset = this.freeListOffset.getInstance(Long.class).intValue();
         byte[] heapData = localHeapContents.getHeapData();
