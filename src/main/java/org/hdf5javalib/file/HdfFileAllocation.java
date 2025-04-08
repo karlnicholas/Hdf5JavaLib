@@ -1,10 +1,10 @@
-package org.hdf5javalib.file; // Adjust package if needed
+package org.hdf5javalib.file;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
-import java.util.LinkedHashMap; // Use LinkedHashMap to preserve order
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -79,17 +79,14 @@ public final class HdfFileAllocation {
         btreeOffset = currentOffset; currentOffset += btreeTotalSize;
         localHeapHeaderOffset = currentOffset; currentOffset += SETUP_LOCAL_HEAP_HEADER_SIZE; // Assign LH Header offset
         initialLocalHeapContentsOffset = currentOffset; currentOffset += initialLocalHeapContentsSize; // Assign *initial* LH Contents offset
-        snodOffset = currentOffset; currentOffset += snodStorageSize;
-        long endOfSetupBlock = currentOffset;
-        log.debug("End of fixed setup block calculated at: {}", endOfSetupBlock);
-
+        // Do not set snodOffset here; defer until after first dataset header allocation
         currentLocalHeapContentsOffset = initialLocalHeapContentsOffset; // Track initial LH contents offset
         currentLocalHeapContentsSize = initialLocalHeapContentsSize;     // Track initial LH contents size
         globalHeapOffset = -1L;
         this.datasetAllocations.clear();
         this.dataBlocksAllocated = false;
-        this.nextAvailableOffset = Math.max(MIN_DATA_OFFSET_THRESHOLD, endOfSetupBlock);
-        log.debug("Initial layout complete. Next available offset set to: {}", this.nextAvailableOffset);
+        this.nextAvailableOffset = currentOffset; // Set to 800 initially, before SNOD or MIN_DATA_OFFSET_THRESHOLD
+        log.debug("Initial layout complete up to local heap contents. Next available offset set to: {}", this.nextAvailableOffset);
     }
 
     // --- Recalculation Core ---
@@ -97,16 +94,22 @@ public final class HdfFileAllocation {
     private synchronized void recalculateLayout() {
         if (dataBlocksAllocated) { log.error("Internal error: recalculateLayout called after dataBlocksAllocated is true."); return; }
         log.debug("Recalculating dynamic layout...");
-        long currentOffset = snodOffset + snodStorageSize; // Start after last fixed setup block
-        currentOffset = Math.max(MIN_DATA_OFFSET_THRESHOLD, currentOffset);
+        long currentOffset = initialLocalHeapContentsOffset + initialLocalHeapContentsSize; // Start after initial local heap contents (800)
         log.trace("Recalc starting offset: {}", currentOffset);
 
-        // Order: Dataset Headers -> Global Heap -> Expanded Local Heap -> Continuations
+        // Order: Dataset Headers -> SNOD -> Global Heap -> Expanded Local Heap -> Continuations
         for (DatasetAllocationInfo info : datasetAllocations.values()) {
             info.setHeaderOffset(currentOffset);
             log.trace(" Recalc Dataset Header '{}': Offset={}, Size={}", getDatasetName(info), currentOffset, info.getHeaderSize());
             currentOffset += info.getHeaderSize();
         }
+        // Place SNOD after all dataset headers
+        snodOffset = currentOffset;
+        log.trace(" Recalc SNOD: Offset={}, Size={}", snodOffset, snodStorageSize);
+        currentOffset += snodStorageSize;
+        // Apply MIN_DATA_OFFSET_THRESHOLD only for data or later blocks
+        currentOffset = Math.max(MIN_DATA_OFFSET_THRESHOLD, currentOffset);
+
         if (globalHeapOffset != -1L) { // Place first allocated GH block
             globalHeapOffset = currentOffset;
             log.trace(" Recalc Global Heap: Offset={}, Size={}", currentOffset, GLOBAL_HEAP_BLOCK_SIZE);
@@ -120,8 +123,8 @@ public final class HdfFileAllocation {
         } else if (currentLocalHeapContentsSize != initialLocalHeapContentsSize) {
             log.warn("Recalc found local heap size mismatch but offset matches initial. Size={}, Offset={}", currentLocalHeapContentsSize, currentLocalHeapContentsOffset);
         }
-        // Add other dynamic block recalc logic here...
-        for (DatasetAllocationInfo info : datasetAllocations.values()) { // Place allocated continuations last
+        // Place allocated continuations last
+        for (DatasetAllocationInfo info : datasetAllocations.values()) {
             if (info.getContinuationSize() != -1L) {
                 info.setContinuationOffset(currentOffset);
                 log.trace(" Recalc Dataset Continuation '{}': Offset={}, Size={}", getDatasetName(info), currentOffset, info.getContinuationSize());
@@ -226,7 +229,18 @@ public final class HdfFileAllocation {
         if (datasetAllocations.containsKey(datasetName)) throw new IllegalStateException("Dataset '" + datasetName + "' already allocated.");
         if (dataBlocksAllocated) log.warn("Allocating dataset storage after data lock; header resizing disabled.");
         long headerAllocSize = DEFAULT_DATASET_HEADER_ALLOCATION_SIZE;
-        long headerOffset = allocateBlock(headerAllocSize);
+        long headerOffset;
+        if (datasetAllocations.isEmpty()) {
+            // For the first dataset, place header at 800 (after local heap contents)
+            headerOffset = initialLocalHeapContentsOffset + initialLocalHeapContentsSize; // 712 + 88 = 800
+            nextAvailableOffset = headerOffset + headerAllocSize; // 800 + 272 = 1072
+            snodOffset = nextAvailableOffset; // Shift SNOD to after the header (1072)
+            nextAvailableOffset += snodStorageSize; // 1072 + 328 = 1400
+        } else {
+            // For subsequent datasets, use nextAvailableOffset and recalculate
+            headerOffset = allocateBlock(headerAllocSize);
+            recalculateLayout(); // Adjust layout for additional datasets
+        }
         DatasetAllocationInfo info = new DatasetAllocationInfo(headerOffset, headerAllocSize);
         datasetAllocations.put(datasetName, info);
         log.debug("Allocated initial dataset storage for '{}': {}", datasetName, info);
@@ -303,7 +317,7 @@ public final class HdfFileAllocation {
     }
     // ============================================
 
-    public long getSnodOffset() { return snodOffset; }                            // Root group SNOD offset
+    public synchronized long getSnodOffset() { return snodOffset; } // Root group SNOD offset
 
     // --- Utility / Reset ---
     public synchronized void reset() {

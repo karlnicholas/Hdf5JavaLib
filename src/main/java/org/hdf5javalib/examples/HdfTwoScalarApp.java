@@ -43,7 +43,7 @@ public class HdfTwoScalarApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-//        tryHdfApiScalar("two_scalar_datasets.h5");
+        tryHdfApiScalar("two_scalar_datasets.h5");
     }
 
     private void tryHdfApiScalar(String FILE_NAME) {
@@ -63,9 +63,9 @@ public class HdfTwoScalarApp {
                     FixedPointDatatype.createClassBitField( false, false, false, true),
                     (short)4, (short)0, (short)32);
 
-            for ( int i = 1; i <= 2; i++ ) {
+//            for ( int i = 1; i <= 2; i++ ) {
                 // Create dataset
-                HdfDataSet dataset = file.createDataSet(DATASET_NAME+i, fixedPointDatatype, dataSpaceMessage);
+                HdfDataSet dataset = file.createDataSet(DATASET_NAME+1, fixedPointDatatype, dataSpaceMessage);
 
                 ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
                 HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) 42), fixedPointDatatype, byteBuffer);
@@ -73,16 +73,16 @@ public class HdfTwoScalarApp {
                 // Write to dataset
                 dataset.write(byteBuffer);
 
-                dataset.close();
-            }
+//                dataset.close();
+//            }
+//
+//            file.close();
 
-            file.close();
-
-            // auto close
-            System.out.println("HDF5 file " + FILE_NAME + " created and written successfully!");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        // auto close
+        System.out.println("HDF5 file " + FILE_NAME + " created and written successfully!");
     }
 
 }

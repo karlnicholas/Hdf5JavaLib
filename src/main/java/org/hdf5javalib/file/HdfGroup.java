@@ -10,6 +10,7 @@ import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.file.infrastructure.*;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -17,7 +18,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 @Getter
-public class HdfGroup {
+public class HdfGroup implements Closeable {
     private final HdfFile hdfFile;
     private final String name;
     private final HdfObjectHeaderPrefixV1 objectHeader;
@@ -167,4 +168,8 @@ public class HdfGroup {
                 "}";
     }
 
+    @Override
+    public void close() throws IOException {
+        dataSet.close();
+    }
 }

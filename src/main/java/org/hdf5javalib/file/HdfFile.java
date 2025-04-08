@@ -9,6 +9,7 @@ import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import org.hdf5javalib.file.metadata.HdfSuperblock;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -20,7 +21,7 @@ import java.util.function.Supplier;
 
 @Getter
 @Slf4j
-public class HdfFile {
+public class HdfFile implements Closeable {
     private final String fileName;
     private final StandardOpenOption[] openOptions;
     // initial setup without Dataset
@@ -94,17 +95,19 @@ public class HdfFile {
 
     public void write(ByteBuffer buffer, HdfDataSet hdfDataSet) throws IOException {
         HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
-        DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(hdfDataSet.getDatasetName());
+        long dataOffset = fileAllocation.allocateAndSetDataBlock(hdfDataSet.getDatasetName(), buffer.limit());
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
             // fileChannel.position(bufferAllocation.getDataAddress());
-            fileChannel.position(allocationInfo.getDataOffset());
+            fileChannel.position(dataOffset);
             while (buffer.hasRemaining()) {
                 fileChannel.write(buffer);
             }
         }
     }
 
+    @Override
     public void close() throws IOException {
+        rootGroup.close();
         HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         // long endOfFileAddress = bufferAllocation.getDataAddress();
         long endOfFileAddress = fileAllocation.getEndOfFileOffset();
