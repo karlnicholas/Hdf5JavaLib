@@ -170,9 +170,9 @@ public class HdfDataSet implements Closeable {
 
     @Override
     public void close() {
+        if (hdfGroup.getHdfFile() == null) return;
         HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
-        if (hdfGroup.getHdfFile() == null) return;
         // int headerSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
         long headerSize = allocationInfo.getHeaderSize();
         List<HdfMessage> headerMessages = this.dataObjectHeaderPrefix.getHeaderMessages();
