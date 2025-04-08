@@ -3,9 +3,11 @@ package org.hdf5javalib.file.metadata;
 import lombok.Getter;
 import lombok.Setter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -195,8 +197,10 @@ public class HdfSuperblock {
         );
     }
 
-    public void writeToByteBuffer(ByteBuffer buffer) {
+    public void writeToFileChannel(FileChannel fileChannel) throws IOException {
+        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
 //        buffer.order(ByteOrder.LITTLE_ENDIAN); // Ensure little-endian ordering
+        ByteBuffer buffer = ByteBuffer.allocate(Math.toIntExact(fileAllocation.getSuperblockSize())).order(ByteOrder.LITTLE_ENDIAN);
 
         // Step 1: Write the HDF5 file signature (8 bytes)
         buffer.put(new byte[]{(byte) 0x89, 0x48, 0x44, 0x46, 0x0D, 0x0A, 0x1A, 0x0A});
@@ -223,6 +227,13 @@ public class HdfSuperblock {
         writeFixedPointToBuffer(buffer, driverInformationAddress); // Driver info block address
 
         rootGroupSymbolTableEntry.writeToBuffer(buffer);
+
+        buffer.flip();
+
+        fileChannel.position(fileAllocation.getSuperblockOffset());
+        while (buffer.hasRemaining()) {
+            fileChannel.write(buffer);
+        }
     }
 
     @Override

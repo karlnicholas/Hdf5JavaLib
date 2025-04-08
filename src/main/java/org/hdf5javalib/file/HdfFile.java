@@ -12,7 +12,6 @@ import org.hdf5javalib.file.metadata.HdfSuperblock;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -132,41 +131,21 @@ public class HdfFile implements Closeable {
 //        }
         superblock.setEndOfFileAddress(HdfFixedPoint.of(endOfFileAddress));
 
-
-        log.debug("{}", superblock);
-        log.debug("{}", rootGroup);
-
-        // Allocate the buffer dynamically to hold Superblock + initial Root Group complex
-        // Size = SuperblockSize + RootGroupSize = 96 + 192 = 288
-        // Define RootGroupSize for clarity (can be calculated or made a constant if preferred)
-        final long ROOT_GROUP_SETUP_SIZE = 192L; // OH Prefix(40) + BTree Node(32) + LH Hdr(32) + LH Cont(88)
-        int totalInitialSize = (int) (fileAllocation.getSuperblockSize() + ROOT_GROUP_SETUP_SIZE);
-
-        ByteBuffer buffer = ByteBuffer.allocate(totalInitialSize).order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
-
-        // Write Superblock
-        // buffer.position((int) bufferAllocation.getSuperblockAddress()); // Old comment
-        buffer.position((int) fileAllocation.getSuperblockOffset()); // Should be 0
-        superblock.writeToByteBuffer(buffer);
-
-        // Write Root Group components (assuming rootGroup.writeToBuffer handles writing all 4 parts sequentially)
-        // The starting position for the root group's OH Prefix is right after the superblock
-        // buffer.position((int) bufferAllocation.getObjectHeaderPrefixAddress()); // Old comment
-        buffer.position((int) fileAllocation.getObjectHeaderPrefixOffset()); // Should be 96
-        rootGroup.writeToBuffer(buffer); // This method needs to write exactly ROOT_GROUP_SETUP_SIZE (192) bytes here
-
-
         Path path = Path.of(fileName);
         StandardOpenOption[] fileOptions = {StandardOpenOption.WRITE};
         if ( !Files.exists(path) ) {
             fileOptions =new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE};
         }
-        try (FileChannel fileChannel = FileChannel.open(path, fileOptions)) {
-            fileChannel.position(0);
 
-            while (buffer.hasRemaining()) {
-                fileChannel.write(buffer);
-            }
+        try (FileChannel fileChannel = FileChannel.open(path, fileOptions)) {
+            // write super block
+            log.debug("{}", superblock);
+            superblock.writeToFileChannel(fileChannel);
+
+            // write root group, writes all dataset and snod allocations as well.
+            log.debug("{}", rootGroup);
+            rootGroup.writeToFileChannel(fileChannel);
+
 //            // check here if global heap needs to be written
 //            if ( globalHeapAddress > 0 ) {
 //                fileChannel.position(globalHeapAddress);
@@ -174,7 +153,10 @@ public class HdfFile implements Closeable {
 //                    fileChannel.write(globalHeapBuffer);
 //                }
 //            }
+
         }
+
+
     }
 
 }

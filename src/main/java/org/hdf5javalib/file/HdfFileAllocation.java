@@ -3,8 +3,10 @@ package org.hdf5javalib.file;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -38,10 +40,14 @@ public final class HdfFileAllocation {
     public static final long GLOBAL_HEAP_BLOCK_SIZE = 4096L;
     private static final long DEFAULT_DATASET_HEADER_ALLOCATION_SIZE = DATA_OBJECT_HEADER_MESSAGE_SIZE + 256L; // 272L Example
     private static final long MIN_DATA_OFFSET_THRESHOLD = 2048L;
-    private final long snodStorageSize; // Calculated in constructor
+    @Getter
+    private static final long SNOD_STORAGE_SIZE = SETUP_SNOD_V1_HEADER_SIZE + (DEFAULT_SETUP_SNOD_ENTRY_COUNT * SETUP_SNOD_V1_ENTRY_SIZE); // 328L
 
     // --- Storage for Multiple Dataset Allocations ---
     private final Map<String, DatasetAllocationInfo> datasetAllocations = new LinkedHashMap<>();
+
+    // --- Storage for SNOD Allocations (Offsets Only) ---
+    private final List<Long> snodAllocationOffsets = new ArrayList<>();
 
     // --- Fixed Setup Block Offsets (Calculated once) ---
     private final long superblockOffset = SUPERBLOCK_OFFSET;
@@ -66,7 +72,6 @@ public final class HdfFileAllocation {
 
     /** Private Constructor */
     private HdfFileAllocation() {
-        this.snodStorageSize = SETUP_SNOD_V1_HEADER_SIZE + (DEFAULT_SETUP_SNOD_ENTRY_COUNT * SETUP_SNOD_V1_ENTRY_SIZE);
         this.btreeTotalSize = SETUP_BTREE_NODE_SIZE + SETUP_BTREE_STORAGE_SIZE;
         calculateInitialLayout();
     }
@@ -84,6 +89,7 @@ public final class HdfFileAllocation {
         currentLocalHeapContentsSize = initialLocalHeapContentsSize;     // Track initial LH contents size
         globalHeapOffset = -1L;
         this.datasetAllocations.clear();
+        this.snodAllocationOffsets.clear(); // Reset SNOD allocation offsets
         this.dataBlocksAllocated = false;
         this.nextAvailableOffset = currentOffset; // Set to 800 initially, before SNOD or MIN_DATA_OFFSET_THRESHOLD
         log.debug("Initial layout complete up to local heap contents. Next available offset set to: {}", this.nextAvailableOffset);
@@ -103,10 +109,10 @@ public final class HdfFileAllocation {
             log.trace(" Recalc Dataset Header '{}': Offset={}, Size={}", getDatasetName(info), currentOffset, info.getHeaderSize());
             currentOffset += info.getHeaderSize();
         }
-        // Place SNOD after all dataset headers
+        // Place initial SNOD after all dataset headers
         snodOffset = currentOffset;
-        log.trace(" Recalc SNOD: Offset={}, Size={}", snodOffset, snodStorageSize);
-        currentOffset += snodStorageSize;
+        log.trace(" Recalc SNOD: Offset={}, Size={}", snodOffset, SNOD_STORAGE_SIZE);
+        currentOffset += SNOD_STORAGE_SIZE;
         // Apply MIN_DATA_OFFSET_THRESHOLD only for data or later blocks
         currentOffset = Math.max(MIN_DATA_OFFSET_THRESHOLD, currentOffset);
 
@@ -173,12 +179,14 @@ public final class HdfFileAllocation {
         return allocateBlock(dataSize);
     }
 
-    /** Allocates space for a new SNOD block. */
+    /** Allocates space for a new SNOD block and tracks its offset. */
     public synchronized long allocateNextSnodStorage() {
-        long allocationSize = this.snodStorageSize;
-        if (allocationSize <= 0L) throw new IllegalStateException("Setup SNOD storage size is not valid: " + allocationSize);
-        log.debug("Allocating next SNOD storage block (size {})", allocationSize);
-        return allocateBlock(allocationSize);
+        long allocationSize = SNOD_STORAGE_SIZE;
+        if (allocationSize <= 0L) throw new IllegalStateException("SNOD storage size is not valid: " + allocationSize);
+        long offset = allocateBlock(allocationSize);
+        snodAllocationOffsets.add(offset);
+        log.debug("Allocated next SNOD storage block @{} (size {})", offset, allocationSize);
+        return offset;
     }
 
     /** Expands storage for Local Heap contents, allocating a new block. */
@@ -235,7 +243,8 @@ public final class HdfFileAllocation {
             headerOffset = initialLocalHeapContentsOffset + initialLocalHeapContentsSize; // 712 + 88 = 800
             nextAvailableOffset = headerOffset + headerAllocSize; // 800 + 272 = 1072
             snodOffset = nextAvailableOffset; // Shift SNOD to after the header (1072)
-            nextAvailableOffset += snodStorageSize; // 1072 + 328 = 1400
+            nextAvailableOffset += SNOD_STORAGE_SIZE; // 1072 + 328 = 1400
+            snodAllocationOffsets.add(snodOffset); // Track the initial SNOD offset
         } else {
             // For subsequent datasets, use nextAvailableOffset and recalculate
             headerOffset = allocateBlock(headerAllocSize);
@@ -318,6 +327,38 @@ public final class HdfFileAllocation {
     // ============================================
 
     public synchronized long getSnodOffset() { return snodOffset; } // Root group SNOD offset
+
+    // --- NEW METHODS FOR ROOT GROUP ---
+    /**
+     * Gets the total size required for the root group's contiguous blocks:
+     * object header prefix, B-tree, local heap header, and initial local heap contents.
+     * @return The total size in bytes.
+     */
+    public long getRootGroupSize() {
+        return SETUP_OBJECT_HEADER_PREFIX_SIZE + btreeTotalSize + SETUP_LOCAL_HEAP_HEADER_SIZE + initialLocalHeapContentsSize;
+    }
+
+    /**
+     * Gets the starting offset of the root group's contiguous blocks.
+     * Currently identical to getObjectHeaderPrefixOffset(), but provided for clarity
+     * and future-proofing when multiple groups are supported.
+     * @return The offset of the root group's first block (object header prefix).
+     */
+    public long getRootGroupOffset() {
+        return objectHeaderPrefixOffset;
+    }
+    // --- END NEW METHODS ---
+
+    // --- NEW METHODS FOR SNOD TRACKING ---
+    /**
+     * Gets an unmodifiable list of all SNOD allocation offsets.
+     * Each SNOD block has a fixed size defined by SNOD_STORAGE_SIZE.
+     * @return List of offsets for each SNOD block allocated.
+     */
+    public synchronized List<Long> getAllSnodAllocationOffsets() {
+        return Collections.unmodifiableList(new ArrayList<>(snodAllocationOffsets));
+    }
+    // --- END NEW METHODS ---
 
     // --- Utility / Reset ---
     public synchronized void reset() {

@@ -13,6 +13,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -273,8 +275,29 @@ public class HdfDataSet implements Closeable {
         return dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class).orElseThrow().getDataAddress();
     }
 
-    public void writeToBuffer(ByteBuffer buffer) {
-        dataObjectHeaderPrefix.writeToByteBuffer(buffer);
+    public void writeToFileChannel(FileChannel fileChannel) throws IOException {
+        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
+        ByteBuffer buffer = ByteBuffer.allocate((int)allocationInfo.getHeaderSize()).order(ByteOrder.LITTLE_ENDIAN);
+        dataObjectHeaderPrefix.writeInitialMessageBlockToBuffer(buffer);
+        buffer.flip();
+
+        fileChannel.position(allocationInfo.getHeaderOffset());
+        while (buffer.hasRemaining()) {
+            fileChannel.write(buffer);
+        }
+
+        if ( allocationInfo.getContinuationOffset() > 0 ) {
+            buffer = ByteBuffer.allocate((int)allocationInfo.getContinuationSize()).order(ByteOrder.LITTLE_ENDIAN);
+            dataObjectHeaderPrefix.writeContinuationMessageBlockToBuffer((int)allocationInfo.getHeaderSize(), buffer);
+            buffer.flip();
+
+            fileChannel.position(allocationInfo.getContinuationOffset());
+            while (buffer.hasRemaining()) {
+                fileChannel.write(buffer);
+            }
+        }
+
     }
 
 }

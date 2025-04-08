@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.dataobject;
 
 import lombok.Getter;
+import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.dataobject.message.HdfMessage;
 import org.hdf5javalib.file.dataobject.message.ObjectHeaderContinuationMessage;
 
@@ -76,7 +77,7 @@ public class HdfObjectHeaderPrefixV1 {
         return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages);
     }
 
-    public void writeToByteBuffer(ByteBuffer buffer) {
+    public void writeToBuffer(ByteBuffer buffer) throws IOException {
         // Write version (1 byte)
         buffer.put((byte) version);
 
@@ -96,7 +97,7 @@ public class HdfObjectHeaderPrefixV1 {
         buffer.putInt(0);
 
         // Write messages, handling continuation as first message but splitting at 6
-        Optional<ObjectHeaderContinuationMessage> optContinuationMessage = findMessageByType(ObjectHeaderContinuationMessage.class);
+//        Optional<ObjectHeaderContinuationMessage> optContinuationMessage = findMessageByType(ObjectHeaderContinuationMessage.class);
 
         for (int i = 0; i < headerMessages.size(); i++) {
             HdfMessage hdfMessage = headerMessages.get(i);
@@ -107,10 +108,73 @@ public class HdfObjectHeaderPrefixV1 {
             buffer.position((position + 7) & ~7);
 
             // After writing 6 messages, jump to continuation offset if present
-            if (i == 5 && optContinuationMessage.isPresent()) {
-                buffer.position(optContinuationMessage.get().getContinuationOffset().getInstance(Long.class).intValue());
+//            if (i == 5 && optContinuationMessage.isPresent()) {
+//                buffer.position(optContinuationMessage.get().getContinuationOffset().getInstance(Long.class).intValue());
+//            }
+            if ( buffer.limit() >= buffer.capacity()) {
+                break;
             }
         }
+    }
+    public void writeInitialMessageBlockToBuffer(ByteBuffer buffer) throws IOException {
+        // Write version (1 byte)
+        buffer.put((byte) version);
+
+        // Write reserved byte (must be 0)
+        buffer.put((byte) 0);
+
+        // Write total header messages (2 bytes, little-endian)
+        buffer.putShort((short) headerMessages.size());
+
+        // Write object reference count (4 bytes, little-endian)
+        buffer.putInt((int) objectReferenceCount);
+
+        // Write object header size (4 bytes, little-endian)
+        buffer.putInt((int) objectHeaderSize);
+
+        // Write reserved field (must be 0) (4 bytes)
+        buffer.putInt(0);
+
+        // Write messages, handling continuation as first message but splitting at 6
+//        Optional<ObjectHeaderContinuationMessage> optContinuationMessage = findMessageByType(ObjectHeaderContinuationMessage.class);
+
+        for (int i = 0; i < headerMessages.size(); i++) {
+            HdfMessage hdfMessage = headerMessages.get(i);
+            hdfMessage.writeMessageToByteBuffer(buffer);
+
+            // Pad to 8-byte boundary
+            int position = buffer.position();
+            buffer.position((position + 7) & ~7);
+
+            // After writing 6 messages, jump to continuation offset if present
+//            if (i == 5 && optContinuationMessage.isPresent()) {
+//                buffer.position(optContinuationMessage.get().getContinuationOffset().getInstance(Long.class).intValue());
+//            }
+            if ( buffer.limit() >= buffer.capacity()) {
+                break;
+            }
+        }
+    }
+
+    public void writeContinuationMessageBlockToBuffer(int initialSize, ByteBuffer buffer) throws IOException {
+        int currentSize = 0;
+        int i=0;
+        while (i < headerMessages.size()) {
+            HdfMessage hdfMessage = headerMessages.get(i);
+            currentSize += hdfMessage.getSizeMessageData();
+            currentSize  = (currentSize + 7) & ~7;
+
+            if ( currentSize >= initialSize) {
+                break;
+            }
+            i++;
+        }
+        while (i < headerMessages.size()) {
+            HdfMessage hdfMessage = headerMessages.get(i);
+            hdfMessage.writeMessageToByteBuffer(buffer);
+            i++;
+        }
+
     }
 
 //    public Optional<HdfFixedPoint> getDataAddress() {

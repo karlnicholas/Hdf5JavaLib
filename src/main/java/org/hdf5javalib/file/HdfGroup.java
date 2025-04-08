@@ -13,8 +13,10 @@ import org.hdf5javalib.file.infrastructure.*;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.Collections;
-import java.util.Optional;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 @Getter
@@ -78,6 +80,7 @@ public class HdfGroup implements Closeable {
     public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
         HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         DatasetAllocationInfo allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
+
         HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length));
         // this possibly changes addresses for anything after the dataGroupAddress, which includes the SNOD address.
         dataSet = new HdfDataSet(this, datasetName, hdfDatatype, dataSpaceMessage);
@@ -90,63 +93,43 @@ public class HdfGroup implements Closeable {
         return dataSet;
     }
 
-    public void writeToBuffer(ByteBuffer buffer) {
-        // Write Object Header at position found in rootGroupEntry
+    public void writeToFileChannel(FileChannel fileChannel) throws IOException {
+
         HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
-        long objectHeaderPrefixAddress = fileAllocation.getObjectHeaderPrefixOffset();
+        long rootGroupSize = fileAllocation.getRootGroupSize(); // Returns 704
+        long rootGroupOffset = fileAllocation.getRootGroupOffset(); // Returns 96
+        ByteBuffer buffer = ByteBuffer.allocate((int) rootGroupSize);
+        objectHeader.writeToBuffer(buffer);  // Writes 40 bytes (96-135)
+        bTree.writeToByteBuffer(buffer);        // Writes 544 bytes (136-679)
+        localHeap.writeToByteBuffer(buffer);    // Writes 32 bytes (680-711)
+        localHeapContents.writeToByteBuffer(buffer); // Writes 88 bytes (712-799)
+        buffer.flip();
 
-        buffer.position((int) objectHeaderPrefixAddress);
-        objectHeader.writeToByteBuffer(buffer);
-
-        long localHeapPosition = -1;
-        long bTreePosition = -1;
-
-        // Try getting the Local Heap Address from the Root Symbol Table Entry
-        if (fileAllocation.getLocalHeapOffset() > 0) {
-            localHeapPosition = fileAllocation.getLocalHeapOffset();
-        }
-
-        // If not found or invalid, fallback to Object Header's SymbolTableMessage
-        Optional<SymbolTableMessage> symbolTableMessageOpt = objectHeader.findMessageByType(SymbolTableMessage.class);
-        if (symbolTableMessageOpt.isPresent()) {
-            SymbolTableMessage symbolTableMessage = symbolTableMessageOpt.get();
-
-            // Retrieve Local Heap Address if still not found
-            if (localHeapPosition == -1 && symbolTableMessage.getLocalHeapAddress() != null && !symbolTableMessage.getLocalHeapAddress().isUndefined()) {
-                localHeapPosition = symbolTableMessage.getLocalHeapAddress().getInstance(Long.class);
-            }
-
-            // Retrieve B-Tree Address
-            if (symbolTableMessage.getBTreeAddress() != null && !symbolTableMessage.getBTreeAddress().isUndefined()) {
-                bTreePosition = symbolTableMessage.getBTreeAddress().getInstance(Long.class);
-            }
-        }
-
-        // Validate B-Tree Position and write it
-        if (bTreePosition != -1) {
-            buffer.position((int) bTreePosition); // Move to the correct position
-            bTree.writeToByteBuffer(buffer);
-        } else {
-            throw new IllegalStateException("No valid B-Tree position found.");
-        }
-
-        // Validate Local Heap Position and write it
-        if (localHeapPosition != -1) {
-            buffer.position((int) localHeapPosition); // Move to the correct position
-            localHeap.writeToByteBuffer(buffer);
-            buffer.position(localHeap.getHeapContentsOffset().getInstance(Long.class).intValue());
-            localHeapContents.writeToByteBuffer(buffer);
-        } else {
-            throw new IllegalStateException("No valid Local Heap position found.");
+        fileChannel.position(rootGroupOffset);
+        while (buffer.hasRemaining()) {
+            fileChannel.write(buffer);
         }
 
         // need to write the dataset
         if ( dataSet != null ) {
             DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(dataSet.getDatasetName());
             buffer.position((int) allocationInfo.getHeaderOffset());
-            dataSet.writeToBuffer(buffer);
+            dataSet.writeToFileChannel(fileChannel);
         }
 
+        // write SNOD for group.
+
+        Map<Long, HdfGroupSymbolTableNode> mapOffsetToSnod = bTree.mapOffsetToSnod();
+        ByteBuffer snodBuffer = ByteBuffer.allocate((int)HdfFileAllocation.getSNOD_STORAGE_SIZE());
+        for (Map.Entry<Long, HdfGroupSymbolTableNode> offsetAndStn: mapOffsetToSnod.entrySet()) {
+            offsetAndStn.getValue().writeToBuffer(snodBuffer);
+            snodBuffer.flip();
+            fileChannel.position(offsetAndStn.getKey());
+            while (buffer.hasRemaining()) {
+                fileChannel.write(snodBuffer);
+            }
+            snodBuffer.clear();
+        }
     }
 
     public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
