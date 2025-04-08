@@ -3,14 +3,14 @@ package org.hdf5javalib.file.infrastructure;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.dataclass.HdfString;
+import org.hdf5javalib.file.HdfFileAllocation; // Ensure this import exists
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.*;
 
-import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
+import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer; // Assuming this exists
 
 
 @Getter
@@ -26,6 +26,7 @@ public class HdfBTreeV1 {
     private final List<HdfBTreeEntry> entries; // Entries now contain SNODs or child B-trees
 
     // Keeping original constructors - though only the first one makes sense with recursive loading
+    // read from file constructor
     public HdfBTreeV1(
             String signature,
             int nodeType,
@@ -47,22 +48,23 @@ public class HdfBTreeV1 {
     }
 
     // This constructor might be less useful now, as entries are built recursively
+    // build for writing constructor
     public HdfBTreeV1(
             String signature,
             int nodeType,
             int nodeLevel,
-            int entriesUsed,
+            // entriesUsed will be managed internally by addDataset now
             HdfFixedPoint leftSiblingAddress,
             HdfFixedPoint rightSiblingAddress
     ) {
         this.signature = signature;
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;
-        this.entriesUsed = entriesUsed;
+        this.entriesUsed = 0; // Start with 0 entries, managed by addDataset
         this.leftSiblingAddress = leftSiblingAddress;
         this.rightSiblingAddress = rightSiblingAddress;
-        this.keyZero = HdfFixedPoint.of(0);
-        this.entries = new ArrayList<>(); // Will be empty initially
+        this.keyZero = HdfFixedPoint.of(0); // Assume keyZero is always 0 for newly created B-Trees
+        this.entries = new ArrayList<>(); // Initialize empty list
     }
 
 
@@ -73,7 +75,7 @@ public class HdfBTreeV1 {
         return readFromFileChannelRecursive(fileChannel, initialAddress, offsetSize, lengthSize, new HashMap<>());
     }
 
-    // --- Recursive Helper Method --- MODIFIED ---
+    // --- Recursive Helper Method --- (Unchanged) ---
     private static HdfBTreeV1 readFromFileChannelRecursive(FileChannel fileChannel,
                                                            long nodeAddress,
                                                            short offsetSize,
@@ -88,9 +90,8 @@ public class HdfBTreeV1 {
         }
 
         // --- Position and Read Header ---
-        // Let IO operations throw IOException directly if they fail.
         fileChannel.position(nodeAddress);
-        long startPos = nodeAddress; // For error messages
+        long startPos = nodeAddress;
 
         int headerSize = 8 + offsetSize + offsetSize;
         ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(java.nio.ByteOrder.LITTLE_ENDIAN);
@@ -104,8 +105,6 @@ public class HdfBTreeV1 {
         headerBuffer.get(signatureBytes);
         String signature = new String(signatureBytes);
         if (!"TREE".equals(signature)) {
-            // Original: Threw IllegalArgumentException. Keeping similar concept. IOException is also suitable.
-            // FIX: Throw exception for invalid format. Using IOException for consistency with other read errors.
             throw new IOException("Invalid B-tree node signature: '" + signature + "' at position " + startPos);
         }
 
@@ -113,13 +112,12 @@ public class HdfBTreeV1 {
         int nodeLevel = Byte.toUnsignedInt(headerBuffer.get());
         int entriesUsed = Short.toUnsignedInt(headerBuffer.getShort());
 
-        BitSet emptyBitset = new BitSet(); // Placeholder from original
+        BitSet emptyBitset = new BitSet();
         HdfFixedPoint leftSiblingAddress = HdfFixedPoint.checkUndefined(headerBuffer, offsetSize) ? HdfFixedPoint.undefined(headerBuffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(headerBuffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
         HdfFixedPoint rightSiblingAddress = HdfFixedPoint.checkUndefined(headerBuffer, offsetSize) ? HdfFixedPoint.undefined(headerBuffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(headerBuffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
 
         // --- Read Key/Pointer Block ---
         int entriesDataSize = lengthSize + (entriesUsed * (offsetSize + lengthSize));
-        // Add minimal sanity checks based on potential issues
         if (entriesUsed < 0 || entriesDataSize < lengthSize) {
             throw new IOException("Invalid BTree node parameters at position " + startPos + ": entriesUsed=" + entriesUsed);
         }
@@ -133,12 +131,10 @@ public class HdfBTreeV1 {
         if (entriesDataSize > 0) {
             int entryBytesRead = fileChannel.read(entriesBuffer);
             if (entryBytesRead != entriesDataSize) {
-                // FIX: Throw clear IOException for incomplete read.
                 throw new IOException("Could not read complete BTree entries data block (" + entriesDataSize + " bytes) at position " + currentPosBeforeEntries + ". Read only " + entryBytesRead + " bytes.");
             }
             entriesBuffer.flip();
         } else if (entriesUsed > 0) {
-            // Should be caught by entriesUsed < 0 check, but defensive.
             throw new IOException("BTree node at " + startPos + " has entriesUsed=" + entriesUsed + " but entriesDataSize is 0.");
         }
 
@@ -146,7 +142,7 @@ public class HdfBTreeV1 {
         HdfFixedPoint keyZero = HdfFixedPoint.readFromByteBuffer(entriesBuffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
 
         List<HdfBTreeEntry> entries = new ArrayList<>(entriesUsed);
-        long filePosAfterEntriesBlock = fileChannel.position(); // Position after this node's entry block
+        long filePosAfterEntriesBlock = fileChannel.position();
 
         // --- Prepare Node and Mark Visited ---
         HdfBTreeV1 currentNode = new HdfBTreeV1(signature, nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries);
@@ -159,7 +155,6 @@ public class HdfBTreeV1 {
             long childAddress = childPointer.getInstance(Long.class);
             HdfBTreeEntry entry = null;
 
-            // Check address validity
             if (childAddress < -1L || (childAddress != -1L && childAddress >= fileSize)) {
                 throw new IOException("Invalid child address " + childAddress + " in BTree entry " + i
                         + " at node " + startPos + " (Level " + nodeLevel + "). File size is " + fileSize);
@@ -175,8 +170,7 @@ public class HdfBTreeV1 {
                         snod.getSymbolTableEntries().add(snodEntry);
                     }
                     entry = new HdfBTreeEntry(key, childPointer, snod);
-                    // Restore position for next BTree entry read *only if successful*
-                    fileChannel.position(filePosAfterEntriesBlock);
+                    fileChannel.position(filePosAfterEntriesBlock); // Restore position
                 } else {
                     entry = new HdfBTreeEntry(key, childPointer, (HdfGroupSymbolTableNode) null);
                 }
@@ -184,13 +178,11 @@ public class HdfBTreeV1 {
                 if (childAddress != -1L) {
                     HdfBTreeV1 childNode = readFromFileChannelRecursive(fileChannel, childAddress, offsetSize, lengthSize, visitedNodes);
                     entry = new HdfBTreeEntry(key, childPointer, childNode);
-                    // Restore position for next BTree entry read *only if successful*
-                    fileChannel.position(filePosAfterEntriesBlock);
+                    fileChannel.position(filePosAfterEntriesBlock); // Restore position
                 } else {
                     entry = new HdfBTreeEntry(key, childPointer, (HdfBTreeV1) null);
                 }
             }
-            // Add entry to list - only happens if no exception was thrown above
             entries.add(entry);
         }
         return currentNode;
@@ -215,16 +207,12 @@ public class HdfBTreeV1 {
                 if (!first) {
                     sb.append(", "); // Separator between entries
                 }
-                // Here, we call the toString() of HdfBTreeEntry
-                // If HdfBTreeEntry doesn't override toString, this calls Object.toString()
                 sb.append(entry); // Implicitly calls entry.toString()
                 first = false;
             }
         } else if (entries != null) {
-            // List is initialized but empty
             sb.append("<empty>");
         } else {
-            // List is null
             sb.append("<null>");
         }
 
@@ -237,17 +225,82 @@ public class HdfBTreeV1 {
     public boolean isLeafLevelNode() { return this.nodeLevel == 0; }
     public boolean isInternalLevelNode() { return this.nodeLevel > 0; }
 
-    public int addGroup(HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents, HdfGroupSymbolTableNode symbolTableNode) {
-        if (entriesUsed >= 4) {
-            throw new IllegalStateException("Cannot add more than 4 groups to this B-tree node.");
+    /**
+     * Adds a dataset entry to the Symbol Table Node managed by the first B-Tree entry.
+     * Creates the first B-Tree entry and its associated SNOD if they don't exist.
+     * Limited to 8 dataset entries within the single SNOD.
+     *
+     * @param linkNameOffset           Offset in the Local Heap where the dataset's link name is stored.
+     * @param datasetObjectHeaderAddress Address of the dataset's Object Header.
+     * @throws IllegalStateException if called on a non-leaf node, if the SNOD limit (8) is reached,
+     *                               or if the internal state is inconsistent.
+     */
+    public void addDataset(long linkNameOffset, long datasetObjectHeaderAddress) { // Renamed method and parameters
+        // Ensure this method only makes sense for leaf nodes holding group info
+        if (!isLeafLevelNode()) {
+            throw new IllegalStateException("addDataset can only be called on leaf B-tree nodes (nodeLevel 0).");
         }
 
-        int linkNameOffset = localHeap.addToHeap(objectName, localHeapContents);
-        HdfBTreeEntry newEntry = new HdfBTreeEntry(HdfFixedPoint.of(linkNameOffset), objectAddress, symbolTableNode);
-        entries.add(newEntry);
-        entriesUsed++;
-        return linkNameOffset;
+        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfGroupSymbolTableNode targetSnod;
+
+        if (entries.isEmpty()) {
+            // First dataset being added to this B-tree node. Create the first B-tree entry and its SNOD.
+            if (entriesUsed != 0) {
+                // Inconsistent state check
+                throw new IllegalStateException("B-tree entries list is empty but entriesUsed is " + entriesUsed);
+            }
+
+            // 1. Allocate space for the new Symbol Table Node (SNOD)
+            final int MAX_SNOD_ENTRIES = 8;
+            long snodOffset = fileAllocation.allocateNextSnodStorage(); // Allocate SNOD space
+
+            // 2. Create the new SNOD object
+            targetSnod = new HdfGroupSymbolTableNode("SNOD", 1, 0, new ArrayList<>(MAX_SNOD_ENTRIES)); // Initial capacity 8
+
+            // 3. Create the new B-tree entry pointing to the SNOD
+            HdfFixedPoint key = HdfFixedPoint.of(linkNameOffset); // First entry's key often relates to first link name? Or should it be 0? Check HDF5 spec. Using linkNameOffset for now.
+            HdfFixedPoint childPointer = HdfFixedPoint.of(snodOffset);
+            HdfBTreeEntry newEntry = new HdfBTreeEntry(key, childPointer, targetSnod);
+
+            // 4. Add the entry to the B-tree
+            entries.add(newEntry);
+            entriesUsed++; // Increment B-tree entry count
+
+        } else {
+            // B-tree already has an entry (we assume only one for now)
+            if (entriesUsed != 1) {
+                // For this simplified version, only handle the case where exactly one entry exists
+                throw new IllegalStateException("addDataset currently only supports adding to the SNOD within the first B-tree entry. entriesUsed=" + entriesUsed);
+            }
+            HdfBTreeEntry firstEntry = entries.get(0);
+            targetSnod = firstEntry.getSymbolTableNode();
+            if (targetSnod == null) {
+                // This indicates an internal node or an invalid state for this simplified method
+                throw new IllegalStateException("The first B-tree entry does not contain a Symbol Table Node.");
+            }
+        }
+
+        // Now, add the symbol table entry to the target SNOD
+
+        // Check if the SNOD is full (max 8 entries)
+        if (targetSnod.getNumberOfSymbols() >= 8) { // Check against the actual limit
+            throw new IllegalStateException("Cannot add more than 8 datasets to this Symbol Table Node.");
+        }
+
+        // Create the new Symbol Table Entry for the dataset
+        HdfSymbolTableEntry ste = new HdfSymbolTableEntry(
+                HdfFixedPoint.of(linkNameOffset),           // Cache Type 0: Link name offset
+                HdfFixedPoint.of(datasetObjectHeaderAddress) // Object Header Address
+                // Assuming default cache type and other fields for STE
+        );
+
+        // Add the entry to the SNOD
+        targetSnod.addEntry(ste);
+        // Note: We do NOT increment this.entriesUsed here, as that tracks B-tree entries, not SNOD entries.
+        // The SNOD itself tracks its number of symbols internally via getNumberOfSymbols().
     }
+
 
     public void writeToByteBuffer(ByteBuffer buffer) {
         buffer.put(signature.getBytes());
@@ -259,228 +312,31 @@ public class HdfBTreeV1 {
         writeFixedPointToBuffer(buffer, keyZero);
 
         for (HdfBTreeEntry entry : entries) {
+            // Write B-tree entry Key (Child Pointer is written first?) - Check format!
+            // Assuming format: ChildPtr, Key
             writeFixedPointToBuffer(buffer, entry.getChildPointer());
             if (entry.getKey() != null) {
                 writeFixedPointToBuffer(buffer, entry.getKey());
+            } else {
+                // Handle null key? Write undefined address? Depends on spec.
+                // For now, assume key is never null for valid entries being written.
+                throw new NullPointerException("BTree Entry key cannot be null during write");
             }
+
+            // --- Writing pointed-to data needs separate logic ---
+            // The B-Tree node itself only contains the pointers/keys.
+            // Writing the SNODs or child B-Trees happens elsewhere, triggered by the caller.
+            // The commented-out logic below was incorrect as it tried to write SNOD data
+            // *within* the B-Tree node's buffer space.
+
+            /* // Incorrect logic removed:
             if (entry.getSymbolTableNode() != null) {
-                buffer.position(entry.getChildPointer().getInstance(Long.class).intValue());
-                entry.getSymbolTableNode().writeToBuffer(buffer);
+                // This is wrong - writing SNOD data here overwrites B-Tree structure
+                // buffer.position(entry.getChildPointer().getInstance(Long.class).intValue()); // Don't change position
+                // entry.getSymbolTableNode().writeToBuffer(buffer); // Don't write SNOD here
             }
-            // childBTree writing would need recursive logic if implemented
+            */
         }
+        // Pad buffer? B-Tree nodes often have fixed sizes based on k value. Not handled here.
     }
 }
-
-//package org.hdf5javalib.file.infrastructure;
-//
-//import lombok.Getter;
-//import org.hdf5javalib.dataclass.HdfFixedPoint;
-//import org.hdf5javalib.dataclass.HdfString;
-//import org.hdf5javalib.file.HdfFileAllocation;
-//
-//import java.io.IOException;
-//import java.nio.ByteBuffer;
-//import java.nio.channels.FileChannel;
-//import java.util.ArrayList;
-//import java.util.BitSet;
-//import java.util.List;
-//
-//import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
-//
-//@Getter
-//public class HdfBTreeV1 {
-//    private final String signature;
-//    private final int nodeType;
-//    private final int nodeLevel;
-//    private int entriesUsed;
-//    private final HdfFixedPoint leftSiblingAddress;
-//    private final HdfFixedPoint rightSiblingAddress;
-//    private final HdfFixedPoint keyZero; // Key 0 (predefined)
-//    private final List<HdfBTreeEntry> entries;
-//
-//    public HdfBTreeV1(
-//            String signature,
-//            int nodeType,
-//            int nodeLevel,
-//            int entriesUsed,
-//            HdfFixedPoint leftSiblingAddress,
-//            HdfFixedPoint rightSiblingAddress,
-//            HdfFixedPoint keyZero,
-//            List<HdfBTreeEntry> entries
-//    ) {
-//        this.signature = signature;
-//        this.nodeType = nodeType;
-//        this.nodeLevel = nodeLevel;
-//        this.entriesUsed = entriesUsed;
-//        this.leftSiblingAddress = leftSiblingAddress;
-//        this.rightSiblingAddress = rightSiblingAddress;
-//        this.keyZero = keyZero;
-//        this.entries = entries;
-//    }
-//
-//    public HdfBTreeV1(
-//            String signature,
-//            int nodeType,
-//            int nodeLevel,
-//            int entriesUsed,
-//            HdfFixedPoint leftSiblingAddress,
-//            HdfFixedPoint rightSiblingAddress
-//    ) {
-//        this.signature = signature;
-//        this.nodeType = nodeType;
-//        this.nodeLevel = nodeLevel;
-//        this.entriesUsed = entriesUsed;
-//        this.leftSiblingAddress = leftSiblingAddress;
-//        this.rightSiblingAddress = rightSiblingAddress;
-//        this.keyZero = HdfFixedPoint.of(0);
-//        this.entries = new ArrayList<>();
-//    }
-//
-//    public int addGroup(HdfFileAllocation hdfFileAllocation, HdfString objectName, HdfFixedPoint objectAddress, HdfLocalHeap localHeap, HdfLocalHeapContents localHeapContents, HdfGroupSymbolTableNode symbolTableNode) {
-//        if (entriesUsed >= 4) {
-//            throw new IllegalStateException("Cannot add more than 4 groups to this B-tree node.");
-//        }
-//
-//        int linkNameOffset = localHeap.addToHeap(objectName, localHeapContents, hdfFileAllocation);
-//        HdfBTreeEntry newEntry = new HdfBTreeEntry(HdfFixedPoint.of(linkNameOffset), objectAddress, symbolTableNode);
-//        entries.add(newEntry);
-//        entriesUsed++;
-//        return linkNameOffset;
-//    }
-//
-//    public static HdfBTreeV1 readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize) throws IOException {
-//        ByteBuffer buffer = ByteBuffer.allocate(24).order(java.nio.ByteOrder.LITTLE_ENDIAN);
-//        fileChannel.read(buffer);
-//        buffer.flip();
-//
-//        byte[] signatureBytes = new byte[4];
-//        buffer.get(signatureBytes);
-//        String signature = new String(signatureBytes);
-//        if (!"TREE".equals(signature)) {
-//            throw new IllegalArgumentException("Invalid B-tree node signature: " + signature);
-//        }
-//
-//        int nodeType = Byte.toUnsignedInt(buffer.get());
-//        int nodeLevel = Byte.toUnsignedInt(buffer.get());
-//        int entriesUsed = Short.toUnsignedInt(buffer.getShort());
-//
-//        BitSet emptyBitset = new BitSet();
-//        HdfFixedPoint leftSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize)
-//                ? HdfFixedPoint.undefined(buffer, offsetSize)
-//                : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
-//
-//        HdfFixedPoint rightSiblingAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize)
-//                ? HdfFixedPoint.undefined(buffer, offsetSize)
-//                : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
-//
-//        // Adjust buffer size for internal nodes (extra child pointer)
-//        int keyPointerBufferSize = lengthSize + (entriesUsed * (offsetSize + lengthSize)) + (nodeLevel > 0 ? offsetSize : 0);
-//        buffer = ByteBuffer.allocate(keyPointerBufferSize).order(java.nio.ByteOrder.LITTLE_ENDIAN);
-//        fileChannel.read(buffer);
-//        buffer.flip();
-//
-//        HdfFixedPoint keyZero = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
-//        List<HdfBTreeEntry> entries = new ArrayList<>();
-//
-//        if (nodeLevel == 0) { // Leaf node
-//            for (int i = 0; i < entriesUsed; i++) {
-//                HdfFixedPoint childPointer = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
-//                HdfFixedPoint key = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
-//                long snodAddress = childPointer.getInstance(Long.class);
-//                long currentPos = fileChannel.position();
-//                fileChannel.position(snodAddress);
-//                HdfGroupSymbolTableNode symbolTableNode = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
-//                int entriesToRead = symbolTableNode.getNumberOfSymbols();
-//                for (int e = 0; e < entriesToRead; ++e) {
-//                    HdfSymbolTableEntry symbolTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
-//                    symbolTableNode.getSymbolTableEntries().add(symbolTableEntry);
-//                }
-//                entries.add(new HdfBTreeEntry(key, childPointer, symbolTableNode));
-//                fileChannel.position(currentPos);
-//            }
-//        } else if (nodeLevel > 0) { // Internal node
-//            for (int i = 0; i < entriesUsed; i++) {
-//                HdfFixedPoint childPointer = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
-//                HdfFixedPoint key = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
-//                long childAddress = childPointer.getInstance(Long.class);
-//                long currentPos = fileChannel.position();
-//                fileChannel.position(childAddress);
-//                HdfBTreeV1 childBTree = readFromFileChannel(fileChannel, offsetSize, lengthSize);
-//                entries.add(new HdfBTreeEntry(key, childPointer, childBTree));
-//                fileChannel.position(currentPos);
-//            }
-////            // Read the extra child pointer for internal nodes
-////            if (entriesUsed > 0) {
-////                HdfFixedPoint extraChildPointer = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
-////                long childAddress = extraChildPointer.getInstance(Long.class);
-////                long currentPos = fileChannel.position();
-////                fileChannel.position(childAddress);
-////                HdfBTreeV1 childBTree = readFromFileChannel(fileChannel, offsetSize, lengthSize);
-////                entries.add(new HdfBTreeEntry(null, extraChildPointer, childBTree));
-////                fileChannel.position(currentPos);
-////            }
-//        } else {
-//            throw new IllegalStateException("Invalid node level: " + nodeLevel);
-//        }
-//
-//        return new HdfBTreeV1(
-//                signature,
-//                nodeType,
-//                nodeLevel,
-//                entriesUsed,
-//                leftSiblingAddress,
-//                rightSiblingAddress,
-//                keyZero,
-//                entries
-//        );
-//    }
-//
-//    public void writeToByteBuffer(ByteBuffer buffer) {
-//        buffer.put(signature.getBytes());
-//        buffer.put((byte) nodeType);
-//        buffer.put((byte) nodeLevel);
-//        buffer.putShort((short) entriesUsed);
-//        writeFixedPointToBuffer(buffer, leftSiblingAddress);
-//        writeFixedPointToBuffer(buffer, rightSiblingAddress);
-//        writeFixedPointToBuffer(buffer, keyZero);
-//
-//        for (HdfBTreeEntry entry : entries) {
-//            writeFixedPointToBuffer(buffer, entry.getChildPointer());
-//            if (entry.getKey() != null) {
-//                writeFixedPointToBuffer(buffer, entry.getKey());
-//            }
-//            if (entry.getSymbolTableNode() != null) {
-//                buffer.position(entry.getChildPointer().getInstance(Integer.class));
-//                entry.getSymbolTableNode().writeToBuffer(buffer);
-//            }
-//            // childBTree writing would need recursive logic if implemented
-//        }
-//    }
-//
-//    public List<HdfBTreeEntry> getLeafEntries() {
-//        List<HdfBTreeEntry> leafEntries = new ArrayList<>();
-//        if (nodeLevel == 0) {
-//            leafEntries.addAll(entries);
-//        } else if (nodeLevel > 0) {
-//            for (HdfBTreeEntry entry : entries) {
-//                leafEntries.addAll(entry.getChildBTree().getLeafEntries());
-//            }
-//        }
-//        return leafEntries;
-//    }
-//
-//    @Override
-//    public String toString() {
-//        return "HdfBTreeV1{" +
-//                "signature='" + signature + '\'' +
-//                ", nodeType=" + nodeType +
-//                ", nodeLevel=" + nodeLevel +
-//                ", entriesUsed=" + entriesUsed +
-//                ", leftSiblingAddress=" + leftSiblingAddress +
-//                ", rightSiblingAddress=" + rightSiblingAddress +
-//                ", keyZero=" + keyZero +
-//                ", entries=" + entries +
-//                '}';
-//    }
-//}

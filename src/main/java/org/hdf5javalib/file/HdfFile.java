@@ -3,7 +3,6 @@ package org.hdf5javalib.file;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.file.dataobject.message.DataLayoutMessage;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
@@ -43,7 +42,8 @@ public class HdfFile {
                 HdfFixedPoint.of(0),
                 HdfFixedPoint.undefined((short)8),
                 // HdfFixedPoint.of(bufferAllocation.getDataAddress()),
-                HdfFixedPoint.of(fileAllocation.getDataObjectDataOffset()),
+                // this offset of the end of the file. will need to be updated later.
+                HdfFixedPoint.of(0),
                 HdfFixedPoint.undefined((short)8),
                 new HdfSymbolTableEntry(
                         HdfFixedPoint.of(0),
@@ -77,7 +77,7 @@ public class HdfFile {
 //        fileAllocation.computeGlobalHeapOffset(dimensionSize.getInstance(Long.class));
 //    }
 //
-    public long write(Supplier<ByteBuffer> bufferSupplier) throws IOException {
+    public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
         HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
             // fileChannel.position(bufferAllocation.getDataAddress());
@@ -89,62 +89,68 @@ public class HdfFile {
                 }
             }
         }
-        // return bufferAllocation.getDataAddress();
-        return fileAllocation.getDataObjectDataOffset();
     }
 
-    public long write(ByteBuffer buffer, HdfDataSet hdfDataSet) throws IOException {
+    public void write(ByteBuffer buffer, HdfDataSet hdfDataSet) throws IOException {
         HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(hdfDataSet.getDatasetName());
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
             // fileChannel.position(bufferAllocation.getDataAddress());
-            fileChannel.position(fileAllocation.getDataObjectDataOffset());
+            fileChannel.position(allocationInfo.getDataOffset());
             while (buffer.hasRemaining()) {
                 fileChannel.write(buffer);
             }
         }
-        // return bufferAllocation.getDataAddress();
-        return fileAllocation.getDataObjectDataOffset();
     }
 
     public void close() throws IOException {
         HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         // long endOfFileAddress = bufferAllocation.getDataAddress();
-        long endOfFileAddress = fileAllocation.getDataObjectDataOffset();
-        HdfFixedPoint[] dimensionSizes = rootGroup.getDataSet().getDataObjectHeaderPrefix()
-                .findMessageByType(DataLayoutMessage.class)
-                .orElseThrow()
-                .getDimensionSizes();
-        for(HdfFixedPoint fixedPoint : dimensionSizes) {
-            endOfFileAddress += fixedPoint.getInstance(Long.class);
-        }
-
-        // some convoluted logic for adding globalHeap data if needed
-        ByteBuffer globalHeapBuffer = null;
-        long globalHeapAddress = -1;
-        long globalHeapSize = globalHeap.getWriteBufferSize(-1);
-        if ( globalHeapSize > 0 ) {
-            globalHeapAddress = endOfFileAddress;
-            endOfFileAddress += globalHeapSize;
-            globalHeapBuffer = ByteBuffer.allocate((int) globalHeapSize);
-            globalHeap.writeToByteBuffer(globalHeapBuffer);
-            globalHeapBuffer.position(0);
-        }
+        long endOfFileAddress = fileAllocation.getEndOfFileOffset();
+//        HdfFixedPoint[] dimensionSizes = rootGroup.getDataSet().getDataObjectHeaderPrefix()
+//                .findMessageByType(DataLayoutMessage.class)
+//                .orElseThrow()
+//                .getDimensionSizes();
+//        for(HdfFixedPoint fixedPoint : dimensionSizes) {
+//            endOfFileAddress += fixedPoint.getInstance(Long.class);
+//        }
+//
+//        // some convoluted logic for adding globalHeap data if needed
+//        ByteBuffer globalHeapBuffer = null;
+//        long globalHeapAddress = -1;
+//        long globalHeapSize = globalHeap.getWriteBufferSize(-1);
+//        if ( globalHeapSize > 0 ) {
+//            globalHeapAddress = endOfFileAddress;
+//            endOfFileAddress += globalHeapSize;
+//            globalHeapBuffer = ByteBuffer.allocate((int) globalHeapSize);
+//            globalHeap.writeToByteBuffer(globalHeapBuffer);
+//            globalHeapBuffer.position(0);
+//        }
         superblock.setEndOfFileAddress(HdfFixedPoint.of(endOfFileAddress));
 
 
         log.debug("{}", superblock);
         log.debug("{}", rootGroup);
 
-        // Allocate the buffer dynamically up to the data start location
-        // ByteBuffer buffer = ByteBuffer.allocate((int) bufferAllocation.getDataAddress()).order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
-        ByteBuffer buffer = ByteBuffer.allocate((int) fileAllocation.getDataObjectDataOffset()).order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
-        // buffer.position((int) bufferAllocation.getSuperblockAddress());
-        buffer.position((int) fileAllocation.getSuperblockOffset());
+        // Allocate the buffer dynamically to hold Superblock + initial Root Group complex
+        // Size = SuperblockSize + RootGroupSize = 96 + 192 = 288
+        // Define RootGroupSize for clarity (can be calculated or made a constant if preferred)
+        final long ROOT_GROUP_SETUP_SIZE = 192L; // OH Prefix(40) + BTree Node(32) + LH Hdr(32) + LH Cont(88)
+        int totalInitialSize = (int) (fileAllocation.getSuperblockSize() + ROOT_GROUP_SETUP_SIZE);
+
+        ByteBuffer buffer = ByteBuffer.allocate(totalInitialSize).order(ByteOrder.LITTLE_ENDIAN); // HDF5 uses little-endian
+
+        // Write Superblock
+        // buffer.position((int) bufferAllocation.getSuperblockAddress()); // Old comment
+        buffer.position((int) fileAllocation.getSuperblockOffset()); // Should be 0
         superblock.writeToByteBuffer(buffer);
-        // buffer.position((int) bufferAllocation.getObjectHeaderPrefixAddress());
-        buffer.position((int) fileAllocation.getObjectHeaderPrefixOffset());
-        rootGroup.writeToBuffer(buffer);
-        buffer.position(0);
+
+        // Write Root Group components (assuming rootGroup.writeToBuffer handles writing all 4 parts sequentially)
+        // The starting position for the root group's OH Prefix is right after the superblock
+        // buffer.position((int) bufferAllocation.getObjectHeaderPrefixAddress()); // Old comment
+        buffer.position((int) fileAllocation.getObjectHeaderPrefixOffset()); // Should be 96
+        rootGroup.writeToBuffer(buffer); // This method needs to write exactly ROOT_GROUP_SETUP_SIZE (192) bytes here
+
 
         Path path = Path.of(fileName);
         StandardOpenOption[] fileOptions = {StandardOpenOption.WRITE};

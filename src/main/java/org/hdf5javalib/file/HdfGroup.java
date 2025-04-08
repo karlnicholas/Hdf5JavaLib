@@ -12,7 +12,6 @@ import org.hdf5javalib.file.infrastructure.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -60,7 +59,7 @@ public class HdfGroup {
         );
 
         // Define a B-Tree for group indexing
-        bTree = new HdfBTreeV1("TREE", 0, 0, 0,
+        bTree = new HdfBTreeV1("TREE", 0, 0,
                 HdfFixedPoint.undefined((short)8),
                 HdfFixedPoint.undefined((short)8));
 
@@ -68,6 +67,8 @@ public class HdfGroup {
         HdfFixedPoint localHeap = HdfFixedPoint.of(localHeapAddress);
 
         // (short) (bTreeAddress.getDatatype().getSize() + localHeapAddress.getDatatype().getSize()
+        // this is not the dataset objectHeader, its for the group to keep a SymbolTableMessage
+        // a SymbolTableMessage with bree and localheap locations.
         objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 24,
                 Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte)0,(short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))));
 
@@ -75,18 +76,16 @@ public class HdfGroup {
 
     public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
         HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        DatasetAllocationInfo allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
         HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length));
-        // this poosibly changes addresses for anything after the dataGroupAddress, which includes the SNOD address.
+        // this possibly changes addresses for anything after the dataGroupAddress, which includes the SNOD address.
         dataSet = new HdfDataSet(this, datasetName, hdfDatatype, dataSpaceMessage);
-        HdfGroupSymbolTableNode symbolTableNode = new HdfGroupSymbolTableNode("SNOD", 1, 0, new ArrayList<>());
-        int linkNameOffset = bTree.addGroup(hdfDatasetName, HdfFixedPoint.of(fileAllocation.getSnodOffset()),
-                localHeap,
-                localHeapContents,
-                symbolTableNode);
-        HdfSymbolTableEntry ste = new HdfSymbolTableEntry(
-                HdfFixedPoint.of(linkNameOffset),
-                HdfFixedPoint.of(fileAllocation.getDataObjectHeaderOffset()));
-        symbolTableNode.addEntry(ste);
+
+        // add the datasetName into the localHeap for this group
+        int linkNameOffset = localHeap.addToHeap(hdfDatasetName, localHeapContents);
+        //
+        bTree.addDataset(linkNameOffset, allocationInfo.getHeaderOffset());
+
         return dataSet;
     }
 
@@ -94,6 +93,7 @@ public class HdfGroup {
         // Write Object Header at position found in rootGroupEntry
         HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         long objectHeaderPrefixAddress = fileAllocation.getObjectHeaderPrefixOffset();
+
         buffer.position((int) objectHeaderPrefixAddress);
         objectHeader.writeToByteBuffer(buffer);
 
@@ -141,7 +141,8 @@ public class HdfGroup {
 
         // need to write the dataset
         if ( dataSet != null ) {
-            buffer.position((int) fileAllocation.getDataObjectHeaderOffset());
+            DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(dataSet.getDatasetName());
+            buffer.position((int) allocationInfo.getHeaderOffset());
             dataSet.writeToBuffer(buffer);
         }
 

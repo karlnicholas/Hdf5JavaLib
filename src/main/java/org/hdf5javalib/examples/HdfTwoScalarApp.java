@@ -43,8 +43,9 @@ public class HdfTwoScalarApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        tryHdfApiScalar("two_scalar_datasets.h5");
+//        tryHdfApiScalar("two_scalar_datasets.h5");
     }
+
     private void tryHdfApiScalar(String FILE_NAME) {
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "dataset_";
