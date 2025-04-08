@@ -1,108 +1,28 @@
 package org.hdf5javalib.file;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 
-/**
- * Holds allocation offsets and sizes for a specific dataset.
- * Data and Continuation blocks are initially unallocated (offset/size = -1).
- * All sizes are in bytes.
- */
-@Getter // Lombok generates getters for all fields
+@Getter
 public class DatasetAllocationInfo {
-    // --- Header Info (Allocated Initially) ---
-    private final long headerOffset;
-    private final long headerSize;
+    @Setter(AccessLevel.PACKAGE) private long headerOffset;
+    @Setter(AccessLevel.PACKAGE) private long headerSize;
+    @Setter(AccessLevel.PACKAGE) private long dataOffset = -1L;
+    @Setter(AccessLevel.PACKAGE) private long dataSize = -1L;
+    @Setter(AccessLevel.PACKAGE) private long continuationOffset = -1L;
+    @Setter(AccessLevel.PACKAGE) private long continuationSize = -1L;
 
-    // --- Data Block Info (Allocated On Demand) ---
-    private long dataOffset = -1L;       // -1 if not allocated
-    private long dataSize = -1L;         // -1 if not allocated
-
-    // --- Continuation Block Info (Allocated On Demand) ---
-    private long continuationOffset = -1L; // -1 if not allocated
-    private long continuationSize = -1L;   // -1 if not allocated
-
-    /**
-     * Private constructor, only created within HdfFileAllocation.
-     * Initializes ONLY the header block information. Data and continuation blocks
-     * start as unallocated.
-     *
-     * @param headerOffset Offset of the dataset object header.
-     * @param headerSize   Allocated size of the dataset object header.
-     */
     DatasetAllocationInfo(long headerOffset, long headerSize) {
-        if (headerOffset < 0L) {
-            throw new IllegalArgumentException("Header offset cannot be negative.");
-        }
-        if (headerSize <= 0L) { // Header size must be positive as it's always allocated initially
-            throw new IllegalArgumentException("Header size must be positive.");
-        }
+        if (headerOffset < 0L) throw new IllegalArgumentException("Header offset cannot be negative.");
+        if (headerSize <= 0L) throw new IllegalArgumentException("Initial header size must be positive.");
         this.headerOffset = headerOffset;
         this.headerSize = headerSize;
-        // dataOffset, dataSize, continuationOffset, continuationSize remain at initial -1L
     }
-
-    /**
-     * Sets the offset and size for the data block.
-     * This should only be called once when the data block is allocated.
-     *
-     * @param offset The allocated offset of the data block.
-     * @param size   The allocated size of the data block (can be 0).
-     * @throws IllegalArgumentException if offset is non-negative but size is negative,
-     *                                  or if offset is negative but size is not -1.
-     * @throws IllegalStateException    if the data block has already been set.
-     */
-    public void setDataAllocation(long offset, long size) {
-        if (offset >= 0L && size < 0L) {
-            throw new IllegalArgumentException("Data size cannot be negative when offset is allocated (offset=" + offset + ", size=" + size + ").");
-        }
-        if (offset < 0L && size != -1L) {
-            throw new IllegalArgumentException("Data size must be -1 if offset is negative (offset=" + offset + ", size=" + size + ").");
-        }
-        if (this.dataOffset != -1L || this.dataSize != -1L) {
-            throw new IllegalStateException("Data block has already been allocated (offset=" + this.dataOffset + ", size=" + this.dataSize + "). Cannot re-allocate.");
-        }
-        this.dataOffset = offset;
-        this.dataSize = size;
-    }
-
-
-    /**
-     * Sets the offset and size for the continuation block.
-     * This should only be called once when the continuation block is allocated.
-     *
-     * @param offset The allocated offset of the continuation block.
-     * @param size   The allocated size of the continuation block (must be positive if offset >= 0).
-     * @throws IllegalArgumentException if offset is non-negative but size is not positive,
-     *                                  or if offset is negative but size is not -1.
-     * @throws IllegalStateException    if the continuation block has already been set.
-     */
-    public void setContinuation(long offset, long size) {
-        // Logic is slightly different: continuation size > 0 if allocated
-        if (offset >= 0L && size <= 0L) {
-            throw new IllegalArgumentException("Continuation size must be positive when offset is allocated (offset=" + offset + ", size=" + size + ").");
-        }
-        if (offset < 0L && size != -1L) {
-            throw new IllegalArgumentException("Continuation size must be -1 if offset is negative (offset=" + offset + ", size=" + size + ").");
-        }
-        if (this.continuationOffset != -1L || this.continuationSize != -1L) {
-            throw new IllegalStateException("Continuation block has already been set (offset=" + this.continuationOffset + ", size=" + this.continuationSize + "). Cannot re-set.");
-        }
-        this.continuationOffset = offset;
-        this.continuationSize = size;
-    }
-
-    // --- Getters are generated by Lombok ---
-    // getHeaderOffset(), getHeaderSize()
-    // getDataOffset(), getDataSize()
-    // getContinuationOffset(), getContinuationSize()
-
 
     @Override
     public String toString() {
-        return "DatasetAllocationInfo{" +
-                "header{offset=" + headerOffset + ", size=" + headerSize + '}' +
-                ", data{offset=" + dataOffset + ", size=" + dataSize + '}' + // Updated format
-                ", continuation{offset=" + continuationOffset + ", size=" + continuationSize + '}' + // Updated format
-                '}';
+        return String.format("DatasetAllocationInfo{header{offset=%d, size=%d}, data{offset=%d, size=%d}, continuation{offset=%d, size=%d}}",
+                headerOffset, headerSize, dataOffset, dataSize, continuationOffset, continuationSize);
     }
 }

@@ -148,11 +148,11 @@ public class HdfGroup {
 
     }
 
-    public long write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
-        return hdfFile.write(bufferSupplier);
+    public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
+        hdfFile.write(bufferSupplier, hdfDataSet);
     }
-    public long write(ByteBuffer byteBuffer, HdfDataSet hdfDataSet) throws IOException {
-        return hdfFile.write(byteBuffer,  hdfDataSet);
+    public void write(ByteBuffer byteBuffer, HdfDataSet hdfDataSet) throws IOException {
+        hdfFile.write(byteBuffer,  hdfDataSet);
     }
 
     @Override

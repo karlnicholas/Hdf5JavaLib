@@ -79,9 +79,10 @@ public class HdfFile {
 //
     public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
         HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(hdfDataSet.getDatasetName());
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
             // fileChannel.position(bufferAllocation.getDataAddress());
-            fileChannel.position(fileAllocation.getDataObjectDataOffset());
+            fileChannel.position(allocationInfo.getDataOffset());
             ByteBuffer buffer;
             while ((buffer = bufferSupplier.get()).hasRemaining()) {
                 while (buffer.hasRemaining()) {
@@ -163,13 +164,13 @@ public class HdfFile {
             while (buffer.hasRemaining()) {
                 fileChannel.write(buffer);
             }
-            // check here if global heap needs to be written
-            if ( globalHeapAddress > 0 ) {
-                fileChannel.position(globalHeapAddress);
-                while (globalHeapBuffer.hasRemaining()) {
-                    fileChannel.write(globalHeapBuffer);
-                }
-            }
+//            // check here if global heap needs to be written
+//            if ( globalHeapAddress > 0 ) {
+//                fileChannel.position(globalHeapAddress);
+//                while (globalHeapBuffer.hasRemaining()) {
+//                    fileChannel.write(globalHeapBuffer);
+//                }
+//            }
         }
     }
 
