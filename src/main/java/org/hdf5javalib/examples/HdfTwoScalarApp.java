@@ -4,6 +4,7 @@ import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
+import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.utils.HdfTestUtils;
@@ -30,7 +31,7 @@ public class HdfTwoScalarApp {
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(this.getClass().getResource("/two_scalar_datasets.h5")).getFile();
+            String filePath = Objects.requireNonNull(this.getClass().getResource("/scalar_new.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
@@ -52,6 +53,8 @@ public class HdfTwoScalarApp {
 
         try (HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS) ) {
             // Create a new file using default properties
+            HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+            fileAllocation.printBlocks();
 
 
             // Define scalar dataspace (rank 0).
@@ -65,7 +68,8 @@ public class HdfTwoScalarApp {
 
 //            for ( int i = 1; i <= 2; i++ ) {
                 // Create dataset
-                HdfDataSet dataset = file.createDataSet(DATASET_NAME+1, fixedPointDatatype, dataSpaceMessage);
+                HdfDataSet dataset = file.createDataSet("FixedPointValue", fixedPointDatatype, dataSpaceMessage);
+            fileAllocation.printBlocks();
 
                 ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
                 HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) 42), fixedPointDatatype, byteBuffer);
@@ -73,6 +77,7 @@ public class HdfTwoScalarApp {
                 // Write to dataset
                 dataset.write(byteBuffer);
 
+            fileAllocation.printBlocks();
 //                dataset.close();
 //            }
 //

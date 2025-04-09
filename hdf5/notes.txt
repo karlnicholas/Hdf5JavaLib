@@ -1,49 +1,60 @@
-
-	objectHeader.writeToByteBuffer(buffer);
-	bTree.writeToByteBuffer(buffer);
-	localHeap.writeToByteBuffer(buffer);
-	localHeapContents.writeToByteBuffer(buffer);
-  
-
-
-
-
-2025-04-08 12:54:56 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=2056, driverInformationAddress=-1
+2025-04-09 11:39:35 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=2052, driverInformationAddress=-1
 rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
 
-2025-04-08 12:54:56 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfGroup{name=''
+2025-04-09 11:39:35 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
-bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=24, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=2, symbolTableEntries=
-[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}]
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=8, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=40, dataSegmentAddress=712}
-localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 100, 97, 116, 97, 115, 101, 116, 95, 49, 0, 0, 0, 0, 0, 0, 0, 100, 97, 116, 97, 115, 101, 116, 95]... (truncated)}}
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=712}
+localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 70, 105, 120, 101, 100, 80, 111, 105, 110, 116, 86, 97, 108, 117, 101, 0, 1, 0, 0, 0, 0, 0, 0, 0]... (truncated)}}
 
-2025-04-08 12:54:56 [main] DEBUG org.hdf5javalib.HdfFileReader - Parsing complete. NEXT: 184
-2025-04-08 12:54:56 [main] DEBUG org.hdf5javalib.HdfFileReader - Dataset dataset_1@800
+2025-04-09 11:39:35 [main] DEBUG org.hdf5javalib.HdfFileReader - Parsing complete. NEXT: 184
+2025-04-09 11:39:35 [main] DEBUG org.hdf5javalib.HdfFileReader - Dataset FixedPointValue@800
+
 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DataspaceMessage(16){version=1, dimensionality=0, flags={0}, dimensions=[], maxDimensions=[], hasMaxDimensions=true}
 DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-07T18:54:49Z}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-03-28T18:34:25Z}
 NilMessage(152){}}
-2025-04-08 12:54:56 [main] DEBUG org.hdf5javalib.HdfFileReader - Dataset dataset_2@1400
-HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+
+2025-04-09 11:39:35 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=2052, driverInformationAddress=-1
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
+2025-04-09 11:39:35 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfGroup{name=''
+objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
+SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=8, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}]
+}}]}
+
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=712}
+localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 70, 105, 120, 101, 100, 80, 111, 105, 110, 116, 86, 97, 108, 117, 101, 0, 1, 0, 0, 0, 0, 0, 0, 0]... (truncated)}
+dataSet=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
 DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2052, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-07T18:54:49Z}
-NilMessage(152){}}
-Integer read   = 1
-Integer stream = 1
-2025-04-08 12:54:56 [main] DEBUG o.hdf5javalib.file.HdfFileAllocation - Calculating initial file layout...
-2025-04-08 12:54:56 [main] DEBUG o.hdf5javalib.file.HdfFileAllocation - End of fixed setup block calculated at: 1128
-2025-04-08 12:54:56 [main] DEBUG o.hdf5javalib.file.HdfFileAllocation - Initial layout complete. Next available offset set to: 2048
-Integer read   = 2
-Integer stream = 2
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-09T15:39:35Z}
+NilMessage(152){}}}
+
+=== HDF File Allocation Layout ===
+Current End of File Offset: 2052
+Data Blocks Allocated: true
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Name
+0            | 0x00000000   | 96       | Superblock
+96           | 0x00000060   | 40       | Object Header Prefix
+136          | 0x00000088   | 544      | B-tree (Node + Storage)
+680          | 0x000002A8   | 32       | Local Heap Header
+712          | 0x000002C8   | 88       | Initial Local Heap Contents
+800          | 0x00000320   | 272      | Dataset Header (FixedPointValue)
+1072         | 0x00000430   | 328      | SNOD Block 1
+2048         | 0x00000800   | 4        | Data Block (FixedPointValue)
+==================================
+HDF5 file two_scalar_datasets.h5 created and written successfully!
 
 Process finished with exit code 0
 
