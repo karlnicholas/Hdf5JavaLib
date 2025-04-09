@@ -31,7 +31,7 @@ public class HdfTwoScalarApp {
     private void run() {
         try {
             HdfFileReader reader = new HdfFileReader();
-            String filePath = Objects.requireNonNull(this.getClass().getResource("/scalar_new.h5")).getFile();
+            String filePath = Objects.requireNonNull(this.getClass().getResource("/scalar.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
@@ -54,7 +54,6 @@ public class HdfTwoScalarApp {
         try (HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS) ) {
             // Create a new file using default properties
             HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
-            fileAllocation.printBlocks();
 
 
             // Define scalar dataspace (rank 0).
@@ -69,7 +68,7 @@ public class HdfTwoScalarApp {
 //            for ( int i = 1; i <= 2; i++ ) {
                 // Create dataset
                 HdfDataSet dataset = file.createDataSet("FixedPointValue", fixedPointDatatype, dataSpaceMessage);
-            fileAllocation.printBlocks();
+                HdfTestUtils.writeVersionAttribute(dataset);
 
                 ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
                 HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) 42), fixedPointDatatype, byteBuffer);
@@ -77,7 +76,6 @@ public class HdfTwoScalarApp {
                 // Write to dataset
                 dataset.write(byteBuffer);
 
-            fileAllocation.printBlocks();
 //                dataset.close();
 //            }
 //

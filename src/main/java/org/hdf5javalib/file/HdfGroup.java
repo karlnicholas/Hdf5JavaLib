@@ -107,7 +107,6 @@ public class HdfGroup implements Closeable {
         localHeapContents.writeToByteBuffer(buffer); // Writes 88 bytes (712-799)
         buffer.rewind();
 
-        fileAllocation.printBlocks();
         fileChannel.position(rootGroupOffset);
         while (buffer.hasRemaining()) {
             fileChannel.write(buffer);
