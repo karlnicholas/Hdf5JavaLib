@@ -303,7 +303,7 @@ public class HdfCompoundApp {
                         .filter(c-> c.getMembers().get(0).getInstance(Long.class) < 1010 )
                 .map(c->c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
 
-        System.out.println("Ten Rows:");
+        System.out.println("RecordId < 1010, custom class:");
         new TypedDataSource<>(dataSet, fileChannel, CompoundExample.class)
                 .streamVector()
                 .filter(c -> c.getRecordId() < 1010)

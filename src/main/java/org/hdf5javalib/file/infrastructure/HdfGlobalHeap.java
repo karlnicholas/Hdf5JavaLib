@@ -136,6 +136,7 @@ public class HdfGlobalHeap {
 
         // Calculate object buffer size
         int objectDataBufferSize = (int) (declaredSize - 16);
+//        int objectDataBufferSize = (int) (declaredSize);
         if (objectDataBufferSize < 0) {
             // This condition implies declaredSize < 16, which should be caught above.
             // However, a heap needs space for at least the null terminator (16 bytes) if it contains any objects.
@@ -162,7 +163,6 @@ public class HdfGlobalHeap {
         // Read objects into a local map for this specific heap
         TreeMap<Integer, GlobalHeapObject> localObjects = new TreeMap<>();
         int localNextObjectId = 1;
-        boolean foundTerminator = false;
 
         try {
             if (objectBuffer != null) { // Only process if buffer exists
@@ -178,7 +178,6 @@ public class HdfGlobalHeap {
 
                     // Check for the null terminator object
                     if (obj.getObjectId() == 0) {
-                        foundTerminator = true; // Found it!
                         break; // Stop reading objects for this heap
                     }
 
@@ -195,14 +194,6 @@ public class HdfGlobalHeap {
                     localNextObjectId = Math.max(localNextObjectId, obj.getObjectId() + 1);
                 }
             }
-
-            // After loop, check if null terminator was found if expected
-            if (!foundTerminator && objectDataBufferSize >= 16) { // Expect terminator if space existed for it
-                throw new RuntimeException("Null terminator object (ID 0) not found in heap at offset: " + startOffset);
-            }
-
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Error processing global heap object data at offset: " + startOffset + ": " + e.getMessage(), e);
         } catch (Exception e) {
             throw new IOException("Unexpected error processing global heap object data buffer at offset: " + startOffset, e);
         }
@@ -381,10 +372,16 @@ public class HdfGlobalHeap {
             this.objectSize = sizeOrFreeSpace;
             if (objectId == 0) {
                 this.data = null;
-                if (data != null && data.length > 0) { throw new IllegalArgumentException("Data must be null for Global Heap Object ID 0"); }
+                if (data != null && data.length > 0) {
+                    throw new IllegalArgumentException("Data must be null for Global Heap Object ID 0");
+                }
             } else {
-                if (data == null) { throw new IllegalArgumentException("Data cannot be null for non-zero Global Heap Object ID: " + objectId); }
-                if (data.length != sizeOrFreeSpace) { throw new IllegalArgumentException("Data length ("+data.length+") must match objectSize ("+sizeOrFreeSpace+") for non-zero objectId "+objectId); }
+                if (data == null) {
+                    throw new IllegalArgumentException("Data cannot be null for non-zero Global Heap Object ID: " + objectId);
+                }
+                if (data.length != sizeOrFreeSpace) {
+                    throw new IllegalArgumentException("Data length ("+data.length+") must match objectSize ("+sizeOrFreeSpace+") for non-zero objectId "+objectId);
+                }
                 this.data = data;
             }
         }
@@ -396,18 +393,28 @@ public class HdfGlobalHeap {
             buffer.getInt();
             long sizeOrFreeSpace = buffer.getLong();
             if (objectId == 0) {
-                if (sizeOrFreeSpace < 0) { throw new RuntimeException("Invalid negative free space (" + sizeOrFreeSpace + ") indicated by null terminator object (ID 0)."); }
+                if (sizeOrFreeSpace < 0) {
+                    throw new RuntimeException("Invalid negative free space (" + sizeOrFreeSpace + ") indicated by null terminator object (ID 0).");
+                }
                 return new GlobalHeapObject(objectId, referenceCount, sizeOrFreeSpace, null);
             } else {
-                if (sizeOrFreeSpace <= 0) { throw new RuntimeException("Invalid non-positive object size (" + sizeOrFreeSpace + ") read for non-null object ID: " + objectId); }
-                if (sizeOrFreeSpace > Integer.MAX_VALUE) { throw new RuntimeException("Object size (" + sizeOrFreeSpace + ") exceeds maximum Java array size (Integer.MAX_VALUE) for object ID: " + objectId); }
+                if (sizeOrFreeSpace <= 0) {
+                    throw new RuntimeException("Invalid non-positive object size (" + sizeOrFreeSpace + ") read for non-null object ID: " + objectId);
+                }
+                if (sizeOrFreeSpace > Integer.MAX_VALUE) {
+                    throw new RuntimeException("Object size (" + sizeOrFreeSpace + ") exceeds maximum Java array size (Integer.MAX_VALUE) for object ID: " + objectId);
+                }
                 int actualObjectSize = (int) sizeOrFreeSpace;
                 int padding = getPadding(actualObjectSize);
                 int requiredBytes = actualObjectSize + padding;
-                if (buffer.remaining() < requiredBytes) { throw new RuntimeException("Buffer underflow: insufficient data for object content and padding (needs " + requiredBytes + " bytes [data:" + actualObjectSize + ", pad:" + padding + "], found " + buffer.remaining() + ") for object ID: " + objectId); }
+                if (buffer.remaining() < requiredBytes) {
+                    throw new RuntimeException("Buffer underflow: insufficient data for object content and padding (needs " + requiredBytes + " bytes [data:" + actualObjectSize + ", pad:" + padding + "], found " + buffer.remaining() + ") for object ID: " + objectId);
+                }
                 byte[] objectData = new byte[actualObjectSize];
                 buffer.get(objectData);
-                if (padding > 0) { buffer.position(buffer.position() + padding); }
+                if (padding > 0) {
+                    buffer.position(buffer.position() + padding);
+                }
                 return new GlobalHeapObject(objectId, referenceCount, sizeOrFreeSpace, objectData);
             }
         }
@@ -419,7 +426,9 @@ public class HdfGlobalHeap {
             buffer.putLong(objectSize);
             if (objectId != 0) {
                 int expectedDataSize = (int)objectSize;
-                if (data == null || data.length != expectedDataSize) { throw new IllegalStateException("Object data is inconsistent or null for writing object ID: " + objectId + ". Expected size " + expectedDataSize + ", data length " + (data != null ? data.length : "null")); }
+                if (data == null || data.length != expectedDataSize) {
+                    throw new IllegalStateException("Object data is inconsistent or null for writing object ID: " + objectId + ". Expected size " + expectedDataSize + ", data length " + (data != null ? data.length : "null"));
+                }
                 buffer.put(data);
                 int padding = getPadding(expectedDataSize);
                 if (padding > 0) { buffer.put(new byte[padding]); }
