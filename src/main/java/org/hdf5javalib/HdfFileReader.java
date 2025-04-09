@@ -202,10 +202,10 @@ public class HdfFileReader {
                             try {
                                 fileChannel.position(dataObjectHeaderAddress);
                                 HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
-                                log.debug("FOUND {}@{}\r\n{}", linkName, dataObjectHeaderAddress, header);
-                                // Verify it's a dataset
                                 DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class)
                                         .orElseThrow(() -> new IllegalStateException("Object '" + targetName + "' found but has no DatatypeMessage"));
+                                log.debug("FOUND {}@{}\r\n{}", linkName, dataObjectHeaderAddress, header);
+                                // Verify it's a dataset
                                 // Assuming rootGroup as parent for now. Adjust if needed for sub-groups.
                                 return Optional.of(new HdfDataSet(rootGroup, linkName.toString(), dataType.getHdfDatatype(), header));
                             } finally {

@@ -56,7 +56,7 @@ public class AttributeMessage extends HdfMessage {
     private final DataspaceMessage dataspaceMessage;
     private final HdfData value;
 
-    public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfString value, byte flags, short sizeMessageData) {
+    public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfData value, byte flags, short sizeMessageData) {
         super(MessageType.AttributeMessage, sizeMessageData, flags);
         this.version = version;
         this.datatypeMessage = datatypeMessage;
@@ -90,22 +90,30 @@ public class AttributeMessage extends HdfMessage {
 
         byte[] dtBytes = new byte[datatypeSize];
         buffer.get(dtBytes);
+        // get padding bytes
+        padding = (8 - (datatypeSize % 8)) % 8;
+        paddingBytes = new byte[padding];
+        buffer.get(paddingBytes);
 
         byte[] dsBytes = new byte[dataspaceSize];
         buffer.get(dsBytes);
+        // get padding bytes
+        padding = (8 - (dataspaceSize % 8)) % 8;
+        paddingBytes = new byte[padding];
+        buffer.get(paddingBytes);
 
         HdfMessage hdfDataObjectHeaderDt = createMessageInstance(MessageType.DatatypeMessage, (byte) 0, dtBytes, offsetSize, lengthSize, ()-> Arrays.copyOfRange( data, buffer.position(), data.length));
         DatatypeMessage dt = (DatatypeMessage) hdfDataObjectHeaderDt;
         HdfMessage hdfDataObjectHeaderDs = createMessageInstance(MessageType.DataspaceMessage, (byte) 0, dsBytes, offsetSize, lengthSize, null);
         DataspaceMessage ds = (DataspaceMessage) hdfDataObjectHeaderDs;
 
-        HdfString value = null;
-        if ( dt.getHdfDatatype().getDatatypeClass() == HdfDatatype.DatatypeClass.STRING ) {
+//        HdfString value = null;
+//        if ( dt.getHdfDatatype().getDatatypeClass() == HdfDatatype.DatatypeClass.STRING ) {
             int dtDataSize = dt.getHdfDatatype().getSize();
             byte[] dataBytes = new byte[dtDataSize];
             buffer.get(dataBytes);
-            value = new HdfString(dataBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, dataBytes.length));
-        }
+            HdfData value = dt.getHdfDatatype().getInstance(HdfData.class, dataBytes); // new HdfString(dataBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, dataBytes.length));
+//        }
         return new AttributeMessage(version, name, dt, ds, value, flags, (short)data.length);
     }
 
