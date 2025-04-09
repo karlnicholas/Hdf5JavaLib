@@ -1,5 +1,6 @@
 package org.hdf5javalib.utils;
 
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.TypedDataSource;
@@ -35,8 +36,8 @@ public class HdfTestUtils {
         dataset.createAttribute(ATTRIBUTE_NAME, dt, ds, hdfString);
     }
 
-    public static <T> void displayScalarData(FileChannel fileChannel, HdfDataSet dataSet, Class<T> clazz) throws IOException {
-        TypedDataSource<T> dataSource = new TypedDataSource<>(dataSet, fileChannel, clazz);
+    public static <T> void displayScalarData(FileChannel fileChannel, HdfDataSet dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+        TypedDataSource<T> dataSource = new TypedDataSource<>(dataSet, fileChannel, hdfDataFile, clazz);
 
         T result = dataSource.readScalar();
         System.out.println(displayType(clazz, result) + " read   = " + displayValue(result));
@@ -45,8 +46,8 @@ public class HdfTestUtils {
         System.out.println(displayType(clazz, result) + " stream = " + displayValue(result));
     }
 
-    public static <T> void displayVectorData(FileChannel fileChannel, HdfDataSet dataSet, Class<T> clazz) throws IOException {
-        TypedDataSource<T> dataSource = new TypedDataSource<>(dataSet, fileChannel, clazz);
+    public static <T> void displayVectorData(FileChannel fileChannel, HdfDataSet dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+        TypedDataSource<T> dataSource = new TypedDataSource<>(dataSet, fileChannel, hdfDataFile, clazz);
 
         T[] resultArray = dataSource.readVector();
         System.out.println(displayType(clazz, resultArray) + " read   = " + displayValue(resultArray));

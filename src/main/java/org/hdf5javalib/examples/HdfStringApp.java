@@ -39,7 +39,7 @@ public class HdfStringApp {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
                 try ( HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayVectorData(channel, dataSet, String.class);
+                    HdfTestUtils.displayVectorData(channel, dataSet, String.class, reader);
                 }
             }
         } catch (IOException e) {
@@ -52,7 +52,7 @@ public class HdfStringApp {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
                 try ( HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayVectorData(channel, dataSet, String.class);
+                    HdfTestUtils.displayVectorData(channel, dataSet, String.class, reader);
                 }
             }
         } catch (IOException e) {
@@ -65,7 +65,7 @@ public class HdfStringApp {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
                 try ( HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayVectorData(channel, dataSet, String.class);
+                    HdfTestUtils.displayVectorData(channel, dataSet, String.class, reader);
                 }
             }
         } catch (IOException e) {
@@ -78,7 +78,7 @@ public class HdfStringApp {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
                 try ( HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayVectorData(channel, dataSet, String.class);
+                    HdfTestUtils.displayVectorData(channel, dataSet, String.class, reader);
                 }
             }
         } catch (IOException e) {

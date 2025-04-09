@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
@@ -50,7 +51,7 @@ public class HdfFixedPointApp {
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
-                tryScalarDataSpliterator(channel, reader.findDataset("FixedPointValue", channel, reader.getRootGroup()));
+                tryScalarDataSpliterator(channel, reader.findDataset("FixedPointValue", channel, reader.getRootGroup()), reader);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -119,20 +120,20 @@ public class HdfFixedPointApp {
 //        tryHdfApiMatrixInts("weatherdata_all.h5", this::writeAllMatrix);
     }
 
-    private void tryScalarDataSpliterator(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {
-        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(dataSet, fileChannel, BigInteger.class);
+    private void tryScalarDataSpliterator(FileChannel fileChannel, HdfDataSet dataSet, HdfDataFile hdfDataFile) throws IOException {
+        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(dataSet, fileChannel, hdfDataFile, BigInteger.class);
         BigInteger allData = dataSource.readScalar();
         System.out.println("Scalar readAll stats = " + Stream.of(allData)
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
         System.out.println("Scalar streaming list = " + dataSource.streamScalar().toList());
         System.out.println("Scalar parallelStreaming list = " + dataSource.parallelStreamScalar().toList());
-        new TypedDataSource<>(dataSet, fileChannel, HdfFixedPoint.class).streamScalar().forEach(System.out::println);
-        new TypedDataSource<>(dataSet, fileChannel, String.class).streamScalar().forEach(System.out::println);
-        new TypedDataSource<>(dataSet, fileChannel, BigDecimal.class).streamScalar().forEach(System.out::println);
+        new TypedDataSource<>(dataSet, fileChannel, hdfDataFile, HdfFixedPoint.class).streamScalar().forEach(System.out::println);
+        new TypedDataSource<>(dataSet, fileChannel, hdfDataFile, String.class).streamScalar().forEach(System.out::println);
+        new TypedDataSource<>(dataSet, fileChannel, hdfDataFile, BigDecimal.class).streamScalar().forEach(System.out::println);
     }
 
-    public void tryVectorSpliterator(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {
-        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(dataSet, fileChannel, BigInteger.class);
+    public void tryVectorSpliterator(FileChannel fileChannel, HdfDataSet dataSet, HdfDataFile hdfDataFile) throws IOException {
+        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(dataSet, fileChannel, hdfDataFile, BigInteger.class);
         BigInteger[] allData = dataSource.readVector();
         System.out.println("Vector readAll stats  = " + Arrays.stream(allData).collect(Collectors.summarizingInt(BigInteger::intValue)));
         System.out.println("Vector streaming stats = " + dataSource.streamVector()
@@ -147,8 +148,8 @@ public class HdfFixedPointApp {
         System.out.println(bdReduced + " ");
     }
 
-    private void tryMatrixSpliterator(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {
-        TypedDataSource<BigDecimal> dataSource = new TypedDataSource<>(dataSet, fileChannel, BigDecimal.class);
+    private void tryMatrixSpliterator(FileChannel fileChannel, HdfDataSet dataSet, HdfDataFile hdfDataFile) throws IOException {
+        TypedDataSource<BigDecimal> dataSource = new TypedDataSource<>(dataSet, fileChannel, hdfDataFile, BigDecimal.class);
         BigDecimal[][] allData = dataSource.readMatrix();
         // Print the matrix values
         System.out.println("Matrix readAll() = ");
@@ -204,8 +205,8 @@ public class HdfFixedPointApp {
         }
     }
 
-    private void display4DData(FileChannel fileChannel, HdfDataSet dataSet) throws IOException {
-        TypedDataSource<Integer> dataSource = new TypedDataSource<>(dataSet, fileChannel, Integer.class);
+    private void display4DData(FileChannel fileChannel, HdfDataSet dataSet, HdfDataFile hdfDataFile) throws IOException {
+        TypedDataSource<Integer> dataSource = new TypedDataSource<>(dataSet, fileChannel, hdfDataFile, Integer.class);
         // Print all values in order
         final Integer[] flattenedData = dataSource.readFlattened();
         int[] shape = dataSource.getShape();

@@ -57,7 +57,7 @@ public class HdfDataSet implements Closeable {
     }
 
     private void createInitialMessages(DataspaceMessage dataSpaceMessage) {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfGroup.getHdfFile().getFileAllocation();
         DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
 
         // int headerSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
@@ -161,7 +161,7 @@ public class HdfDataSet implements Closeable {
      * indicate continutationMessage requirements
      */
     private void updateForAttribute() {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfGroup.getHdfFile().getFileAllocation();
         DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
         //  int headerSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
         long headerSize = allocationInfo.getHeaderSize();
@@ -176,7 +176,7 @@ public class HdfDataSet implements Closeable {
     @Override
     public void close() {
         if (hdfGroup.getHdfFile() == null) return;
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfGroup.getHdfFile().getFileAllocation();
         DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
         // int headerSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
         long headerSize = allocationInfo.getHeaderSize();
@@ -228,7 +228,7 @@ public class HdfDataSet implements Closeable {
     }
 
     private boolean checkContinuationMessageNeeded(int objectHeaderSize, int attributeSize, List<HdfMessage> headerMessages, long headerSize) {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfGroup.getHdfFile().getFileAllocation();
         if ( objectHeaderSize + attributeSize > headerSize) {
             HdfMessage dataspaceMessage = headerMessages.get(0);
             if ( !(dataspaceMessage instanceof DataspaceMessage)) {
@@ -279,7 +279,7 @@ public class HdfDataSet implements Closeable {
     }
 
     public void writeToFileChannel(FileChannel fileChannel) throws IOException {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfGroup.getHdfFile().getFileAllocation();
         DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
         ByteBuffer buffer = ByteBuffer.allocate((int)allocationInfo.getHeaderSize()).order(ByteOrder.LITTLE_ENDIAN);
         dataObjectHeaderPrefix.writeInitialMessageBlockToBuffer(buffer);

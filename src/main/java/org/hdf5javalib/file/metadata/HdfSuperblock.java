@@ -2,12 +2,12 @@ package org.hdf5javalib.file.metadata;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 
 import java.io.IOException;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -87,6 +87,8 @@ public class HdfSuperblock {
     private final HdfFixedPoint driverInformationAddress;
     private final HdfSymbolTableEntry rootGroupSymbolTableEntry;
 
+    private final HdfDataFile hdfDataFile;
+
     public HdfSuperblock(
             int version,
             int freeSpaceVersion,
@@ -100,7 +102,7 @@ public class HdfSuperblock {
             HdfFixedPoint addressFileFreeSpaceInfo,
             HdfFixedPoint endOfFileAddress,
             HdfFixedPoint driverInformationAddress,
-            HdfSymbolTableEntry rootGroupSymbolTableEntry
+            HdfSymbolTableEntry rootGroupSymbolTableEntry, HdfDataFile hdfDataFile
     ) {
         this.version = version;
         this.freeSpaceVersion = freeSpaceVersion;
@@ -115,9 +117,10 @@ public class HdfSuperblock {
         this.endOfFileAddress = endOfFileAddress;
         this.driverInformationAddress = driverInformationAddress;
         this.rootGroupSymbolTableEntry = rootGroupSymbolTableEntry;
+        this.hdfDataFile = hdfDataFile;
     }
 
-    public static HdfSuperblock readFromFileChannel(FileChannel fileChannel) throws IOException {
+    public static HdfSuperblock readFromFileChannel(FileChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
         // Step 1: Allocate the minimum buffer size to determine the version
         ByteBuffer buffer = ByteBuffer.allocate(8 + 1); // File signature (8 bytes) + version (1 byte)
         buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -193,12 +196,13 @@ public class HdfSuperblock {
                 freeSpaceAddress,
                 endOfFileAddress,
                 driverInformationAddress,
-                rootGroupSymbleTableEntry
+                rootGroupSymbleTableEntry,
+                hdfDataFile
         );
     }
 
     public void writeToFileChannel(FileChannel fileChannel) throws IOException {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
 //        buffer.order(ByteOrder.LITTLE_ENDIAN); // Ensure little-endian ordering
         ByteBuffer buffer = ByteBuffer.allocate(Math.toIntExact(fileAllocation.getSuperblockSize())).order(ByteOrder.LITTLE_ENDIAN);
 

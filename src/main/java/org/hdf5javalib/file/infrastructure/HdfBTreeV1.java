@@ -2,8 +2,10 @@ package org.hdf5javalib.file.infrastructure;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfFileAllocation;
+import org.hdf5javalib.file.HdfGroup;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -23,6 +25,7 @@ public class HdfBTreeV1 {
     private final HdfFixedPoint rightSiblingAddress;
     private final HdfFixedPoint keyZero;
     private final List<HdfBTreeEntry> entries;
+    private final HdfDataFile hdfDataFile;
 
     public HdfBTreeV1(
             String signature,
@@ -32,7 +35,8 @@ public class HdfBTreeV1 {
             HdfFixedPoint leftSiblingAddress,
             HdfFixedPoint rightSiblingAddress,
             HdfFixedPoint keyZero,
-            List<HdfBTreeEntry> entries
+            List<HdfBTreeEntry> entries,
+            HdfDataFile hdfDataFile
     ) {
         this.signature = signature;
         this.nodeType = nodeType;
@@ -42,6 +46,7 @@ public class HdfBTreeV1 {
         this.rightSiblingAddress = rightSiblingAddress;
         this.keyZero = keyZero;
         this.entries = entries;
+        this.hdfDataFile = hdfDataFile;
     }
 
     public HdfBTreeV1(
@@ -49,11 +54,13 @@ public class HdfBTreeV1 {
             int nodeType,
             int nodeLevel,
             HdfFixedPoint leftSiblingAddress,
-            HdfFixedPoint rightSiblingAddress
+            HdfFixedPoint rightSiblingAddress,
+            HdfDataFile hdfDataFile
     ) {
         this.signature = signature;
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;
+        this.hdfDataFile = hdfDataFile;
         this.entriesUsed = 0;
         this.leftSiblingAddress = leftSiblingAddress;
         this.rightSiblingAddress = rightSiblingAddress;
@@ -61,16 +68,17 @@ public class HdfBTreeV1 {
         this.entries = new ArrayList<>();
     }
 
-    public static HdfBTreeV1 readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize) throws IOException {
+    public static HdfBTreeV1 readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
         long initialAddress = fileChannel.position();
-        return readFromFileChannelRecursive(fileChannel, initialAddress, offsetSize, lengthSize, new HashMap<>());
+        return readFromFileChannelRecursive(fileChannel, initialAddress, offsetSize, lengthSize, new HashMap<>(), hdfDataFile);
     }
 
     private static HdfBTreeV1 readFromFileChannelRecursive(FileChannel fileChannel,
                                                            long nodeAddress,
                                                            short offsetSize,
                                                            short lengthSize,
-                                                           Map<Long, HdfBTreeV1> visitedNodes
+                                                           Map<Long, HdfBTreeV1> visitedNodes,
+                                                           HdfDataFile hdfDataFile
     ) throws IOException {
         if (visitedNodes.containsKey(nodeAddress)) {
             throw new IllegalStateException("Cycle detected or node re-visited: BTree node address "
@@ -129,7 +137,7 @@ public class HdfBTreeV1 {
         List<HdfBTreeEntry> entries = new ArrayList<>(entriesUsed);
         long filePosAfterEntriesBlock = fileChannel.position();
 
-        HdfBTreeV1 currentNode = new HdfBTreeV1(signature, nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries);
+        HdfBTreeV1 currentNode = new HdfBTreeV1(signature, nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries, hdfDataFile);
         visitedNodes.put(nodeAddress, currentNode);
 
         for (int i = 0; i < entriesUsed; i++) {
@@ -159,7 +167,7 @@ public class HdfBTreeV1 {
                 }
             } else {
                 if (childAddress != -1L) {
-                    HdfBTreeV1 childNode = readFromFileChannelRecursive(fileChannel, childAddress, offsetSize, lengthSize, visitedNodes);
+                    HdfBTreeV1 childNode = readFromFileChannelRecursive(fileChannel, childAddress, offsetSize, lengthSize, visitedNodes, hdfDataFile);
                     entry = new HdfBTreeEntry(key, childPointer, childNode);
                     fileChannel.position(filePosAfterEntriesBlock);
                 } else {
@@ -210,7 +218,7 @@ public class HdfBTreeV1 {
             throw new IllegalStateException("addDataset can only be called on leaf B-tree nodes (nodeLevel 0).");
         }
 
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         HdfGroupSymbolTableNode targetSnod;
 
         if (entries.isEmpty()) {
@@ -249,7 +257,7 @@ public class HdfBTreeV1 {
     }
 
     public void writeToByteBuffer(ByteBuffer buffer) {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         buffer.position((int)(fileAllocation.getBtreeOffset() - fileAllocation.getRootGroupOffset()));
         buffer.put(signature.getBytes());
         buffer.put((byte) nodeType);

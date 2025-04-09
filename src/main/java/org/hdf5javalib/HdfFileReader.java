@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfDataSet;
+import org.hdf5javalib.file.HdfFile;
+import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.HdfGroup;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
@@ -18,15 +20,23 @@ import java.util.Optional;
 
 @Getter
 @Slf4j
-public class HdfFileReader {
+public class HdfFileReader implements HdfDataFile {
     // level 0
     private HdfSuperblock superblock;
     // level 1
     private HdfGroup rootGroup;
 
+    private final HdfGlobalHeap globalHeap;
+    private final HdfFileAllocation fileAllocation;
+
+    public HdfFileReader() {
+        this.fileAllocation = new HdfFileAllocation();
+        this.globalHeap = new HdfGlobalHeap(this);
+    }
+
     public void readFile(FileChannel fileChannel) throws IOException {
         // Parse the superblock at the beginning of the file
-        superblock = HdfSuperblock.readFromFileChannel(fileChannel);
+        superblock = HdfSuperblock.readFromFileChannel(fileChannel, this);
         log.debug("{}", superblock);
 
         short offsetSize = superblock.getOffsetSize();
@@ -44,16 +54,16 @@ public class HdfFileReader {
         // Read data from file channel starting at the specified position
         long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getLocalHeapOffset().getInstance(Long.class);
         fileChannel.position(localHeapAddress);
-        HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
+        HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
 
         long dataSize = localHeap.getHeapContentsSize().getInstance(Long.class);
         long dataSegmentAddress = localHeap.getHeapContentsOffset().getInstance(Long.class);
         fileChannel.position(dataSegmentAddress);
-        HdfLocalHeapContents localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, (int) dataSize);
+        HdfLocalHeapContents localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, (int) dataSize, this);
 
         long bTreeAddress = superblock.getRootGroupSymbolTableEntry().getBTreeOffset().getInstance(Long.class);
         fileChannel.position(bTreeAddress);
-        HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
+        HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
 
         rootGroup = new HdfGroup(
                 null,
@@ -310,5 +320,15 @@ public class HdfFileReader {
             }
             // else: Invalid entry type?
         }
+    }
+
+    @Override
+    public HdfGlobalHeap getGlobalHeap() {
+        return globalHeap;
+    }
+
+    @Override
+    public HdfFileAllocation getFileAllocation() {
+        return fileAllocation;
     }
 }

@@ -32,9 +32,9 @@ public class HdfVLenTypesApp {
                     try (HdfDataSet ds = dataSet) {
                         System.out.println();
                         System.out.println("Dataset name: " + ds.getDatasetName());
-                        HdfTestUtils.displayScalarData(channel, ds, HdfVariableLength.class);
-                        HdfTestUtils.displayScalarData(channel, ds, String.class);
-                        HdfTestUtils.displayScalarData(channel, ds, Object.class);
+                        HdfTestUtils.displayScalarData(channel, ds, HdfVariableLength.class, reader);
+                        HdfTestUtils.displayScalarData(channel, ds, String.class, reader);
+                        HdfTestUtils.displayScalarData(channel, ds, Object.class, reader);
                     }
                 }
             }

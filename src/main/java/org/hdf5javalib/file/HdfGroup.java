@@ -16,7 +16,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -47,7 +46,7 @@ public class HdfGroup implements Closeable {
     }
 
     public HdfGroup(HdfFile hdfFile, String name, long btreeAddress, long localHeapAddress) {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfFile.getFileAllocation();
         this.hdfFile = hdfFile;
         this.name = name;
         long localHeapContentsSize = fileAllocation.getCurrentLocalHeapContentsSize();
@@ -55,8 +54,8 @@ public class HdfGroup implements Closeable {
         heapData[0] = (byte)0x1;
         heapData[8] = (byte)localHeapContentsSize;
 
-        localHeap = new HdfLocalHeap(HdfFixedPoint.of(localHeapContentsSize), HdfFixedPoint.of(fileAllocation.getCurrentLocalHeapContentsOffset()));
-        localHeapContents = new HdfLocalHeapContents(heapData);
+        localHeap = new HdfLocalHeap(HdfFixedPoint.of(localHeapContentsSize), HdfFixedPoint.of(fileAllocation.getCurrentLocalHeapContentsOffset()), hdfFile);
+        localHeapContents = new HdfLocalHeapContents(heapData, hdfFile);
         localHeap.addToHeap(
                 new HdfString(new byte[0], new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0))
                 , localHeapContents
@@ -65,7 +64,8 @@ public class HdfGroup implements Closeable {
         // Define a B-Tree for group indexing
         bTree = new HdfBTreeV1("TREE", 0, 0,
                 HdfFixedPoint.undefined((short)8),
-                HdfFixedPoint.undefined((short)8));
+                HdfFixedPoint.undefined((short)8),
+                hdfFile);
 
         HdfFixedPoint btree = HdfFixedPoint.of(btreeAddress);
         HdfFixedPoint localHeap = HdfFixedPoint.of(localHeapAddress);
@@ -79,7 +79,7 @@ public class HdfGroup implements Closeable {
     }
 
     public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfFile.getFileAllocation();
         DatasetAllocationInfo allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
 
         HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length));
@@ -96,7 +96,7 @@ public class HdfGroup implements Closeable {
 
     public void writeToFileChannel(FileChannel fileChannel) throws IOException {
 
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfFile.getFileAllocation();
         fileAllocation.printBlocks();
         long rootGroupSize = fileAllocation.getRootGroupSize(); // Returns 704
         long rootGroupOffset = fileAllocation.getRootGroupOffset(); // Returns 96

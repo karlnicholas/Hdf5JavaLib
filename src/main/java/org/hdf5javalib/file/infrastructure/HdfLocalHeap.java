@@ -1,9 +1,11 @@
 package org.hdf5javalib.file.infrastructure;
 
 import lombok.Getter;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfFileAllocation;
+import org.hdf5javalib.file.HdfGroup;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -21,22 +23,24 @@ public class HdfLocalHeap {
     private HdfFixedPoint heapContentsSize;
     private HdfFixedPoint freeListOffset;
     private HdfFixedPoint heapContentsOffset;
+    private final HdfDataFile hdfDataFile;
 
     public HdfLocalHeap(String signature, int version, HdfFixedPoint heapContentsSize,
-                        HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset) {
+                        HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile) {
         this.signature = signature;
         this.version = version;
         this.heapContentsSize = heapContentsSize;
         this.freeListOffset = freeListOffset;
         this.heapContentsOffset = heapContentsOffset;
+        this.hdfDataFile = hdfDataFile;
     }
 
-    public HdfLocalHeap(HdfFixedPoint heapContentsSize, HdfFixedPoint heapContentsOffset) {
-        this("HEAP", 0, heapContentsSize, HdfFixedPoint.of(0), heapContentsOffset);
+    public HdfLocalHeap(HdfFixedPoint heapContentsSize, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile) {
+        this("HEAP", 0, heapContentsSize, HdfFixedPoint.of(0), heapContentsOffset, hdfDataFile);
     }
 
     public int addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents) {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         byte[] objectNameBytes = objectName.getBytes();
         int freeListOffset = this.freeListOffset.getInstance(Long.class).intValue();
         byte[] heapData = localHeapContents.getHeapData();
@@ -52,7 +56,7 @@ public class HdfLocalHeap {
         if (requiredSpace > freeBlockSize) {
             // Call resizeHeap, assuming HdfFileAllocation knows current size
             long newSize = fileAllocation.expandLocalHeapContents();
-            localHeapContents = new HdfLocalHeapContents(new byte[(int) newSize]);
+            localHeapContents = new HdfLocalHeapContents(new byte[(int) newSize], hdfDataFile);
             this.heapContentsSize = HdfFixedPoint.of(newSize);
             this.heapContentsOffset = HdfFixedPoint.of(fileAllocation.getCurrentLocalHeapContentsOffset());
             heapData = localHeapContents.getHeapData(); // Refresh heapData
@@ -79,7 +83,7 @@ public class HdfLocalHeap {
         buffer.putLong(newFreeListOffset + 8, remainingFreeSpace);
         return freeListOffset;
     }
-    public static HdfLocalHeap readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize) throws IOException {
+    public static HdfLocalHeap readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
         // Allocate buffer for the local heap header
         ByteBuffer buffer = ByteBuffer.allocate(32); // Initial size for header parsing
         buffer.order(java.nio.ByteOrder.LITTLE_ENDIAN);
@@ -111,7 +115,7 @@ public class HdfLocalHeap {
         HdfFixedPoint freeListOffset = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
         HdfFixedPoint dataSegmentAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
 
-        return new HdfLocalHeap(signature, version, dataSegmentSize, freeListOffset, dataSegmentAddress);
+        return new HdfLocalHeap(signature, version, dataSegmentSize, freeListOffset, dataSegmentAddress, hdfDataFile);
     }
 
     private static boolean allBytesZero(byte[] bytes) {
@@ -135,7 +139,7 @@ public class HdfLocalHeap {
     }
 
     public void writeToByteBuffer(ByteBuffer buffer) {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         buffer.position((int)(fileAllocation.getLocalHeapOffset() - fileAllocation.getRootGroupOffset()));
 
         // Step 1: Write the "HEAP" signature (4 bytes)

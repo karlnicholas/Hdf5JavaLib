@@ -35,38 +35,38 @@ public class HdfSeparateTypesApp {
                 FileChannel channel = fis.getChannel();
                 reader.readFile(channel);
                 try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfFixedPoint.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, Integer.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, Long.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, BigInteger.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, BigDecimal.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfFixedPoint.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, Integer.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, Long.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, BigInteger.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, BigDecimal.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class, reader);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("float", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfFloatPoint.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, Float.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, Double.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, Float.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, Double.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class, reader);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("time", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfTime.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, Long.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, BigInteger.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfTime.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, Long.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, BigInteger.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class, reader);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("string", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfString.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfString.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class, reader);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("bitfield", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfBitField.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, BitSet.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfBitField.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, BitSet.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class, reader);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("compound", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfCompound.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, Compound.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfCompound.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, Compound.class, reader);
                     CompoundDatatype.addConverter(CustomCompound.class, (bytes, compoundDataType)->{
                         Map<String, HdfCompoundMember> nameToMember = compoundDataType.getInstance(HdfCompound.class, bytes)
                                 .getMembers()
@@ -78,31 +78,31 @@ public class HdfSeparateTypesApp {
                                 .someDouble(nameToMember.get("b").getInstance(Double.class))
                                 .build();
                     });
-                    HdfTestUtils.displayScalarData(channel, dataSet, CustomCompound.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, CustomCompound.class, reader);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("opaque", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfOpaque.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, byte[].class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfOpaque.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, byte[].class, reader);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("reference", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfReference.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, byte[].class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfReference.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, byte[].class, reader);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("enum", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfEnum.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfEnum.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class, reader);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("vlen", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfVariableLength.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, Object.class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfVariableLength.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, Object.class, reader);
                 }
                 try ( HdfDataSet dataSet = reader.findDataset("array", channel, reader.getRootGroup()) ) {
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfArray.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, String.class);
-                    HdfTestUtils.displayScalarData(channel, dataSet, HdfData[].class);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfArray.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, String.class, reader);
+                    HdfTestUtils.displayScalarData(channel, dataSet, HdfData[].class, reader);
                 }
             }
         } catch (IOException e) {

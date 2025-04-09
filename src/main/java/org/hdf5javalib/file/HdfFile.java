@@ -2,6 +2,7 @@ package org.hdf5javalib.file;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
@@ -20,20 +21,21 @@ import java.util.function.Supplier;
 
 @Getter
 @Slf4j
-public class HdfFile implements Closeable {
+public class HdfFile implements Closeable, HdfDataFile {
     private final String fileName;
     private final StandardOpenOption[] openOptions;
     // initial setup without Dataset
     private final HdfSuperblock superblock;
     private final HdfGroup rootGroup;
     private final HdfGlobalHeap globalHeap;
+    private final HdfFileAllocation fileAllocation;
 
     public HdfFile(String fileName, StandardOpenOption[] openOptions) {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         this.fileName = fileName;
         this.openOptions = openOptions;
         // this.globalHeap = new HdfGlobalHeap(bufferAllocation::getGlobalHeapAddress);
-        this.globalHeap = new HdfGlobalHeap();
+        this.fileAllocation = new HdfFileAllocation();
+        this.globalHeap = new HdfGlobalHeap(this);
 
         // 100320
         superblock = new HdfSuperblock(0, 0, 0, 0,
@@ -52,7 +54,7 @@ public class HdfFile implements Closeable {
                         // HdfFixedPoint.of(bufferAllocation.getBtreeAddress()),
                         HdfFixedPoint.of(fileAllocation.getBtreeOffset()),
                         // HdfFixedPoint.of(bufferAllocation.getLocalHeapAddress())));
-                        HdfFixedPoint.of(fileAllocation.getLocalHeapOffset())));
+                        HdfFixedPoint.of(fileAllocation.getLocalHeapOffset())), this);
 
         // rootGroup = new HdfGroup(this, "", bufferAllocation.getBtreeAddress(), bufferAllocation.getLocalHeapAddress());
         rootGroup = new HdfGroup(this, "", fileAllocation.getBtreeOffset(), fileAllocation.getLocalHeapOffset());
@@ -78,7 +80,6 @@ public class HdfFile implements Closeable {
 //    }
 //
     public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(hdfDataSet.getDatasetName());
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
             // fileChannel.position(bufferAllocation.getDataAddress());
@@ -93,7 +94,6 @@ public class HdfFile implements Closeable {
     }
 
     public void write(ByteBuffer buffer, HdfDataSet hdfDataSet) throws IOException {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         long dataOffset = fileAllocation.allocateAndSetDataBlock(hdfDataSet.getDatasetName(), buffer.limit());
         try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
             // fileChannel.position(bufferAllocation.getDataAddress());
@@ -107,7 +107,6 @@ public class HdfFile implements Closeable {
     @Override
     public void close() throws IOException {
         rootGroup.close();
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
         // long endOfFileAddress = bufferAllocation.getDataAddress();
         long endOfFileAddress = fileAllocation.getEndOfFileOffset();
 //        HdfFixedPoint[] dimensionSizes = rootGroup.getDataSet().getDataObjectHeaderPrefix()
@@ -158,5 +157,4 @@ public class HdfFile implements Closeable {
 
 
     }
-
 }

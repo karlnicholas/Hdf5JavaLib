@@ -37,7 +37,7 @@ public class HdfTwoScalarApp {
                 reader.readFile(channel);
                 for( HdfDataSet dataSet: reader.getDatasets(channel, reader.getRootGroup())) {
                     try ( HdfDataSet ds = dataSet) {
-                        HdfTestUtils.displayScalarData(channel, ds, Integer.class);
+                        HdfTestUtils.displayScalarData(channel, ds, Integer.class, reader);
                     }
                 }
             }
@@ -53,7 +53,6 @@ public class HdfTwoScalarApp {
 
         try (HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS) ) {
             // Create a new file using default properties
-            HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
 
 
             // Define scalar dataspace (rank 0).

@@ -1,9 +1,11 @@
 package org.hdf5javalib.file.infrastructure;
 
 import lombok.Getter;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfFileAllocation;
+import org.hdf5javalib.file.HdfGroup;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.IOException;
@@ -14,14 +16,17 @@ import java.util.Arrays;
 @Getter
 public class HdfLocalHeapContents {
     private final byte[] heapData;
+    private final HdfDataFile hdfDataFile;
 
     /**
      * Constructor for application-defined heap data.
      *
      * @param heapData The heap data as a byte array.
+     * @param hdfDataFile
      */
-    public HdfLocalHeapContents(byte[] heapData) {
+    public HdfLocalHeapContents(byte[] heapData, HdfDataFile hdfDataFile) {
         this.heapData = heapData;
+        this.hdfDataFile = hdfDataFile;
     }
 
     /**
@@ -30,14 +35,14 @@ public class HdfLocalHeapContents {
      * @return HdfLocalHeapContents
      * @throws IOException ioexception
      */
-    public static HdfLocalHeapContents readFromFileChannel(FileChannel fileChannel, int dataSize) throws IOException {
+    public static HdfLocalHeapContents readFromFileChannel(FileChannel fileChannel, int dataSize, HdfDataFile hdfDataFile) throws IOException {
         // Allocate buffer and read heap data from the file channel
         byte[] heapData = new byte[dataSize];
         ByteBuffer buffer = ByteBuffer.wrap(heapData);
 
         fileChannel.read(buffer);
 
-        return new HdfLocalHeapContents(heapData);
+        return new HdfLocalHeapContents(heapData, hdfDataFile);
     }
 
     /**
@@ -64,7 +69,7 @@ public class HdfLocalHeapContents {
     }
 
     public void writeToByteBuffer(ByteBuffer buffer) {
-        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         buffer.position((int)(fileAllocation.getCurrentLocalHeapContentsOffset() - fileAllocation.getRootGroupOffset()));
         buffer.put(heapData);
     }

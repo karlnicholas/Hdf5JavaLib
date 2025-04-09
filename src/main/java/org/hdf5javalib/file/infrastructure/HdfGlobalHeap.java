@@ -3,6 +3,7 @@ package org.hdf5javalib.file.infrastructure;
 // Added import for the singleton
 
 import lombok.Getter;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfFileAllocation;
 
@@ -32,12 +33,15 @@ public class HdfGlobalHeap {
     // Keep interfaces, but GlobalHeapInitialize is adapted
     private final GlobalHeapInitialize initialize;
 
+    private final HdfDataFile dataFile;
+
     /**
      * Constructor for use cases where heaps might need lazy initialization via callback
      * (typically during reading).
      */
-    public HdfGlobalHeap(GlobalHeapInitialize initialize) {
+    public HdfGlobalHeap(GlobalHeapInitialize initialize, HdfDataFile dataFile) {
         this.initialize = initialize;
+        this.dataFile = dataFile;
         this.heapCollections = new HashMap<>();
         this.collectionSizes = new HashMap<>();
         this.nextObjectIds = new HashMap<>();
@@ -48,7 +52,8 @@ public class HdfGlobalHeap {
      * Constructor for use cases focused on writing or creating new heaps.
      * Does not support lazy initialization via callback.
      */
-    public HdfGlobalHeap() {
+    public HdfGlobalHeap(HdfDataFile dataFile) {
+        this.dataFile = dataFile;
         this.initialize = null;
         this.heapCollections = new HashMap<>();
         this.collectionSizes = new HashMap<>();
@@ -220,12 +225,12 @@ public class HdfGlobalHeap {
             throw new IllegalArgumentException("Input byte array cannot be null.");
         }
 
-        HdfFileAllocation allocationManager = HdfFileAllocation.getInstance();
+        HdfFileAllocation fileAllocation = dataFile.getFileAllocation();
 
         // --- Determine Current Heap Offset ---
         if (this.currentWriteHeapOffset == -1L) {
             // First time adding, get the offset from allocation manager
-            this.currentWriteHeapOffset = allocationManager.getGlobalHeapOffset();
+            this.currentWriteHeapOffset = fileAllocation.getGlobalHeapOffset();
             if (this.currentWriteHeapOffset == -1L) {
                 // Ensure first block is allocated *before* trying to add
                 // This might require calling allocateFirstGlobalHeapBlock externally first.
@@ -277,7 +282,7 @@ public class HdfGlobalHeap {
             targetObjects.put(0, nullTerminator);
 
             // 3. Allocate a new heap block
-            long newHeapOffset = allocationManager.allocateNextGlobalHeapBlock();
+            long newHeapOffset = fileAllocation.allocateNextGlobalHeapBlock();
 
             // 4. Update internal state to point to the new heap
             this.currentWriteHeapOffset = newHeapOffset;

@@ -5,7 +5,7 @@ import lombok.Getter;
 import java.util.*;
 
 /**
- * Singleton class managing the allocation layout (offsets and sizes) via recalculation.
+ * Class managing the allocation layout (offsets and sizes) via recalculation.
  * Responsible for all allocation actions and updating DatasetAllocationInfo state.
  * Supports increasing dataset header size *before* any data block is allocated,
  * triggering a layout recalculation.
@@ -14,9 +14,6 @@ import java.util.*;
  */
 @Getter
 public final class HdfFileAllocation {
-
-    @Getter
-    private static final HdfFileAllocation instance = new HdfFileAllocation();
 
     // --- Constants ---
     private static final long SUPERBLOCK_OFFSET = 0L;
@@ -63,8 +60,8 @@ public final class HdfFileAllocation {
     private long nextAvailableOffset;
     private boolean dataBlocksAllocated = false; // Locks header resizing
 
-    /** Private Constructor */
-    private HdfFileAllocation() {
+    /** Default Constructor */
+    public HdfFileAllocation() {
         this.btreeTotalSize = SETUP_BTREE_NODE_SIZE + SETUP_BTREE_STORAGE_SIZE;
         calculateInitialLayout();
     }
@@ -88,7 +85,7 @@ public final class HdfFileAllocation {
 
     // --- Recalculation Core ---
     /** Recalculates layout based on current sizes. Called when headers resize before data lock. */
-    private synchronized void recalculateLayout() {
+    private void recalculateLayout() {
         if (dataBlocksAllocated) {
             throw new IllegalStateException("Cannot recalculate layout after data blocks have been allocated.");
         }
@@ -136,7 +133,7 @@ public final class HdfFileAllocation {
 
     // --- Allocation Primitives ---
     /** Internal helper to allocate a block and advance the EOA marker. */
-    private synchronized long allocateBlock(long size) {
+    private long allocateBlock(long size) {
         if (size < 0L) throw new IllegalArgumentException("Allocation size cannot be negative.");
         long offset = nextAvailableOffset;
         nextAvailableOffset += size;
@@ -146,24 +143,24 @@ public final class HdfFileAllocation {
     // --- PUBLIC ALLOCATION METHODS ---
 
     /** Allocates a generic block of space. */
-    public synchronized long allocateGenericBlock(long size) {
+    public long allocateGenericBlock(long size) {
         return allocateBlock(size);
     }
 
     /** Allocates space for a Message Continuation block. */
-    public synchronized long allocateNextMessageContinuation(long continuationSize) {
+    public long allocateNextMessageContinuation(long continuationSize) {
         if (continuationSize <= 0L) throw new IllegalArgumentException("Continuation size must be positive.");
         return allocateBlock(continuationSize);
     }
 
     /** Allocates space for Dataset raw data. */
-    public synchronized long allocateDataObjectData(long dataSize) {
+    public long allocateDataObjectData(long dataSize) {
         if (dataSize < 0L) throw new IllegalArgumentException("Data size cannot be negative.");
         return allocateBlock(dataSize);
     }
 
     /** Allocates space for a new SNOD block and tracks its offset. */
-    public synchronized long allocateNextSnodStorage() {
+    public long allocateNextSnodStorage() {
         long allocationSize = SNOD_STORAGE_SIZE;
         if (allocationSize <= 0L) throw new IllegalStateException("SNOD storage size is not valid: " + allocationSize);
         long offset = allocateBlock(allocationSize);
@@ -172,7 +169,7 @@ public final class HdfFileAllocation {
     }
 
     /** Expands storage for Local Heap contents, allocating a new block. */
-    public synchronized long expandLocalHeapContents() {
+    public long expandLocalHeapContents() {
         long oldSize = this.currentLocalHeapContentsSize;
         if (oldSize <= 0L) throw new IllegalStateException("Cannot expand heap with non-positive current tracked size: " + oldSize);
         long newSize = oldSize * 2L;
@@ -183,13 +180,13 @@ public final class HdfFileAllocation {
     }
 
     /** Allocates space for a generic Object Header block. */
-    public synchronized long allocateNextObjectHeader(long totalHeaderSize) {
+    public long allocateNextObjectHeader(long totalHeaderSize) {
         if (totalHeaderSize <= 0L) throw new IllegalArgumentException("Object Header total size must be positive.");
         return allocateBlock(totalHeaderSize);
     }
 
     /** Allocates the first Global Heap block. */
-    public synchronized long allocateFirstGlobalHeapBlock() {
+    public long allocateFirstGlobalHeapBlock() {
         if (globalHeapOffset != -1L) throw new IllegalStateException("Global heap already allocated at " + globalHeapOffset);
         long offset = allocateBlock(GLOBAL_HEAP_BLOCK_SIZE);
         this.globalHeapOffset = offset;
@@ -197,14 +194,14 @@ public final class HdfFileAllocation {
     }
 
     /** Allocates a subsequent Global Heap block. */
-    public synchronized long allocateNextGlobalHeapBlock() {
+    public long allocateNextGlobalHeapBlock() {
         return allocateBlock(GLOBAL_HEAP_BLOCK_SIZE);
     }
 
     // --- Dataset Specific Allocation Methods ---
 
     /** Allocates initial space for a dataset's object header. */
-    public synchronized DatasetAllocationInfo allocateDatasetStorage(String datasetName) {
+    public DatasetAllocationInfo allocateDatasetStorage(String datasetName) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (datasetName.isEmpty()) throw new IllegalArgumentException("Dataset name cannot be empty");
         if (datasetAllocations.containsKey(datasetName)) throw new IllegalStateException("Dataset '" + datasetName + "' already allocated.");
@@ -225,7 +222,7 @@ public final class HdfFileAllocation {
     }
 
     /** Increases header size and triggers layout recalculation (before data lock). */
-    public synchronized void increaseHeaderAllocation(String datasetName, long newTotalHeaderSize) {
+    public void increaseHeaderAllocation(String datasetName, long newTotalHeaderSize) {
         if (dataBlocksAllocated) throw new IllegalStateException("Cannot increase header allocation after data blocks have been allocated.");
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         DatasetAllocationInfo targetInfo = datasetAllocations.get(datasetName);
@@ -236,7 +233,7 @@ public final class HdfFileAllocation {
     }
 
     /** Allocates the data block, updates info, and sets the global header resize lock. */
-    public synchronized long allocateAndSetDataBlock(String datasetName, long dataSize) {
+    public long allocateAndSetDataBlock(String datasetName, long dataSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (dataSize < 0L) throw new IllegalArgumentException("Data size cannot be negative.");
         DatasetAllocationInfo info = datasetAllocations.get(datasetName);
@@ -257,7 +254,7 @@ public final class HdfFileAllocation {
     }
 
     /** Allocates the continuation block and updates info. */
-    public synchronized long allocateAndSetContinuationBlock(String datasetName, long continuationSize) {
+    public long allocateAndSetContinuationBlock(String datasetName, long continuationSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (continuationSize <= 0L) throw new IllegalArgumentException("Continuation size must be positive.");
         DatasetAllocationInfo info = datasetAllocations.get(datasetName);
@@ -270,14 +267,14 @@ public final class HdfFileAllocation {
     }
 
     // --- Getters ---
-    public synchronized DatasetAllocationInfo getDatasetAllocationInfo(String datasetName) { return datasetAllocations.get(datasetName); }
-    public synchronized Map<String, DatasetAllocationInfo> getAllDatasetAllocations() { return Collections.unmodifiableMap(new LinkedHashMap<>(datasetAllocations)); }
-    public synchronized long getEndOfFileOffset() { return nextAvailableOffset; }
+    public DatasetAllocationInfo getDatasetAllocationInfo(String datasetName) { return datasetAllocations.get(datasetName); }
+    public Map<String, DatasetAllocationInfo> getAllDatasetAllocations() { return Collections.unmodifiableMap(new LinkedHashMap<>(datasetAllocations)); }
+    public long getEndOfFileOffset() { return nextAvailableOffset; }
     public long getSuperblockSize() { return SUPERBLOCK_SIZE; }
-    public synchronized long getGlobalHeapOffset() { return globalHeapOffset; } // Returns offset of *first* allocated GH
-    public synchronized long getCurrentLocalHeapContentsOffset() { return currentLocalHeapContentsOffset; } // Offset of *current* LH Contents
-    public synchronized long getCurrentLocalHeapContentsSize() { return currentLocalHeapContentsSize; }     // Size of *current* LH Contents
-    public synchronized boolean isDataBlocksAllocated() { return dataBlocksAllocated; }
+    public long getGlobalHeapOffset() { return globalHeapOffset; } // Returns offset of *first* allocated GH
+    public long getCurrentLocalHeapContentsOffset() { return currentLocalHeapContentsOffset; } // Offset of *current* LH Contents
+    public long getCurrentLocalHeapContentsSize() { return currentLocalHeapContentsSize; }     // Size of *current* LH Contents
+    public boolean isDataBlocksAllocated() { return dataBlocksAllocated; }
     public long getObjectHeaderPrefixOffset() { return objectHeaderPrefixOffset; } // Root group OH prefix offset
     public long getBtreeOffset() { return btreeOffset; }                         // Root group BTree node offset
 
@@ -293,7 +290,7 @@ public final class HdfFileAllocation {
     }
     // ============================================
 
-    public synchronized long getSnodOffset() { return snodOffset; } // Root group SNOD offset
+    public long getSnodOffset() { return snodOffset; } // Root group SNOD offset
 
     // --- NEW METHODS FOR ROOT GROUP ---
     /**
@@ -322,13 +319,13 @@ public final class HdfFileAllocation {
      * Each SNOD block has a fixed size defined by SNOD_STORAGE_SIZE.
      * @return List of offsets for each SNOD block allocated.
      */
-    public synchronized List<Long> getAllSnodAllocationOffsets() {
+    public List<Long> getAllSnodAllocationOffsets() {
         return Collections.unmodifiableList(new ArrayList<>(snodAllocationOffsets));
     }
     // --- END NEW METHODS ---
 
     // --- Utility / Reset ---
-    public synchronized void reset() {
+    public void reset() {
         this.nextAvailableOffset = 0L;
         calculateInitialLayout();
     }
@@ -338,7 +335,7 @@ public final class HdfFileAllocation {
      * and offsets in both decimal and hexadecimal format.
      * Useful for debugging the layout of the HDF file allocation.
      */
-    public synchronized void printBlocks() {
+    public void printBlocks() {
         System.out.println("=== HDF File Allocation Layout ===");
         System.out.println("Current End of File Offset: " + nextAvailableOffset);
         System.out.println("Data Blocks Allocated: " + dataBlocksAllocated);
