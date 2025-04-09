@@ -3,6 +3,7 @@ package org.hdf5javalib.file.infrastructure;
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
+import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.IOException;
@@ -63,6 +64,8 @@ public class HdfLocalHeapContents {
     }
 
     public void writeToByteBuffer(ByteBuffer buffer) {
+        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        buffer.position((int)(fileAllocation.getCurrentLocalHeapContentsOffset() - fileAllocation.getRootGroupOffset()));
         buffer.put(heapData);
     }
 

@@ -50,9 +50,9 @@ public class HdfTwoScalarApp {
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "dataset_";
 
-        try {
+        try (HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS) ) {
             // Create a new file using default properties
-            HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
+
 
             // Define scalar dataspace (rank 0).
             HdfFixedPoint[] hdfDimensions = {};

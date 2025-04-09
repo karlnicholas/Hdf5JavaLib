@@ -249,6 +249,8 @@ public class HdfBTreeV1 {
     }
 
     public void writeToByteBuffer(ByteBuffer buffer) {
+        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        buffer.position((int)(fileAllocation.getBtreeOffset() - fileAllocation.getRootGroupOffset()));
         buffer.put(signature.getBytes());
         buffer.put((byte) nodeType);
         buffer.put((byte) nodeLevel);

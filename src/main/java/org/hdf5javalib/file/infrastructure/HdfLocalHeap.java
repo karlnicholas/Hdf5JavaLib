@@ -135,6 +135,9 @@ public class HdfLocalHeap {
     }
 
     public void writeToByteBuffer(ByteBuffer buffer) {
+        HdfFileAllocation fileAllocation = HdfFileAllocation.getInstance();
+        buffer.position((int)(fileAllocation.getLocalHeapOffset() - fileAllocation.getRootGroupOffset()));
+
         // Step 1: Write the "HEAP" signature (4 bytes)
         buffer.put(signature.getBytes());
 

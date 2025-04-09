@@ -103,7 +103,7 @@ public class HdfGroup implements Closeable {
         bTree.writeToByteBuffer(buffer);        // Writes 544 bytes (136-679)
         localHeap.writeToByteBuffer(buffer);    // Writes 32 bytes (680-711)
         localHeapContents.writeToByteBuffer(buffer); // Writes 88 bytes (712-799)
-        buffer.flip();
+        buffer.rewind();
 
         fileChannel.position(rootGroupOffset);
         while (buffer.hasRemaining()) {
@@ -112,8 +112,6 @@ public class HdfGroup implements Closeable {
 
         // need to write the dataset
         if ( dataSet != null ) {
-            DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(dataSet.getDatasetName());
-            buffer.position((int) allocationInfo.getHeaderOffset());
             dataSet.writeToFileChannel(fileChannel);
         }
 
@@ -123,7 +121,7 @@ public class HdfGroup implements Closeable {
         ByteBuffer snodBuffer = ByteBuffer.allocate((int)HdfFileAllocation.getSNOD_STORAGE_SIZE());
         for (Map.Entry<Long, HdfGroupSymbolTableNode> offsetAndStn: mapOffsetToSnod.entrySet()) {
             offsetAndStn.getValue().writeToBuffer(snodBuffer);
-            snodBuffer.flip();
+            snodBuffer.rewind();
             fileChannel.position(offsetAndStn.getKey());
             while (buffer.hasRemaining()) {
                 fileChannel.write(snodBuffer);

@@ -280,7 +280,7 @@ public class HdfDataSet implements Closeable {
         DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
         ByteBuffer buffer = ByteBuffer.allocate((int)allocationInfo.getHeaderSize()).order(ByteOrder.LITTLE_ENDIAN);
         dataObjectHeaderPrefix.writeInitialMessageBlockToBuffer(buffer);
-        buffer.flip();
+        buffer.rewind();
 
         fileChannel.position(allocationInfo.getHeaderOffset());
         while (buffer.hasRemaining()) {

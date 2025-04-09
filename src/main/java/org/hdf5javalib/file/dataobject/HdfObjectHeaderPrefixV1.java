@@ -111,7 +111,7 @@ public class HdfObjectHeaderPrefixV1 {
 //            if (i == 5 && optContinuationMessage.isPresent()) {
 //                buffer.position(optContinuationMessage.get().getContinuationOffset().getInstance(Long.class).intValue());
 //            }
-            if ( buffer.limit() >= buffer.capacity()) {
+            if ( buffer.position() >= buffer.capacity()) {
                 break;
             }
         }
@@ -150,7 +150,7 @@ public class HdfObjectHeaderPrefixV1 {
 //            if (i == 5 && optContinuationMessage.isPresent()) {
 //                buffer.position(optContinuationMessage.get().getContinuationOffset().getInstance(Long.class).intValue());
 //            }
-            if ( buffer.limit() >= buffer.capacity()) {
+            if ( buffer.position() >= buffer.capacity()) {
                 break;
             }
         }
