@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,7 @@ public class HdfGroupSymbolTableNode {
         this.symbolTableEntries = symbolTableEntries;
     }
 
-    public static HdfGroupSymbolTableNode readFromFileChannel(FileChannel fileChannel, short offsetSize) throws IOException {
+    public static HdfGroupSymbolTableNode readFromFileChannel(SeekableByteChannel fileChannel, short offsetSize) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();

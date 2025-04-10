@@ -12,7 +12,7 @@ import org.hdf5javalib.file.infrastructure.*;
 import org.hdf5javalib.file.metadata.HdfSuperblock;
 
 import java.io.IOException;
-import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,11 +25,11 @@ public class HdfFileReader implements HdfDataFile {
     // level 1
     private HdfGroup rootGroup;
 
-    private final FileChannel fileChannel;
+    private final SeekableByteChannel fileChannel; // Changed from FileChannel
     private final HdfGlobalHeap globalHeap;
     private final HdfFileAllocation fileAllocation;
 
-    public HdfFileReader(FileChannel fileChannel) {
+    public HdfFileReader(SeekableByteChannel fileChannel) {
         this.fileChannel = fileChannel;
         this.fileAllocation = new HdfFileAllocation();
         this.globalHeap = new HdfGlobalHeap(this::initializeGlobalHeap, this);
@@ -51,9 +51,7 @@ public class HdfFileReader implements HdfDataFile {
 
         short offsetSize = superblock.getOffsetSize();
         short lengthSize = superblock.getLengthSize();
-//
-//        rootSymbolTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
-//
+
         // Get the object header address from the superblock
         // Parse the object header from the file using the superblock information
         long objectHeaderAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeaderOffset().getInstance(Long.class);
@@ -61,7 +59,6 @@ public class HdfFileReader implements HdfDataFile {
         HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize, this);
 
         // Parse the local heap using the file channel
-        // Read data from file channel starting at the specified position
         long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getLocalHeapOffset().getInstance(Long.class);
         fileChannel.position(localHeapAddress);
         HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
@@ -84,7 +81,6 @@ public class HdfFileReader implements HdfDataFile {
                 localHeapContents
         );
 
-
         log.debug("{}", rootGroup);
 
         log.debug("Parsing complete. NEXT: {}", fileChannel.position());
@@ -92,98 +88,8 @@ public class HdfFileReader implements HdfDataFile {
         return this;
     }
 
-//    public HdfDataSet findDataset(String targetName, FileChannel fileChannel, HdfGroup hdfGroup) throws IOException {
-//        for (HdfBTreeEntry entry : hdfGroup.getBTree().getEntries()) {
-//            HdfGroupSymbolTableNode symbolTableNode = entry.getSymbolTableNode();
-//            for (HdfSymbolTableEntry ste : symbolTableNode.getSymbolTableEntries()) {
-//                HdfString datasetName = hdfGroup.getLocalHeapContents().parseStringAtOffset(ste.getLinkNameOffset());
-//                if (datasetName.toString().equals(targetName)) {
-//                    long dataObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
-//                    fileChannel.position(dataObjectHeaderAddress);
-//                    HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
-//                    log.debug("FOUND {}@{}\r\n{}", datasetName, dataObjectHeaderAddress, header);
-//                    DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
-//                    return new HdfDataSet(rootGroup, datasetName.toString(), dataType.getHdfDatatype(), header);
-//
-//                }
-//            }
-//        }
-//        throw new IllegalArgumentException("No such dataset: " + targetName);
-//    }
-//
-//    public List<HdfDataSet> getDatasets(FileChannel fileChannel, HdfGroup hdfGroup) throws IOException {
-//        List<HdfDataSet> dataSets = new ArrayList<>();
-//        for (HdfBTreeEntry entry : hdfGroup.getBTree().getEntries()) {
-//            HdfGroupSymbolTableNode symbolTableNode = entry.getSymbolTableNode();
-//            for (HdfSymbolTableEntry ste : symbolTableNode.getSymbolTableEntries()) {
-//                HdfString datasetName = hdfGroup.getLocalHeapContents().parseStringAtOffset(ste.getLinkNameOffset());
-//                    long dataObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
-//                    fileChannel.position(dataObjectHeaderAddress);
-//                    HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
-//                    log.debug("FOUND {}@{}\r\n{}", datasetName, dataObjectHeaderAddress, header);
-//                    DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
-//                    dataSets.add( new HdfDataSet(rootGroup, datasetName.toString(), dataType.getHdfDatatype(), header));
-//            }
-//        }
-//        return dataSets;
-//    }
-//
-//    public HdfDataSet findDataset(String targetName, FileChannel fileChannel, HdfGroup hdfGroup) throws IOException {
-//        for (HdfBTreeEntry entry : hdfGroup.getBTree().getEntries()) {
-//            HdfGroupSymbolTableNode symbolTableNode = entry.getSymbolTableNode();
-//            if (symbolTableNode == null) {
-//                continue; // Skip internal node entries (shouldn’t happen with getLeafEntries, but safety first)
-//            }
-//            for (HdfSymbolTableEntry ste : symbolTableNode.getSymbolTableEntries()) {
-//                if (ste == null || ste.getLinkNameOffset() == null) {
-//                    continue; // Skip invalid entries
-//                }
-//                HdfString datasetName = hdfGroup.getLocalHeapContents().parseStringAtOffset(ste.getLinkNameOffset());
-//                if (datasetName != null && datasetName.toString().equals(targetName)) {
-//                    long dataObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
-//                    long originalPos = fileChannel.position(); // Optional: save position
-//                    fileChannel.position(dataObjectHeaderAddress);
-//                    HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
-//                    log.debug("FOUND {}@{}\r\n{}", datasetName, dataObjectHeaderAddress, header);
-//                    DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow(() -> new IllegalStateException("No DatatypeMessage found for " + datasetName));
-//                    fileChannel.position(originalPos); // Optional: restore position
-//                    return new HdfDataSet(rootGroup, datasetName.toString(), dataType.getHdfDatatype(), header);
-//                }
-//            }
-//        }
-//        throw new IllegalArgumentException("No such dataset: " + targetName);
-//    }
-//
-//    public List<HdfDataSet> getDatasets(FileChannel fileChannel, HdfGroup hdfGroup) throws IOException {
-//        List<HdfDataSet> dataSets = new ArrayList<>();
-//        for (HdfBTreeEntry entry : hdfGroup.getBTree().getEntries()) {
-//            HdfGroupSymbolTableNode symbolTableNode = entry.getSymbolTableNode();
-//            if (symbolTableNode == null) {
-//                continue; // Skip internal node entries
-//            }
-//            for (HdfSymbolTableEntry ste : symbolTableNode.getSymbolTableEntries()) {
-//                if (ste == null || ste.getLinkNameOffset() == null) {
-//                    continue; // Skip invalid entries
-//                }
-//                HdfString datasetName = hdfGroup.getLocalHeapContents().parseStringAtOffset(ste.getLinkNameOffset());
-//                if (datasetName != null) {
-//                    long dataObjectHeaderAddress = ste.getObjectHeaderAddress().getInstance(Long.class);
-//                    long originalPos = fileChannel.position(); // Optional: save position
-//                    fileChannel.position(dataObjectHeaderAddress);
-//                    HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
-//                    log.debug("FOUND {}@{}\r\n{}", datasetName, dataObjectHeaderAddress, header);
-//                    DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow(() -> new IllegalStateException("No DatatypeMessage found for " + datasetName));
-//                    dataSets.add(new HdfDataSet(rootGroup, datasetName.toString(), dataType.getHdfDatatype(), header));
-//                    fileChannel.position(originalPos); // Optional: restore position
-//                }
-//            }
-//        }
-//        return dataSets;
-//    }
-
-
     // --- NEW findDataset using recursive in-memory traversal ---
-    public HdfDataSet findDataset(String targetName, FileChannel fileChannel, HdfGroup hdfGroup) throws IOException {
+    public HdfDataSet findDataset(String targetName, SeekableByteChannel fileChannel, HdfGroup hdfGroup) throws IOException {
         // Start recursive search on the in-memory B-tree
         Optional<HdfDataSet> dataset = findDatasetRecursive(
                 hdfGroup.getBTree(), // Start at the root B-tree node of the group
@@ -199,7 +105,7 @@ public class HdfFileReader implements HdfDataFile {
     private Optional<HdfDataSet> findDatasetRecursive(HdfBTreeV1 currentNode,
                                                       String targetName,
                                                       HdfLocalHeapContents heapContents,
-                                                      FileChannel fileChannel) throws IOException {
+                                                      SeekableByteChannel fileChannel) throws IOException {
 
         if (currentNode == null) {
             return Optional.empty(); // Reached end of a branch unexpectedly
@@ -225,10 +131,8 @@ public class HdfFileReader implements HdfDataFile {
                                 fileChannel.position(dataObjectHeaderAddress);
                                 HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
                                 DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class)
-                                        .orElseThrow(() -> new IllegalStateException("Object '" + targetName + "' found but has no DatatypeMessage"));
+                                        .orElseThrow(() -> new IllegalStateException("No DatatypeMessage found for " + targetName));
                                 log.debug("FOUND {}@{}\r\n{}", linkName, dataObjectHeaderAddress, header);
-                                // Verify it's a dataset
-                                // Assuming rootGroup as parent for now. Adjust if needed for sub-groups.
                                 return Optional.of(new HdfDataSet(rootGroup, linkName.toString(), dataType.getHdfDatatype(), header));
                             } finally {
                                 fileChannel.position(originalPos); // Restore position
@@ -251,15 +155,13 @@ public class HdfFileReader implements HdfDataFile {
                     log.warn("Internal BTree entry (Key: {}) points to a null child BTree.", entry.getKey());
                 }
             }
-            // else: Entry is invalid/unrecognized? Log or ignore.
         }
 
         return Optional.empty(); // Not found in this node or its descendants
     }
 
-
     // --- NEW getDatasets using recursive in-memory traversal ---
-    public List<HdfDataSet> getDatasets(FileChannel fileChannel, HdfGroup hdfGroup) throws IOException {
+    public List<HdfDataSet> getDatasets(SeekableByteChannel fileChannel, HdfGroup hdfGroup) throws IOException {
         List<HdfDataSet> dataSets = new ArrayList<>();
         // Start recursive collection
         collectDatasetsRecursive(
@@ -275,7 +177,7 @@ public class HdfFileReader implements HdfDataFile {
     private void collectDatasetsRecursive(HdfBTreeV1 currentNode,
                                           List<HdfDataSet> dataSets, // Accumulator list
                                           HdfLocalHeapContents heapContents,
-                                          FileChannel fileChannel) throws IOException {
+                                          SeekableByteChannel fileChannel) throws IOException {
 
         if (currentNode == null) {
             return; // End of branch
@@ -307,11 +209,9 @@ public class HdfFileReader implements HdfDataFile {
                                 log.debug("Dataset {}@{}\r\n{}", linkName, dataObjectHeaderAddress, header);
                                 dataSets.add(new HdfDataSet(rootGroup, linkName.toString(), dataType.getHdfDatatype(), header));
                             } else {
-                                // It's some other linked object (like another group), ignore for getDatasets.
                                 log.trace("Skipping non-dataset object '{}' at {}", linkName, dataObjectHeaderAddress);
                             }
                         } catch (Exception e) {
-                            // Log error reading header but continue collecting others
                             log.error("Failed to read or process object header for '{}' at {}. Skipping.", linkName, dataObjectHeaderAddress, e);
                         } finally {
                             fileChannel.position(originalPos); // Restore position
@@ -320,7 +220,6 @@ public class HdfFileReader implements HdfDataFile {
                 } else {
                     log.warn("Leaf BTree entry (Key: {}) points to a null SymbolTableNode.", entry.getKey());
                 }
-
             } else if (entry.isInternalEntry()) {
                 // --- Recurse into Child B-Tree ---
                 HdfBTreeV1 childBTree = entry.getChildBTree();
@@ -330,7 +229,6 @@ public class HdfFileReader implements HdfDataFile {
                     log.warn("Internal BTree entry (Key: {}) points to a null child BTree.", entry.getKey());
                 }
             }
-            // else: Invalid entry type?
         }
     }
 

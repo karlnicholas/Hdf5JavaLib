@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.util.BitSet;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
@@ -120,7 +121,7 @@ public class HdfSuperblock {
         this.hdfDataFile = hdfDataFile;
     }
 
-    public static HdfSuperblock readFromFileChannel(FileChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
+    public static HdfSuperblock readFromFileChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
         // Step 1: Allocate the minimum buffer size to determine the version
         ByteBuffer buffer = ByteBuffer.allocate(8 + 1); // File signature (8 bytes) + version (1 byte)
         buffer.order(ByteOrder.LITTLE_ENDIAN);

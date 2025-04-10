@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -97,7 +98,7 @@ public abstract class HdfMessage {
     public abstract void writeMessageToByteBuffer(ByteBuffer buffer);
 
     // Parse header messages
-    public static List<HdfMessage> readMessagesFromByteBuffer(FileChannel fileChannel, short objectHeaderSize, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
+    public static List<HdfMessage> readMessagesFromByteBuffer(SeekableByteChannel fileChannel, short objectHeaderSize, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
         ByteBuffer buffer  = ByteBuffer.allocate(objectHeaderSize).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();
@@ -141,7 +142,7 @@ public abstract class HdfMessage {
     }
 
     // TODO: fix recursion
-    public static List<HdfMessage> parseContinuationMessage(FileChannel fileChannel, ObjectHeaderContinuationMessage objectHeaderContinuationMessage, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
+    public static List<HdfMessage> parseContinuationMessage(SeekableByteChannel fileChannel, ObjectHeaderContinuationMessage objectHeaderContinuationMessage, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
         long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().getInstance(Long.class);
         short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getInstance(Long.class).shortValue();
 

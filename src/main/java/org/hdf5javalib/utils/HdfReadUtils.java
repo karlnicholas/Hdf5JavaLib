@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 
 public class HdfReadUtils {
-    public static int readIntFromFileChannel(FileChannel fileChannel) throws IOException {
+    public static int readIntFromFileChannel(SeekableByteChannel fileChannel) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
         buffer.order(ByteOrder.LITTLE_ENDIAN); // Assume little-endian as per HDF5 spec
         fileChannel.read(buffer);
@@ -14,7 +15,7 @@ public class HdfReadUtils {
         return buffer.getInt();
     }
 
-    public static void skipBytes(FileChannel fileChannel, int bytesToSkip) throws IOException {
+    public static void skipBytes(SeekableByteChannel fileChannel, int bytesToSkip) throws IOException {
         fileChannel.position(fileChannel.position() + bytesToSkip);
     }
 

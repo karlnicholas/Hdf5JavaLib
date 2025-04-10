@@ -33,6 +33,6 @@ build/
 /src/main/resources/*.h5
 /src/main/resources/*.csv
 
-*.h5
 *.exe
-
+/*.h5
+hdf5/*/*.h5

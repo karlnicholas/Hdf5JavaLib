@@ -7,6 +7,7 @@ import org.hdf5javalib.utils.HdfReadUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.util.BitSet;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
@@ -35,7 +36,7 @@ public class HdfSymbolTableEntry {
         this.localHeapOffset = null;
     }
 
-    public static HdfSymbolTableEntry fromFileChannel(FileChannel fileChannel, short offsetSize) throws IOException {
+    public static HdfSymbolTableEntry fromFileChannel(SeekableByteChannel fileChannel, short offsetSize) throws IOException {
         BitSet emptyBitSet = new BitSet();
         // Read the fixed-point values for linkNameOffset and objectHeaderAddress
         HdfFixedPoint linkNameOffset = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));

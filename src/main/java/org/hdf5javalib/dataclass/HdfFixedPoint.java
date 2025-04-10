@@ -10,6 +10,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -45,7 +46,7 @@ public class HdfFixedPoint implements HdfData {
         return new HdfFixedPoint(bArray, datatype);
     }
 
-    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, int size, BitSet classBitField, short bitOffset, short bitPrecision) throws IOException {
+    public static HdfFixedPoint readFromFileChannel(SeekableByteChannel fileChannel, int size, BitSet classBitField, short bitOffset, short bitPrecision) throws IOException {
         validateSize(size);
         byte[] bytes = new byte[size];
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(classBitField.get(0) ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
@@ -58,7 +59,7 @@ public class HdfFixedPoint implements HdfData {
         return new HdfFixedPoint(bytes, datatype);
     }
 
-    public static HdfFixedPoint readFromFileChannel(FileChannel fileChannel, int size) throws IOException {
+    public static HdfFixedPoint readFromFileChannel(SeekableByteChannel fileChannel, int size) throws IOException {
         validateSize(size);
         byte[] bytes = new byte[size];
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -83,7 +84,7 @@ public class HdfLocalHeap {
         buffer.putLong(newFreeListOffset + 8, remainingFreeSpace);
         return freeListOffset;
     }
-    public static HdfLocalHeap readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
+    public static HdfLocalHeap readFromFileChannel(SeekableByteChannel fileChannel, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
         // Allocate buffer for the local heap header
         ByteBuffer buffer = ByteBuffer.allocate(32); // Initial size for header parsing
         buffer.order(java.nio.ByteOrder.LITTLE_ENDIAN);

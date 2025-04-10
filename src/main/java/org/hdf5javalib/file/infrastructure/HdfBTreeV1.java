@@ -10,6 +10,7 @@ import org.hdf5javalib.file.HdfGroup;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
@@ -68,12 +69,12 @@ public class HdfBTreeV1 {
         this.entries = new ArrayList<>();
     }
 
-    public static HdfBTreeV1 readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
+    public static HdfBTreeV1 readFromFileChannel(SeekableByteChannel fileChannel, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
         long initialAddress = fileChannel.position();
         return readFromFileChannelRecursive(fileChannel, initialAddress, offsetSize, lengthSize, new HashMap<>(), hdfDataFile);
     }
 
-    private static HdfBTreeV1 readFromFileChannelRecursive(FileChannel fileChannel,
+    private static HdfBTreeV1 readFromFileChannelRecursive(SeekableByteChannel fileChannel,
                                                            long nodeAddress,
                                                            short offsetSize,
                                                            short lengthSize,

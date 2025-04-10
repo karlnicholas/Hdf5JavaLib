@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -96,7 +97,7 @@ public class HdfGlobalHeap {
      * Stores the read objects mapped to their starting file offset.
      * (Method body formatting corrected, logic unchanged from baseline)
      */
-    public void readFromFileChannel(FileChannel fileChannel, short ignoredOffsetSize) throws IOException {
+    public void readFromFileChannel(SeekableByteChannel fileChannel, short ignoredOffsetSize) throws IOException {
         long startOffset = fileChannel.position(); // Record the starting offset
 
         ByteBuffer headerBuffer = ByteBuffer.allocate(16);

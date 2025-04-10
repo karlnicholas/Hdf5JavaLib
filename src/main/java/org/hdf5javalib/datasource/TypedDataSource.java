@@ -5,7 +5,6 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.utils.FlattenedArrayUtils;
 
 import java.io.IOException;
@@ -13,44 +12,31 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class TypedDataSource<T> {
+public class TypedDataSource<T> implements AutoCloseable {
     private final HdfDataSet dataset;
-    private final FileChannel fileChannel;
+    private final SeekableByteChannel channel;
     private final Class<T> dataClass;
     private final int[] dimensions;
     private final int elementSize;
-    private final HdfGlobalHeap globalHeap;
 
-    public TypedDataSource(HdfDataSet dataset, FileChannel fileChannel, HdfDataFile hdfDataFile, Class<T> dataClass) {
+    public TypedDataSource(HdfDataSet dataset, SeekableByteChannel channel, HdfDataFile hdfDataFile, Class<T> dataClass) {
         this.dataset = dataset;
-        this.fileChannel = fileChannel;
-        this.globalHeap = new HdfGlobalHeap(this::initializeGlobalHeap, hdfDataFile);
+        this.channel = channel;
         this.dataClass = dataClass;
         this.elementSize = dataset.getHdfDatatype().getSize();
         this.dimensions = extractDimensions(dataset.getDataObjectHeaderPrefix()
-                .findMessageByType(DataspaceMessage.class)
-                .orElseThrow(() -> new IllegalStateException("DataspaceMessage not found")));
-        dataset.getDataObjectHeaderPrefix().findMessageByType(DatatypeMessage.class).orElseThrow().getHdfDatatype().setGlobalHeap(globalHeap);
-
+                .findMessageByType(DataspaceMessage.class).orElseThrow());
+        dataset.getDataObjectHeaderPrefix().findMessageByType(DatatypeMessage.class).orElseThrow().getHdfDatatype().setGlobalHeap(hdfDataFile.getGlobalHeap());
     }
 
     public int[] getShape() {
         return dimensions.clone();
-    }
-
-    private void initializeGlobalHeap(long offset) {
-        try {
-            fileChannel.position(offset);
-            globalHeap.readFromFileChannel(fileChannel, (short)8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private int[] extractDimensions(DataspaceMessage dataspace) {
@@ -67,9 +53,9 @@ public class TypedDataSource<T> {
             throw new IllegalArgumentException("Size too large: " + size);
         }
         ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
-        synchronized (fileChannel) {
-            fileChannel.position(dataset.getDataAddress().getInstance(Long.class) + offset);
-            int bytesRead = fileChannel.read(buffer);
+        synchronized (channel) {
+            channel.position(dataset.getDataAddress().getInstance(Long.class) + offset);
+            int bytesRead = channel.read(buffer);
             if (bytesRead != size) {
                 throw new IOException("Failed to read the expected number of bytes: read " + bytesRead + ", expected " + size);
             }
@@ -234,6 +220,18 @@ public class TypedDataSource<T> {
     public Stream<T> parallelStreamFlattened() {
         int totalElements = FlattenedArrayUtils.totalSize(dimensions);
         return StreamSupport.stream(new FlattenedSpliterator(0, totalElements, elementSize), true);
+    }
+
+    // --- Resource Cleanup ---
+
+    @Override
+    public void close() throws IOException {
+        if (dataset != null) {
+            dataset.close();
+        }
+        if (channel != null && channel.isOpen()) {
+            channel.close();
+        }
     }
 
     // --- Spliterators ---

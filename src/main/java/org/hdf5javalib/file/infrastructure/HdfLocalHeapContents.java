@@ -11,6 +11,7 @@ import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Arrays;
 
 @Getter
@@ -35,7 +36,7 @@ public class HdfLocalHeapContents {
      * @return HdfLocalHeapContents
      * @throws IOException ioexception
      */
-    public static HdfLocalHeapContents readFromFileChannel(FileChannel fileChannel, int dataSize, HdfDataFile hdfDataFile) throws IOException {
+    public static HdfLocalHeapContents readFromFileChannel(SeekableByteChannel fileChannel, int dataSize, HdfDataFile hdfDataFile) throws IOException {
         // Allocate buffer and read heap data from the file channel
         byte[] heapData = new byte[dataSize];
         ByteBuffer buffer = ByteBuffer.wrap(heapData);

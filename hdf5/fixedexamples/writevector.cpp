@@ -14,14 +14,14 @@ const uint32_t NUM_RECORDS = 100;
 int main() {
     try {
         // Set up random number generation
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> dis(10, 50);
+        // std::random_device rd;
+        // std::mt19937 gen(rd());
+        // std::uniform_int_distribution<> dis(10, 50);
 
         // Create vector to hold 100 random values
         std::vector<int64_t> temp_values(NUM_RECORDS);
         for (int i = 0; i < NUM_RECORDS; i++) {
-            temp_values[i] = dis(gen);
+            temp_values[i] = i+1;
         }
 
         // Create a new HDF5 file (overwrite if exists)

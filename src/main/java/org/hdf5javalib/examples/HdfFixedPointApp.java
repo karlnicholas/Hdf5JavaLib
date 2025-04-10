@@ -14,7 +14,7 @@ import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.utils.FlattenedArrayUtils;
-import org.hdf5javalib.utils.HdfTestUtils;
+import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.FileInputStream;
@@ -56,27 +56,7 @@ public class HdfFixedPointApp {
             throw new RuntimeException(e);
         }
         try {
-            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/scalar_new.h5")).getFile();
-            try(FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-                tryScalarDataSpliterator(channel, reader.findDataset("FixedPointValue", channel, reader.getRootGroup()), reader);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
             String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector.h5")).getFile();
-            try(FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-                tryVectorSpliterator(channel, reader.findDataset("vector", channel, reader.getRootGroup()), reader);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector_new.h5")).getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
@@ -346,7 +326,7 @@ public class HdfFixedPointApp {
             // Create dataset
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
 
-            HdfTestUtils.writeVersionAttribute(dataset);
+            HdfDisplayUtils.writeVersionAttribute(dataset);
 
             ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
             HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) 42), fixedPointDatatype, byteBuffer);
@@ -386,7 +366,7 @@ public class HdfFixedPointApp {
             // Create dataset
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
 
-            HdfTestUtils.writeVersionAttribute(dataset);
+            HdfDisplayUtils.writeVersionAttribute(dataset);
 
             writer.accept(new WriterParams(NUM_RECORDS, fixedPointDatatype, dataset));
 

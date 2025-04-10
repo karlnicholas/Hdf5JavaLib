@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.stream.Collectors;
 
-public class HdfTestUtils {
+public class HdfDisplayUtils {
     public static void writeVersionAttribute(HdfDataSet dataset) {
         String ATTRIBUTE_NAME = "GIT root revision";
         String ATTRIBUTE_VALUE = "Revision: , URL: ";
@@ -54,7 +54,7 @@ public class HdfTestUtils {
 
         System.out.print(displayType(clazz, resultArray) + " stream = [");
         String joined = dataSource.streamVector()
-                .map(HdfTestUtils::displayValue)
+                .map(HdfDisplayUtils::displayValue)
                 .collect(Collectors.joining(", "));
         System.out.print(joined);
         System.out.println("]");
