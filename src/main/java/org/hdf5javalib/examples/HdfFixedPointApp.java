@@ -46,11 +46,10 @@ public class HdfFixedPointApp {
     }
     private void run() {
         try {
-            HdfFileReader reader = new HdfFileReader();
             String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/scalar.h5")).getFile();
             try(FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
                 tryScalarDataSpliterator(channel, reader.findDataset("FixedPointValue", channel, reader.getRootGroup()), reader);
             }
         } catch (IOException e) {

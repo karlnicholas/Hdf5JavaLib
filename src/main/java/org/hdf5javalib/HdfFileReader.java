@@ -25,15 +25,26 @@ public class HdfFileReader implements HdfDataFile {
     // level 1
     private HdfGroup rootGroup;
 
+    private final FileChannel fileChannel;
     private final HdfGlobalHeap globalHeap;
     private final HdfFileAllocation fileAllocation;
 
-    public HdfFileReader() {
+    public HdfFileReader(FileChannel fileChannel) {
+        this.fileChannel = fileChannel;
         this.fileAllocation = new HdfFileAllocation();
-        this.globalHeap = new HdfGlobalHeap(this);
+        this.globalHeap = new HdfGlobalHeap(this::initializeGlobalHeap, this);
     }
 
-    public void readFile(FileChannel fileChannel) throws IOException {
+    private void initializeGlobalHeap(long offset) {
+        try {
+            fileChannel.position(offset);
+            globalHeap.readFromFileChannel(fileChannel, (short)8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public HdfFileReader readFile() throws IOException {
         // Parse the superblock at the beginning of the file
         superblock = HdfSuperblock.readFromFileChannel(fileChannel, this);
         log.debug("{}", superblock);
@@ -77,6 +88,8 @@ public class HdfFileReader implements HdfDataFile {
         log.debug("{}", rootGroup);
 
         log.debug("Parsing complete. NEXT: {}", fileChannel.position());
+
+        return this;
     }
 
 //    public HdfDataSet findDataset(String targetName, FileChannel fileChannel, HdfGroup hdfGroup) throws IOException {

@@ -29,11 +29,10 @@ public class HdfSeparateTypesApp {
 
     private void run() {
         try {
-            HdfFileReader reader = new HdfFileReader();
             String filePath = Objects.requireNonNull(this.getClass().getResource("/all_types_separate.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
                 try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
                     HdfTestUtils.displayScalarData(channel, dataSet, HdfFixedPoint.class, reader);
                     HdfTestUtils.displayScalarData(channel, dataSet, Integer.class, reader);

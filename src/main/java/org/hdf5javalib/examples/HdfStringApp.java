@@ -33,11 +33,10 @@ public class HdfStringApp {
 
     private void run() {
         try {
-            HdfFileReader reader = new HdfFileReader();
             String filePath = Objects.requireNonNull(HdfCompoundApp.class.getResource("/ascii_dataset.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
                 try ( HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup()) ) {
                     HdfTestUtils.displayVectorData(channel, dataSet, String.class, reader);
                 }
@@ -46,11 +45,10 @@ public class HdfStringApp {
             throw new RuntimeException(e);
         }
         try {
-            HdfFileReader reader = new HdfFileReader();
             String filePath = Objects.requireNonNull(HdfCompoundApp.class.getResource("/utf8_dataset.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
                 try ( HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup()) ) {
                     HdfTestUtils.displayVectorData(channel, dataSet, String.class, reader);
                 }
@@ -59,11 +57,10 @@ public class HdfStringApp {
             throw new RuntimeException(e);
         }
         try {
-            HdfFileReader reader = new HdfFileReader();
             String filePath = Objects.requireNonNull(HdfCompoundApp.class.getResource("/string_ascii_all.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
                 try ( HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup()) ) {
                     HdfTestUtils.displayVectorData(channel, dataSet, String.class, reader);
                 }
@@ -72,11 +69,10 @@ public class HdfStringApp {
             throw new RuntimeException(e);
         }
         try {
-            HdfFileReader reader = new HdfFileReader();
             String filePath = Objects.requireNonNull(HdfCompoundApp.class.getResource("/string_utf8_each.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
                 try ( HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup()) ) {
                     HdfTestUtils.displayVectorData(channel, dataSet, String.class, reader);
                 }

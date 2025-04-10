@@ -23,11 +23,10 @@ public class HdfVLenTypesApp {
 
     private void run() {
         try {
-            HdfFileReader reader = new HdfFileReader();
             String filePath = Objects.requireNonNull(this.getClass().getResource("/vlen_types_example.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
-                reader.readFile(channel);
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
                 for ( HdfDataSet dataSet: reader.getDatasets(channel, reader.getRootGroup()) ) {
                     try (HdfDataSet ds = dataSet) {
                         System.out.println();
