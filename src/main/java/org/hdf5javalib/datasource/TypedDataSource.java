@@ -18,14 +18,14 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class TypedDataSource<T> implements AutoCloseable {
+public class TypedDataSource<T> {
     private final HdfDataSet dataset;
     private final SeekableByteChannel channel;
     private final Class<T> dataClass;
     private final int[] dimensions;
     private final int elementSize;
 
-    public TypedDataSource(HdfDataSet dataset, SeekableByteChannel channel, HdfDataFile hdfDataFile, Class<T> dataClass) {
+    public TypedDataSource(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataSet dataset, Class<T> dataClass) {
         this.dataset = dataset;
         this.channel = channel;
         this.dataClass = dataClass;
@@ -220,18 +220,6 @@ public class TypedDataSource<T> implements AutoCloseable {
     public Stream<T> parallelStreamFlattened() {
         int totalElements = FlattenedArrayUtils.totalSize(dimensions);
         return StreamSupport.stream(new FlattenedSpliterator(0, totalElements, elementSize), true);
-    }
-
-    // --- Resource Cleanup ---
-
-    @Override
-    public void close() throws IOException {
-        if (dataset != null) {
-            dataset.close();
-        }
-        if (channel != null && channel.isOpen()) {
-            channel.close();
-        }
     }
 
     // --- Spliterators ---

@@ -26,127 +26,91 @@ public class HdfStringAppTest {
         return Paths.get(resourcePath);
     }
 
-    // ascii_dataset.h5 Tests
     @Test
-    void testAsciiDatasetRead() throws IOException {
+    void testAsciiDatasetH5() throws IOException {
         Path filePath = getResourcePath("ascii_dataset.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup());
-            try (TypedDataSource<String> dataSource = new TypedDataSource<>(dataSet, channel, reader, String.class)) {
-                String[] readData = dataSource.readVector();
-                String[] expected = {"label 1 ", "label 2 ", "label 3 ", "label 4 ", "label 5 ",
-                        "label 6 ", "label 7 ", "label 8 ", "label 9 ", "label 10"};
-                assertArrayEquals(expected, readData);
-            }
+            TypedDataSource<String> dataSource = new TypedDataSource<>(channel, reader, dataSet, String.class);
+
+            // testAsciiDatasetRead
+            String[] readData = dataSource.readVector();
+            String[] expected = {"label 1 ", "label 2 ", "label 3 ", "label 4 ", "label 5 ",
+                    "label 6 ", "label 7 ", "label 8 ", "label 9 ", "label 10"};
+            assertArrayEquals(expected, readData);
+
+            // testAsciiDatasetStream
+            List<String> streamedData = dataSource.streamVector().collect(Collectors.toList());
+            List<String> expectedStream = Arrays.asList("label 1 ", "label 2 ", "label 3 ", "label 4 ", "label 5 ",
+                    "label 6 ", "label 7 ", "label 8 ", "label 9 ", "label 10");
+            assertEquals(expectedStream, streamedData);
         }
     }
 
     @Test
-    void testAsciiDatasetStream() throws IOException {
-        Path filePath = getResourcePath("ascii_dataset.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-            HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup());
-            try (TypedDataSource<String> dataSource = new TypedDataSource<>(dataSet, channel, reader, String.class)) {
-                List<String> streamedData = dataSource.streamVector().collect(Collectors.toList());
-                List<String> expected = Arrays.asList("label 1 ", "label 2 ", "label 3 ", "label 4 ", "label 5 ",
-                        "label 6 ", "label 7 ", "label 8 ", "label 9 ", "label 10");
-                assertEquals(expected, streamedData);
-            }
-        }
-    }
-
-    // utf8_dataset.h5 Tests
-    @Test
-    void testUtf8DatasetRead() throws IOException {
+    void testUtf8DatasetH5() throws IOException {
         Path filePath = getResourcePath("utf8_dataset.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup());
-            try (TypedDataSource<String> dataSource = new TypedDataSource<>(dataSet, channel, reader, String.class)) {
-                String[] readData = dataSource.readVector();
-                String[] expected = {"ꦠꦤ꧀ 1", "ꦠꦤ꧀ 2", "ꦠꦤ꧀ 3", "ꦠꦤ꧀ 4", "ꦠꦤ꧀ 5",
-                        "ꦠꦤ꧀ 6", "ꦠꦤ꧀ 7", "ꦠꦤ꧀ 8", "ꦠꦤ꧀ 9", "ꦠꦤ꧀ 10"};
-                assertArrayEquals(expected, readData);
-            }
+            TypedDataSource<String> dataSource = new TypedDataSource<>(channel, reader, dataSet, String.class);
+
+            // testUtf8DatasetRead
+            String[] readData = dataSource.readVector();
+            String[] expected = {"ꦠꦤ꧀ 1", "ꦠꦤ꧀ 2", "ꦠꦤ꧀ 3", "ꦠꦤ꧀ 4", "ꦠꦤ꧀ 5",
+                    "ꦠꦤ꧀ 6", "ꦠꦤ꧀ 7", "ꦠꦤ꧀ 8", "ꦠꦤ꧀ 9", "ꦠꦤ꧀ 10"};
+            assertArrayEquals(expected, readData);
+
+            // testUtf8DatasetStream
+            List<String> streamedData = dataSource.streamVector().collect(Collectors.toList());
+            List<String> expectedStream = Arrays.asList("ꦠꦤ꧀ 1", "ꦠꦤ꧀ 2", "ꦠꦤ꧀ 3", "ꦠꦤ꧀ 4", "ꦠꦤ꧀ 5",
+                    "ꦠꦤ꧀ 6", "ꦠꦤ꧀ 7", "ꦠꦤ꧀ 8", "ꦠꦤ꧀ 9", "ꦠꦤ꧀ 10");
+            assertEquals(expectedStream, streamedData);
         }
     }
 
     @Test
-    void testUtf8DatasetStream() throws IOException {
-        Path filePath = getResourcePath("utf8_dataset.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-            HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup());
-            try (TypedDataSource<String> dataSource = new TypedDataSource<>(dataSet, channel, reader, String.class)) {
-                List<String> streamedData = dataSource.streamVector().collect(Collectors.toList());
-                List<String> expected = Arrays.asList("ꦠꦤ꧀ 1", "ꦠꦤ꧀ 2", "ꦠꦤ꧀ 3", "ꦠꦤ꧀ 4", "ꦠꦤ꧀ 5",
-                        "ꦠꦤ꧀ 6", "ꦠꦤ꧀ 7", "ꦠꦤ꧀ 8", "ꦠꦤ꧀ 9", "ꦠꦤ꧀ 10");
-                assertEquals(expected, streamedData);
-            }
-        }
-    }
-
-    // string_ascii_all.h5 Tests
-    @Test
-    void testStringAsciiAllRead() throws IOException {
+    void testStringAsciiAllH5() throws IOException {
         Path filePath = getResourcePath("string_ascii_all.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup());
-            try (TypedDataSource<String> dataSource = new TypedDataSource<>(dataSet, channel, reader, String.class)) {
-                String[] readData = dataSource.readVector();
-                String[] expected = {"label 1 ", "label 2 ", "label 3 ", "label 4 ", "label 5 ",
-                        "label 6 ", "label 7 ", "label 8 ", "label 9 ", "label 10"};
-                assertArrayEquals(expected, readData);
-            }
+            TypedDataSource<String> dataSource = new TypedDataSource<>(channel, reader, dataSet, String.class);
+
+            // testStringAsciiAllRead
+            String[] readData = dataSource.readVector();
+            String[] expected = {"label 1 ", "label 2 ", "label 3 ", "label 4 ", "label 5 ",
+                    "label 6 ", "label 7 ", "label 8 ", "label 9 ", "label 10"};
+            assertArrayEquals(expected, readData);
+
+            // testStringAsciiAllStream
+            List<String> streamedData = dataSource.streamVector().collect(Collectors.toList());
+            List<String> expectedStream = Arrays.asList("label 1 ", "label 2 ", "label 3 ", "label 4 ", "label 5 ",
+                    "label 6 ", "label 7 ", "label 8 ", "label 9 ", "label 10");
+            assertEquals(expectedStream, streamedData);
         }
     }
 
     @Test
-    void testStringAsciiAllStream() throws IOException {
-        Path filePath = getResourcePath("string_ascii_all.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-            HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup());
-            try (TypedDataSource<String> dataSource = new TypedDataSource<>(dataSet, channel, reader, String.class)) {
-                List<String> streamedData = dataSource.streamVector().collect(Collectors.toList());
-                List<String> expected = Arrays.asList("label 1 ", "label 2 ", "label 3 ", "label 4 ", "label 5 ",
-                        "label 6 ", "label 7 ", "label 8 ", "label 9 ", "label 10");
-                assertEquals(expected, streamedData);
-            }
-        }
-    }
-
-    // string_utf8_each.h5 Tests
-    @Test
-    void testStringUtf8EachRead() throws IOException {
+    void testStringUtf8EachH5() throws IOException {
         Path filePath = getResourcePath("string_utf8_each.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup());
-            try (TypedDataSource<String> dataSource = new TypedDataSource<>(dataSet, channel, reader, String.class)) {
-                String[] readData = dataSource.readVector();
-                String[] expected = {"ꦠꦤ꧀ 1", "ꦠꦤ꧀ 2", "ꦠꦤ꧀ 3", "ꦠꦤ꧀ 4", "ꦠꦤ꧀ 5",
-                        "ꦠꦤ꧀ 6", "ꦠꦤ꧀ 7", "ꦠꦤ꧀ 8", "ꦠꦤ꧀ 9", "ꦠꦤ꧀ 10"};
-                assertArrayEquals(expected, readData);
-            }
-        }
-    }
+            TypedDataSource<String> dataSource = new TypedDataSource<>(channel, reader, dataSet, String.class);
 
-    @Test
-    void testStringUtf8EachStream() throws IOException {
-        Path filePath = getResourcePath("string_utf8_each.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-            HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup());
-            try (TypedDataSource<String> dataSource = new TypedDataSource<>(dataSet, channel, reader, String.class)) {
-                List<String> streamedData = dataSource.streamVector().collect(Collectors.toList());
-                List<String> expected = Arrays.asList("ꦠꦤ꧀ 1", "ꦠꦤ꧀ 2", "ꦠꦤ꧀ 3", "ꦠꦤ꧀ 4", "ꦠꦤ꧀ 5",
-                        "ꦠꦤ꧀ 6", "ꦠꦤ꧀ 7", "ꦠꦤ꧀ 8", "ꦠꦤ꧀ 9", "ꦠꦤ꧀ 10");
-                assertEquals(expected, streamedData);
-            }
+            // testStringUtf8EachRead
+            String[] readData = dataSource.readVector();
+            String[] expected = {"ꦠꦤ꧀ 1", "ꦠꦤ꧀ 2", "ꦠꦤ꧀ 3", "ꦠꦤ꧀ 4", "ꦠꦤ꧀ 5",
+                    "ꦠꦤ꧀ 6", "ꦠꦤ꧀ 7", "ꦠꦤ꧀ 8", "ꦠꦤ꧀ 9", "ꦠꦤ꧀ 10"};
+            assertArrayEquals(expected, readData);
+
+            // testStringUtf8EachStream
+            List<String> streamedData = dataSource.streamVector().collect(Collectors.toList());
+            List<String> expectedStream = Arrays.asList("ꦠꦤ꧀ 1", "ꦠꦤ꧀ 2", "ꦠꦤ꧀ 3", "ꦠꦤ꧀ 4", "ꦠꦤ꧀ 5",
+                    "ꦠꦤ꧀ 6", "ꦠꦤ꧀ 7", "ꦠꦤ꧀ 8", "ꦠꦤ꧀ 9", "ꦠꦤ꧀ 10");
+            assertEquals(expectedStream, streamedData);
         }
     }
 }

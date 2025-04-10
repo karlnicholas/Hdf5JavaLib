@@ -11,6 +11,7 @@ import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.stream.Collectors;
@@ -36,8 +37,8 @@ public class HdfDisplayUtils {
         dataset.createAttribute(ATTRIBUTE_NAME, dt, ds, hdfString);
     }
 
-    public static <T> void displayScalarData(FileChannel fileChannel, HdfDataSet dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
-        TypedDataSource<T> dataSource = new TypedDataSource<>(dataSet, fileChannel, hdfDataFile, clazz);
+    public static <T> void displayScalarData(SeekableByteChannel fileChannel, HdfDataSet dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+        TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T result = dataSource.readScalar();
         System.out.println(displayType(clazz, result) + " read   = " + displayValue(result));
@@ -46,8 +47,8 @@ public class HdfDisplayUtils {
         System.out.println(displayType(clazz, result) + " stream = " + displayValue(result));
     }
 
-    public static <T> void displayVectorData(FileChannel fileChannel, HdfDataSet dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
-        TypedDataSource<T> dataSource = new TypedDataSource<>(dataSet, fileChannel, hdfDataFile, clazz);
+    public static <T> void displayVectorData(SeekableByteChannel fileChannel, HdfDataSet dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+        TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T[] resultArray = dataSource.readVector();
         System.out.println(displayType(clazz, resultArray) + " read   = " + displayValue(resultArray));
