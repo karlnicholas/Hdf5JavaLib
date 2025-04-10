@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.dataobject.message;
 
 import lombok.Getter;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 
@@ -84,7 +85,7 @@ public class DatatypeMessage extends HdfMessage {
 //     * @param ignoredlengthSize Size of lengths in bytes (not used here).
 //     * @return A fully constructed `DatatypeMessage` instance.
 //     */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int ignoredoffsetSize, int ignoredlengthSize, byte[] dataTypeData) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int ignoredoffsetSize, int ignoredlengthSize, byte[] dataTypeData, HdfDataFile hdfDataFile) {
 //    public static HdfMessage parseHeaderMessage(byte[] data) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 

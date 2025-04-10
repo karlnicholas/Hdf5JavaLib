@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.dataobject;
 
 import lombok.Getter;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.dataobject.message.HdfMessage;
 import org.hdf5javalib.file.dataobject.message.ObjectHeaderContinuationMessage;
@@ -36,7 +37,8 @@ public class HdfObjectHeaderPrefixV1 {
     }
 
     // Factory method to read from a FileChannel
-    public static HdfObjectHeaderPrefixV1 readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize) throws IOException {
+    public static HdfObjectHeaderPrefixV1 readFromFileChannel(FileChannel fileChannel, short offsetSize, short lengthSize, HdfDataFile hdfDataFile
+    ) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
         fileChannel.read(buffer);
         buffer.flip();
@@ -65,10 +67,10 @@ public class HdfObjectHeaderPrefixV1 {
             throw new IllegalArgumentException("Reserved integer in Data Object Header Prefix is not zero.");
         }
         List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>();
-        dataObjectHeaderMessages.addAll(readMessagesFromByteBuffer(fileChannel, objectHeaderSize, offsetSize, lengthSize));
+        dataObjectHeaderMessages.addAll(readMessagesFromByteBuffer(fileChannel, objectHeaderSize, offsetSize, lengthSize, hdfDataFile));
         for ( HdfMessage hdfMessage: dataObjectHeaderMessages) {
             if (hdfMessage instanceof ObjectHeaderContinuationMessage) {
-                dataObjectHeaderMessages.addAll(parseContinuationMessage(fileChannel, (ObjectHeaderContinuationMessage)hdfMessage, offsetSize, lengthSize));
+                dataObjectHeaderMessages.addAll(parseContinuationMessage(fileChannel, (ObjectHeaderContinuationMessage)hdfMessage, offsetSize, lengthSize, hdfDataFile));
                 break;
             }
         }

@@ -2,6 +2,7 @@ package org.hdf5javalib.file.dataobject.message;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 
 import java.nio.ByteBuffer;
@@ -93,13 +94,14 @@ public class DataLayoutMessage extends HdfMessage {
     /**
      * Parses the header message and returns a constructed instance.
      *
-     * @param flags      Flags associated with the message (not used here).
-     * @param data       Byte array containing the header message data.
-     * @param offsetSize Size of offsets in bytes.
-     * @param lengthSize Size of lengths in bytes (not used here).
+     * @param flags       Flags associated with the message (not used here).
+     * @param data        Byte array containing the header message data.
+     * @param offsetSize  Size of offsets in bytes.
+     * @param lengthSize  Size of lengths in bytes (not used here).
+     * @param hdfDataFile
      * @return A fully constructed `DataLayoutMessage` instance.
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Read version (1 byte)

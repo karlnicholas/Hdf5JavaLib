@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.dataobject.message;
 
 import lombok.Getter;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 
 import java.nio.ByteBuffer;
@@ -44,7 +45,7 @@ public class DataspaceMessage extends HdfMessage {
     /**
      * Parses the header message and returns a constructed instance.
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short ignoredOffsetSize, short lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short ignoredOffsetSize, short lengthSize, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         int version = Byte.toUnsignedInt(buffer.get());

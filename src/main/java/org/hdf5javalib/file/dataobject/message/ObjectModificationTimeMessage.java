@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.dataobject.message;
 
 import lombok.Getter;
+import org.hdf5javalib.HdfDataFile;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -55,13 +56,14 @@ public class ObjectModificationTimeMessage extends HdfMessage {
     /**
      * Parses the header message and returns a constructed instance.
      *
-     * @param flags      Flags associated with the message (not used here).
-     * @param data       Byte array containing the header message data.
-     * @param offsetSize Size of offsets in bytes (not used here).
-     * @param lengthSize Size of lengths in bytes (not used here).
+     * @param flags       Flags associated with the message (not used here).
+     * @param data        Byte array containing the header message data.
+     * @param offsetSize  Size of offsets in bytes (not used here).
+     * @param lengthSize  Size of lengths in bytes (not used here).
+     * @param hdfDataFile
      * @return A fully constructed `ObjectModificationTimeMessage` instance.
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Parse version

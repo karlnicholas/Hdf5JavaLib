@@ -1,5 +1,7 @@
 package org.hdf5javalib.file.dataobject.message;
 
+import org.hdf5javalib.HdfDataFile;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -42,7 +44,7 @@ public class NilMessage extends HdfMessage {
         super(MessageType.NilMessage, sizeMessageData, flags);
     }
 
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize, HdfDataFile hdfDataFile) {
         // No data to parse for null message
         return new NilMessage(data.length, flags, (short) data.length);
     }

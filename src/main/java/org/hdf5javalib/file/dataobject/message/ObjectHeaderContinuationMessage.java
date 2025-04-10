@@ -2,6 +2,7 @@ package org.hdf5javalib.file.dataobject.message;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 
 import java.nio.ByteBuffer;
@@ -60,7 +61,7 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
         this.continuationSize = continuationSize;
     }
 
-    public static ObjectHeaderContinuationMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
+    public static ObjectHeaderContinuationMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Parse the continuation offset and size
         BitSet emptyBitSet = new BitSet();

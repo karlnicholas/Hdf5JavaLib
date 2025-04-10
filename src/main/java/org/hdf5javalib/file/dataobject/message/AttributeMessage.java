@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.dataobject.message;
 
 import lombok.Getter;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
@@ -65,7 +66,7 @@ public class AttributeMessage extends HdfMessage {
         this.value = value;
     }
 
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Read the version (1 byte)
         int version = Byte.toUnsignedInt(buffer.get());
@@ -102,14 +103,15 @@ public class AttributeMessage extends HdfMessage {
         paddingBytes = new byte[padding];
         buffer.get(paddingBytes);
 
-        HdfMessage hdfDataObjectHeaderDt = createMessageInstance(MessageType.DatatypeMessage, (byte) 0, dtBytes, offsetSize, lengthSize, ()-> Arrays.copyOfRange( data, buffer.position(), data.length));
+        HdfMessage hdfDataObjectHeaderDt = createMessageInstance(MessageType.DatatypeMessage, (byte) 0, dtBytes, offsetSize, lengthSize, ()-> Arrays.copyOfRange( data, buffer.position(), data.length), hdfDataFile);
         DatatypeMessage dt = (DatatypeMessage) hdfDataObjectHeaderDt;
-        HdfMessage hdfDataObjectHeaderDs = createMessageInstance(MessageType.DataspaceMessage, (byte) 0, dsBytes, offsetSize, lengthSize, null);
+        HdfMessage hdfDataObjectHeaderDs = createMessageInstance(MessageType.DataspaceMessage, (byte) 0, dsBytes, offsetSize, lengthSize, null, hdfDataFile);
         DataspaceMessage ds = (DataspaceMessage) hdfDataObjectHeaderDs;
 
 //        HdfString value = null;
 //        if ( dt.getHdfDatatype().getDatatypeClass() == HdfDatatype.DatatypeClass.STRING ) {
             int dtDataSize = dt.getHdfDatatype().getSize();
+            dt.getHdfDatatype().setGlobalHeap(hdfDataFile.getGlobalHeap());
             byte[] dataBytes = new byte[dtDataSize];
             buffer.get(dataBytes);
             HdfData value = dt.getHdfDatatype().getInstance(HdfData.class, dataBytes); // new HdfString(dataBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, dataBytes.length));

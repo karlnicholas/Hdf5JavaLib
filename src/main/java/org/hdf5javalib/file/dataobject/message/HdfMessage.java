@@ -3,6 +3,7 @@ package org.hdf5javalib.file.dataobject.message;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.hdf5javalib.HdfDataFile;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -96,7 +97,7 @@ public abstract class HdfMessage {
     public abstract void writeMessageToByteBuffer(ByteBuffer buffer);
 
     // Parse header messages
-    public static List<HdfMessage> readMessagesFromByteBuffer(FileChannel fileChannel, short objectHeaderSize, short offsetSize, short lengthSize) throws IOException {
+    public static List<HdfMessage> readMessagesFromByteBuffer(FileChannel fileChannel, short objectHeaderSize, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
         ByteBuffer buffer  = ByteBuffer.allocate(objectHeaderSize).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();
@@ -113,7 +114,7 @@ public abstract class HdfMessage {
             byte[] messageData = new byte[size];
             buffer.get(messageData);
 
-            HdfMessage hdfMessage = createMessageInstance(type, flags, messageData, offsetSize, lengthSize, ()-> Arrays.copyOfRange(messageData, 8, messageData.length));
+            HdfMessage hdfMessage = createMessageInstance(type, flags, messageData, offsetSize, lengthSize, ()-> Arrays.copyOfRange(messageData, 8, messageData.length), hdfDataFile);
             log.trace("Read: hdfMessage.sizeMessageData() + 8 = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData()+8);
             // Add the message to the list
             messages.add(hdfMessage);
@@ -122,25 +123,25 @@ public abstract class HdfMessage {
         return messages;
     }
 
-    protected static HdfMessage createMessageInstance(HdfMessage.MessageType type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData) {
+    protected static HdfMessage createMessageInstance(HdfMessage.MessageType type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData, HdfDataFile hdfDataFile) {
         log.trace("type:flags:length {} {} {}", type, flags, data.length);
         return switch (type) {
-            case NilMessage -> NilMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case DataspaceMessage -> DataspaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case DatatypeMessage -> DatatypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, getDataTypeData.get());
-            case FillValueMessage -> FillValueMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case DataLayoutMessage -> DataLayoutMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case AttributeMessage -> AttributeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case ObjectHeaderContinuationMessage -> ObjectHeaderContinuationMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case SymbolTableMessage -> SymbolTableMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case ObjectModificationTimeMessage -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
-            case BtreeKValuesMessage -> BTreeKValuesMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize);
+            case NilMessage -> NilMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
+            case DataspaceMessage -> DataspaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
+            case DatatypeMessage -> DatatypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, getDataTypeData.get(), hdfDataFile);
+            case FillValueMessage -> FillValueMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
+            case DataLayoutMessage -> DataLayoutMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
+            case AttributeMessage -> AttributeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
+            case ObjectHeaderContinuationMessage -> ObjectHeaderContinuationMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
+            case SymbolTableMessage -> SymbolTableMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
+            case ObjectModificationTimeMessage -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
+            case BtreeKValuesMessage -> BTreeKValuesMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
             default -> throw new IllegalArgumentException("Unknown message type: " + type);
         };
     }
 
     // TODO: fix recursion
-    public static List<HdfMessage> parseContinuationMessage(FileChannel fileChannel, ObjectHeaderContinuationMessage objectHeaderContinuationMessage, short offsetSize, short lengthSize) throws IOException {
+    public static List<HdfMessage> parseContinuationMessage(FileChannel fileChannel, ObjectHeaderContinuationMessage objectHeaderContinuationMessage, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
         long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().getInstance(Long.class);
         short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getInstance(Long.class).shortValue();
 
@@ -148,7 +149,7 @@ public abstract class HdfMessage {
         fileChannel.position(continuationOffset);
 
         // Parse the continuation block messages
-        return new ArrayList<>(readMessagesFromByteBuffer(fileChannel, continuationSize, offsetSize, lengthSize));
+        return new ArrayList<>(readMessagesFromByteBuffer(fileChannel, continuationSize, offsetSize, lengthSize, hdfDataFile));
     }
 
     /**

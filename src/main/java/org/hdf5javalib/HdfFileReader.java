@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfDataSet;
-import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.HdfGroup;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
@@ -48,7 +47,7 @@ public class HdfFileReader implements HdfDataFile {
         // Parse the object header from the file using the superblock information
         long objectHeaderAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeaderOffset().getInstance(Long.class);
         fileChannel.position(objectHeaderAddress);
-        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize);
+        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize, this);
 
         // Parse the local heap using the file channel
         // Read data from file channel starting at the specified position
@@ -211,7 +210,7 @@ public class HdfFileReader implements HdfDataFile {
                             long originalPos = fileChannel.position();
                             try {
                                 fileChannel.position(dataObjectHeaderAddress);
-                                HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
+                                HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
                                 DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class)
                                         .orElseThrow(() -> new IllegalStateException("Object '" + targetName + "' found but has no DatatypeMessage"));
                                 log.debug("FOUND {}@{}\r\n{}", linkName, dataObjectHeaderAddress, header);
@@ -286,7 +285,7 @@ public class HdfFileReader implements HdfDataFile {
                         long originalPos = fileChannel.position();
                         try {
                             fileChannel.position(dataObjectHeaderAddress);
-                            HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize());
+                            HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
 
                             // Check if it's a dataset by looking for DatatypeMessage
                             Optional<DatatypeMessage> dataTypeOpt = header.findMessageByType(DatatypeMessage.class);
