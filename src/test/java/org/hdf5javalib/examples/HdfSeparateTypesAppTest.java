@@ -1,5 +1,7 @@
 package org.hdf5javalib.examples;
 
+import lombok.Builder;
+import lombok.Data;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.*;
 import org.hdf5javalib.datasource.TypedDataSource;
@@ -31,14 +33,28 @@ public class HdfSeparateTypesAppTest {
         return Paths.get(resourcePath);
     }
 
+    @Data
+    public static class Compound {
+        private Short a;
+        private Double b;
+    }
+
+    @Data
+    @Builder
+    public static class CustomCompound {
+        private String name;
+        private Short someShort;
+        private Double someDouble;
+    }
+
     @BeforeAll
     static void registerCustomConverter() {
-        CompoundDatatype.addConverter(HdfSeparateTypesApp.CustomCompound.class, (bytes, compoundDataType) -> {
+        CompoundDatatype.addConverter(CustomCompound.class, (bytes, compoundDataType) -> {
             Map<String, HdfCompoundMember> nameToMember = compoundDataType.getInstance(HdfCompound.class, bytes)
                     .getMembers()
                     .stream()
                     .collect(Collectors.toMap(m -> m.getDatatype().getName(), m -> m));
-            return HdfSeparateTypesApp.CustomCompound.builder()
+            return CustomCompound.builder()
                     .name("Name")
                     .someShort(nameToMember.get("a").getInstance(Short.class))
                     .someDouble(nameToMember.get("b").getInstance(Double.class))
@@ -70,7 +86,7 @@ public class HdfSeparateTypesAppTest {
             assertEquals(3.14, new TypedDataSource<>(channel, reader, floatDataSet, Double.class).readScalar(), 0.001);
             assertEquals("3.140000104904175", new TypedDataSource<>(channel, reader, floatDataSet, String.class).readScalar());
 
-            // Time (64-bit timestamp, 1672531200 = 2023-01-01 UTC)
+            // Time (64-bit integer, 1672531200, no real-time association)
             HdfDataSet timeDataSet = reader.findDataset("time", channel, reader.getRootGroup());
             TypedDataSource<HdfTime> timeSource = new TypedDataSource<>(channel, reader, timeDataSet, HdfTime.class);
             assertEquals(1672531200L, timeSource.readScalar().getInstance(Long.class));
@@ -99,10 +115,10 @@ public class HdfSeparateTypesAppTest {
             assertEquals(123, compound.getMembers().get(0).getInstance(Short.class).intValue());
             assertEquals(9.81, compound.getMembers().get(1).getInstance(Double.class), 0.001);
             assertEquals("123, 9.81", new TypedDataSource<>(channel, reader, compoundDataSet, String.class).readScalar());
-            HdfSeparateTypesApp.Compound basicCompound = new TypedDataSource<>(channel, reader, compoundDataSet, HdfSeparateTypesApp.Compound.class).readScalar();
+            Compound basicCompound = new TypedDataSource<>(channel, reader, compoundDataSet, Compound.class).readScalar();
             assertEquals(123, basicCompound.getA().intValue());
             assertEquals(9.81, basicCompound.getB(), 0.001);
-            HdfSeparateTypesApp.CustomCompound customCompound = new TypedDataSource<>(channel, reader, compoundDataSet, HdfSeparateTypesApp.CustomCompound.class).readScalar();
+            CustomCompound customCompound = new TypedDataSource<>(channel, reader, compoundDataSet, CustomCompound.class).readScalar();
             assertEquals("Name", customCompound.getName());
             assertEquals(123, customCompound.getSomeShort().intValue());
             assertEquals(9.81, customCompound.getSomeDouble(), 0.001);
