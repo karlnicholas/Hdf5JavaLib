@@ -66,21 +66,22 @@ public class HdfFixedPointAppTest {
 
             // testVectorReadVectorValues
             BigInteger[] vector = dataSource.readVector();
-            BigInteger[] expected = IntStream.rangeClosed(1, 100)
+            BigInteger[] expected = IntStream.rangeClosed(1, 1000)
                     .mapToObj(BigInteger::valueOf)
                     .toArray(BigInteger[]::new);
             assertArrayEquals(expected, vector);
 
-            // testVectorStreamStats
+            // testVectorStreamStats (sequential)
             var stats = dataSource.streamVector().collect(Collectors.summarizingInt(BigInteger::intValue));
-            assertEquals(100, stats.getCount());
-            assertEquals(5050, stats.getSum());
+            assertEquals(1000, stats.getCount());
+            assertEquals(500500, stats.getSum()); // Sum of 1 to 1000 = 1000 * 1001 / 2
             assertEquals(1, stats.getMin());
-            assertEquals(100, stats.getMax());
+            assertEquals(1000, stats.getMax());
 
-            // testVectorReducedMax
-            BigInteger max = (BigInteger) FlattenedArrayUtils.reduceAlongAxis(dataSource.streamFlattened(), dataSource.getShape(), 0, BigInteger::max, BigInteger.class);
-            assertEquals(BigInteger.valueOf(100), max);
+            // testVectorReducedMax (using parallel stream for variety)
+            BigInteger max = (BigInteger) FlattenedArrayUtils.reduceAlongAxis(
+                    dataSource.parallelStreamFlattened(), dataSource.getShape(), 0, BigInteger::max, BigInteger.class);
+            assertEquals(BigInteger.valueOf(1000), max);
         }
     }
 

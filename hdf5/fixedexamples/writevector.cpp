@@ -9,7 +9,7 @@ using namespace H5;
 const H5std_string FILE_NAME("vector.h5");
 const H5std_string DATASET_NAME("vector");
 const H5std_string ATTRIBUTE_NAME("GIT root revision");
-const uint32_t NUM_RECORDS = 100;
+const uint32_t NUM_RECORDS = 1000;
 
 int main() {
     try {
@@ -54,13 +54,6 @@ int main() {
         file.close();
 
         std::cout << "HDF5 file '" << FILE_NAME << "' created with dataset '/temperature' containing RECORDS random values successfully.\n";
-
-        // Optional: Print the generated values for verification
-        std::cout << "Generated values: ";
-        for (int i = 0; i < 100; i++) {
-            std::cout << temp_values[i] << " ";
-        }
-        std::cout << std::endl;
 
     } catch (H5::Exception &error) {
         std::cerr << "HDF5 Exception: " << error.getDetailMsg() << std::endl;
