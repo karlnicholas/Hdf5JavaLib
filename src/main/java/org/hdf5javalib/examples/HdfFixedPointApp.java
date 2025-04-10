@@ -55,64 +55,59 @@ public class HdfFixedPointApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-//        try {
-//            HdfFileReader reader = new HdfFileReader();
-//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/scalar_new.h5")).getFile();
-//            try(FileInputStream fis = new FileInputStream(filePath)) {
-//                FileChannel channel = fis.getChannel();
-//                reader.readFile(channel);
-//                tryScalarDataSpliterator(channel, reader);
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        try {
-//            HdfFileReader reader = new HdfFileReader();
-//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector.h5")).getFile();
-//            try(FileInputStream fis = new FileInputStream(filePath)) {
-//                FileChannel channel = fis.getChannel();
-//                reader.readFile(channel);
-//                tryVectorSpliterator(channel, reader);
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        try {
-//            HdfFileReader reader = new HdfFileReader();
-//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector_new.h5")).getFile();
-//            try(FileInputStream fis = new FileInputStream(filePath)) {
-//                FileChannel channel = fis.getChannel();
-//                reader.readFile(channel);
-//                tryVectorSpliterator(channel, reader);
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        try {
-//            HdfFileReader reader = new HdfFileReader();
-//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/weatherdata.h5")).getFile();
-//            try(FileInputStream fis = new FileInputStream(filePath)) {
-//                FileChannel channel = fis.getChannel();
-//                reader.readFile(channel);
-//                tryMatrixSpliterator(channel, reader);
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        try {
-//            HdfFileReader reader = new HdfFileReader();
-//            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/tictactoe_4d_state.h5")).getFile();
-//            try(FileInputStream fis = new FileInputStream(filePath)) {
-//                FileChannel channel = fis.getChannel();
-//                reader.readFile(channel);
-//                try ( HdfDataSet dataSet = reader.findDataset("fixed_point", channel, reader.getRootGroup()) ) {
-//                    display4DData(channel, dataSet);
-//                }
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-        tryHdfApiScalar("scalar.h5");
+        try {
+            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/scalar_new.h5")).getFile();
+            try(FileInputStream fis = new FileInputStream(filePath)) {
+                FileChannel channel = fis.getChannel();
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+                tryScalarDataSpliterator(channel, reader.findDataset("FixedPointValue", channel, reader.getRootGroup()), reader);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector.h5")).getFile();
+            try(FileInputStream fis = new FileInputStream(filePath)) {
+                FileChannel channel = fis.getChannel();
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+                tryVectorSpliterator(channel, reader.findDataset("vector", channel, reader.getRootGroup()), reader);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/vector_new.h5")).getFile();
+            try(FileInputStream fis = new FileInputStream(filePath)) {
+                FileChannel channel = fis.getChannel();
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+                tryVectorSpliterator(channel, reader.findDataset("vector", channel, reader.getRootGroup()), reader);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/weatherdata.h5")).getFile();
+            try(FileInputStream fis = new FileInputStream(filePath)) {
+                FileChannel channel = fis.getChannel();
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+                tryMatrixSpliterator(channel, reader.findDataset("weatherdata", channel, reader.getRootGroup()), reader);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            String filePath = Objects.requireNonNull(HdfFixedPointApp.class.getResource("/tictactoe_4d_state.h5")).getFile();
+            try(FileInputStream fis = new FileInputStream(filePath)) {
+                FileChannel channel = fis.getChannel();
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+                try ( HdfDataSet dataSet = reader.findDataset("game", channel, reader.getRootGroup()) ) {
+                    display4DData(channel, dataSet, reader);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+//        tryHdfApiScalar("scalar.h5");
 //        tryHdfApiInts("vector_each.h5", this::writeEach);
 //        tryHdfApiInts("vector_all.h5", this::writeAll);
 //        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);

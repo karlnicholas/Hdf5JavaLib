@@ -85,7 +85,7 @@ public class DatatypeMessage extends HdfMessage {
 //     * @param ignoredlengthSize Size of lengths in bytes (not used here).
 //     * @return A fully constructed `DatatypeMessage` instance.
 //     */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int ignoredoffsetSize, int ignoredlengthSize, byte[] dataTypeData, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int ignoredoffsetSize, int ignoredlengthSize, HdfDataFile hdfDataFile) {
 //    public static HdfMessage parseHeaderMessage(byte[] data) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 

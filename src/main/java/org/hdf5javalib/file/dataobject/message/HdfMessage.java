@@ -114,7 +114,7 @@ public abstract class HdfMessage {
             byte[] messageData = new byte[size];
             buffer.get(messageData);
 
-            HdfMessage hdfMessage = createMessageInstance(type, flags, messageData, offsetSize, lengthSize, ()-> Arrays.copyOfRange(messageData, 8, messageData.length), hdfDataFile);
+            HdfMessage hdfMessage = createMessageInstance(type, flags, messageData, offsetSize, lengthSize, hdfDataFile);
             log.trace("Read: hdfMessage.sizeMessageData() + 8 = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData()+8);
             // Add the message to the list
             messages.add(hdfMessage);
@@ -123,12 +123,12 @@ public abstract class HdfMessage {
         return messages;
     }
 
-    protected static HdfMessage createMessageInstance(HdfMessage.MessageType type, byte flags, byte[] data, short offsetSize, short lengthSize, Supplier<byte[]> getDataTypeData, HdfDataFile hdfDataFile) {
+    protected static HdfMessage createMessageInstance(HdfMessage.MessageType type, byte flags, byte[] data, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) {
         log.trace("type:flags:length {} {} {}", type, flags, data.length);
         return switch (type) {
             case NilMessage -> NilMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
             case DataspaceMessage -> DataspaceMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
-            case DatatypeMessage -> DatatypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, getDataTypeData.get(), hdfDataFile);
+            case DatatypeMessage -> DatatypeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
             case FillValueMessage -> FillValueMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
             case DataLayoutMessage -> DataLayoutMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);
             case AttributeMessage -> AttributeMessage.parseHeaderMessage(flags, data, offsetSize, lengthSize, hdfDataFile);

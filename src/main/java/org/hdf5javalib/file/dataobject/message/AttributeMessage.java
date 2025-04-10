@@ -103,19 +103,17 @@ public class AttributeMessage extends HdfMessage {
         paddingBytes = new byte[padding];
         buffer.get(paddingBytes);
 
-        HdfMessage hdfDataObjectHeaderDt = createMessageInstance(MessageType.DatatypeMessage, (byte) 0, dtBytes, offsetSize, lengthSize, ()-> Arrays.copyOfRange( data, buffer.position(), data.length), hdfDataFile);
+        HdfMessage hdfDataObjectHeaderDt = createMessageInstance(MessageType.DatatypeMessage, (byte) 0, dtBytes, offsetSize, lengthSize, hdfDataFile);
         DatatypeMessage dt = (DatatypeMessage) hdfDataObjectHeaderDt;
-        HdfMessage hdfDataObjectHeaderDs = createMessageInstance(MessageType.DataspaceMessage, (byte) 0, dsBytes, offsetSize, lengthSize, null, hdfDataFile);
+        HdfMessage hdfDataObjectHeaderDs = createMessageInstance(MessageType.DataspaceMessage, (byte) 0, dsBytes, offsetSize, lengthSize, hdfDataFile);
         DataspaceMessage ds = (DataspaceMessage) hdfDataObjectHeaderDs;
 
-//        HdfString value = null;
-//        if ( dt.getHdfDatatype().getDatatypeClass() == HdfDatatype.DatatypeClass.STRING ) {
-            int dtDataSize = dt.getHdfDatatype().getSize();
-            dt.getHdfDatatype().setGlobalHeap(hdfDataFile.getGlobalHeap());
-            byte[] dataBytes = new byte[dtDataSize];
-            buffer.get(dataBytes);
-            HdfData value = dt.getHdfDatatype().getInstance(HdfData.class, dataBytes); // new HdfString(dataBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, dataBytes.length));
-//        }
+        int dtDataSize = dt.getHdfDatatype().getSize();
+        dt.getHdfDatatype().setGlobalHeap(hdfDataFile.getGlobalHeap());
+        byte[] dataBytes = new byte[dtDataSize];
+        buffer.get(dataBytes);
+        HdfData value = dt.getHdfDatatype().getInstance(HdfData.class, dataBytes); // new HdfString(dataBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, dataBytes.length));
+
         return new AttributeMessage(version, name, dt, ds, value, flags, (short)data.length);
     }
 
