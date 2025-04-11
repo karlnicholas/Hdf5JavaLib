@@ -12,8 +12,8 @@ int main() {
     DataSpace scalar = DataSpace(H5S_SCALAR);
 
     // 1. Fixed-Point
-    int32_t fixed_val = 42;
-    file.createDataSet("/fixed_point", PredType::NATIVE_INT32, scalar).write(&fixed_val, PredType::NATIVE_INT32);
+    int8_t fixed_val = 42;
+    file.createDataSet("/fixed_point", PredType::NATIVE_INT8, scalar).write(&fixed_val, PredType::NATIVE_INT8);
 
     // 2. Floating-Point
     float float_val = 3.14f;
