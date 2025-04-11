@@ -30,12 +30,10 @@ public class HdfVLenTypesAppTest {
     }
 
     @Test
-    public void testVariableLengthTypes() throws IOException {
+    public void testVlenDouble() throws IOException {
         Path filePath = getResourcePath("vlen_types_example.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-
-            // vlen_double
             HdfDataSet doubleDs = reader.findDataset("vlen_double", channel, reader.getRootGroup());
             double[] expectedDoubles = {1.234, 5.678, 9.101};
             byte[][] expectedDoubleBytes = {
@@ -58,33 +56,44 @@ public class HdfVLenTypesAppTest {
             TypedDataSource<byte[][]> doubleByteSource = new TypedDataSource<>(channel, reader, doubleDs, byte[][].class);
             assertArrayEquals(expectedDoubleBytes, doubleByteSource.readScalar());
             assertArrayEquals(expectedDoubleBytes, doubleByteSource.streamScalar().findFirst().orElseThrow());
+        }
+    }
 
-            // vlen_float
+    @Test
+    public void testVlenFloat() throws IOException {
+        Path filePath = getResourcePath("vlen_types_example.h5");
+        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+            HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet floatDs = reader.findDataset("vlen_float", channel, reader.getRootGroup());
-            double[] expectedFloats = {1.100000023841858, 2.200000047683716, 3.299999952316284}; // As doubles for comparison
-            float[] expectedFloatValues = {1.1f, 2.2f, 3.3f}; // Actual float values
+            float[] expectedFloats = {1.1f, 2.2f, 3.3f};
             byte[][] expectedFloatBytes = {
                     ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putFloat(1.1f).array(),
                     ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putFloat(2.2f).array(),
                     ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putFloat(3.3f).array()
             };
             TypedDataSource<HdfVariableLength> floatVlenSource = new TypedDataSource<>(channel, reader, floatDs, HdfVariableLength.class);
-            assertArrayEquals(expectedFloats, toDoubleArray((HdfData[]) floatVlenSource.readScalar().getInstance(Object.class)), 1e-6);
-            assertArrayEquals(expectedFloats, toDoubleArray((HdfData[]) floatVlenSource.streamScalar().findFirst().orElseThrow().getInstance(Object.class)), 1e-6);
+            assertArrayEquals(expectedFloats, toFloatArray((HdfData[]) floatVlenSource.readScalar().getInstance(Object.class)), 1e-6f);
+            assertArrayEquals(expectedFloats, toFloatArray((HdfData[]) floatVlenSource.streamScalar().findFirst().orElseThrow().getInstance(Object.class)), 1e-6f);
             TypedDataSource<String> floatStringSource = new TypedDataSource<>(channel, reader, floatDs, String.class);
-            assertEquals("[1.100000023841858, 2.200000047683716, 3.299999952316284]", floatStringSource.readScalar());
-            assertEquals("[1.100000023841858, 2.200000047683716, 3.299999952316284]", floatStringSource.streamScalar().findFirst().orElseThrow());
+            assertEquals("[1.1, 2.2, 3.3]", floatStringSource.readScalar());
+            assertEquals("[1.1, 2.2, 3.3]", floatStringSource.streamScalar().findFirst().orElseThrow());
             TypedDataSource<Object> floatObjectSource = new TypedDataSource<>(channel, reader, floatDs, Object.class);
-            assertArrayEquals(expectedFloats, toDoubleArray((HdfData[]) floatObjectSource.readScalar()), 1e-6);
-            assertArrayEquals(expectedFloats, toDoubleArray((HdfData[]) floatObjectSource.streamScalar().findFirst().orElseThrow()), 1e-6);
+            assertArrayEquals(expectedFloats, toFloatArray((HdfData[]) floatObjectSource.readScalar()), 1e-6f);
+            assertArrayEquals(expectedFloats, toFloatArray((HdfData[]) floatObjectSource.streamScalar().findFirst().orElseThrow()), 1e-6f);
             TypedDataSource<HdfData> floatHdfDataSource = new TypedDataSource<>(channel, reader, floatDs, HdfData.class);
-            assertArrayEquals(expectedFloats, toDoubleArray((HdfData[]) floatHdfDataSource.readScalar().getInstance(Object.class)), 1e-6);
-            assertArrayEquals(expectedFloats, toDoubleArray((HdfData[]) floatHdfDataSource.streamScalar().findFirst().orElseThrow().getInstance(Object.class)), 1e-6);
+            assertArrayEquals(expectedFloats, toFloatArray((HdfData[]) floatHdfDataSource.readScalar().getInstance(Object.class)), 1e-6f);
+            assertArrayEquals(expectedFloats, toFloatArray((HdfData[]) floatHdfDataSource.streamScalar().findFirst().orElseThrow().getInstance(Object.class)), 1e-6f);
             TypedDataSource<byte[][]> floatByteSource = new TypedDataSource<>(channel, reader, floatDs, byte[][].class);
             assertArrayEquals(expectedFloatBytes, floatByteSource.readScalar());
             assertArrayEquals(expectedFloatBytes, floatByteSource.streamScalar().findFirst().orElseThrow());
+        }
+    }
 
-            // vlen_int
+    @Test
+    public void testVlenInt() throws IOException {
+        Path filePath = getResourcePath("vlen_types_example.h5");
+        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+            HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet intDs = reader.findDataset("vlen_int", channel, reader.getRootGroup());
             int[] expectedInts = {1, 2, 3, 4, 5};
             TypedDataSource<HdfVariableLength> intVlenSource = new TypedDataSource<>(channel, reader, intDs, HdfVariableLength.class);
@@ -99,8 +108,14 @@ public class HdfVLenTypesAppTest {
             TypedDataSource<HdfData> intHdfDataSource = new TypedDataSource<>(channel, reader, intDs, HdfData.class);
             assertArrayEquals(expectedInts, toIntArray((HdfData[]) intHdfDataSource.readScalar().getInstance(Object.class)));
             assertArrayEquals(expectedInts, toIntArray((HdfData[]) intHdfDataSource.streamScalar().findFirst().orElseThrow().getInstance(Object.class)));
+        }
+    }
 
-            // vlen_short
+    @Test
+    public void testVlenShort() throws IOException {
+        Path filePath = getResourcePath("vlen_types_example.h5");
+        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+            HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet shortDs = reader.findDataset("vlen_short", channel, reader.getRootGroup());
             short[] expectedShorts = {10, 20, 30};
             TypedDataSource<HdfVariableLength> shortVlenSource = new TypedDataSource<>(channel, reader, shortDs, HdfVariableLength.class);
@@ -115,8 +130,14 @@ public class HdfVLenTypesAppTest {
             TypedDataSource<HdfData> shortHdfDataSource = new TypedDataSource<>(channel, reader, shortDs, HdfData.class);
             assertArrayEquals(expectedShorts, toShortArray((HdfData[]) shortHdfDataSource.readScalar().getInstance(Object.class)));
             assertArrayEquals(expectedShorts, toShortArray((HdfData[]) shortHdfDataSource.streamScalar().findFirst().orElseThrow().getInstance(Object.class)));
+        }
+    }
 
-            // vlen_string
+    @Test
+    public void testVlenString() throws IOException {
+        Path filePath = getResourcePath("vlen_types_example.h5");
+        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+            HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet stringDs = reader.findDataset("vlen_string", channel, reader.getRootGroup());
             String expectedString = "Hello, Variable Length String!";
             int[] expectedBytes = {72, 101, 108, 108, 111, 44, 32, 86, 97, 114, 105, 97, 98, 108, 101,
@@ -147,6 +168,14 @@ public class HdfVLenTypesAppTest {
         double[] result = new double[data.length];
         for (int i = 0; i < data.length; i++) {
             result[i] = data[i].getInstance(Double.class);
+        }
+        return result;
+    }
+
+    private float[] toFloatArray(HdfData[] data) {
+        float[] result = new float[data.length];
+        for (int i = 0; i < data.length; i++) {
+            result[i] = data[i].getInstance(Float.class);
         }
         return result;
     }

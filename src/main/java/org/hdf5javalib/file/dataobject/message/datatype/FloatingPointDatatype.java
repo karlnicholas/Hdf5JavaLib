@@ -151,7 +151,6 @@ public class FloatingPointDatatype implements HdfDatatype {
         double mantissaValue = 1.0 + (double) mantissa / (1L << mantissaSize); // Normalize mantissa
 
         // Combine: sign * mantissa * 2^exponent
-
         return sign * mantissaValue * Math.pow(2, exponent);
     }
 
@@ -205,7 +204,13 @@ public class FloatingPointDatatype implements HdfDatatype {
 
     @Override
     public String toString(byte[] bytes) {
-        return toDouble(bytes).toString();
+        if (size == 4) {
+            return toFloat(bytes).toString();
+        } else if (size == 8) {
+            return toDouble(bytes).toString();
+        } else {
+            throw new UnsupportedOperationException("Unsupported floating-point size: " + size);
+        }
     }
 
     public static class ClassBitField {
@@ -345,33 +350,6 @@ public class FloatingPointDatatype implements HdfDatatype {
                 }
             }
             return signLocation;
-        }
-
-        // Example usage
-        public static void main(String[] args) {
-            // Create a BitSet matching your example: 20 1F 00
-            BitSet bitSet = createBitSet(
-                    ByteOrder.LITTLE_ENDIAN, // 00 at bits 6, 0
-                    false, false, false,     // 000 at bits 1–3
-                    MantissaNormalization.IMPLIED_SET, // 10 at bits 4–5
-                    31                       // 00011111 at bits 8–15
-            );
-
-            // Convert to hex for verification
-            byte[] bytes = bitSet.toByteArray();
-            StringBuilder hex = new StringBuilder();
-            for (int i = 0; i < 3; i++) {
-                hex.append(String.format("%02X ", i < bytes.length ? bytes[i] & 0xFF : 0));
-            }
-            System.out.println("BitSet as hex: " + hex); // Should print "20 1F 00 "
-
-            // Extract values
-            System.out.println("Byte Order: " + getByteOrder(bitSet));
-            System.out.println("Low Pad: " + getLowPad(bitSet));
-            System.out.println("High Pad: " + getHighPad(bitSet));
-            System.out.println("Internal Pad: " + getInternalPad(bitSet));
-            System.out.println("Mantissa Norm: " + getMantissaNormalization(bitSet));
-            System.out.println("Sign Location: " + getSignLocation(bitSet));
         }
     }
 }

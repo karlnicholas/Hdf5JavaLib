@@ -86,7 +86,7 @@ public class HdfSeparateTypesAppTest {
             assertEquals(3.14f, floatSource.readScalar().getInstance(Float.class), 0.001f);
             assertEquals(3.14f, new TypedDataSource<>(channel, reader, floatDataSet, Float.class).readScalar(), 0.001f);
             assertEquals(3.14, new TypedDataSource<>(channel, reader, floatDataSet, Double.class).readScalar(), 0.001);
-            assertEquals("3.140000104904175", new TypedDataSource<>(channel, reader, floatDataSet, String.class).readScalar());
+            assertEquals("3.14", new TypedDataSource<>(channel, reader, floatDataSet, String.class).readScalar());
 
             // Time (64-bit integer, 1672531200, no real-time association)
             HdfDataSet timeDataSet = reader.findDataset("time", channel, reader.getRootGroup());
