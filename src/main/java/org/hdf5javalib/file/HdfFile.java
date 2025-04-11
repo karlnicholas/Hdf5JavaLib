@@ -13,26 +13,21 @@ import org.hdf5javalib.file.metadata.HdfSuperblock;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.channels.SeekableByteChannel;
 import java.util.function.Supplier;
 
 @Getter
 @Slf4j
 public class HdfFile implements Closeable, HdfDataFile {
-    private final String fileName;
-    private final StandardOpenOption[] openOptions;
     // initial setup without Dataset
     private final HdfSuperblock superblock;
     private final HdfGroup rootGroup;
     private final HdfGlobalHeap globalHeap;
     private final HdfFileAllocation fileAllocation;
+    private final SeekableByteChannel seekableByteChannel;
 
-    public HdfFile(String fileName, StandardOpenOption[] openOptions) {
-        this.fileName = fileName;
-        this.openOptions = openOptions;
+    public HdfFile(SeekableByteChannel seekableByteChannel) {
+        this.seekableByteChannel = seekableByteChannel;
         // this.globalHeap = new HdfGlobalHeap(bufferAllocation::getGlobalHeapAddress);
         this.fileAllocation = new HdfFileAllocation();
         this.globalHeap = new HdfGlobalHeap(this);
@@ -80,28 +75,26 @@ public class HdfFile implements Closeable, HdfDataFile {
 //    }
 //
     public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
-        DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(hdfDataSet.getDatasetName());
-        try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
-            // fileChannel.position(bufferAllocation.getDataAddress());
-            fileChannel.position(allocationInfo.getDataOffset());
-            ByteBuffer buffer;
-            while ((buffer = bufferSupplier.get()).hasRemaining()) {
-                while (buffer.hasRemaining()) {
-                    fileChannel.write(buffer);
-                }
+        HdfFixedPoint[] dimensionSizes= hdfDataSet.getdimensionSizes();
+        long dataOffset = fileAllocation.allocateAndSetDataBlock(hdfDataSet.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        seekableByteChannel.position(dataOffset);
+        ByteBuffer buffer;
+        while ((buffer = bufferSupplier.get()).hasRemaining()) {
+            while (buffer.hasRemaining()) {
+                seekableByteChannel.write(buffer);
             }
         }
     }
 
     public void write(ByteBuffer buffer, HdfDataSet hdfDataSet) throws IOException {
         long dataOffset = fileAllocation.allocateAndSetDataBlock(hdfDataSet.getDatasetName(), buffer.limit());
-        try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
+//        try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
             // fileChannel.position(bufferAllocation.getDataAddress());
-            fileChannel.position(dataOffset);
+            seekableByteChannel.position(dataOffset);
             while (buffer.hasRemaining()) {
-                fileChannel.write(buffer);
+                seekableByteChannel.write(buffer);
             }
-        }
+//        }
     }
 
     @Override
@@ -130,20 +123,20 @@ public class HdfFile implements Closeable, HdfDataFile {
 //        }
         superblock.setEndOfFileAddress(HdfFixedPoint.of(endOfFileAddress));
 
-        Path path = Path.of(fileName);
-        StandardOpenOption[] fileOptions = {StandardOpenOption.WRITE};
-        if ( !Files.exists(path) ) {
-            fileOptions =new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE};
-        }
-
-        try (FileChannel fileChannel = FileChannel.open(path, fileOptions)) {
+//        Path path = Path.of(fileName);
+//        StandardOpenOption[] fileOptions = {StandardOpenOption.WRITE};
+//        if ( !Files.exists(path) ) {
+//            fileOptions =new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE};
+//        }
+//
+//        try (FileChannel fileChannel = FileChannel.open(path, fileOptions)) {
             // write super block
             log.debug("{}", superblock);
-            superblock.writeToFileChannel(fileChannel);
+            superblock.writeToFileChannel(seekableByteChannel);
 
             // write root group, writes all dataset and snod allocations as well.
             log.debug("{}", rootGroup);
-            rootGroup.writeToFileChannel(fileChannel);
+            rootGroup.writeToFileChannel(seekableByteChannel);
 
 //            // check here if global heap needs to be written
 //            if ( globalHeapAddress > 0 ) {
@@ -153,7 +146,7 @@ public class HdfFile implements Closeable, HdfDataFile {
 //                }
 //            }
 
-        }
+//        }
 
 
     }

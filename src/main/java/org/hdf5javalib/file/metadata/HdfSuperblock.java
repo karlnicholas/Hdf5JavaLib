@@ -10,7 +10,6 @@ import org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.util.BitSet;
 
@@ -202,7 +201,7 @@ public class HdfSuperblock {
         );
     }
 
-    public void writeToFileChannel(FileChannel fileChannel) throws IOException {
+    public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
 //        buffer.order(ByteOrder.LITTLE_ENDIAN); // Ensure little-endian ordering
         ByteBuffer buffer = ByteBuffer.allocate(Math.toIntExact(fileAllocation.getSuperblockSize())).order(ByteOrder.LITTLE_ENDIAN);

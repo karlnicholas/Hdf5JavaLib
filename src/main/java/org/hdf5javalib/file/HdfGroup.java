@@ -17,7 +17,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -97,7 +97,7 @@ public class HdfGroup implements Closeable {
         return dataSet;
     }
 
-    public void writeToFileChannel(FileChannel fileChannel) throws IOException {
+    public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
 
         HdfFileAllocation fileAllocation = hdfFile.getFileAllocation();
         fileAllocation.printBlocks();

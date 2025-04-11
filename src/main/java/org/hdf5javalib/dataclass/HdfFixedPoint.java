@@ -93,23 +93,6 @@ public class HdfFixedPoint implements HdfData {
         return new HdfFixedPoint(bytes, datatype);
     }
 
-    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, int size) {
-        validateSize(size);
-        byte[] bytes = getLittleEndianBytes(buffer, size);
-        FixedPointDatatype datatype = new FixedPointDatatype(
-                FixedPointDatatype.createClassAndVersion(),
-                new BitSet(),
-                (short) size, (short) 0, (short) (size * 8)
-        );
-        return new HdfFixedPoint(bytes, datatype);
-    }
-
-    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, FixedPointDatatype datatype) {
-        validateSize(datatype.getSize());
-        byte[] bytes = getLittleEndianBytes(buffer, datatype.getSize());
-        return new HdfFixedPoint(bytes, datatype);
-    }
-
     public static boolean checkUndefined(ByteBuffer buffer, int size) {
         buffer.mark();
         byte[] undefinedBytes = new byte[size];
