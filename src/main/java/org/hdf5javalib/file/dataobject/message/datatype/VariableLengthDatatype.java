@@ -32,7 +32,7 @@ public class VariableLengthDatatype implements HdfDatatype {
         CONVERTERS.put(HdfVariableLength.class, HdfVariableLength::new);
         CONVERTERS.put(HdfData.class, HdfVariableLength::new);
         CONVERTERS.put(Object.class, (bytes, dt) -> dt.toObjectArray(bytes));
-        CONVERTERS.put(byte[].class, (bytes, dt) -> bytes); // Raw reference bytes
+        CONVERTERS.put(byte[][].class, (bytes, dt) -> dt.toByteArrayArray(bytes)); // Raw reference bytes
     }
 
     public VariableLengthDatatype(byte classAndVersion, BitSet classBitField, int size, HdfDatatype hdfDatatype) {
@@ -92,6 +92,21 @@ public class VariableLengthDatatype implements HdfDatatype {
             }
             return Arrays.toString(resultArray);
         }
+    }
+
+    private byte[][] toByteArrayArray(byte[] bytes) {
+        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
+        int count = buffer.getInt();
+        long offset = buffer.getLong();
+        int index = buffer.getInt();
+
+        byte[] workingBytes = globalHeap.getDataBytes(offset, index);
+        int datatypeSize = hdfDatatype.getSize();
+        byte[][] resultArray = new byte[count][];
+        for (int i = 0; i < count; i++) {
+            resultArray[i] = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
+        }
+        return resultArray;
     }
 
     private Object toObjectArray(byte[] bytes) {
