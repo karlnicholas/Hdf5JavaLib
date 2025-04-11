@@ -56,41 +56,41 @@ public class HdfFixedPointApp {
 
 
     private void run() throws IOException {
-        Path filePath = getResourcePath("scalar.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-            HdfFileReader reader = new HdfFileReader(channel).readFile();
-            tryScalarDataSpliterator(channel, reader, reader.findDataset("FixedPointValue", channel, reader.getRootGroup()));
-        }
-        try {
-            filePath = getResourcePath("vector.h5");
-            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-                tryVectorSpliterator(channel, reader, reader.findDataset("vector", channel, reader.getRootGroup()));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            filePath = getResourcePath("weatherdata.h5");
-            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-                tryMatrixSpliterator(channel, reader, reader.findDataset("weatherdata", channel, reader.getRootGroup()));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            filePath = getResourcePath("tictactoe_4d_state.h5");
-            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-                display4DData(channel, reader, reader.findDataset("game", channel, reader.getRootGroup()));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        Path filePath = getResourcePath("scalar.h5");
+//        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+//            HdfFileReader reader = new HdfFileReader(channel).readFile();
+//            tryScalarDataSpliterator(channel, reader, reader.findDataset("FixedPointValue", channel, reader.getRootGroup()));
+//        }
+//        try {
+//            filePath = getResourcePath("vector.h5");
+//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+//                HdfFileReader reader = new HdfFileReader(channel).readFile();
+//                tryVectorSpliterator(channel, reader, reader.findDataset("vector", channel, reader.getRootGroup()));
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//        try {
+//            filePath = getResourcePath("weatherdata.h5");
+//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+//                HdfFileReader reader = new HdfFileReader(channel).readFile();
+//                tryMatrixSpliterator(channel, reader, reader.findDataset("weatherdata", channel, reader.getRootGroup()));
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//        try {
+//            filePath = getResourcePath("tictactoe_4d_state.h5");
+//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+//                HdfFileReader reader = new HdfFileReader(channel).readFile();
+//                display4DData(channel, reader, reader.findDataset("game", channel, reader.getRootGroup()));
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 //        tryHdfApiScalar("scalar.h5");
 //        tryHdfApiInts("vector_each.h5", this::writeEach);
-//        tryHdfApiInts("vector_all.h5", this::writeAll);
+        tryHdfApiInts("vector_all.h5", this::writeAll);
 //        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);
 //        tryHdfApiMatrixInts("weatherdata_all.h5", this::writeAllMatrix);
     }
@@ -350,7 +350,7 @@ public class HdfFixedPointApp {
     private void tryHdfApiInts(String FILE_NAME, Consumer<WriterParams> writer) {
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "vector";
-        final int NUM_RECORDS = 100;
+        final int NUM_RECORDS = 1000;
 
         try {
             // Create a new HDF5 file
@@ -441,7 +441,8 @@ public class HdfFixedPointApp {
     private void writeAll(WriterParams writerParams) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_RECORDS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
         for(int i=0; i<writerParams.NUM_RECORDS; i++) {
-            HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) (Math.random() *40.0 + 10.0)), writerParams.fixedPointDatatype, byteBuffer);
+//            HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) (Math.random() *40.0 + 10.0)), writerParams.fixedPointDatatype, byteBuffer);
+            HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) i+1), writerParams.fixedPointDatatype, byteBuffer);
         }
         byteBuffer.flip();
         // Write to dataset
