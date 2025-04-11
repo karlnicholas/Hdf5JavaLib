@@ -8,7 +8,10 @@ import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.SymbolTableMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
-import org.hdf5javalib.file.infrastructure.*;
+import org.hdf5javalib.file.infrastructure.HdfBTreeV1;
+import org.hdf5javalib.file.infrastructure.HdfGroupSymbolTableNode;
+import org.hdf5javalib.file.infrastructure.HdfLocalHeap;
+import org.hdf5javalib.file.infrastructure.HdfLocalHeapContents;
 
 import java.io.Closeable;
 import java.io.IOException;

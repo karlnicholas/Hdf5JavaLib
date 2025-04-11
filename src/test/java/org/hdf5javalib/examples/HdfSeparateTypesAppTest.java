@@ -20,13 +20,15 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.BitSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HdfSeparateTypesAppTest {
-    private static Path getResourcePath(String fileName) {
-        String resourcePath = HdfSeparateTypesAppTest.class.getClassLoader().getResource(fileName).getPath();
+    private static Path getResourcePath() {
+        String resourcePath = Objects.requireNonNull(HdfSeparateTypesAppTest.class.getClassLoader().getResource("all_types_separate.h5")).getPath();
         if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
             resourcePath = resourcePath.substring(1);
         }
@@ -64,7 +66,7 @@ public class HdfSeparateTypesAppTest {
 
     @Test
     void testAllTypesSeparateH5() throws IOException {
-        Path filePath = getResourcePath("all_types_separate.h5");
+        Path filePath = getResourcePath();
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
 

@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,7 +42,7 @@ public class HdfFixedPointAppTest {
     private static final int[] TICTACTOE_LAST_PIECE_COORDS = {1, 1, 0, 4};
 
     private Path getResourcePath(String fileName) {
-        String resourcePath = getClass().getClassLoader().getResource(fileName).getPath();
+        String resourcePath = Objects.requireNonNull(getClass().getClassLoader().getResource(fileName)).getPath();
         if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
             resourcePath = resourcePath.substring(1);
         }
@@ -133,14 +133,13 @@ public class HdfFixedPointAppTest {
         TypedDataSource<byte[]> byteArraySource = new TypedDataSource<>(channel, reader, dataSet, byte[].class);
         byte[] byteArray = byteArraySource.readScalar();
         ByteBuffer buffer = ByteBuffer.wrap(byteArray).order(java.nio.ByteOrder.LITTLE_ENDIAN);
-        long value;
-        switch (byteSize) {
-            case 1: value = buffer.get(); break;
-            case 2: value = buffer.getShort(); break;
-            case 4: value = buffer.getInt(); break;
-            case 8: value = buffer.getLong(); break;
-            default: throw new IllegalArgumentException("Unexpected byte size: " + byteSize);
-        }
+        long value = switch (byteSize) {
+            case 1 -> buffer.get();
+            case 2 -> buffer.getShort();
+            case 4 -> buffer.getInt();
+            case 8 -> buffer.getLong();
+            default -> throw new IllegalArgumentException("Unexpected byte size: " + byteSize);
+        };
         assertEquals(expected.longValue(), value);
     }
 

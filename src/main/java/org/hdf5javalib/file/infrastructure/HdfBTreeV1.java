@@ -5,11 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfFileAllocation;
-import org.hdf5javalib.file.HdfGroup;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
@@ -145,7 +143,7 @@ public class HdfBTreeV1 {
             HdfFixedPoint childPointer = HdfFixedPoint.readFromByteBuffer(entriesBuffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
             HdfFixedPoint key = HdfFixedPoint.readFromByteBuffer(entriesBuffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
             long childAddress = childPointer.getInstance(Long.class);
-            HdfBTreeEntry entry = null;
+            HdfBTreeEntry entry;
 
             if (childAddress < -1L || (childAddress != -1L && childAddress >= fileSize)) {
                 throw new IOException("Invalid child address " + childAddress + " in BTree entry " + i

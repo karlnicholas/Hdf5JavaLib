@@ -10,7 +10,6 @@ import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Arrays;
 import java.util.BitSet;

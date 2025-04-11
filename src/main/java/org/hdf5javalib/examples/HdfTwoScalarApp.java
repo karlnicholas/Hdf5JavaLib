@@ -4,7 +4,6 @@ import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
-import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.utils.HdfDisplayUtils;
@@ -69,7 +68,7 @@ public class HdfTwoScalarApp {
                 HdfDisplayUtils.writeVersionAttribute(dataset);
 
                 ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
-                HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) 42), fixedPointDatatype, byteBuffer);
+                HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf(42), fixedPointDatatype, byteBuffer);
                 byteBuffer.flip();
                 // Write to dataset
                 dataset.write(byteBuffer);

@@ -18,7 +18,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HdfStringAppTest {
     private static final String[] ASCII_EXPECTED = {"label 1 ", "label 2 ", "label 3 ", "label 4 ", "label 5 ",

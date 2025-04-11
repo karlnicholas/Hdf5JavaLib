@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -55,19 +54,6 @@ public class HdfFixedPoint implements HdfData {
                 FixedPointDatatype.createClassAndVersion(),
                 classBitField,
                 (short) size, bitOffset, bitPrecision
-        );
-        return new HdfFixedPoint(bytes, datatype);
-    }
-
-    public static HdfFixedPoint readFromFileChannel(SeekableByteChannel fileChannel, int size) throws IOException {
-        validateSize(size);
-        byte[] bytes = new byte[size];
-        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
-        fileChannel.read(buffer);
-        FixedPointDatatype datatype = new FixedPointDatatype(
-                FixedPointDatatype.createClassAndVersion(),
-                new BitSet(),
-                (short) size, (short) 0, (short) (size * 8)
         );
         return new HdfFixedPoint(bytes, datatype);
     }

@@ -10,7 +10,6 @@ import org.hdf5javalib.file.HdfFileAllocation;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.util.BitSet;
 import java.util.HashMap;

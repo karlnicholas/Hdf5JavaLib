@@ -19,9 +19,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HdfCompoundAppTest {
     private static final String FULL_RECORD_STRING = "1000, FixedData, varStr:844, 5.8774717541114375E-39, 1.1125369292536007E-308, -128, 0, -32768, 0, -2147483648, 0, -9223372036854775808, 0, 1.0000000";
@@ -31,8 +31,8 @@ public class HdfCompoundAppTest {
             new BigDecimal("7.5000000"), new BigDecimal("8.7500000"), new BigDecimal("9.0000000"),
             new BigDecimal("10.2500000"));
 
-    private Path getResourcePath(String fileName) {
-        String resourcePath = getClass().getClassLoader().getResource(fileName).getPath();
+    private Path getResourcePath() {
+        String resourcePath = Objects.requireNonNull(getClass().getClassLoader().getResource("compound_example.h5")).getPath();
         if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
             resourcePath = resourcePath.substring(1);
         }
@@ -62,7 +62,7 @@ public class HdfCompoundAppTest {
 
     @Test
     void testCompoundExampleH5() throws IOException {
-        Path filePath = getResourcePath("compound_example.h5");
+        Path filePath = getResourcePath();
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup());

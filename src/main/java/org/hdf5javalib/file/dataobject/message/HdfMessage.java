@@ -8,12 +8,9 @@ import org.hdf5javalib.HdfDataFile;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * Represents a base class for HDF5 Object Header Messages.

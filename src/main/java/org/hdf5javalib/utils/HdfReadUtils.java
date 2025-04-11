@@ -3,7 +3,6 @@ package org.hdf5javalib.utils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 
 public class HdfReadUtils {

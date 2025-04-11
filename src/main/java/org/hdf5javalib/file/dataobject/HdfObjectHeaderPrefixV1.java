@@ -2,14 +2,12 @@ package org.hdf5javalib.file.dataobject;
 
 import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
-import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.dataobject.message.HdfMessage;
 import org.hdf5javalib.file.dataobject.message.ObjectHeaderContinuationMessage;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,8 +65,7 @@ public class HdfObjectHeaderPrefixV1 {
         if (reservedInt != 0) {
             throw new IllegalArgumentException("Reserved integer in Data Object Header Prefix is not zero.");
         }
-        List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>();
-        dataObjectHeaderMessages.addAll(readMessagesFromByteBuffer(fileChannel, objectHeaderSize, offsetSize, lengthSize, hdfDataFile));
+        List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>(readMessagesFromByteBuffer(fileChannel, objectHeaderSize, offsetSize, lengthSize, hdfDataFile));
         for ( HdfMessage hdfMessage: dataObjectHeaderMessages) {
             if (hdfMessage instanceof ObjectHeaderContinuationMessage) {
                 dataObjectHeaderMessages.addAll(parseContinuationMessage(fileChannel, (ObjectHeaderContinuationMessage)hdfMessage, offsetSize, lengthSize, hdfDataFile));
@@ -80,7 +77,7 @@ public class HdfObjectHeaderPrefixV1 {
         return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages);
     }
 
-    public void writeToBuffer(ByteBuffer buffer) throws IOException {
+    public void writeToBuffer(ByteBuffer buffer) {
         // Write version (1 byte)
         buffer.put((byte) version);
 
@@ -102,8 +99,7 @@ public class HdfObjectHeaderPrefixV1 {
         // Write messages, handling continuation as first message but splitting at 6
 //        Optional<ObjectHeaderContinuationMessage> optContinuationMessage = findMessageByType(ObjectHeaderContinuationMessage.class);
 
-        for (int i = 0; i < headerMessages.size(); i++) {
-            HdfMessage hdfMessage = headerMessages.get(i);
+        for (HdfMessage hdfMessage : headerMessages) {
             hdfMessage.writeMessageToByteBuffer(buffer);
 
             // Pad to 8-byte boundary
@@ -114,12 +110,12 @@ public class HdfObjectHeaderPrefixV1 {
 //            if (i == 5 && optContinuationMessage.isPresent()) {
 //                buffer.position(optContinuationMessage.get().getContinuationOffset().getInstance(Long.class).intValue());
 //            }
-            if ( buffer.position() >= buffer.capacity()) {
+            if (buffer.position() >= buffer.capacity()) {
                 break;
             }
         }
     }
-    public void writeInitialMessageBlockToBuffer(ByteBuffer buffer) throws IOException {
+    public void writeInitialMessageBlockToBuffer(ByteBuffer buffer) {
         // Write version (1 byte)
         buffer.put((byte) version);
 
@@ -141,8 +137,7 @@ public class HdfObjectHeaderPrefixV1 {
         // Write messages, handling continuation as first message but splitting at 6
 //        Optional<ObjectHeaderContinuationMessage> optContinuationMessage = findMessageByType(ObjectHeaderContinuationMessage.class);
 
-        for (int i = 0; i < headerMessages.size(); i++) {
-            HdfMessage hdfMessage = headerMessages.get(i);
+        for (HdfMessage hdfMessage : headerMessages) {
             hdfMessage.writeMessageToByteBuffer(buffer);
 
             // Pad to 8-byte boundary
@@ -153,13 +148,13 @@ public class HdfObjectHeaderPrefixV1 {
 //            if (i == 5 && optContinuationMessage.isPresent()) {
 //                buffer.position(optContinuationMessage.get().getContinuationOffset().getInstance(Long.class).intValue());
 //            }
-            if ( buffer.position() >= buffer.capacity()) {
+            if (buffer.position() >= buffer.capacity()) {
                 break;
             }
         }
     }
 
-    public void writeContinuationMessageBlockToBuffer(int initialSize, ByteBuffer buffer) throws IOException {
+    public void writeContinuationMessageBlockToBuffer(int initialSize, ByteBuffer buffer) {
         int currentSize = 0;
         int i=0;
         while (i < headerMessages.size()) {

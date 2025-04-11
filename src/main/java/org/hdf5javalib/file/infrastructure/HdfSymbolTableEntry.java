@@ -6,7 +6,6 @@ import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.util.BitSet;
 
@@ -55,28 +54,6 @@ public class HdfSymbolTableEntry {
             HdfReadUtils.skipBytes(fileChannel, 16); // Skip 16 bytes for scratch-pad
             return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress);
         }
-    }
-
-    public static HdfSymbolTableEntry fromByteBuffer(ByteBuffer buffer, short offsetSize) {
-        BitSet emptyBitSet = new BitSet();
-        // Read the fixed-point values for linkNameOffset and objectHeaderAddress
-        HdfFixedPoint linkNameOffset = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-        HdfFixedPoint objectHeaderAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-
-        // Read cache type and skip reserved field
-        int cacheType = buffer.getInt();
-        buffer.position(buffer.position() + 4);
-
-        // Initialize addresses for cacheType 1
-        if (cacheType == 1) {
-            HdfFixedPoint bTreeAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-            HdfFixedPoint localHeapAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-            return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress, bTreeAddress, localHeapAddress);
-        } else {
-            buffer.position(buffer.position() + 16);
-            return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress);
-        }
-
     }
 
     public void writeToBuffer(ByteBuffer buffer) {

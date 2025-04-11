@@ -5,12 +5,10 @@ import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfFileAllocation;
-import org.hdf5javalib.file.HdfGroup;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Arrays;
 
@@ -23,7 +21,7 @@ public class HdfLocalHeapContents {
      * Constructor for application-defined heap data.
      *
      * @param heapData The heap data as a byte array.
-     * @param hdfDataFile
+     * @param hdfDataFile HdfDataFile
      */
     public HdfLocalHeapContents(byte[] heapData, HdfDataFile hdfDataFile) {
         this.heapData = heapData;
