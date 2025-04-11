@@ -6,21 +6,28 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
+import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.file.HdfDataSet;
+import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HdfCompoundAppTest {
@@ -58,6 +65,35 @@ public class HdfCompoundAppTest {
         private Long uint32_Val;
         private BigInteger uint64_Val;
         private BigDecimal scaledUintVal;
+    }
+
+    @Data
+    public static class MonitoringData {
+        private String siteName;
+        private Float airQualityIndex;
+        private Double temperature;
+        private Integer sampleCount;
+    }
+
+    @BeforeAll
+    static void registerCustomConverter() {
+        CompoundDatatype.addConverter(MonitoringData.class, (bytes, datatype) -> {
+            MonitoringData monitoringData = new MonitoringData();
+            datatype.getMembers().forEach(member -> {
+                byte[] memberBytes = Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset() + member.getSize());
+                switch (member.getName()) {
+                    case "recordId" -> {
+                        long recordId = member.getInstance(Long.class, memberBytes);
+                        monitoringData.setSampleCount((int) (recordId - 1000));
+                    }
+                    case "fixedStr" -> monitoringData.setSiteName(member.getInstance(String.class, memberBytes));
+                    case "floatVal" -> monitoringData.setAirQualityIndex(member.getInstance(Float.class, memberBytes));
+                    case "doubleVal" -> monitoringData.setTemperature(member.getInstance(Double.class, memberBytes));
+                    default -> {} // Ignore other fields
+                }
+            });
+            return monitoringData;
+        });
     }
 
     @Test
@@ -112,6 +148,59 @@ public class HdfCompoundAppTest {
                     .toList();
             assertEquals(10, firstTenBigDecimals.size());
             assertEquals(TEN_BIG_DECIMALS, firstTenBigDecimals);
+
+            // Test with HdfData (same as HdfCompound)
+            TypedDataSource<HdfData> hdfDataSource = new TypedDataSource<>(channel, reader, dataSet, HdfData.class);
+            HdfData[] hdfDataRecords = hdfDataSource.readVector();
+            assertEquals(1000, hdfDataRecords.length);
+            HdfData hdfDataFirst = hdfDataRecords[0];
+            assertEquals(14, ((HdfCompound) hdfDataFirst).getMembers().size());
+            assertEquals(1000L, ((HdfCompound) hdfDataFirst).getMembers().get(0).getInstance(Long.class));
+
+            // Test with byte[][]
+            TypedDataSource<byte[][]> byteArraySource = new TypedDataSource<>(channel, reader, dataSet, byte[][].class);
+            byte[][][] byteArrayRecords = byteArraySource.readVector();
+            assertEquals(1000, byteArrayRecords.length);
+            byte[][] firstByteArray = byteArrayRecords[0];
+            assertEquals(14, firstByteArray.length); // 14 members
+            assertEquals(1000L, ByteBuffer.wrap(firstByteArray[0]).order(ByteOrder.LITTLE_ENDIAN).getLong());
+
+            // Test with HdfData[]
+            TypedDataSource<HdfData[]> hdfDataArraySource = new TypedDataSource<>(channel, reader, dataSet, HdfData[].class);
+            HdfData[][] hdfDataArrayRecords = hdfDataArraySource.readVector();
+            assertEquals(1000, hdfDataArrayRecords.length);
+            HdfData[] firstHdfDataArray = hdfDataArrayRecords[0];
+            assertEquals(14, firstHdfDataArray.length);
+            assertEquals(1000L, firstHdfDataArray[0].getInstance(Long.class));
+        }
+    }
+
+    @Test
+    void testCustomConverter() throws IOException {
+        Path filePath = getResourcePath();
+        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+            HdfFileReader reader = new HdfFileReader(channel).readFile();
+            HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup());
+
+            TypedDataSource<MonitoringData> dataSource = new TypedDataSource<>(channel, reader, dataSet, MonitoringData.class);
+            MonitoringData[] allData = dataSource.readVector();
+            assertEquals(1000, allData.length);
+
+            // Verify first record
+            MonitoringData first = allData[0];
+            assertEquals("FixedData", first.getSiteName());
+            assertEquals(5.8774717541114375E-39F, first.getAirQualityIndex(), 1E-45F);
+            assertEquals(1.1125369292536007E-308, first.getTemperature(), 1E-310);
+            assertEquals(0, first.getSampleCount().intValue()); // 1000 - 1000
+
+            // Verify streaming
+            List<MonitoringData> streamedData = dataSource.streamVector().toList();
+            assertEquals(1000, streamedData.size());
+            MonitoringData firstStreamed = streamedData.get(0);
+            assertEquals("FixedData", firstStreamed.getSiteName());
+            assertEquals(5.8774717541114375E-39F, firstStreamed.getAirQualityIndex(), 1E-45F);
+            assertEquals(1.1125369292536007E-308, firstStreamed.getTemperature(), 1E-310);
+            assertEquals(0, firstStreamed.getSampleCount().intValue());
         }
     }
 }
