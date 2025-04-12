@@ -1,5 +1,35 @@
 package org.hdf5javalib.examples;
 
+//import lombok.AllArgsConstructor;
+//import lombok.SneakyThrows;
+//import org.apache.commons.csv.CSVFormat;
+//import org.apache.commons.csv.CSVParser;
+//import org.apache.commons.csv.CSVRecord;
+//import org.hdf5javalib.dataclass.HdfFixedPoint;
+//import org.hdf5javalib.file.HdfDataSet;
+//import org.hdf5javalib.file.HdfFile;
+//import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
+//import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
+//
+//import java.io.File;
+//import java.io.IOException;
+//import java.io.InputStreamReader;
+//import java.io.Reader;
+//import java.math.BigDecimal;
+//import java.math.BigInteger;
+//import java.math.RoundingMode;
+//import java.nio.ByteBuffer;
+//import java.nio.ByteOrder;
+//import java.nio.channels.SeekableByteChannel;
+//import java.nio.charset.StandardCharsets;
+//import java.nio.file.Files;
+//import java.nio.file.StandardOpenOption;
+//import java.util.ArrayList;
+//import java.util.List;
+//import java.util.Objects;
+//import java.util.concurrent.atomic.AtomicInteger;
+//import java.util.function.Consumer;
+
 /**
  * Hello world!
  *
@@ -53,8 +83,8 @@ public class HdfFixedPointApp {
 ////        tryHdfApiScalar("scalar.h5");
 ////        tryHdfApiInts("vector_each.h5", this::writeEach);
 //        tryHdfApiInts("vector_all.h5", this::writeAll);
-////        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);
-////        tryHdfApiMatrixInts("weatherdata_all.h5", this::writeAllMatrix);
+//        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);
+//        tryHdfApiMatrixInts("weatherdata_all.h5", this::writeAllMatrix);
 //    }
 //
 //    private void tryScalarDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataSet dataSet) throws IOException {
@@ -221,15 +251,16 @@ public class HdfFixedPointApp {
 //            throw new RuntimeException(e);
 //        }
 //
-//        try {
+//        final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
+//        try (SeekableByteChannel channel = Files.newByteChannel(new File(FILE_NAME).toPath(), FILE_OPTIONS)) {
 ////            final String FILE_NAME = "randomintseach.h5";
-//            final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
-//            final String DATASET_NAME = "Data";
+//            final String DATASET_NAME = "weatherdata";
+//
 //            final int NUM_RECORDS = 4;
 //            final int NUM_DATAPOINTS = 17;
 //
 //            // Create a new HDF5 file
-//            HdfFile file = new HdfFile(FILE_NAME, FILE_OPTIONS);
+//            HdfFile file = new HdfFile(channel);
 //
 //            // Create data space
 //            HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS), HdfFixedPoint.of(NUM_DATAPOINTS)};
