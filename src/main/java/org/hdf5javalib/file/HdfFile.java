@@ -77,6 +77,10 @@ public class HdfFile implements Closeable, HdfDataFile {
     public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
         HdfFixedPoint[] dimensionSizes= hdfDataSet.getdimensionSizes();
         long dataOffset = fileAllocation.allocateAndSetDataBlock(hdfDataSet.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = hdfDataSet.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            fileAllocation.allocateFirstGlobalHeapBlock();
+        }
         seekableByteChannel.position(dataOffset);
         ByteBuffer buffer;
         while ((buffer = bufferSupplier.get()).hasRemaining()) {
@@ -88,6 +92,11 @@ public class HdfFile implements Closeable, HdfDataFile {
 
     public void write(ByteBuffer buffer, HdfDataSet hdfDataSet) throws IOException {
         long dataOffset = fileAllocation.allocateAndSetDataBlock(hdfDataSet.getDatasetName(), buffer.limit());
+        boolean requiresGlobalHeap = hdfDataSet.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            fileAllocation.allocateFirstGlobalHeapBlock();
+        }
+
 //        try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
             // fileChannel.position(bufferAllocation.getDataAddress());
             seekableByteChannel.position(dataOffset);

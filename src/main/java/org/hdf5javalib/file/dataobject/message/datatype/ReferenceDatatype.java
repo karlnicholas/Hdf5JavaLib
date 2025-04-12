@@ -117,6 +117,11 @@ public class ReferenceDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
+    @Override
+    public boolean requiresGlobalHeap(boolean required) {
+        return required | false;
+    }
+
     public String toString(byte[] bytes) {
         if (bytes.length != size) {
             throw new IllegalArgumentException("Byte array length (" + bytes.length +

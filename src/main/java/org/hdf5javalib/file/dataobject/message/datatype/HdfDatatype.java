@@ -18,6 +18,7 @@ public interface HdfDatatype {
     <T> T getInstance(Class<T> clazz, byte[] bytes);
 //    <T> T getInstance(Class<T> clazz, ByteBuffer buffer);
 
+    boolean requiresGlobalHeap(boolean required);
     void setGlobalHeap(HdfGlobalHeap globalHeap);
 
     String toString(byte[] bytes);

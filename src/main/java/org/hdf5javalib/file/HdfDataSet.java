@@ -138,6 +138,7 @@ public class HdfDataSet implements Closeable {
         dataLayoutMessage.setDataAddress(HdfFixedPoint.of(allocationInfo.getDataOffset()));
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, objectReferenceCount, Math.max(objectHeaderSize, headerSize-DATA_OBJECT_HEADER_MESSAGE_SIZE), headerMessages);
 //        hdfGroup.getHdfFile().recomputeGlobalHeapAddress(this);
+        // check if a global heap needed
     }
 
     public AttributeMessage createAttribute(String name, DatatypeMessage dt, DataspaceMessage ds, HdfString value) {
@@ -172,7 +173,7 @@ public class HdfDataSet implements Closeable {
         int objectHeaderSize = getObjectHeaderSize(headerMessages);
         int attributeSize = getAttributeSize();
 
-        checkContinuationMessageNeeded(objectHeaderSize, attributeSize, headerMessages, headerSize-DATA_OBJECT_HEADER_MESSAGE_SIZE);
+//        checkContinuationMessageNeeded(objectHeaderSize, attributeSize, headerMessages, headerSize-DATA_OBJECT_HEADER_MESSAGE_SIZE);
 
     }
 
@@ -234,6 +235,7 @@ public class HdfDataSet implements Closeable {
 
     private boolean checkContinuationMessageNeeded(int objectHeaderSize, int attributeSize, List<HdfMessage> headerMessages, long headerSize) {
         HdfFileAllocation fileAllocation = hdfGroup.getHdfFile().getFileAllocation();
+        DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
         if ( objectHeaderSize + attributeSize > headerSize) {
             HdfMessage dataspaceMessage = headerMessages.get(0);
             if ( !(dataspaceMessage instanceof DataspaceMessage)) {
@@ -241,9 +243,11 @@ public class HdfDataSet implements Closeable {
             }
             // hdfGroup.getHdfFile().getBufferAllocation().setDataGroupAndContinuationStorageSize(headerSize, dataspaceMessage.getSizeMessageData() + 8 + attributeSize);
             // New code:
-            long newStorageSize = headerSize;
+//            long newStorageSize = headerSize;
+            if ( allocationInfo.getHeaderSize() < headerSize ) {
+                fileAllocation.increaseHeaderAllocation(datasetName, headerSize);
+            }
             int newContinuationSize = dataspaceMessage.getSizeMessageData() + 8 + attributeSize; // Calculate size first for clarity
-            fileAllocation.allocateAndSetDataBlock(datasetName, newStorageSize);
             fileAllocation.allocateAndSetContinuationBlock(datasetName, newContinuationSize);
             // set the object header size.
             // redo addresses already set.

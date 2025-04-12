@@ -66,6 +66,11 @@ public class StringDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
+    @Override
+    public boolean requiresGlobalHeap(boolean required) {
+        return required | false;
+    }
+
     public String toString(byte[] bytes) {
         byte[] workingBytes = getWorkingBytes(bytes);
 

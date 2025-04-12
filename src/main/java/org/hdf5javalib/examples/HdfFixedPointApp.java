@@ -30,6 +30,8 @@ package org.hdf5javalib.examples;
 //import java.util.concurrent.atomic.AtomicInteger;
 //import java.util.function.Consumer;
 
+import org.hdf5javalib.dataclass.HdfFixedPoint;
+
 /**
  * Hello world!
  *
@@ -287,20 +289,20 @@ public class HdfFixedPointApp {
 //        }
 //    }
 //
-//    public static short computeDataSpaceMessageSize(HdfFixedPoint[] hdfDimensions) {
-//        short dataSpaceMessageSize = 8;
-//        if ( hdfDimensions != null ) {
-//            for (HdfFixedPoint dimension : hdfDimensions) {
-//                dataSpaceMessageSize += dimension.getDatatype().getSize();
-//            }
-//        }
-//        if ( hdfDimensions != null ) {
-//            for (HdfFixedPoint maxDimension : hdfDimensions) {
-//                dataSpaceMessageSize += maxDimension.getDatatype().getSize();
-//            }
-//        }
-//        return dataSpaceMessageSize;
-//    }
+    public static short computeDataSpaceMessageSize(HdfFixedPoint[] hdfDimensions) {
+        short dataSpaceMessageSize = 8;
+        if ( hdfDimensions != null ) {
+            for (HdfFixedPoint dimension : hdfDimensions) {
+                dataSpaceMessageSize += dimension.getDatatype().getSize();
+            }
+        }
+        if ( hdfDimensions != null ) {
+            for (HdfFixedPoint maxDimension : hdfDimensions) {
+                dataSpaceMessageSize += maxDimension.getDatatype().getSize();
+            }
+        }
+        return dataSpaceMessageSize;
+    }
 //
 //    private void tryHdfApiScalar(String FILE_NAME) {
 //        final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};

@@ -100,6 +100,11 @@ public class FloatingPointDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
+    @Override
+    public boolean requiresGlobalHeap(boolean required) {
+        return required | false;
+    }
+
     // Convert buffer to Float
     public Float toFloat(byte[] bytes) {
         double value = toDoubleValue(bytes);

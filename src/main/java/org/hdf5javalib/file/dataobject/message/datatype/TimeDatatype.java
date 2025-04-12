@@ -70,6 +70,11 @@ public class TimeDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
+    @Override
+    public boolean requiresGlobalHeap(boolean required) {
+        return required | false;
+    }
+
     public boolean isBigEndian() {
         return classBitField.get(0);
     }

@@ -203,6 +203,14 @@ public class CompoundDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
+    @Override
+    public boolean requiresGlobalHeap(boolean required) {
+        for (CompoundMemberDatatype member : members) {
+            required = member.requiresGlobalHeap(required);
+        }
+        return required;
+    }
+
     public <T> T toPOJO(Class<T> clazz, byte[] bytes) {
         Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));
         Map<String, CompoundMemberDatatype> nameToMemberMap = members.stream().collect(Collectors.toMap(CompoundMemberDatatype::getName, compoundMember -> compoundMember));

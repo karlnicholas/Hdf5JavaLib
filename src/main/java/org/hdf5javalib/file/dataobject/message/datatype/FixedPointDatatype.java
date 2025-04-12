@@ -334,6 +334,11 @@ public class FixedPointDatatype implements HdfDatatype {
     }
 
     @Override
+    public boolean requiresGlobalHeap(boolean required) {
+        return required | false;
+    }
+
+    @Override
     public void setGlobalHeap(HdfGlobalHeap grok) {}
 
     @Override

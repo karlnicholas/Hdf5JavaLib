@@ -75,6 +75,11 @@ public class VariableLengthDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
+    @Override
+    public boolean requiresGlobalHeap(boolean required) {
+        return required | true;
+    }
+
     public String toString(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         int count = buffer.getInt();
