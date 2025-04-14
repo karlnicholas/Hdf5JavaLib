@@ -9,12 +9,10 @@ import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
-import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.*;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
@@ -30,7 +28,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -84,6 +81,14 @@ public class HdfCompoundApp {
             // Create a new HDF5 file
             HdfFile file = new HdfFile(seekableByteChannel);
 
+            StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(),
+                    StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
+                    (short) 0);
+            VariableLengthDatatype variableLengthDatatype = new VariableLengthDatatype(VariableLengthDatatype.createClassAndVersion(),
+                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_TERMINATE, VariableLengthDatatype.CharacterSet.ASCII),
+                    (short) 16, attributeType);
+            variableLengthDatatype.setGlobalHeap(file.getGlobalHeap());
+
             List<CompoundMemberDatatype> compoundData = List.of(
                     new CompoundMemberDatatype("recordId", 0, 0, 0, new int[4],
                             new FixedPointDatatype(
@@ -96,15 +101,7 @@ public class HdfCompoundApp {
                                     StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
                                     (short) 10)),
                     new CompoundMemberDatatype("varStr", 24, 0, 0, new int[4],
-                            new VariableLengthDatatype(
-                                    VariableLengthDatatype.createClassAndVersion(),
-                                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_TERMINATE, VariableLengthDatatype.CharacterSet.ASCII),
-                                    (short) 16,
-                                    new FixedPointDatatype(
-                                            FixedPointDatatype.createClassAndVersion(),
-                                            FixedPointDatatype.createClassBitField(false, false, false, false),
-                                            1, (short) 0, (short) 0
-                                    ))),
+                            variableLengthDatatype),
                     new CompoundMemberDatatype("floatVal", 40, 0, 0, new int[4],
                             new FloatingPointDatatype(
                                     FloatingPointDatatype.createClassAndVersion(),

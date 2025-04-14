@@ -151,14 +151,15 @@ public class HdfDataSet implements Closeable {
         HdfData attributeValue;
         StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(),
                 StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
-                (short) value.length());
+                (short) 0);
         short dataTypeMessageSize = 8;
         boolean requiresGlobalHeap = hdfDatatype.requiresGlobalHeap(false);
         if (requiresGlobalHeap) {
             hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
             VariableLengthDatatype variableLengthDatatype = new VariableLengthDatatype(VariableLengthDatatype.createClassAndVersion(),
                     VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_TERMINATE, VariableLengthDatatype.CharacterSet.ASCII),
-                    (short) value.length(), attributeType);
+                    (short) 16, attributeType);
+            variableLengthDatatype.setGlobalHeap(hdfDataFile.getGlobalHeap());
 
             byte[] globalHeapBytes = hdfDataFile.getGlobalHeap().addToHeap(value.getBytes(StandardCharsets.US_ASCII));
             attributeValue = new HdfVariableLength(globalHeapBytes, variableLengthDatatype);

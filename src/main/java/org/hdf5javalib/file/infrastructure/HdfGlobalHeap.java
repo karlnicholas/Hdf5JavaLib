@@ -10,6 +10,7 @@ import org.hdf5javalib.file.HdfFileAllocation;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -317,46 +318,127 @@ public class HdfGlobalHeap {
     }
 
     /**
-     * WARNING: This method is NOT updated for multiple heaps and will throw an exception.
-     * Writes a *specific* heap collection to the buffer. Needs offset parameter to identify which heap.
-     * NOTE: Will need updating to handle writing the ID 0 entry correctly if present.
+     * Writes all global heap collections to the file channel, positioning the channel
+     * at each heap's offset before writing.
      *
-     * @param buffer The ByteBuffer to write to.
+     * @param fileChannel The SeekableByteChannel to write to.
+     * @throws IOException If an I/O error occurs during writing.
      */
-    public void writeToByteBuffer(ByteBuffer buffer) {
-        throw new UnsupportedOperationException("writeToByteBuffer is not implemented yet. It needs to handle potential ID 0 entries.");
-        /* --- RESTORED Old Logic Comment Block --- */
-        /* ... */ // (Content omitted for brevity)
+    public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
+        if (heapCollections.isEmpty()) {
+            // No heaps to write; could be valid if no objects added yet
+            return;
+        }
+
+        for (Map.Entry<Long, TreeMap<Integer, GlobalHeapObject>> entry : heapCollections.entrySet()) {
+            long heapOffset = entry.getKey();
+            TreeMap<Integer, GlobalHeapObject> objects = entry.getValue();
+
+            // Set channel position to this heap's offset
+            fileChannel.position(heapOffset);
+
+            // Allocate buffer for this heap
+            ByteBuffer buffer = ByteBuffer.allocate((int) getWriteBufferSize(heapOffset));
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+
+            // Write header
+            buffer.put(SIGNATURE.getBytes());
+            buffer.put((byte) VERSION);
+            buffer.put(new byte[3]); // Reserved
+            buffer.putLong(calculateAlignedTotalSize(heapOffset));
+
+            // Write all objects (including any pre-existing null terminator)
+            for (GlobalHeapObject obj : objects.values()) {
+                obj.writeToByteBuffer(buffer);
+            }
+
+            // If no null terminator exists, calculate and add one
+            if (!objects.containsKey(0)) {
+                long usedSize = 16; // Header size
+                for (GlobalHeapObject obj : objects.values()) {
+                    long objSize = obj.getObjectId() == 0 ? 16 : 16 + obj.getObjectSize() + getPadding((int) obj.getObjectSize());
+                    usedSize += objSize;
+                }
+                long remainingSize = HdfFileAllocation.GLOBAL_HEAP_BLOCK_SIZE - usedSize;
+                if (remainingSize < 16) {
+                    throw new IllegalStateException("Insufficient space for null terminator in heap at offset: " + heapOffset);
+                }
+                buffer.putShort((short) 0); // Object ID 0
+                buffer.putShort((short) 0); // Reference count 0
+                buffer.putInt(0); // Reserved
+                buffer.putLong(remainingSize); // Free space
+            }
+
+            buffer.flip();
+            fileChannel.write(buffer);
+        }
     }
 
     /**
-     * WARNING: This method is NOT updated for multiple heaps and will throw an exception.
-     * Calculates the required buffer size for writing a specific heap, including alignment padding.
-     * NOTE: Will need updating based on how ID 0 entry is handled.
+     * Calculates the total size required for a specific heap collection, including header,
+     * objects, padding, and null terminator, aligned to GLOBAL_HEAP_BLOCK_SIZE.
+     *
+     * @param heapOffset The file offset identifying the heap collection.
+     * @return The total size in bytes.
      */
     private long calculateAlignedTotalSize(long heapOffset) {
-        throw new UnsupportedOperationException("calculateAlignedTotalSize is not implemented yet. Needs update for ID 0 handling.");
-        /* --- RESTORED Old Logic Comment Block --- */
-        /* ... */ // (Content omitted for brevity)
+        TreeMap<Integer, GlobalHeapObject> objects = heapCollections.get(heapOffset);
+        if (objects == null) {
+            throw new IllegalStateException("No heap collection found at offset: " + heapOffset);
+        }
+
+        long totalSize = 16; // Header size
+        for (GlobalHeapObject obj : objects.values()) {
+            long objSize = obj.getObjectId() == 0 ? 16 : 16 + obj.getObjectSize() + getPadding((int) obj.getObjectSize());
+            totalSize += objSize;
+        }
+
+        // If no null terminator, add its size (16 bytes)
+        if (!objects.containsKey(0)) {
+            totalSize += 16;
+        }
+
+        // Align to GLOBAL_HEAP_BLOCK_SIZE
+        return alignTo(totalSize, (int) HdfFileAllocation.GLOBAL_HEAP_BLOCK_SIZE);
     }
 
     /**
-     * WARNING: This method is NOT updated for multiple heaps and will throw an exception.
-     * Gets the required buffer size for writing a specific heap.
+     * Gets the required buffer size for writing a specific heap collection.
+     *
+     * @param heapOffset The file offset identifying the heap collection.
+     * @return The buffer size in bytes.
      */
     public long getWriteBufferSize(long heapOffset) {
-        throw new UnsupportedOperationException("getWriteBufferSize is not implemented for multiple heap collections yet.");
+        return calculateAlignedTotalSize(heapOffset);
     }
-
 
     // ========================================================================
     // Helper Methods & Interfaces (Unchanged)
     // ========================================================================
-    private static long alignTo(long size, int alignment) { if (alignment <= 0 || (alignment & (alignment - 1)) != 0) { throw new IllegalArgumentException("Alignment must be a positive power of 2. Got: " + alignment); } return (size + alignment - 1) & ~((long)alignment - 1); }
-    private static int getPadding(int size) { if (size < 0) return 0; return (8 - (size % 8)) % 8; }
-    private static int alignToEightBytes(int size) { return (size + 7) & ~7; }
-    @Override public String toString() { return "HdfGlobalHeap{" + "loadedHeapCount=" + heapCollections.size() + ", knownOffsets=" + heapCollections.keySet() + '}'; }
-    public interface GlobalHeapInitialize { void initializeCallback(long heapOffset); }
+    private static long alignTo(long size, int alignment) {
+        if (alignment <= 0 || (alignment & (alignment - 1)) != 0) {
+            throw new IllegalArgumentException("Alignment must be a positive power of 2. Got: " + alignment);
+        }
+        return (size + alignment - 1) & ~((long) alignment - 1);
+    }
+
+    private static int getPadding(int size) {
+        if (size < 0) return 0;
+        return (8 - (size % 8)) % 8;
+    }
+
+    private static int alignToEightBytes(int size) {
+        return (size + 7) & ~7;
+    }
+
+    @Override
+    public String toString() {
+        return "HdfGlobalHeap{" + "loadedHeapCount=" + heapCollections.size() + ", knownOffsets=" + heapCollections.keySet() + '}';
+    }
+
+    public interface GlobalHeapInitialize {
+        void initializeCallback(long heapOffset);
+    }
     // REMOVED: Interface definition for GLobalHeapDataSegmentAddress
 
 
