@@ -198,6 +198,15 @@ public final class HdfFileAllocation {
         return allocateBlock(GLOBAL_HEAP_BLOCK_SIZE);
     }
 
+    /**
+     * Checks whether a global heap block has been allocated.
+     *
+     * @return true if a global heap block has been allocated, false otherwise.
+     */
+    public boolean hasGlobalHeapAllocation() {
+        return globalHeapOffset != -1L;
+    }
+
     // --- Dataset Specific Allocation Methods ---
 
     /** Allocates initial space for a dataset's object header. */

@@ -2,12 +2,16 @@ package org.hdf5javalib.file;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.hdf5javalib.HdfDataFile;
+import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
+import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.file.dataobject.message.*;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
+import org.hdf5javalib.file.dataobject.message.datatype.VariableLengthDatatype;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -18,6 +22,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -141,7 +146,35 @@ public class HdfDataSet implements Closeable {
         // check if a global heap needed
     }
 
-    public AttributeMessage createAttribute(String name, DatatypeMessage dt, DataspaceMessage ds, HdfString value) {
+    public AttributeMessage createAttribute(String name, String value, HdfDataFile hdfDataFile) {
+
+        HdfData attributeValue;
+        StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(),
+                StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
+                (short) value.length());
+        short dataTypeMessageSize = 8;
+        boolean requiresGlobalHeap = hdfDatatype.requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            VariableLengthDatatype variableLengthDatatype = new VariableLengthDatatype(VariableLengthDatatype.createClassAndVersion(),
+                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_TERMINATE, VariableLengthDatatype.CharacterSet.ASCII),
+                    (short) value.length(), attributeType);
+
+            byte[] globalHeapBytes = hdfDataFile.getGlobalHeap().addToHeap(value.getBytes(StandardCharsets.US_ASCII));
+            attributeValue = new HdfVariableLength(globalHeapBytes, variableLengthDatatype);
+        } else {
+            attributeValue = new HdfString(value.getBytes(), attributeType);
+        }
+
+        dataTypeMessageSize += attributeType.getSizeMessageData();
+        // to 8 byte boundary
+        dataTypeMessageSize += ((dataTypeMessageSize + 7) & ~7);
+
+        HdfFixedPoint[] hdfDimensions = {};
+        short dataSpaceMessageSize = 8;
+
+        DatatypeMessage dt = new DatatypeMessage(attributeType, (byte)1, dataTypeMessageSize);
+        DataspaceMessage ds = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), null, null, false, (byte)0, dataSpaceMessageSize);
         byte[] nameBytes = new byte[name.length()];
         System.arraycopy(name.getBytes(StandardCharsets.US_ASCII), 0, nameBytes, 0, name.length());
         short attributeMessageSize = 8;
@@ -154,9 +187,9 @@ public class HdfDataSet implements Closeable {
         attributeMessageSize += nameSize + datatypeSize + dataspaceSize + valueSize;
         AttributeMessage attributeMessage = new AttributeMessage(1,
                 new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII), name.length()+1)),
-                dt, ds, value, (byte)0, attributeMessageSize);
+                dt, ds, attributeValue, (byte)0, attributeMessageSize);
         attributes.add(attributeMessage);
-        updateForAttribute();
+//        updateForAttribute();
         return attributeMessage;
     }
 
@@ -164,18 +197,18 @@ public class HdfDataSet implements Closeable {
      * See if attribute fits in current objectHeader storage and if not
      * indicate continutationMessage requirements
      */
-    private void updateForAttribute() {
-        HdfFileAllocation fileAllocation = hdfGroup.getHdfFile().getFileAllocation();
-        DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
-        //  int headerSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
-        long headerSize = allocationInfo.getHeaderSize();
-        List<HdfMessage> headerMessages = this.dataObjectHeaderPrefix.getHeaderMessages();
-        int objectHeaderSize = getObjectHeaderSize(headerMessages);
-        int attributeSize = getAttributeSize();
-
-//        checkContinuationMessageNeeded(objectHeaderSize, attributeSize, headerMessages, headerSize-DATA_OBJECT_HEADER_MESSAGE_SIZE);
-
-    }
+//    private void updateForAttribute() {
+//        HdfFileAllocation fileAllocation = hdfGroup.getHdfFile().getFileAllocation();
+//        DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
+//        //  int headerSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
+//        long headerSize = allocationInfo.getHeaderSize();
+//        List<HdfMessage> headerMessages = this.dataObjectHeaderPrefix.getHeaderMessages();
+//        int objectHeaderSize = getObjectHeaderSize(headerMessages);
+//        int attributeSize = getAttributeSize();
+//
+////        checkContinuationMessageNeeded(objectHeaderSize, attributeSize, headerMessages, headerSize-DATA_OBJECT_HEADER_MESSAGE_SIZE);
+//
+//    }
 
     @Override
     public void close() {
