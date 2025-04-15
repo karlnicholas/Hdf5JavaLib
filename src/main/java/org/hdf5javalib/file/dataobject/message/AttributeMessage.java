@@ -154,9 +154,15 @@ public class AttributeMessage extends HdfMessage {
         buffer.put(paddingBytes);
 
         datatypeMessage.writeInfoToByteBuffer(buffer);
+        // Pad to 8-byte boundary
+        int position = buffer.position();
+        buffer.position((position + 7) & ~7);
 
         dataspaceMessage.writeInfoToByteBuffer(buffer);
 
+        // Pad to 8-byte boundary
+        position = buffer.position();
+        buffer.position((position + 7) & ~7);
         // not right
 
         if ( value instanceof HdfVariableLength) {

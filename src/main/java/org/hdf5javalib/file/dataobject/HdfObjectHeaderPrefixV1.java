@@ -155,17 +155,18 @@ public class HdfObjectHeaderPrefixV1 {
     }
 
     public void writeContinuationMessageBlockToBuffer(int initialSize, ByteBuffer buffer) {
-        int currentSize = 0;
+        // simulate object header data.
+        int currentSize = 16;
         int i=0;
         while (i < headerMessages.size()) {
             HdfMessage hdfMessage = headerMessages.get(i);
-            currentSize += hdfMessage.getSizeMessageData();
+            currentSize += hdfMessage.getSizeMessageData() + 8;
             currentSize  = (currentSize + 7) & ~7;
+            i++;
 
             if ( currentSize >= initialSize) {
                 break;
             }
-            i++;
         }
         while (i < headerMessages.size()) {
             HdfMessage hdfMessage = headerMessages.get(i);

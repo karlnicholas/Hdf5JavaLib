@@ -9,6 +9,7 @@ import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.file.dataobject.message.*;
+import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.VariableLengthDatatype;
@@ -147,21 +148,33 @@ public class HdfDataSet implements Closeable {
 
     public AttributeMessage createAttribute(String name, String value, HdfDataFile hdfDataFile) {
 
-        StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(),
-                StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
-                (short) 0);
-        short dataTypeMessageSize = 8;
         boolean requiresGlobalHeap = hdfDatatype.requiresGlobalHeap(false);
+
+        HdfDatatype attributeType;
+        if (requiresGlobalHeap) {
+            FixedPointDatatype fixedAttributeType = new FixedPointDatatype(FixedPointDatatype.createClassAndVersion(),
+                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                    1, (short) 0, (short) 8);
+            attributeType = new VariableLengthDatatype(VariableLengthDatatype.createClassAndVersion(),
+                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_PAD, VariableLengthDatatype.CharacterSet.ASCII),
+                    (short) 16, fixedAttributeType);
+
+        } else {
+            attributeType = new StringDatatype(StringDatatype.createClassAndVersion(),
+                    StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
+                    (short) 0);
+        }
+        short dataTypeMessageSize = 8;
 
         dataTypeMessageSize += attributeType.getSizeMessageData();
         // to 8 byte boundary
         dataTypeMessageSize += ((dataTypeMessageSize + 7) & ~7);
+        DatatypeMessage dt = new DatatypeMessage(attributeType, (byte)1, dataTypeMessageSize);
 
         HdfFixedPoint[] hdfDimensions = {};
         short dataSpaceMessageSize = 8;
-
-        DatatypeMessage dt = new DatatypeMessage(attributeType, (byte)1, dataTypeMessageSize);
         DataspaceMessage ds = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), null, null, false, (byte)0, dataSpaceMessageSize);
+
         byte[] nameBytes = new byte[name.length()];
         System.arraycopy(name.getBytes(StandardCharsets.US_ASCII), 0, nameBytes, 0, name.length());
         short attributeMessageSize = 8;
@@ -188,18 +201,15 @@ public class HdfDataSet implements Closeable {
         updateForAttribute();
         HdfData attributeValue;
         if (requiresGlobalHeap) {
-//        if (requiresGlobalHeap) {
             VariableLengthDatatype variableLengthDatatype = new VariableLengthDatatype(VariableLengthDatatype.createClassAndVersion(),
                     VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_TERMINATE, VariableLengthDatatype.CharacterSet.ASCII),
                     (short) 16, attributeType);
             variableLengthDatatype.setGlobalHeap(hdfDataFile.getGlobalHeap());
-//
-//        }
             hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
             byte[] globalHeapBytes = hdfDataFile.getGlobalHeap().addToHeap(value.getBytes(StandardCharsets.US_ASCII));
             attributeValue = new HdfVariableLength(globalHeapBytes, variableLengthDatatype);
         } else {
-            attributeValue = new HdfString(value.getBytes(), attributeType);
+            attributeValue = new HdfString(value.getBytes(), (StringDatatype) attributeType);
         }
         attributeMessage.setValue(attributeValue);
 

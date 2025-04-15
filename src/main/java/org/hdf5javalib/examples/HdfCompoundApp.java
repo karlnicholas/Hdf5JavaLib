@@ -178,14 +178,11 @@ public class HdfCompoundApp {
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
             DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointApp.computeDataSpaceMessageSize(hdfDimensions));
 
-            file.getFileAllocation().printBlocks();
             // Create dataset
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, compoundType, dataSpaceMessage);
-            file.getFileAllocation().printBlocks();
 
             // ADD ATTRIBUTE: "GIT root revision"
             writeVersionAttribute(file, dataset);
-            file.getFileAllocation().printBlocks();
 
             AtomicInteger countHolder = new AtomicInteger(0);
             ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
@@ -215,9 +212,7 @@ public class HdfCompoundApp {
                 return buffer;
             });
 
-            file.getFileAllocation().printBlocks();
             dataset.close();
-            file.getFileAllocation().printBlocks();
             file.close();
             file.getFileAllocation().printBlocks();
 
