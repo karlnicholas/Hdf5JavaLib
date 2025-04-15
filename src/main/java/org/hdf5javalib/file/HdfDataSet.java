@@ -148,24 +148,11 @@ public class HdfDataSet implements Closeable {
 
     public AttributeMessage createAttribute(String name, String value, HdfDataFile hdfDataFile) {
 
-        HdfData attributeValue;
         StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(),
                 StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
                 (short) 0);
         short dataTypeMessageSize = 8;
         boolean requiresGlobalHeap = hdfDatatype.requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            VariableLengthDatatype variableLengthDatatype = new VariableLengthDatatype(VariableLengthDatatype.createClassAndVersion(),
-                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_TERMINATE, VariableLengthDatatype.CharacterSet.ASCII),
-                    (short) 16, attributeType);
-            variableLengthDatatype.setGlobalHeap(hdfDataFile.getGlobalHeap());
-
-            byte[] globalHeapBytes = hdfDataFile.getGlobalHeap().addToHeap(value.getBytes(StandardCharsets.US_ASCII));
-            attributeValue = new HdfVariableLength(globalHeapBytes, variableLengthDatatype);
-        } else {
-            attributeValue = new HdfString(value.getBytes(), attributeType);
-        }
 
         dataTypeMessageSize += attributeType.getSizeMessageData();
         // to 8 byte boundary
@@ -183,14 +170,40 @@ public class HdfDataSet implements Closeable {
         nameSize = (short) ((nameSize + 7) & ~7);
         int datatypeSize = 8; // datatypeMessage.getSizeMessageData();
         int dataspaceSize = 8; // dataspaceMessage.getSizeMessageData();
-        int valueSize = value != null ? value.toString().length() : 0;
-        valueSize  = (short) ((valueSize + 7) & ~7);
+
+
+        int valueSize;
+        if (requiresGlobalHeap) {
+            valueSize = 16+16;
+        } else {
+            valueSize = value != null ? value.toString().length() : 0;
+            valueSize = (short) ((valueSize + 7) & ~7);
+
+        }
+
         attributeMessageSize += nameSize + datatypeSize + dataspaceSize + valueSize;
         AttributeMessage attributeMessage = new AttributeMessage(1,
                 new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII), name.length()+1)),
-                dt, ds, attributeValue, (byte)0, attributeMessageSize);
+                dt, ds, null, (byte)0, attributeMessageSize);
         attributes.add(attributeMessage);
-//        updateForAttribute();
+        updateForAttribute();
+        HdfData attributeValue;
+        if (requiresGlobalHeap) {
+//        if (requiresGlobalHeap) {
+            VariableLengthDatatype variableLengthDatatype = new VariableLengthDatatype(VariableLengthDatatype.createClassAndVersion(),
+                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_TERMINATE, VariableLengthDatatype.CharacterSet.ASCII),
+                    (short) 16, attributeType);
+            variableLengthDatatype.setGlobalHeap(hdfDataFile.getGlobalHeap());
+//
+//        }
+            hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            byte[] globalHeapBytes = hdfDataFile.getGlobalHeap().addToHeap(value.getBytes(StandardCharsets.US_ASCII));
+            attributeValue = new HdfVariableLength(globalHeapBytes, variableLengthDatatype);
+        } else {
+            attributeValue = new HdfString(value.getBytes(), attributeType);
+        }
+        attributeMessage.setValue(attributeValue);
+
         return attributeMessage;
     }
 
@@ -198,18 +211,18 @@ public class HdfDataSet implements Closeable {
      * See if attribute fits in current objectHeader storage and if not
      * indicate continutationMessage requirements
      */
-//    private void updateForAttribute() {
-//        HdfFileAllocation fileAllocation = hdfGroup.getHdfFile().getFileAllocation();
-//        DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
-//        //  int headerSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
-//        long headerSize = allocationInfo.getHeaderSize();
-//        List<HdfMessage> headerMessages = this.dataObjectHeaderPrefix.getHeaderMessages();
-//        int objectHeaderSize = getObjectHeaderSize(headerMessages);
-//        int attributeSize = getAttributeSize();
-//
-////        checkContinuationMessageNeeded(objectHeaderSize, attributeSize, headerMessages, headerSize-DATA_OBJECT_HEADER_MESSAGE_SIZE);
-//
-//    }
+    private void updateForAttribute() {
+        HdfFileAllocation fileAllocation = hdfGroup.getHdfFile().getFileAllocation();
+        DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
+        //  int headerSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
+        long headerSize = allocationInfo.getHeaderSize();
+        List<HdfMessage> headerMessages = this.dataObjectHeaderPrefix.getHeaderMessages();
+        int objectHeaderSize = getObjectHeaderSize(headerMessages);
+        int attributeSize = getAttributeSize();
+
+        checkContinuationMessageNeeded(objectHeaderSize, attributeSize, headerMessages, headerSize-DATA_OBJECT_HEADER_MESSAGE_SIZE);
+
+    }
 
     @Override
     public void close() {
@@ -270,7 +283,7 @@ public class HdfDataSet implements Closeable {
     private boolean checkContinuationMessageNeeded(int objectHeaderSize, int attributeSize, List<HdfMessage> headerMessages, long headerSize) {
         HdfFileAllocation fileAllocation = hdfGroup.getHdfFile().getFileAllocation();
         DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
-        if ( objectHeaderSize + attributeSize > headerSize) {
+        if ( objectHeaderSize + attributeSize > headerSize && allocationInfo.getContinuationSize() <= 0) {
             HdfMessage dataspaceMessage = headerMessages.get(0);
             if ( !(dataspaceMessage instanceof DataspaceMessage)) {
                 throw new IllegalArgumentException("Dataspace message not found: " + dataspaceMessage.getClass().getName());

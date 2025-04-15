@@ -1,10 +1,13 @@
 package org.hdf5javalib.file.dataobject.message;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfString;
+import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
+import org.hdf5javalib.file.dataobject.message.datatype.VariableLengthDatatype;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -53,7 +56,8 @@ public class AttributeMessage extends HdfMessage {
     private final HdfString name;
     private final DatatypeMessage datatypeMessage;
     private final DataspaceMessage dataspaceMessage;
-    private final HdfData value;
+    @Setter
+    private HdfData value;
 
     public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfData value, byte flags, short sizeMessageData) {
         super(MessageType.AttributeMessage, sizeMessageData, flags);
@@ -154,7 +158,14 @@ public class AttributeMessage extends HdfMessage {
         dataspaceMessage.writeInfoToByteBuffer(buffer);
 
         // not right
-        value.writeValueToByteBuffer(buffer);
+
+        if ( value instanceof HdfVariableLength) {
+            value.writeValueToByteBuffer(buffer);
+        } else if ( value instanceof HdfString){
+            value.writeValueToByteBuffer(buffer);
+        } else {
+            throw new RuntimeException("Unsupported datatype");
+        }
 
     }
 

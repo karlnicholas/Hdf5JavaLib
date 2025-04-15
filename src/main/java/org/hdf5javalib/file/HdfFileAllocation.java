@@ -7,10 +7,7 @@ import java.util.*;
 /**
  * Class managing the allocation layout (offsets and sizes) via recalculation.
  * Responsible for all allocation actions and updating DatasetAllocationInfo state.
- * Supports increasing dataset header size *before* any data block is allocated,
- * triggering a layout recalculation.
- *
- * *** Attempt to restore functionality including getLocalHeapOffset ***
+ * Supports increasing dataset header size with layout recalculation.
  */
 @Getter
 public final class HdfFileAllocation {
@@ -28,10 +25,10 @@ public final class HdfFileAllocation {
     private static final long SETUP_SNOD_V1_ENTRY_SIZE = 32L;
     private static final long DEFAULT_SETUP_SNOD_ENTRY_COUNT = 10L;
     public static final long GLOBAL_HEAP_BLOCK_SIZE = 4096L;
-    private static final long DEFAULT_DATASET_HEADER_ALLOCATION_SIZE = DATA_OBJECT_HEADER_MESSAGE_SIZE + 256L; // 272L Example
+    private static final long DEFAULT_DATASET_HEADER_ALLOCATION_SIZE = DATA_OBJECT_HEADER_MESSAGE_SIZE + 256L;
     private static final long MIN_DATA_OFFSET_THRESHOLD = 2048L;
     @Getter
-    private static final long SNOD_STORAGE_SIZE = SETUP_SNOD_V1_HEADER_SIZE + (DEFAULT_SETUP_SNOD_ENTRY_COUNT * SETUP_SNOD_V1_ENTRY_SIZE); // 328L
+    private static final long SNOD_STORAGE_SIZE = SETUP_SNOD_V1_HEADER_SIZE + (DEFAULT_SETUP_SNOD_ENTRY_COUNT * SETUP_SNOD_V1_ENTRY_SIZE);
 
     // --- Storage for Multiple Dataset Allocations ---
     private final Map<String, DatasetAllocationInfo> datasetAllocations = new LinkedHashMap<>();
@@ -39,12 +36,17 @@ public final class HdfFileAllocation {
     // --- Storage for SNOD Allocations (Offsets Only) ---
     private final List<Long> snodAllocationOffsets = new ArrayList<>();
 
+    // --- Storage for Global Heap Block Sizes ---
+    private final Map<Long, Long> globalHeapBlockSizes = new HashMap<>();
+    private int globalHeapBlockCount = 0;
+    private long secondGlobalHeapOffset = -1L;
+
     // --- Fixed Setup Block Offsets (Calculated once) ---
     private final long superblockOffset = SUPERBLOCK_OFFSET;
     private long objectHeaderPrefixOffset;
     private long btreeOffset;
-    private long localHeapHeaderOffset;          // Offset of the LH *Header*
-    private long initialLocalHeapContentsOffset; // Offset of the *first* LH *Contents* block
+    private long localHeapHeaderOffset;
+    private long initialLocalHeapContentsOffset;
     private long snodOffset;
 
     // --- Fixed Setup Block Sizes ---
@@ -52,13 +54,12 @@ public final class HdfFileAllocation {
     private final long initialLocalHeapContentsSize = SETUP_LOCAL_HEAP_CONTENTS_SIZE;
 
     // --- Tracking for Dynamically Allocated/Sized Components ---
-    private long currentLocalHeapContentsOffset; // Tracks offset of current/last LH *Contents* block
-    private long currentLocalHeapContentsSize;   // Tracks size of current/last LH *Contents* block
-    private long globalHeapOffset = -1L;         // Tracks offset of *first* allocated GH block
+    private long currentLocalHeapContentsOffset;
+    private long currentLocalHeapContentsSize;
+    private long globalHeapOffset = -1L;
 
     // --- Allocation Tracking ---
     private long nextAvailableOffset;
-    private boolean dataBlocksAllocated = false; // Locks header resizing
 
     /** Default Constructor */
     public HdfFileAllocation() {
@@ -71,42 +72,64 @@ public final class HdfFileAllocation {
         long currentOffset = SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE;
         objectHeaderPrefixOffset = currentOffset; currentOffset += SETUP_OBJECT_HEADER_PREFIX_SIZE;
         btreeOffset = currentOffset; currentOffset += btreeTotalSize;
-        localHeapHeaderOffset = currentOffset; currentOffset += SETUP_LOCAL_HEAP_HEADER_SIZE; // Assign LH Header offset
-        initialLocalHeapContentsOffset = currentOffset; currentOffset += initialLocalHeapContentsSize; // Assign *initial* LH Contents offset
-        // Do not set snodOffset here; defer until after first dataset header allocation
-        currentLocalHeapContentsOffset = initialLocalHeapContentsOffset; // Track initial LH contents offset
-        currentLocalHeapContentsSize = initialLocalHeapContentsSize;     // Track initial LH contents size
+        localHeapHeaderOffset = currentOffset; currentOffset += SETUP_LOCAL_HEAP_HEADER_SIZE;
+        initialLocalHeapContentsOffset = currentOffset; currentOffset += initialLocalHeapContentsSize;
+        currentLocalHeapContentsOffset = initialLocalHeapContentsOffset;
+        currentLocalHeapContentsSize = initialLocalHeapContentsSize;
         globalHeapOffset = -1L;
+        secondGlobalHeapOffset = -1L;
         this.datasetAllocations.clear();
-        this.snodAllocationOffsets.clear(); // Reset SNOD allocation offsets
-        this.dataBlocksAllocated = false;
-        this.nextAvailableOffset = currentOffset; // Set to 800 initially, before SNOD or MIN_DATA_OFFSET_THRESHOLD
+        this.snodAllocationOffsets.clear();
+        this.globalHeapBlockSizes.clear();
+        this.globalHeapBlockCount = 0;
+        this.nextAvailableOffset = currentOffset;
     }
 
-    // --- Recalculation Core ---
-    /** Recalculates layout based on current sizes. Called when headers resize before data lock. */
+    /** Recalculates layout based on current sizes. */
     private void recalculateLayout() {
-        if (dataBlocksAllocated) {
-            throw new IllegalStateException("Cannot recalculate layout after data blocks have been allocated.");
-        }
-        long currentOffset = initialLocalHeapContentsOffset + initialLocalHeapContentsSize; // Start after initial local heap contents (800)
+        long currentOffset = initialLocalHeapContentsOffset + initialLocalHeapContentsSize;
 
-        // Order: Dataset Headers -> SNOD -> Global Heap -> Expanded Local Heap -> Continuations
-        for (DatasetAllocationInfo info : datasetAllocations.values()) {
-            info.setHeaderOffset(currentOffset);
-            currentOffset += info.getHeaderSize();
+        // Maintain order of dataset headers and SNODs as allocated
+        List<Object> allocationOrder = new ArrayList<>();
+        for (Map.Entry<String, DatasetAllocationInfo> entry : datasetAllocations.entrySet()) {
+            allocationOrder.add(entry.getValue());
         }
-        // Place initial SNOD after all dataset headers
-        snodOffset = currentOffset;
-        currentOffset += SNOD_STORAGE_SIZE;
-        // Apply MIN_DATA_OFFSET_THRESHOLD only for data or later blocks
+        for (Long snodOffset : snodAllocationOffsets) {
+            allocationOrder.add(snodOffset);
+        }
+
+        // Assign offsets in order
+        snodOffset = -1L;
+        snodAllocationOffsets.clear();
+        for (Object alloc : allocationOrder) {
+            if (alloc instanceof DatasetAllocationInfo) {
+                DatasetAllocationInfo info = (DatasetAllocationInfo) alloc;
+                info.setHeaderOffset(currentOffset);
+                currentOffset += info.getHeaderSize();
+            } else if (alloc instanceof Long) {
+                Long snod = (Long) alloc;
+                snodAllocationOffsets.add(currentOffset);
+                if (snodOffset == -1L) {
+                    snodOffset = currentOffset;
+                }
+                currentOffset += SNOD_STORAGE_SIZE;
+            }
+        }
+
+        // Apply MIN_DATA_OFFSET_THRESHOLD for subsequent blocks
         currentOffset = Math.max(MIN_DATA_OFFSET_THRESHOLD, currentOffset);
 
-        if (globalHeapOffset != -1L) { // Place first allocated GH block
+        // Place first allocated global heap block, if any
+        if (globalHeapOffset != -1L) {
             globalHeapOffset = currentOffset;
-            currentOffset += GLOBAL_HEAP_BLOCK_SIZE;
+            currentOffset += globalHeapBlockSizes.getOrDefault(globalHeapOffset, GLOBAL_HEAP_BLOCK_SIZE);
         }
-        // Place *expanded* LH contents block (if it's not the initial one)
+        // Place second global heap block, if any
+        if (secondGlobalHeapOffset != -1L) {
+            secondGlobalHeapOffset = currentOffset;
+            currentOffset += globalHeapBlockSizes.getOrDefault(secondGlobalHeapOffset, GLOBAL_HEAP_BLOCK_SIZE);
+        }
+        // Place expanded local heap contents block, if it’s not the initial one
         if (currentLocalHeapContentsOffset != initialLocalHeapContentsOffset) {
             currentLocalHeapContentsOffset = currentOffset;
             currentOffset += currentLocalHeapContentsSize;
@@ -123,7 +146,6 @@ public final class HdfFileAllocation {
         nextAvailableOffset = currentOffset;
     }
 
-    // Helper to find dataset name (no longer used for logging, retained for potential future use)
     private String getDatasetName(DatasetAllocationInfo targetInfo) {
         for (Map.Entry<String, DatasetAllocationInfo> entry : datasetAllocations.entrySet()) {
             if (entry.getValue() == targetInfo) return entry.getKey();
@@ -131,8 +153,6 @@ public final class HdfFileAllocation {
         return "[Unknown Dataset]";
     }
 
-    // --- Allocation Primitives ---
-    /** Internal helper to allocate a block and advance the EOA marker. */
     private long allocateBlock(long size) {
         if (size < 0L) throw new IllegalArgumentException("Allocation size cannot be negative.");
         long offset = nextAvailableOffset;
@@ -140,35 +160,30 @@ public final class HdfFileAllocation {
         return offset;
     }
 
-    // --- PUBLIC ALLOCATION METHODS ---
-
-    /** Allocates a generic block of space. */
     public long allocateGenericBlock(long size) {
         return allocateBlock(size);
     }
 
-    /** Allocates space for a Message Continuation block. */
     public long allocateNextMessageContinuation(long continuationSize) {
         if (continuationSize <= 0L) throw new IllegalArgumentException("Continuation size must be positive.");
         return allocateBlock(continuationSize);
     }
 
-    /** Allocates space for Dataset raw data. */
     public long allocateDataObjectData(long dataSize) {
         if (dataSize < 0L) throw new IllegalArgumentException("Data size cannot be negative.");
         return allocateBlock(dataSize);
     }
 
-    /** Allocates space for a new SNOD block and tracks its offset. */
     public long allocateNextSnodStorage() {
         long allocationSize = SNOD_STORAGE_SIZE;
         if (allocationSize <= 0L) throw new IllegalStateException("SNOD storage size is not valid: " + allocationSize);
-        long offset = allocateBlock(allocationSize);
+        long offset = nextAvailableOffset;
         snodAllocationOffsets.add(offset);
+        nextAvailableOffset += allocationSize;
+        recalculateLayout();
         return offset;
     }
 
-    /** Expands storage for Local Heap contents, allocating a new block. */
     public long expandLocalHeapContents() {
         long oldSize = this.currentLocalHeapContentsSize;
         if (oldSize <= 0L) throw new IllegalStateException("Cannot expand heap with non-positive current tracked size: " + oldSize);
@@ -179,60 +194,67 @@ public final class HdfFileAllocation {
         return newOffset;
     }
 
-    /** Allocates space for a generic Object Header block. */
+    public long expandGlobalHeapBlock() {
+        if (secondGlobalHeapOffset == -1L) {
+            throw new IllegalStateException("Second global heap block not yet allocated.");
+        }
+        long oldSize = globalHeapBlockSizes.getOrDefault(secondGlobalHeapOffset, GLOBAL_HEAP_BLOCK_SIZE);
+        long newSize = oldSize * 2L;
+        // Update size in place, assuming block is at end of file
+        nextAvailableOffset = secondGlobalHeapOffset + newSize;
+        globalHeapBlockSizes.put(secondGlobalHeapOffset, newSize);
+        return secondGlobalHeapOffset;
+    }
+
     public long allocateNextObjectHeader(long totalHeaderSize) {
         if (totalHeaderSize <= 0L) throw new IllegalArgumentException("Object Header total size must be positive.");
         return allocateBlock(totalHeaderSize);
     }
 
-    /** Allocates the first Global Heap block. */
     public long allocateFirstGlobalHeapBlock() {
         if (globalHeapOffset != -1L) throw new IllegalStateException("Global heap already allocated at " + globalHeapOffset);
-        long offset = allocateBlock(GLOBAL_HEAP_BLOCK_SIZE);
+        globalHeapBlockCount = 1;
+        long size = GLOBAL_HEAP_BLOCK_SIZE; // 4096 bytes for first block
+        long offset = allocateBlock(size);
+        globalHeapBlockSizes.put(offset, size);
         this.globalHeapOffset = offset;
         return offset;
     }
 
-    /** Allocates a subsequent Global Heap block. */
     public long allocateNextGlobalHeapBlock() {
-        return allocateBlock(GLOBAL_HEAP_BLOCK_SIZE);
+        if (globalHeapBlockCount >= 2) {
+            throw new IllegalStateException("Only two global heap blocks allowed.");
+        }
+        globalHeapBlockCount = 2;
+        long size = GLOBAL_HEAP_BLOCK_SIZE; // 4096 bytes for second block
+        long offset = allocateBlock(size);
+        globalHeapBlockSizes.put(offset, size);
+        this.secondGlobalHeapOffset = offset;
+        return offset;
     }
 
-    /**
-     * Checks whether a global heap block has been allocated.
-     *
-     * @return true if a global heap block has been allocated, false otherwise.
-     */
+    public long getGlobalHeapBlockSize(long offset) {
+        return globalHeapBlockSizes.getOrDefault(offset, GLOBAL_HEAP_BLOCK_SIZE);
+    }
+
     public boolean hasGlobalHeapAllocation() {
         return globalHeapOffset != -1L;
     }
 
-    // --- Dataset Specific Allocation Methods ---
-
-    /** Allocates initial space for a dataset's object header. */
     public DatasetAllocationInfo allocateDatasetStorage(String datasetName) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (datasetName.isEmpty()) throw new IllegalArgumentException("Dataset name cannot be empty");
         if (datasetAllocations.containsKey(datasetName)) throw new IllegalStateException("Dataset '" + datasetName + "' already allocated.");
         long headerAllocSize = DEFAULT_DATASET_HEADER_ALLOCATION_SIZE;
-        long headerOffset;
-        if (datasetAllocations.isEmpty()) {
-            // For the first dataset, place header at 800 (after local heap contents)
-            headerOffset = initialLocalHeapContentsOffset + initialLocalHeapContentsSize; // 712 + 88 = 800
-            nextAvailableOffset = headerOffset + headerAllocSize; // 800 + 272 = 1072
-        } else {
-            // For subsequent datasets, use nextAvailableOffset and recalculate
-            headerOffset = allocateBlock(headerAllocSize);
-            recalculateLayout(); // Adjust layout for additional datasets
-        }
+        long headerOffset = nextAvailableOffset;
+        nextAvailableOffset += headerAllocSize;
         DatasetAllocationInfo info = new DatasetAllocationInfo(headerOffset, headerAllocSize);
         datasetAllocations.put(datasetName, info);
+        recalculateLayout();
         return info;
     }
 
-    /** Increases header size and triggers layout recalculation (before data lock). */
     public void increaseHeaderAllocation(String datasetName, long newTotalHeaderSize) {
-        if (dataBlocksAllocated) throw new IllegalStateException("Cannot increase header allocation after data blocks have been allocated.");
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         DatasetAllocationInfo targetInfo = datasetAllocations.get(datasetName);
         if (targetInfo == null) throw new IllegalStateException("Dataset '" + datasetName + "' not found.");
@@ -241,7 +263,6 @@ public final class HdfFileAllocation {
         recalculateLayout();
     }
 
-    /** Allocates the data block, updates info, and sets the global header resize lock. */
     public long allocateAndSetDataBlock(String datasetName, long dataSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (dataSize < 0L) throw new IllegalArgumentException("Data size cannot be negative.");
@@ -249,20 +270,15 @@ public final class HdfFileAllocation {
         if (info == null) throw new IllegalStateException("Dataset '" + datasetName + "' not found.");
         if (info.getDataOffset() != -1L || info.getDataSize() != -1L) throw new IllegalStateException("Data block for '" + datasetName + "' already allocated.");
 
-        // Ensure data block starts at or after MIN_DATA_OFFSET_THRESHOLD
         if (nextAvailableOffset < MIN_DATA_OFFSET_THRESHOLD) {
             nextAvailableOffset = MIN_DATA_OFFSET_THRESHOLD;
         }
         long dataOffset = allocateBlock(dataSize);
         info.setDataOffset(dataOffset);
         info.setDataSize(dataSize);
-        if (!this.dataBlocksAllocated) {
-            this.dataBlocksAllocated = true;
-        }
         return dataOffset;
     }
 
-    /** Allocates the continuation block and updates info. */
     public long allocateAndSetContinuationBlock(String datasetName, long continuationSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (continuationSize <= 0L) throw new IllegalArgumentException("Continuation size must be positive.");
@@ -275,33 +291,27 @@ public final class HdfFileAllocation {
         return continuationOffset;
     }
 
-    // --- Getters ---
     public DatasetAllocationInfo getDatasetAllocationInfo(String datasetName) { return datasetAllocations.get(datasetName); }
     public Map<String, DatasetAllocationInfo> getAllDatasetAllocations() { return Collections.unmodifiableMap(new LinkedHashMap<>(datasetAllocations)); }
     public long getEndOfFileOffset() { return nextAvailableOffset; }
     public long getSuperblockSize() { return SUPERBLOCK_SIZE; }
-    public long getGlobalHeapOffset() { return globalHeapOffset; } // Returns offset of *first* allocated GH
-    public long getCurrentLocalHeapContentsOffset() { return currentLocalHeapContentsOffset; } // Offset of *current* LH Contents
-    public long getCurrentLocalHeapContentsSize() { return currentLocalHeapContentsSize; }     // Size of *current* LH Contents
-    public boolean isDataBlocksAllocated() { return dataBlocksAllocated; }
-    public long getObjectHeaderPrefixOffset() { return objectHeaderPrefixOffset; } // Root group OH prefix offset
-    public long getBtreeOffset() { return btreeOffset; }                         // Root group BTree node offset
+    public long getGlobalHeapOffset() { return globalHeapOffset; }
+    public long getCurrentLocalHeapContentsOffset() { return currentLocalHeapContentsOffset; }
+    public long getCurrentLocalHeapContentsSize() { return currentLocalHeapContentsSize; }
+    public boolean isDataBlocksAllocated() { return false; }
+    public long getObjectHeaderPrefixOffset() { return objectHeaderPrefixOffset; }
+    public long getBtreeOffset() { return btreeOffset; }
 
-    // ============================================
-    // === RESTORED GETTER ===
-    // ============================================
     /**
      * Gets the offset of the Local Heap *Header* block allocated during initial setup.
      * @return The offset of the setup Local Heap Header.
      */
     public long getLocalHeapOffset() {
-        return localHeapHeaderOffset; // Returns the calculated offset of the LH Header
+        return localHeapHeaderOffset;
     }
-    // ============================================
 
-    public long getSnodOffset() { return snodOffset; } // Root group SNOD offset
+    public long getSnodOffset() { return snodOffset; }
 
-    // --- NEW METHODS FOR ROOT GROUP ---
     /**
      * Gets the total size required for the root group's contiguous blocks:
      * object header prefix, B-tree, local heap header, and initial local heap contents.
@@ -320,9 +330,7 @@ public final class HdfFileAllocation {
     public long getRootGroupOffset() {
         return objectHeaderPrefixOffset;
     }
-    // --- END NEW METHODS ---
 
-    // --- NEW METHODS FOR SNOD TRACKING ---
     /**
      * Gets an unmodifiable list of all SNOD allocation offsets.
      * Each SNOD block has a fixed size defined by SNOD_STORAGE_SIZE.
@@ -331,58 +339,44 @@ public final class HdfFileAllocation {
     public List<Long> getAllSnodAllocationOffsets() {
         return Collections.unmodifiableList(new ArrayList<>(snodAllocationOffsets));
     }
-    // --- END NEW METHODS ---
 
-    // --- Utility / Reset ---
     public void reset() {
         this.nextAvailableOffset = 0L;
         calculateInitialLayout();
     }
 
-    /**
-     * Prints all allocated blocks in order of their offsets, including their names, sizes,
-     * and offsets in both decimal and hexadecimal format.
-     * Useful for debugging the layout of the HDF file allocation.
-     */
     public void printBlocks() {
         System.out.println("=== HDF File Allocation Layout ===");
         System.out.println("Current End of File Offset: " + nextAvailableOffset);
-        System.out.println("Data Blocks Allocated: " + dataBlocksAllocated);
         System.out.println("----------------------------------");
 
-        // Create a list to store all blocks with their details
         List<BlockInfo> blocks = new ArrayList<>();
-
-        // Add fixed setup blocks
         blocks.add(new BlockInfo("Superblock", superblockOffset, SUPERBLOCK_SIZE));
         blocks.add(new BlockInfo("Object Header Prefix", objectHeaderPrefixOffset, SETUP_OBJECT_HEADER_PREFIX_SIZE));
         blocks.add(new BlockInfo("B-tree (Node + Storage)", btreeOffset, btreeTotalSize));
         blocks.add(new BlockInfo("Local Heap Header", localHeapHeaderOffset, SETUP_LOCAL_HEAP_HEADER_SIZE));
         blocks.add(new BlockInfo("Initial Local Heap Contents", initialLocalHeapContentsOffset, initialLocalHeapContentsSize));
 
-        // Add dataset headers
         for (Map.Entry<String, DatasetAllocationInfo> entry : datasetAllocations.entrySet()) {
             String name = entry.getKey();
             DatasetAllocationInfo info = entry.getValue();
             blocks.add(new BlockInfo("Dataset Header (" + name + ")", info.getHeaderOffset(), info.getHeaderSize()));
         }
 
-        // Add SNOD blocks
         for (int i = 0; i < snodAllocationOffsets.size(); i++) {
             blocks.add(new BlockInfo("SNOD Block " + (i + 1), snodAllocationOffsets.get(i), SNOD_STORAGE_SIZE));
         }
 
-        // Add current local heap contents (if expanded beyond initial)
         if (currentLocalHeapContentsOffset != initialLocalHeapContentsOffset) {
             blocks.add(new BlockInfo("Expanded Local Heap Contents", currentLocalHeapContentsOffset, currentLocalHeapContentsSize));
         }
 
-        // Add global heap block (if allocated)
-        if (globalHeapOffset != -1L) {
-            blocks.add(new BlockInfo("Global Heap Block", globalHeapOffset, GLOBAL_HEAP_BLOCK_SIZE));
+        int blockNumber = 1;
+        for (Map.Entry<Long, Long> entry : globalHeapBlockSizes.entrySet()) {
+            blocks.add(new BlockInfo("Global Heap Block " + blockNumber, entry.getKey(), entry.getValue()));
+            blockNumber++;
         }
 
-        // Add dataset continuations
         for (Map.Entry<String, DatasetAllocationInfo> entry : datasetAllocations.entrySet()) {
             String name = entry.getKey();
             DatasetAllocationInfo info = entry.getValue();
@@ -391,7 +385,6 @@ public final class HdfFileAllocation {
             }
         }
 
-        // Add dataset data blocks
         for (Map.Entry<String, DatasetAllocationInfo> entry : datasetAllocations.entrySet()) {
             String name = entry.getKey();
             DatasetAllocationInfo info = entry.getValue();
@@ -400,13 +393,9 @@ public final class HdfFileAllocation {
             }
         }
 
-        // Sort blocks by offset
         blocks.sort(Comparator.comparingLong(BlockInfo::getOffset));
 
-        // Print header
         System.out.println("Offset (Dec) | Offset (Hex) | Size     | Name");
-
-        // Print all blocks
         for (BlockInfo block : blocks) {
             String hexOffset = String.format("0x%08X", block.getOffset());
             System.out.printf("%-12d | %-12s | %-8d | %s%n",
@@ -416,9 +405,6 @@ public final class HdfFileAllocation {
         System.out.println("==================================");
     }
 
-    /**
-     * Helper class to store block information for sorting and printing.
-     */
     private static class BlockInfo {
         private final String name;
         private final long offset;

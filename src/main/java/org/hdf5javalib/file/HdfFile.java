@@ -151,6 +151,8 @@ public class HdfFile implements Closeable, HdfDataFile {
             log.debug("{}", rootGroup);
             rootGroup.writeToFileChannel(seekableByteChannel);
 
+//            getGlobalHeap().printDebug();
+
             getGlobalHeap().writeToFileChannel(seekableByteChannel);
 
 //            // check here if global heap needs to be written

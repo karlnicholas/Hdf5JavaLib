@@ -61,7 +61,7 @@ int main() {
         DataSet dataset = file.createDataSet(DATASET_NAME, compound_type, dataspace);
 
         // --- Add Attribute ---
-        H5std_string attribute_value = "Revision: 1234, URL: http://example.com"; // The actual string content
+        H5std_string attribute_value = "Revision: , URL: "; // The actual string content
         StrType attr_type(PredType::C_S1, H5T_VARIABLE); // Define VLEN string type for attribute
         attr_type.setCset(H5T_CSET_ASCII);
         attr_type.setStrpad(H5T_STR_NULLTERM);

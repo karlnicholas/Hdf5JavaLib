@@ -45,18 +45,20 @@ public class HdfCompoundApp {
     }
 
     private void run() {
-        try {
-            String filePath = HdfCompoundApp.class.getResource("/compound_example.h5").getFile();
-            try (FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-                try ( HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup()) ) {
-                    displayData(channel, dataSet, reader);
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            String filePath = HdfCompoundApp.class.getResource("/compound_example.h5").getFile();
+//            try (FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                HdfFileReader reader = new HdfFileReader(channel).readFile();
+//                try ( HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup()) ) {
+//                    displayData(channel, dataSet, reader);
+//                }
+//                reader.getGlobalHeap().printDebug();
+//            }
+//
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 //        try {
 //            HdfFileReader reader = new HdfFileReader();
 //            String filePath = HdfCompoundApp.class.getResource("/compound_example_new.h5").getFile();
@@ -173,11 +175,14 @@ public class HdfCompoundApp {
             HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
             DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointApp.computeDataSpaceMessageSize(hdfDimensions));
 
+            file.getFileAllocation().printBlocks();
             // Create dataset
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, compoundType, dataSpaceMessage);
+            file.getFileAllocation().printBlocks();
 
             // ADD ATTRIBUTE: "GIT root revision"
             writeVersionAttribute(file, dataset);
+            file.getFileAllocation().printBlocks();
 
             AtomicInteger countHolder = new AtomicInteger(0);
             ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
@@ -207,8 +212,11 @@ public class HdfCompoundApp {
                 return buffer;
             });
 
+            file.getFileAllocation().printBlocks();
             dataset.close();
+            file.getFileAllocation().printBlocks();
             file.close();
+            file.getFileAllocation().printBlocks();
 
             // auto close
 

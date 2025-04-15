@@ -165,7 +165,7 @@ public class CompoundDatatype implements HdfDatatype {
 
     @Override
     public short getSizeMessageData() {
-        short size = 0;
+        short size = 8; // confused here for 0 and 8
         for (CompoundMemberDatatype member : members) {
             size += member.getSizeMessageData();
         }

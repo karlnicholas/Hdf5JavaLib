@@ -1,7 +1,5 @@
 package org.hdf5javalib.file.infrastructure;
 
-// Added import for the singleton
-
 import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
@@ -10,7 +8,6 @@ import org.hdf5javalib.file.HdfFileAllocation;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -20,26 +17,14 @@ import java.util.TreeMap;
 public class HdfGlobalHeap {
     private static final String SIGNATURE = "GCOL";
     private static final int VERSION = 1;
-    // REMOVED: Alignment constant, now uses HdfFileAllocation.GLOBAL_HEAP_BLOCK_SIZE
 
-    // Stores heap objects keyed by their starting offset in the file
     private final Map<Long, TreeMap<Integer, GlobalHeapObject>> heapCollections;
-    // Optional: Store other per-heap metadata if needed for write/add operations later
     private final Map<Long, HdfFixedPoint> collectionSizes;
     private final Map<Long, Integer> nextObjectIds;
-
-    // Track the offset of the heap currently being written to
     private long currentWriteHeapOffset = -1L;
-
-    // Keep interfaces, but GlobalHeapInitialize is adapted
     private final GlobalHeapInitialize initialize;
-
     private final HdfDataFile dataFile;
 
-    /**
-     * Constructor for use cases where heaps might need lazy initialization via callback
-     * (typically during reading).
-     */
     public HdfGlobalHeap(GlobalHeapInitialize initialize, HdfDataFile dataFile) {
         this.initialize = initialize;
         this.dataFile = dataFile;
@@ -49,10 +34,6 @@ public class HdfGlobalHeap {
         this.currentWriteHeapOffset = -1L;
     }
 
-    /**
-     * Constructor for use cases focused on writing or creating new heaps.
-     * Does not support lazy initialization via callback.
-     */
     public HdfGlobalHeap(HdfDataFile dataFile) {
         this.dataFile = dataFile;
         this.initialize = null;
@@ -62,10 +43,6 @@ public class HdfGlobalHeap {
         this.currentWriteHeapOffset = -1L;
     }
 
-    /**
-     * Retrieves the data bytes for a specific object within a specific global heap collection.
-     * (Method body unchanged)
-     */
     public byte[] getDataBytes(long heapOffset, int objectId) {
         if (objectId == 0) {
             throw new IllegalArgumentException("Cannot request data bytes for Global Heap Object ID 0 (null terminator)");
@@ -92,14 +69,8 @@ public class HdfGlobalHeap {
         return obj.getData();
     }
 
-    /**
-     * Reads a single global heap collection starting from the fileChannel's current position.
-     * Stores the read objects mapped to their starting file offset.
-     * (Method body formatting corrected, logic unchanged from baseline)
-     */
     public void readFromFileChannel(SeekableByteChannel fileChannel, short ignoredOffsetSize) throws IOException {
-        long startOffset = fileChannel.position(); // Record the starting offset
-
+        long startOffset = fileChannel.position();
         ByteBuffer headerBuffer = ByteBuffer.allocate(16);
         headerBuffer.order(ByteOrder.LITTLE_ENDIAN);
         int bytesRead = fileChannel.read(headerBuffer);
@@ -120,37 +91,23 @@ public class HdfGlobalHeap {
             throw new IllegalArgumentException("Unsupported global heap version: " + version + " at offset: " + startOffset);
         }
 
-        headerBuffer.position(headerBuffer.position() + 3); // Skip reserved bytes
-
+        headerBuffer.position(headerBuffer.position() + 3);
         HdfFixedPoint localCollectionSize = HdfFixedPoint.readFromByteBuffer(headerBuffer, (short) 8, new BitSet(), (short) 0, (short) 64);
         long declaredSize = localCollectionSize.getInstance(Long.class);
 
-        // Check declared size against file bounds and minimum header size
         if (declaredSize < 16 || (startOffset + declaredSize > fileChannel.size())) {
-            // Check if declaredSize goes beyond EOF, or if it's impossibly small
             if (startOffset + declaredSize > fileChannel.size() && declaredSize >= 16) {
-                // Allow reading if declaredSize matches *exactly* the remaining file size? Maybe?
-                // H5py seems to allow reading partially written files sometimes.
-                // For now, let's be strict.
                 throw new IllegalArgumentException("Declared collection size " + declaredSize + " at offset " + startOffset + " exceeds file size " + fileChannel.size());
             } else if (declaredSize < 16) {
                 throw new IllegalArgumentException("Declared collection size " + declaredSize + " is less than minimum header size (16) at offset " + startOffset);
             }
-            // Note: Original check was slightly different, this seems more robust. Revert if needed.
-            // Original: if (declaredSize < 16 || declaredSize > fileChannel.size() - startOffset)
         }
 
-        // Calculate object buffer size
         int objectDataBufferSize = (int) (declaredSize - 16);
-//        int objectDataBufferSize = (int) (declaredSize);
         if (objectDataBufferSize < 0) {
-            // This condition implies declaredSize < 16, which should be caught above.
-            // However, a heap needs space for at least the null terminator (16 bytes) if it contains any objects.
-            // A declaredSize of exactly 16 (empty heap) might be valid but rare.
-            // If declaredSize is > 16, objectDataBufferSize must be >= 16 to hold the null terminator.
             if (declaredSize > 16 && objectDataBufferSize < 16) {
                 throw new IllegalArgumentException("Declared size " + declaredSize + " at offset " + startOffset + " implies insufficient space ("+objectDataBufferSize+" bytes) for null terminator object.");
-            } else if (objectDataBufferSize < 0) { // Should be unreachable if declaredSize check is correct
+            } else if (objectDataBufferSize < 0) {
                 throw new IllegalArgumentException("Declared size " + declaredSize + " is too small for heap header at offset " + startOffset);
             }
         }
@@ -166,36 +123,25 @@ public class HdfGlobalHeap {
             objectBuffer.flip();
         }
 
-        // Read objects into a local map for this specific heap
         TreeMap<Integer, GlobalHeapObject> localObjects = new TreeMap<>();
         int localNextObjectId = 1;
 
         try {
-            if (objectBuffer != null) { // Only process if buffer exists
+            if (objectBuffer != null) {
                 while (objectBuffer.hasRemaining()) {
-                    // Check space for header before attempting read
                     if (objectBuffer.remaining() < 16) {
-                        // If remaining bytes < header size, it must be trailing padding.
-                        // Valid heaps end with ID 0. If we didn't find ID 0, this is an error state.
-                        break; // Assume padding and exit loop
+                        break;
                     }
-
                     GlobalHeapObject obj = GlobalHeapObject.readFromByteBuffer(objectBuffer);
-
-                    // Check for the null terminator object
                     if (obj.getObjectId() == 0) {
-                        break; // Stop reading objects for this heap
+                        break;
                     }
-
-                    // Check for duplicate object IDs within the same heap
                     if (localObjects.containsKey(obj.getObjectId())) {
                         throw new RuntimeException("Duplicate object ID " + obj.getObjectId() + " found in heap at offset: " + startOffset);
                     }
-                    // Check if ID is reasonable (HDF5 uses unsigned short, so 1 to 65535)
                     if (obj.getObjectId() < 1 || obj.getObjectId() > 0xFFFF) {
                         throw new RuntimeException("Invalid object ID " + obj.getObjectId() + " found in heap at offset: " + startOffset);
                     }
-
                     localObjects.put(obj.getObjectId(), obj);
                     localNextObjectId = Math.max(localNextObjectId, obj.getObjectId() + 1);
                 }
@@ -204,23 +150,11 @@ public class HdfGlobalHeap {
             throw new IOException("Unexpected error processing global heap object data buffer at offset: " + startOffset, e);
         }
 
-
-        // Store the successfully read heap data mapped by its start offset
         this.heapCollections.put(startOffset, localObjects);
-        this.collectionSizes.put(startOffset, localCollectionSize); // Store declared size read from header
-        this.nextObjectIds.put(startOffset, localNextObjectId); // Store next available ID based on max found
+        this.collectionSizes.put(startOffset, localCollectionSize);
+        this.nextObjectIds.put(startOffset, localNextObjectId);
     }
 
-
-    /**
-     * Adds data as a new object to the currently active global heap collection.
-     * If the active heap is full, it adds a null terminator to the current heap,
-     * requests a new heap block allocation from HdfFileAllocation, updates the active heap,
-     * and adds the object to the new heap.
-     * Updates the in-memory representation only.
-     * Returns the 16-byte Global Heap ID structure referencing the new object.
-     * (Method body includes rollover logic)
-     */
     public byte[] addToHeap(byte[] bytes) {
         if (bytes == null) {
             throw new IllegalArgumentException("Input byte array cannot be null.");
@@ -228,28 +162,20 @@ public class HdfGlobalHeap {
 
         HdfFileAllocation fileAllocation = dataFile.getFileAllocation();
 
-        // --- Determine Current Heap Offset ---
         if (this.currentWriteHeapOffset == -1L) {
-            // First time adding, get the offset from allocation manager
             this.currentWriteHeapOffset = fileAllocation.getGlobalHeapOffset();
             if (this.currentWriteHeapOffset == -1L) {
-                // Ensure first block is allocated *before* trying to add
-                // This might require calling allocateFirstGlobalHeapBlock externally first.
-                // For now, throw indicating it needs allocation.
                 throw new IllegalStateException("The first Global Heap block has not been allocated yet. Call HdfFileAllocation.allocateFirstGlobalHeapBlock() first.");
             }
         }
         long currentHeapOffset = this.currentWriteHeapOffset;
 
-        // Get or create the object map for the current heap
         TreeMap<Integer, GlobalHeapObject> targetObjects = heapCollections.computeIfAbsent(currentHeapOffset, k -> new TreeMap<>());
 
-        // --- Size Calculation & Check ---
-        long currentUsedSize = 16; // Start with main heap header size
+        long currentUsedSize = 16;
         for (GlobalHeapObject existingObj : targetObjects.values()) {
-            if (existingObj.getObjectId() == 0) continue; // Skip null terminator if already present
-
-            currentUsedSize += 16; // Object header
+            if (existingObj.getObjectId() == 0) continue;
+            currentUsedSize += 16;
             long existingObjectSize = existingObj.getObjectSize();
             if (existingObjectSize > Integer.MAX_VALUE) {
                 throw new IllegalStateException("Existing object " + existingObj.getObjectId() + " size too large to calculate padding.");
@@ -260,47 +186,36 @@ public class HdfGlobalHeap {
 
         int newObjectDataSize = bytes.length;
         int newObjectPadding = getPadding(newObjectDataSize);
-        long newObjectRequiredSize = 16L + newObjectDataSize + newObjectPadding; // Header + data + padding
+        long newObjectRequiredSize = 16L + newObjectDataSize + newObjectPadding;
 
-        // Check if adding the new object AND the null terminator (16 bytes) exceeds the block size
-        if (currentUsedSize + newObjectRequiredSize + 16L > HdfFileAllocation.GLOBAL_HEAP_BLOCK_SIZE) {
-
-            // --- Heap is Full: Close current, Allocate new ---
-
-            // 1. Calculate free space in the current (full) heap
-            currentUsedSize += 16L; // Add space needed for null terminator header itself
-            long freeSpace = HdfFileAllocation.GLOBAL_HEAP_BLOCK_SIZE - currentUsedSize;
-            if (freeSpace < 0) {
-                throw new IllegalStateException("Internal error: Calculated negative free space (" + freeSpace + ") for heap at offset " + currentHeapOffset);
+        long blockSize = fileAllocation.getGlobalHeapBlockSize(currentHeapOffset);
+        if (currentUsedSize + newObjectRequiredSize + 16L > blockSize) {
+            // Add null terminator only for first block transition
+            if (currentHeapOffset == fileAllocation.getGlobalHeapOffset()) {
+                currentUsedSize += 16L;
+                long freeSpace = blockSize - currentUsedSize;
+                if (freeSpace < 0) {
+                    throw new IllegalStateException("Internal error: Calculated negative free space (" + freeSpace + ") for heap at offset " + currentHeapOffset);
+                }
+                GlobalHeapObject nullTerminator = new GlobalHeapObject(0, 0, freeSpace, null);
+                targetObjects.put(0, nullTerminator);
+            } else {
+                // Remove existing null terminator for second block expansion
+                targetObjects.remove(0);
             }
 
-            // 2. Create and add the null terminator object to the *current* heap's map
-            GlobalHeapObject nullTerminator = new GlobalHeapObject(0, 0, freeSpace, null);
-            if (targetObjects.containsKey(0)) {
-                // This heap was already full and terminated, internal logic error
-                throw new IllegalStateException("Attempted to add null terminator to already terminated heap at offset " + currentHeapOffset);
+            long newHeapOffset;
+            if (currentHeapOffset == fileAllocation.getGlobalHeapOffset()) {
+                newHeapOffset = fileAllocation.allocateNextGlobalHeapBlock();
+            } else {
+                newHeapOffset = fileAllocation.expandGlobalHeapBlock();
             }
-            targetObjects.put(0, nullTerminator);
-
-            // 3. Allocate a new heap block
-            long newHeapOffset = fileAllocation.allocateNextGlobalHeapBlock();
-
-            // 4. Update internal state to point to the new heap
             this.currentWriteHeapOffset = newHeapOffset;
             currentHeapOffset = newHeapOffset;
-
-            // 5. Get/create the map for the new heap
             targetObjects = heapCollections.computeIfAbsent(currentHeapOffset, k -> new TreeMap<>());
-
-            // 6. Next ID for the new heap will be handled by getOrDefault below
-
-        } // --- End of Heap Full Handling ---
-
-
-        // --- Add Object to the (potentially new) Current Heap ---
+        }
 
         int currentNextId = nextObjectIds.getOrDefault(currentHeapOffset, 1);
-
         if (currentNextId > 0xFFFF) {
             throw new IllegalStateException("Maximum number of global heap objects (65535) exceeded for heap at offset " + currentHeapOffset);
         }
@@ -312,21 +227,13 @@ public class HdfGlobalHeap {
 
         ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN);
         buffer.putInt(newObjectDataSize);
-        buffer.putLong(currentHeapOffset); // Use offset where object was actually added
+        buffer.putLong(currentHeapOffset);
         buffer.putInt(objectId);
         return buffer.array();
     }
 
-    /**
-     * Writes all global heap collections to the file channel, positioning the channel
-     * at each heap's offset before writing.
-     *
-     * @param fileChannel The SeekableByteChannel to write to.
-     * @throws IOException If an I/O error occurs during writing.
-     */
     public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
         if (heapCollections.isEmpty()) {
-            // No heaps to write; could be valid if no objects added yet
             return;
         }
 
@@ -334,39 +241,34 @@ public class HdfGlobalHeap {
             long heapOffset = entry.getKey();
             TreeMap<Integer, GlobalHeapObject> objects = entry.getValue();
 
-            // Set channel position to this heap's offset
             fileChannel.position(heapOffset);
-
-            // Allocate buffer for this heap
             ByteBuffer buffer = ByteBuffer.allocate((int) getWriteBufferSize(heapOffset));
             buffer.order(ByteOrder.LITTLE_ENDIAN);
 
-            // Write header
             buffer.put(SIGNATURE.getBytes());
             buffer.put((byte) VERSION);
-            buffer.put(new byte[3]); // Reserved
+            buffer.put(new byte[3]);
             buffer.putLong(calculateAlignedTotalSize(heapOffset));
 
-            // Write all objects (including any pre-existing null terminator)
             for (GlobalHeapObject obj : objects.values()) {
                 obj.writeToByteBuffer(buffer);
             }
 
-            // If no null terminator exists, calculate and add one
             if (!objects.containsKey(0)) {
-                long usedSize = 16; // Header size
+                long usedSize = 16;
                 for (GlobalHeapObject obj : objects.values()) {
                     long objSize = obj.getObjectId() == 0 ? 16 : 16 + obj.getObjectSize() + getPadding((int) obj.getObjectSize());
                     usedSize += objSize;
                 }
-                long remainingSize = HdfFileAllocation.GLOBAL_HEAP_BLOCK_SIZE - usedSize;
+                long blockSize = dataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
+                long remainingSize = blockSize - usedSize;
                 if (remainingSize < 16) {
                     throw new IllegalStateException("Insufficient space for null terminator in heap at offset: " + heapOffset);
                 }
-                buffer.putShort((short) 0); // Object ID 0
-                buffer.putShort((short) 0); // Reference count 0
-                buffer.putInt(0); // Reserved
-                buffer.putLong(remainingSize); // Free space
+                buffer.putShort((short) 0);
+                buffer.putShort((short) 0);
+                buffer.putInt(0);
+                buffer.putLong(remainingSize);
             }
 
             buffer.flip();
@@ -374,47 +276,30 @@ public class HdfGlobalHeap {
         }
     }
 
-    /**
-     * Calculates the total size required for a specific heap collection, including header,
-     * objects, padding, and null terminator, aligned to GLOBAL_HEAP_BLOCK_SIZE.
-     *
-     * @param heapOffset The file offset identifying the heap collection.
-     * @return The total size in bytes.
-     */
     private long calculateAlignedTotalSize(long heapOffset) {
         TreeMap<Integer, GlobalHeapObject> objects = heapCollections.get(heapOffset);
         if (objects == null) {
             throw new IllegalStateException("No heap collection found at offset: " + heapOffset);
         }
 
-        long totalSize = 16; // Header size
+        long totalSize = 16;
         for (GlobalHeapObject obj : objects.values()) {
             long objSize = obj.getObjectId() == 0 ? 16 : 16 + obj.getObjectSize() + getPadding((int) obj.getObjectSize());
             totalSize += objSize;
         }
 
-        // If no null terminator, add its size (16 bytes)
         if (!objects.containsKey(0)) {
             totalSize += 16;
         }
 
-        // Align to GLOBAL_HEAP_BLOCK_SIZE
-        return alignTo(totalSize, (int) HdfFileAllocation.GLOBAL_HEAP_BLOCK_SIZE);
+        long blockSize = dataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
+        return alignTo(totalSize, (int) blockSize);
     }
 
-    /**
-     * Gets the required buffer size for writing a specific heap collection.
-     *
-     * @param heapOffset The file offset identifying the heap collection.
-     * @return The buffer size in bytes.
-     */
     public long getWriteBufferSize(long heapOffset) {
         return calculateAlignedTotalSize(heapOffset);
     }
 
-    // ========================================================================
-    // Helper Methods & Interfaces (Unchanged)
-    // ========================================================================
     private static long alignTo(long size, int alignment) {
         if (alignment <= 0 || (alignment & (alignment - 1)) != 0) {
             throw new IllegalArgumentException("Alignment must be a positive power of 2. Got: " + alignment);
@@ -439,19 +324,13 @@ public class HdfGlobalHeap {
     public interface GlobalHeapInitialize {
         void initializeCallback(long heapOffset);
     }
-    // REMOVED: Interface definition for GLobalHeapDataSegmentAddress
 
-
-    /**
-     * Inner class representing a single object within a global heap.
-     * (Class body unchanged)
-     */
     @Getter
     private static class GlobalHeapObject {
         private final int objectId;
         private final int referenceCount;
-        private final long objectSize; // Represents data size for ID!=0, free space for ID=0
-        private final byte[] data; // Null only for ID=0
+        private final long objectSize;
+        private final byte[] data;
 
         private GlobalHeapObject(int objectId, int referenceCount, long sizeOrFreeSpace, byte[] data) {
             this.objectId = objectId;
@@ -521,6 +400,5 @@ public class HdfGlobalHeap {
                 if (padding > 0) { buffer.put(new byte[padding]); }
             }
         }
-    } // End GlobalHeapObject inner class
-
-} // End HdfGlobalHeap class
+    }
+}
