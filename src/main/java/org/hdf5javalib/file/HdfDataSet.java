@@ -22,7 +22,6 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -257,6 +256,7 @@ public class HdfDataSet implements Closeable {
             // continuation messages
             updatedHeaderMessages.add(dataSpaceMessage);
             updatedHeaderMessages.addAll(attributes);
+            attributes.clear();
 //            int continueSize = dataSpaceMessage.getSizeMessageData() + 8 + attributeSize;
             headerMessages.clear();
             headerMessages.addAll(updatedHeaderMessages);
@@ -267,6 +267,7 @@ public class HdfDataSet implements Closeable {
         } else if ( objectHeaderSize + attributeSize  < headerSize-DATA_OBJECT_HEADER_MESSAGE_SIZE ) {
             if ( !attributes.isEmpty() ) {
                 headerMessages.addAll(attributes);
+                attributes.clear();
             }
             long nilSize = (headerSize - DATA_OBJECT_HEADER_MESSAGE_SIZE) - (objectHeaderSize + attributeSize) - 8;
             headerMessages.add(new NilMessage((int) nilSize, (byte)0, (short)nilSize));
@@ -283,7 +284,9 @@ public class HdfDataSet implements Closeable {
     private boolean checkContinuationMessageNeeded(int objectHeaderSize, int attributeSize, List<HdfMessage> headerMessages, long headerSize) {
         HdfFileAllocation fileAllocation = hdfGroup.getHdfFile().getFileAllocation();
         DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
-        if ( objectHeaderSize + attributeSize > headerSize && allocationInfo.getContinuationSize() <= 0) {
+        if ( objectHeaderSize + attributeSize > headerSize
+                && (allocationInfo.getContinuationSize() <= 0 || !attributes.isEmpty())
+        ) {
             HdfMessage dataspaceMessage = headerMessages.get(0);
             if ( !(dataspaceMessage instanceof DataspaceMessage)) {
                 throw new IllegalArgumentException("Dataspace message not found: " + dataspaceMessage.getClass().getName());
@@ -295,7 +298,9 @@ public class HdfDataSet implements Closeable {
                 fileAllocation.increaseHeaderAllocation(datasetName, headerSize);
             }
             int newContinuationSize = dataspaceMessage.getSizeMessageData() + 8 + attributeSize; // Calculate size first for clarity
-            fileAllocation.allocateAndSetContinuationBlock(datasetName, newContinuationSize);
+            if ( allocationInfo.getContinuationSize() < newContinuationSize ) {
+                fileAllocation.allocateAndSetContinuationBlock(datasetName, newContinuationSize);
+            }
             // set the object header size.
             // redo addresses already set.
 //            hdfGroup.getHdfFile().recomputeGlobalHeapAddress(this);

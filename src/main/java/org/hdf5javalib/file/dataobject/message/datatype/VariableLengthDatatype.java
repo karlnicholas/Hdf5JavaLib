@@ -157,8 +157,7 @@ public class VariableLengthDatatype implements HdfDatatype {
 
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        byte[] bytes = {0x13, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
-        buffer.put(bytes);
+        DatatypeMessage.writeDatatypeProperties(buffer, hdfDatatype);
     }
 
     // Inner Enum for Padding Type (Bits 0-3)

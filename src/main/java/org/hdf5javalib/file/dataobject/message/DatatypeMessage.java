@@ -95,6 +95,7 @@ public class DatatypeMessage extends HdfMessage {
 
     public static HdfDatatype getHdfDatatype(ByteBuffer buffer) {
         // Parse Version and Datatype Class (packed into a single byte)
+
         byte classAndVersion = buffer.get();
 //        byte version = (byte) ((classAndVersion >> 4) & 0x0F); // Top 4 bits
 //        byte dataTypeClass = (byte) (classAndVersion & 0x0F);  // Bottom 4 bits

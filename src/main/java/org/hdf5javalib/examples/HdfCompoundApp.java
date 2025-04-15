@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
-import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
@@ -16,7 +15,6 @@ import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.*;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -53,7 +51,7 @@ public class HdfCompoundApp {
 //                try ( HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup()) ) {
 //                    displayData(channel, dataSet, reader);
 //                }
-//                reader.getGlobalHeap().printDebug();
+////                reader.getGlobalHeap().printDebug();
 //            }
 //
 //        } catch (IOException e) {
@@ -83,11 +81,14 @@ public class HdfCompoundApp {
             // Create a new HDF5 file
             HdfFile file = new HdfFile(seekableByteChannel);
 
-            StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(),
-                    StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
-                    (short) 0);
+//            StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(),
+//                    StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
+//                    (short) 0);
+            FixedPointDatatype attributeType = new FixedPointDatatype(FixedPointDatatype.createClassAndVersion(),
+                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                    1, (short) 0, (short) 8);
             VariableLengthDatatype variableLengthDatatype = new VariableLengthDatatype(VariableLengthDatatype.createClassAndVersion(),
-                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_TERMINATE, VariableLengthDatatype.CharacterSet.ASCII),
+                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_PAD, VariableLengthDatatype.CharacterSet.ASCII),
                     (short) 16, attributeType);
             variableLengthDatatype.setGlobalHeap(file.getGlobalHeap());
 
