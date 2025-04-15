@@ -3,32 +3,7 @@ package org.hdf5javalib.utils;
 import java.nio.ByteBuffer;
 
 public class HdfDebugUtils {
-//    public static void printData(FileChannel fileChannel, CompoundDatatype compoundDataType, long dataAddress, long dimension ) throws IOException {
-//        Object[] data = new Object[17];
-//        fileChannel.position(dataAddress);
-//        for ( int i=0; i <dimension; ++i) {
-//            ByteBuffer dataBuffer = ByteBuffer.allocate(compoundDataType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
-//            fileChannel.read(dataBuffer);
-//            dataBuffer.flip();
-//            for ( int column = 0; column < compoundDataType.getMembers().size(); ++column ) {
-//                CompoundMemberDatatype member = compoundDataType.getMembers().get(column);
-//                dataBuffer.position(member.getOffset());
-//                if (member.getType() instanceof StringDatatype) {
-//                    data[column] = ((StringDatatype) member.getType()).getInstance(dataBuffer);
-//                } else if (member.getType() instanceof FixedPointDatatype) {
-//                    data[column] = ((FixedPointDatatype) member.getType()).getInstance(dataBuffer);
-//                } else if (member.getType() instanceof FloatingPointDatatype) {
-//                    data[column] = ((FloatingPointDatatype) member.getType()).getInstance(dataBuffer);
-//                } else {
-//                    throw new UnsupportedOperationException("Member type " + member.getType() + " not yet implemented.");
-//                }
-//            }
-//            System.out.println(Arrays.toString(data));
-//        }
-//
-//    }
-
-    public static void dumpByteBuffer(ByteBuffer buffer) {
+    public static void dumpByteBuffer(ByteBuffer buffer, long fileOffset) {
         int bytesPerLine = 16; // 16 bytes per row
         int limit = buffer.limit();
         buffer.rewind(); // Reset position to 0 before reading
@@ -36,8 +11,8 @@ public class HdfDebugUtils {
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < limit; i += bytesPerLine) {
-            // Print the address (memory offset in hex)
-            sb.append(String.format("%08X:  ", i));
+            // Print the address (file offset + i in hex)
+            sb.append(String.format("%08X:  ", fileOffset + i));
 
             StringBuilder ascii = new StringBuilder();
 

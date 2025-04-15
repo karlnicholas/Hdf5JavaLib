@@ -33,9 +33,9 @@ public class HdfTestWriteUtils {
 
             System.out.println("Difference found at offset: 0x" + Integer.toHexString(diffOffset).toUpperCase());
             System.out.println("Java bytes (masked):");
-            HdfDebugUtils.dumpByteBuffer(ByteBuffer.wrap(javaWindow));
+            HdfDebugUtils.dumpByteBuffer(ByteBuffer.wrap(javaWindow), start); // Pass file offset
             System.out.println("C++ bytes (masked):");
-            HdfDebugUtils.dumpByteBuffer(ByteBuffer.wrap(cppWindow));
+            HdfDebugUtils.dumpByteBuffer(ByteBuffer.wrap(cppWindow), start); // Pass file offset
 
             throw new AssertionError("Byte arrays differ at offset 0x" + Integer.toHexString(diffOffset).toUpperCase() + " (excluding timestamp)");
         }

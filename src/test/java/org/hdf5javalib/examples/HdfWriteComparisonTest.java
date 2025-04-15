@@ -64,7 +64,7 @@ public class HdfWriteComparisonTest {
                     1, (byte) dimensions.length, DataspaceMessage.buildFlagSet(true, false),
                     hdfDimensions, hdfDimensions, false, (byte) 0, computeDataSpaceMessageSize(hdfDimensions));
             HdfDataSet dataset = file.createDataSet(datasetName, datatype, dataSpaceMessage);
-            HdfDisplayUtils.writeVersionAttribute(dataset);
+            HdfDisplayUtils.writeVersionAttribute(file, dataset);
             writer.accept(dataset);
             dataset.close();
             file.close();

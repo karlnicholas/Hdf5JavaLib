@@ -121,6 +121,7 @@ public class HdfGroup implements Closeable {
         }
 
         // write SNOD for group.
+        hdfFile.getFileAllocation().printBlocks();
 
         Map<Long, HdfGroupSymbolTableNode> mapOffsetToSnod = bTree.mapOffsetToSnod();
         ByteBuffer snodBuffer = ByteBuffer.allocate((int)HdfFileAllocation.getSNOD_STORAGE_SIZE()).order(ByteOrder.LITTLE_ENDIAN);

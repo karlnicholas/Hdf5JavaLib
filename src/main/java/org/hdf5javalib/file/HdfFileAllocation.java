@@ -116,9 +116,6 @@ public final class HdfFileAllocation {
             }
         }
 
-        // Apply MIN_DATA_OFFSET_THRESHOLD for subsequent blocks
-        currentOffset = Math.max(MIN_DATA_OFFSET_THRESHOLD, currentOffset);
-
         // Place first allocated global heap block, if any
         if (globalHeapOffset != -1L) {
             globalHeapOffset = currentOffset;
