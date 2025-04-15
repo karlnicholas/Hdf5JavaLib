@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
+import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
@@ -15,6 +16,7 @@ import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.*;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -43,20 +45,20 @@ public class HdfCompoundApp {
     }
 
     private void run() {
-//        try {
-//            String filePath = HdfCompoundApp.class.getResource("/compound_example.h5").getFile();
-//            try (FileInputStream fis = new FileInputStream(filePath)) {
-//                FileChannel channel = fis.getChannel();
-//                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                try ( HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup()) ) {
-//                    displayData(channel, dataSet, reader);
-//                }
-////                reader.getGlobalHeap().printDebug();
-//            }
-//
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+        try {
+            String filePath = HdfCompoundApp.class.getResource("/compound_example.h5").getFile();
+            try (FileInputStream fis = new FileInputStream(filePath)) {
+                FileChannel channel = fis.getChannel();
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+                try ( HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup()) ) {
+                    displayData(channel, dataSet, reader);
+                }
+//                reader.getGlobalHeap().printDebug();
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 //        try {
 //            HdfFileReader reader = new HdfFileReader();
 //            String filePath = HdfCompoundApp.class.getResource("/compound_example_new.h5").getFile();
@@ -68,7 +70,7 @@ public class HdfCompoundApp {
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
-        tryHdfApiCompound();
+//        tryHdfApiCompound();
     }
 
     public void tryHdfApiCompound() {

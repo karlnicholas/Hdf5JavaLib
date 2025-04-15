@@ -204,8 +204,8 @@ public class VariableLengthDatatype implements HdfDatatype {
         }
 
         public static PaddingType fromBitSet(BitSet bits) {
-            int value = (bits.get(4) ? 1 : 0) | (bits.get(5) ? 2 : 0) |
-                    (bits.get(6) ? 4 : 0) | (bits.get(7) ? 8 : 0);
+            int value = (bits.get(0) ? 1 : 0) | (bits.get(1) ? 2 : 0) |
+                    (bits.get(2) ? 4 : 0) | (bits.get(3) ? 8 : 0);
             return fromValue(value);
         }
     }
@@ -248,8 +248,8 @@ public class VariableLengthDatatype implements HdfDatatype {
         }
 
         public static CharacterSet fromBitSet(BitSet bits) {
-            int value = (bits.get(8) ? 1 : 0) | (bits.get(9) ? 2 : 0) |
-                    (bits.get(10) ? 4 : 0) | (bits.get(11) ? 8 : 0);
+            int value = (bits.get(4) ? 1 : 0) | (bits.get(5) ? 2 : 0) |
+                    (bits.get(6) ? 4 : 0) | (bits.get(7) ? 8 : 0);
             return fromValue(value);
         }
     }
