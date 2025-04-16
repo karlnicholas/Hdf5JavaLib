@@ -147,73 +147,109 @@ public class HdfDataSet implements Closeable {
     }
 
     public AttributeMessage createAttribute(String name, String value, HdfDataFile hdfDataFile) {
-
         boolean requiresGlobalHeap = hdfDatatype.requiresGlobalHeap(false);
 
-        HdfDatatype attributeType;
-        if (requiresGlobalHeap) {
-            FixedPointDatatype fixedAttributeType = new FixedPointDatatype(FixedPointDatatype.createClassAndVersion(),
-                    FixedPointDatatype.createClassBitField(false, false, false, false),
-                    1, (short) 0, (short) 8);
-            attributeType = new VariableLengthDatatype(VariableLengthDatatype.createClassAndVersion(),
-                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_PAD, VariableLengthDatatype.CharacterSet.ASCII),
-                    (short) 16, fixedAttributeType);
+        // Create datatype and messages
+        HdfDatatype attributeType = createAttributeType(requiresGlobalHeap);
+        DatatypeMessage datatypeMessage = createDatatypeMessage(attributeType);
+        DataspaceMessage dataspaceMessage = createDataspaceMessage();
 
-        } else {
-            attributeType = new StringDatatype(StringDatatype.createClassAndVersion(),
-                    StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
-                    (short) 0);
-        }
-        short dataTypeMessageSize = 8;
+        // Calculate sizes with 8-byte alignment
+        int nameSize = alignTo8Bytes(name.length());
+        int valueSize = calculateValueSize(value, requiresGlobalHeap);
+        int attributeMessageSize = 8 + nameSize + datatypeMessage.getSizeMessageData() +
+                dataspaceMessage.getSizeMessageData() + valueSize;
 
-        dataTypeMessageSize += attributeType.getSizeMessageData();
-        // to 8 byte boundary
-        dataTypeMessageSize += ((dataTypeMessageSize + 7) & ~7);
-        DatatypeMessage dt = new DatatypeMessage(attributeType, (byte)1, dataTypeMessageSize);
+        // Create and register attribute message
+        AttributeMessage attributeMessage = new AttributeMessage(
+                1,
+                new HdfString(name.getBytes(StandardCharsets.US_ASCII),
+                        new StringDatatype(StringDatatype.createClassAndVersion(),
+                                StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE,
+                                        StringDatatype.CharacterSet.ASCII), name.length() + 1)),
+                datatypeMessage,
+                dataspaceMessage,
+                null,
+                (byte) 0,
+                (short) attributeMessageSize
+        );
 
-        HdfFixedPoint[] hdfDimensions = {};
-        short dataSpaceMessageSize = 8;
-        DataspaceMessage ds = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), null, null, false, (byte)0, dataSpaceMessageSize);
-
-        byte[] nameBytes = new byte[name.length()];
-        System.arraycopy(name.getBytes(StandardCharsets.US_ASCII), 0, nameBytes, 0, name.length());
-        short attributeMessageSize = 8;
-        int nameSize = name.toString().length();
-        nameSize = (short) ((nameSize + 7) & ~7);
-        int datatypeSize = 8; // datatypeMessage.getSizeMessageData();
-        int dataspaceSize = 8; // dataspaceMessage.getSizeMessageData();
-
-
-        int valueSize;
-        if (requiresGlobalHeap) {
-            valueSize = 16+16;
-        } else {
-            valueSize = value != null ? value.toString().length() : 0;
-            valueSize = (short) ((valueSize + 7) & ~7);
-
-        }
-
-        attributeMessageSize += nameSize + datatypeSize + dataspaceSize + valueSize;
-        AttributeMessage attributeMessage = new AttributeMessage(1,
-                new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII), name.length()+1)),
-                dt, ds, null, (byte)0, attributeMessageSize);
         attributes.add(attributeMessage);
         updateForAttribute();
-        HdfData attributeValue;
-        if (requiresGlobalHeap) {
-            VariableLengthDatatype variableLengthDatatype = new VariableLengthDatatype(VariableLengthDatatype.createClassAndVersion(),
-                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_TERMINATE, VariableLengthDatatype.CharacterSet.ASCII),
-                    (short) 16, attributeType);
-            variableLengthDatatype.setGlobalHeap(hdfDataFile.getGlobalHeap());
-            hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            byte[] globalHeapBytes = hdfDataFile.getGlobalHeap().addToHeap(value.getBytes(StandardCharsets.US_ASCII));
-            attributeValue = new HdfVariableLength(globalHeapBytes, variableLengthDatatype);
-        } else {
-            attributeValue = new HdfString(value.getBytes(), (StringDatatype) attributeType);
-        }
+
+        // Set attribute value
+        HdfData attributeValue = createAttributeValue(value, attributeType, requiresGlobalHeap, hdfDataFile);
         attributeMessage.setValue(attributeValue);
 
         return attributeMessage;
+    }
+
+    private HdfDatatype createAttributeType(boolean requiresGlobalHeap) {
+        if (requiresGlobalHeap) {
+            FixedPointDatatype fixedType = new FixedPointDatatype(
+                    FixedPointDatatype.createClassAndVersion(),
+                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                    1, (short) 0, (short) 8
+            );
+            VariableLengthDatatype variableLengthType = new VariableLengthDatatype(
+                    VariableLengthDatatype.createClassAndVersion(),
+                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.Type.STRING, VariableLengthDatatype.PaddingType.NULL_PAD,
+                            VariableLengthDatatype.CharacterSet.ASCII),
+                    (short) 16, fixedType
+            );
+            return variableLengthType;
+        }
+        return new StringDatatype(
+                StringDatatype.createClassAndVersion(),
+                StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE,
+                        StringDatatype.CharacterSet.ASCII),
+                (short) 0
+        );
+    }
+
+    private DatatypeMessage createDatatypeMessage(HdfDatatype attributeType) {
+        short dataTypeMessageSize = (short) (8 + attributeType.getSizeMessageData());
+        dataTypeMessageSize = alignTo8Bytes(dataTypeMessageSize);
+        return new DatatypeMessage(attributeType, (byte) 1, dataTypeMessageSize);
+    }
+
+    private DataspaceMessage createDataspaceMessage() {
+        HdfFixedPoint[] hdfDimensions = {};
+        short dataSpaceMessageSize = 8;
+        return new DataspaceMessage(
+                1, 0, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false),
+                null, null, false, (byte) 0, dataSpaceMessageSize
+        );
+    }
+
+    private HdfData createAttributeValue(String value, HdfDatatype attributeType,
+                                         boolean requiresGlobalHeap, HdfDataFile hdfDataFile) {
+        if (requiresGlobalHeap) {
+            VariableLengthDatatype variableLengthType = new VariableLengthDatatype(
+                    VariableLengthDatatype.createClassAndVersion(),
+                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.Type.STRING, VariableLengthDatatype.PaddingType.NULL_TERMINATE,
+                            VariableLengthDatatype.CharacterSet.ASCII),
+                    (short) 16, attributeType
+            );
+            hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            variableLengthType.setGlobalHeap(hdfDataFile.getGlobalHeap());
+            byte[] globalHeapBytes = hdfDataFile.getGlobalHeap().addToHeap(
+                    value.getBytes(StandardCharsets.US_ASCII));
+            return new HdfVariableLength(globalHeapBytes, variableLengthType);
+        }
+        return new HdfString(value.getBytes(StandardCharsets.US_ASCII), (StringDatatype) attributeType);
+    }
+
+    private short alignTo8Bytes(int size) {
+        return (short) ((size + 7) & ~7);
+    }
+
+    private int calculateValueSize(String value, boolean requiresGlobalHeap) {
+        if (requiresGlobalHeap) {
+            return 32; // Fixed size for global heap: 16 (address) + 16 (size)
+        }
+        int length = (value != null) ? value.length() : 0;
+        return alignTo8Bytes(length);
     }
 
     /**

@@ -90,7 +90,7 @@ public class HdfCompoundApp {
                     FixedPointDatatype.createClassBitField(false, false, false, false),
                     1, (short) 0, (short) 8);
             VariableLengthDatatype variableLengthDatatype = new VariableLengthDatatype(VariableLengthDatatype.createClassAndVersion(),
-                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.PaddingType.NULL_PAD, VariableLengthDatatype.CharacterSet.ASCII),
+                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.Type.STRING, VariableLengthDatatype.PaddingType.NULL_PAD, VariableLengthDatatype.CharacterSet.ASCII),
                     (short) 16, attributeType);
             variableLengthDatatype.setGlobalHeap(file.getGlobalHeap());
 

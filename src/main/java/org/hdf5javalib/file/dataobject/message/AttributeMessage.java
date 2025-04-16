@@ -163,7 +163,7 @@ public class AttributeMessage extends HdfMessage {
         // Pad to 8-byte boundary
         position = buffer.position();
         buffer.position((position + 7) & ~7);
-        // not right
+        // better
 
         if ( value instanceof HdfVariableLength) {
             value.writeValueToByteBuffer(buffer);
