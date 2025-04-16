@@ -194,21 +194,24 @@ public class HdfCompoundApp {
                         .recordId(count + 1000L)
                         .fixedStr("FixedData")
                         .varStr("varStr:" + (count + 1))
-                        .floatVal(3.14F)
-                        .doubleVal(2.718D)
-                        .int8_Val(int8_Val(count))
-                        .uint8_Val(uint8_Val(count))
-                        .int16_Val(int16_Val(count))
-                        .uint16_Val(uint16_Val(count))
-                        .int32_Val(int32_Val(count))
-                        .uint32_Val(uint32_Val(count))
-                        .int64_Val(int64_Val(count))
-                        .uint64_Val(uint64_Val(count))
+                        .floatVal(((float)count)*3.14F)
+                        .doubleVal(((double)count)*2.718D)
+                        .int8_Val(getCycledInt8(count))
+                        .uint8_Val(getCycledUint8(count))
+                        .int16_Val(getCycledInt16(count))
+                        .uint16_Val(getCycledUint16(count))
+                        .int32_Val(getCycledInt32(count))
+                        .uint32_Val(getCycledUint32(count))
+                        .int64_Val(getCycledInt64(count))
+                        .uint64_Val(getCycledUint64(count))
                         .scaledUintVal(BigDecimal.valueOf(count + 1).add(BigDecimal.valueOf((count % 4) * 0.25)))
                         .build();
                 buffer.clear();
                 HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, buffer, CompoundExample.class);
                 buffer.position(0);
+                BigDecimal scaledUintVal = BigDecimal.valueOf(count + 1).add(BigDecimal.valueOf((count % 4) * 0.25));
+                log.info("scaledUintVal: {}", scaledUintVal.longValue());
+                log.info("Bytes at 88: {}", Arrays.toString(Arrays.copyOfRange(buffer.array(), 88, 96)));
                 return buffer;
             });
 
@@ -305,79 +308,120 @@ public class HdfCompoundApp {
         new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, MonitoringData.class).streamVector().forEach(System.out::println);
     }
 
-    private static final int CYCLE_LENGTH = 10;
+        private static final int CYCLE_LENGTH = 5;
 
-    // Signed byte: -128 to 127
-    public static byte int8_Val(int index) {
-        double min = Byte.MIN_VALUE;  // -128
-        double max = Byte.MAX_VALUE;  // 127
-        double step = (max - min) / (CYCLE_LENGTH - 1);
-        double value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
-        return (byte) value;
-    }
+        // --- Signed Types ---
 
-    // Unsigned byte: 0 to 255
-    public static short uint8_Val(int index) {
-        int min = 0;
-        int max = 255;
-        int range = max - min;
-        int step = range / (CYCLE_LENGTH - 1);
-        int value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
-        return (short) value; // Short to hold 0-255
-    }
+        public static byte getCycledInt8(int index) {
+            int cycleIndex = index % CYCLE_LENGTH;
+            switch (cycleIndex) {
+                case 0: return Byte.MIN_VALUE;                            // -128 (0x80)
+                case 1: return (byte) (-(Byte.MAX_VALUE / 2) - 1);        //  -64 (0xC0) approx
+                case 2: return 0;                                         //    0 (0x00)
+                case 3: return (byte) (Byte.MAX_VALUE / 2);               //   63 (0x3F) approx
+                case 4: default: return Byte.MAX_VALUE;                   //  127 (0x7F)
+            }
+        }
 
-    // Signed short: -32768 to 32767
-    public static short int16_Val(int index) {
-        double min = Short.MIN_VALUE;  // -32768
-        double max = Short.MAX_VALUE;  // 32767
-        double step = (max - min) / (CYCLE_LENGTH - 1);
-        double value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
-        return (short) value;
-    }
+        public static short getCycledInt16(int index) {
+            int cycleIndex = index % CYCLE_LENGTH;
+            switch (cycleIndex) {
+                case 0: return Short.MIN_VALUE;
+                case 1: return (short) (-(Short.MAX_VALUE / 2) - 1);
+                case 2: return 0;
+                case 3: return (short) (Short.MAX_VALUE / 2);
+                case 4: default: return Short.MAX_VALUE;
+            }
+        }
 
-    // Unsigned short: 0 to 65535
-    public static int uint16_Val(int index) {
-        int min = 0;
-        int max = 65535;
-        int range = max - min;
-        int step = range / (CYCLE_LENGTH - 1);
-        return (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step; // Int to hold 0-65535
-    }
+        public static int getCycledInt32(int index) {
+            int cycleIndex = index % CYCLE_LENGTH;
+            switch (cycleIndex) {
+                case 0: return Integer.MIN_VALUE;
+                case 1: return -(Integer.MAX_VALUE / 2) - 1;
+                case 2: return 0;
+                case 3: return Integer.MAX_VALUE / 2;
+                case 4: default: return Integer.MAX_VALUE;
+            }
+        }
 
-    // Signed int: -2147483648 to 2147483647
-    public static int int32_Val(int index) {
-        double min = Integer.MIN_VALUE;  // -2147483648
-        double max = Integer.MAX_VALUE;  // 2147483647
-        double step = (max - min) / (CYCLE_LENGTH - 1);
-        double value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
-        return (int) value;
-    }
+        public static long getCycledInt64(int index) {
+            int cycleIndex = index % CYCLE_LENGTH;
+            switch (cycleIndex) {
+                case 0: return Long.MIN_VALUE;
+                case 1: return -(Long.MAX_VALUE / 2) - 1;
+                case 2: return 0L;
+                case 3: return Long.MAX_VALUE / 2;
+                case 4: default: return Long.MAX_VALUE;
+            }
+        }
 
-    // Unsigned int: 0 to 4294967295
-    public static long uint32_Val(int index) {
-        long min = 0;
-        long max = 4294967295L;
-        long range = max - min;
-        long step = range / (CYCLE_LENGTH - 1);
-        return (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step; // Long to hold 0-4294967295
-    }
+        // --- Unsigned Types (Return next larger signed type to hold value) ---
+        // --- Or return 'long' for uint64 and handle bit pattern ---
 
-    // Signed long: -9223372036854775808 to 9223372036854775807
-    public static long int64_Val(int index) {
-        double min = Long.MIN_VALUE;  // -9223372036854775808
-        double max = Long.MAX_VALUE;  // 9223372036854775807
-        double step = (max - min) / (CYCLE_LENGTH - 1);
-        double value = (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max : min + (index % CYCLE_LENGTH) * step;
-        return (long) value;
-    }
+        public static short getCycledUint8(int index) { // Returns short to hold 0-255
+            int cycleIndex = index % CYCLE_LENGTH;
+            switch (cycleIndex) {
+                case 0: return 0;                     // 0x00
+                case 1: return 255 / 4;               // 63 (0x3F) approx
+                case 2: return 255 / 2;               // 127 (0x7F) approx
+                case 3: return (255 / 4) * 3;         // 189 (0xBD) approx
+                case 4: default: return 255;          // 255 (0xFF)
+            }
+        }
 
-    // Unsigned long: 0 to 18446744073709551615
-    public static BigInteger uint64_Val(int index) {
-        BigInteger min = BigInteger.ZERO;
-        BigInteger max = new BigInteger("18446744073709551615");
-        BigInteger range = max.subtract(min);
-        BigInteger step = range.divide(BigInteger.valueOf(CYCLE_LENGTH - 1));
-        return (index % CYCLE_LENGTH == CYCLE_LENGTH - 1) ? max :
-                min.add(BigInteger.valueOf(index % CYCLE_LENGTH).multiply(step)); // BigInteger to hold 0-18446744073709551615
-    }
+        public static int getCycledUint16(int index) { // Returns int to hold 0-65535
+            int cycleIndex = index % CYCLE_LENGTH;
+            int max_val = 65535; // 0xFFFF
+            switch (cycleIndex) {
+                case 0: return 0;
+                case 1: return max_val / 4;
+                case 2: return max_val / 2;
+                case 3: return (max_val / 4) * 3;
+                case 4: default: return max_val;
+            }
+        }
+
+        public static long getCycledUint32(int index) { // Returns long to hold 0-(2^32-1)
+            int cycleIndex = index % CYCLE_LENGTH;
+            long max_val = 0xFFFFFFFFL; // (1L << 32) - 1;
+            switch (cycleIndex) {
+                case 0: return 0L;
+                case 1: return max_val / 4L;
+                case 2: return max_val / 2L;
+                case 3: return (max_val / 4L) * 3L;
+                case 4: default: return max_val;
+            }
+        }
+
+        // For uint64, we can return long and rely on the bit pattern being correct,
+        // or use BigInteger if the HDF5 library specifically needs that. Assuming primitive:
+        public static BigInteger getCycledUint64(int index) { // Returns long, bit pattern matches uint64
+            int cycleIndex = index % CYCLE_LENGTH;
+            // Use BigInteger for calculation constants to avoid signed long issues
+            BigInteger MAX_U64 = new BigInteger("18446744073709551615"); // 2^64 - 1
+            BigInteger FOUR = BigInteger.valueOf(4);
+            BigInteger TWO = BigInteger.valueOf(2);
+            BigInteger THREE = BigInteger.valueOf(3);
+
+            switch (cycleIndex) {
+                case 0: return BigInteger.ZERO;
+                case 1: return MAX_U64.divide(FOUR);
+                case 2: return MAX_U64.divide(TWO);
+                case 3: return MAX_U64.divide(FOUR).multiply(THREE);
+                case 4: default: return MAX_U64; // Max unsigned 64 bit is -1L signed
+            }
+        }
+
+        // Example usage in your Java HDF5 writer:
+        // ... inside loop ...
+        // record.setInt8_Val(CycleHelper.getCycledInt8(i));
+        // // For unsigned, the HDF5 writer needs to know how to interpret the returned signed type
+        // // E.g., if writing uint8, pass the 'short' returned by getCycledUint8
+        // short uint8_val = CycleHelper.getCycledUint8(i);
+        // hdf5Writer.writeUint8Field(uint8_val); // Assuming writer handles this
+        // int uint16_val = CycleHelper.getCycledUint16(i);
+        // long uint32_val = CycleHelper.getCycledUint32(i);
+        // long uint64_bits = CycleHelper.getCycledUint64(i);
+        // ... etc ...
 }
