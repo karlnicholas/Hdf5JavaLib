@@ -81,9 +81,9 @@ int main() {
         // ... (rest of the data preparation loop remains the same) ...
         std::vector<Record> records(NUM_RECORDS);
         std::vector<std::string> varStrings(NUM_RECORDS); // Manages string lifetimes
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<int> dist(1, 1900);
+        // std::random_device rd;
+        // std::mt19937 gen(rd());
+        // std::uniform_int_distribution<int> dist(1, 1900);
 
         std::cout << "Info: Preparing " << NUM_RECORDS << " records..." << std::endl;
         for (size_t i = 0; i < NUM_RECORDS; ++i) {
@@ -91,7 +91,7 @@ int main() {
             records[i].recordId = 1000 + i;
             std::strncpy(records[i].fixedStr, "FixedData", sizeof(records[i].fixedStr) - 1);
             records[i].fixedStr[sizeof(records[i].fixedStr) - 1] = '\0';
-            varStrings[i] = "varStr:" + std::to_string(dist(gen));
+            varStrings[i] = "varStr:" + std::to_string(i+1);
             records[i].varStr = const_cast<char*>(varStrings[i].c_str()); // Correct for dataset write
             records[i].floatVal = static_cast<float>(i) * 3.14f;
             records[i].doubleVal = static_cast<double>(i) * 2.718;

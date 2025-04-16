@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HdfCompoundAppTest {
-    private static final String FULL_RECORD_STRING = "1000, FixedData, varStr:1860, 5.877472E-39, 1.1125369292536007E-308, -128, 0, -32768, 0, -2147483648, 0, -9223372036854775808, 0, 1.0000000";
+    private static final String FULL_RECORD_STRING = "1000, FixedData, varStr:1, 5.877472E-39, 1.1125369292536007E-308, -128, 0, -32768, 0, -2147483648, 0, -9223372036854775808, 0, 1.0000000";
     private static final List<BigDecimal> TEN_BIG_DECIMALS = List.of(
             new BigDecimal("1.0000000"), new BigDecimal("2.2500000"), new BigDecimal("3.5000000"),
             new BigDecimal("4.7500000"), new BigDecimal("5.0000000"), new BigDecimal("6.2500000"),
@@ -111,7 +111,7 @@ public class HdfCompoundAppTest {
             CompoundExample first = compoundRecords[0];
             assertEquals(1000L, first.getRecordId());
             assertEquals("FixedData", first.getFixedStr());
-            assertEquals("varStr:1860", first.getVarStr());
+            assertEquals("varStr:1", first.getVarStr());
             assertEquals(5.8774717541114375E-39F, first.getFloatVal(), 1E-45F);
             assertEquals(1.1125369292536007E-308, first.getDoubleVal(), 1E-310);
             assertEquals(-128, first.getInt8_Val().byteValue());
@@ -132,7 +132,7 @@ public class HdfCompoundAppTest {
             assertEquals(14, hdfFirst.getMembers().size());
             assertEquals(1000L, hdfFirst.getMembers().get(0).getInstance(Long.class));
             assertEquals("FixedData", hdfFirst.getMembers().get(1).getInstance(String.class));
-            assertEquals("varStr:1860", hdfFirst.getMembers().get(2).getInstance(String.class));
+            assertEquals("varStr:1", hdfFirst.getMembers().get(2).getInstance(String.class));
             assertEquals(new BigDecimal("1.0000000"), hdfFirst.getMembers().get(13).getInstance(BigDecimal.class));
 
             // Test with String

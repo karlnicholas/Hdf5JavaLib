@@ -12,15 +12,15 @@ import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 @Slf4j
 public class HdfGlobalHeap {
     private static final String SIGNATURE = "GCOL";
     private static final int VERSION = 1;
 
-    private final Map<Long, TreeMap<Integer, GlobalHeapObject>> heapCollections;
+    private final Map<Long, LinkedHashMap<Integer, GlobalHeapObject>> heapCollections;
     private final Map<Long, HdfFixedPoint> collectionSizes;
     private final Map<Long, Integer> nextObjectIds;
     private long currentWriteHeapOffset = -1L;
@@ -49,7 +49,7 @@ public class HdfGlobalHeap {
         if (objectId == 0) {
             throw new IllegalArgumentException("Cannot request data bytes for Global Heap Object ID 0 (null terminator)");
         }
-        TreeMap<Integer, GlobalHeapObject> specificHeapObjects = heapCollections.get(heapOffset);
+        LinkedHashMap<Integer, GlobalHeapObject> specificHeapObjects = heapCollections.get(heapOffset);
         if (specificHeapObjects == null) {
             if (initialize != null) {
                 initialize.initializeCallback(heapOffset);
@@ -125,7 +125,7 @@ public class HdfGlobalHeap {
             objectBuffer.flip();
         }
 
-        TreeMap<Integer, GlobalHeapObject> localObjects = new TreeMap<>();
+        LinkedHashMap<Integer, GlobalHeapObject> localObjects = new LinkedHashMap<>();
         int localNextObjectId = 1;
 
         try {
@@ -136,6 +136,7 @@ public class HdfGlobalHeap {
                     }
                     GlobalHeapObject obj = GlobalHeapObject.readFromByteBuffer(objectBuffer);
                     if (obj.getObjectId() == 0) {
+                        localObjects.put(obj.getObjectId(), obj);
                         break;
                     }
                     if (localObjects.containsKey(obj.getObjectId())) {
@@ -172,11 +173,10 @@ public class HdfGlobalHeap {
         }
         long currentHeapOffset = this.currentWriteHeapOffset;
 
-        TreeMap<Integer, GlobalHeapObject> targetObjects = heapCollections.computeIfAbsent(currentHeapOffset, k -> new TreeMap<>());
+        LinkedHashMap<Integer, GlobalHeapObject> targetObjects = heapCollections.computeIfAbsent(currentHeapOffset, k -> new LinkedHashMap<>());
 
         long currentUsedSize = 16;
         for (GlobalHeapObject existingObj : targetObjects.values()) {
-            if (existingObj.getObjectId() == 0) continue;
             currentUsedSize += 16;
             long existingObjectSize = existingObj.getObjectSize();
             if (existingObjectSize > Integer.MAX_VALUE) {
@@ -192,18 +192,14 @@ public class HdfGlobalHeap {
 
         long blockSize = fileAllocation.getGlobalHeapBlockSize(currentHeapOffset);
         if (currentUsedSize + newObjectRequiredSize + 16L > blockSize) {
-            // Add null terminator only for first block transition
-            if (currentHeapOffset == fileAllocation.getGlobalHeapOffset()) {
-                currentUsedSize += 16L;
-                long freeSpace = blockSize - currentUsedSize;
-                if (freeSpace < 0) {
-                    throw new IllegalStateException("Internal error: Calculated negative free space (" + freeSpace + ") for heap at offset " + currentHeapOffset);
-                }
+            // Add null terminator to mark the block as full
+            long freeSpace = blockSize - currentUsedSize;
+            if (freeSpace < 16) {
+                throw new IllegalStateException("Insufficient space for null terminator in heap at offset " + currentHeapOffset);
+            }
+            if (!targetObjects.containsKey(0)) {
                 GlobalHeapObject nullTerminator = new GlobalHeapObject(0, 0, freeSpace, null);
                 targetObjects.put(0, nullTerminator);
-            } else {
-                // Remove existing null terminator for second block expansion
-                targetObjects.remove(0);
             }
 
             long newHeapOffset;
@@ -214,7 +210,10 @@ public class HdfGlobalHeap {
             }
             this.currentWriteHeapOffset = newHeapOffset;
             currentHeapOffset = newHeapOffset;
-            targetObjects = heapCollections.computeIfAbsent(currentHeapOffset, k -> new TreeMap<>());
+            targetObjects = heapCollections.computeIfAbsent(currentHeapOffset, k -> new LinkedHashMap<>());
+        } else if (targetObjects.containsKey(0)) {
+            // Remove null terminator to allow new object insertion
+            targetObjects.remove(0);
         }
 
         int currentNextId = nextObjectIds.getOrDefault(currentHeapOffset, 1);
@@ -239,9 +238,9 @@ public class HdfGlobalHeap {
             return;
         }
 
-        for (Map.Entry<Long, TreeMap<Integer, GlobalHeapObject>> entry : heapCollections.entrySet()) {
+        for (Map.Entry<Long, LinkedHashMap<Integer, GlobalHeapObject>> entry : heapCollections.entrySet()) {
             long heapOffset = entry.getKey();
-            TreeMap<Integer, GlobalHeapObject> objects = entry.getValue();
+            LinkedHashMap<Integer, GlobalHeapObject> objects = entry.getValue();
 
             fileChannel.position(heapOffset);
             ByteBuffer buffer = ByteBuffer.allocate((int) getWriteBufferSize(heapOffset));
@@ -279,7 +278,7 @@ public class HdfGlobalHeap {
     }
 
     private long calculateAlignedTotalSize(long heapOffset) {
-        TreeMap<Integer, GlobalHeapObject> objects = heapCollections.get(heapOffset);
+        LinkedHashMap<Integer, GlobalHeapObject> objects = heapCollections.get(heapOffset);
         if (objects == null) {
             throw new IllegalStateException("No heap collection found at offset: " + heapOffset);
         }

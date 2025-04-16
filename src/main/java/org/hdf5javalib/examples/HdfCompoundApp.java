@@ -193,7 +193,7 @@ public class HdfCompoundApp {
                 CompoundExample instance = CompoundExample.builder()
                         .recordId(count + 1000L)
                         .fixedStr("FixedData")
-                        .varStr("varData:" + (int)(Math.random() * 1900))
+                        .varStr("varStr:" + (count + 1))
                         .floatVal(3.14F)
                         .doubleVal(2.718D)
                         .int8_Val(int8_Val(count))
