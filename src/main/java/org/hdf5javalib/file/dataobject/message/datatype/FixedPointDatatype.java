@@ -79,8 +79,8 @@ public class FixedPointDatatype implements HdfDatatype {
 
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        buffer.putShort(bitOffset);         // 4
-        buffer.putShort(bitPrecision);      // 4
+        buffer.putShort(bitOffset);         // 2
+        buffer.putShort(bitPrecision);      // 2
     }
 
     @Override
@@ -91,6 +91,7 @@ public class FixedPointDatatype implements HdfDatatype {
     @Override
     public short getSizeMessageData() {
         return (short) (8 + 8);
+//        return (short) 4;
     }
 
     @Override

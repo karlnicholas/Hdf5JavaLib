@@ -83,7 +83,9 @@ public class HdfDataSet implements Closeable {
         headerMessages.add(dataTypeMessage);
 
         // Add FillValue message
-        FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 2, 1,
+        // not sure what's going on with fillValueWriteTime.
+//        FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 0, 1,
+        FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 0, 1,
                 0,
                 new byte[0], (byte)1, (short)8);
         headerMessages.add(fillValueMessage);
@@ -157,7 +159,7 @@ public class HdfDataSet implements Closeable {
         // Calculate sizes with 8-byte alignment
         int nameSize = alignTo8Bytes(name.length());
         int valueSize = calculateValueSize(value, requiresGlobalHeap);
-        int attributeMessageSize = 8 + nameSize + datatypeMessage.getSizeMessageData() +
+        int attributeMessageSize = 12 + nameSize + datatypeMessage.getSizeMessageData() +
                 dataspaceMessage.getSizeMessageData() + valueSize;
 
         // Create and register attribute message
@@ -208,8 +210,12 @@ public class HdfDataSet implements Closeable {
     }
 
     private DatatypeMessage createDatatypeMessage(HdfDatatype attributeType) {
-        short dataTypeMessageSize = (short) (8 + attributeType.getSizeMessageData());
-        dataTypeMessageSize = alignTo8Bytes(dataTypeMessageSize);
+//        short dataTypeMessageSize = (short) (8 + attributeType.getSizeMessageData());
+//        dataTypeMessageSize = alignTo8Bytes(dataTypeMessageSize);
+        short dataTypeMessageSize = 0;
+        dataTypeMessageSize += attributeType.getSizeMessageData();
+        // to 8 byte boundary
+//        dataTypeMessageSize = (short) ((dataTypeMessageSize + 7) & ~7);
         return new DatatypeMessage(attributeType, (byte) 1, dataTypeMessageSize);
     }
 

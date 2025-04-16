@@ -45,20 +45,20 @@ public class HdfCompoundApp {
     }
 
     private void run() {
-//        try {
-//            String filePath = HdfCompoundApp.class.getResource("/compound_example.h5").getFile();
-//            try (FileInputStream fis = new FileInputStream(filePath)) {
-//                FileChannel channel = fis.getChannel();
-//                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                try ( HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup()) ) {
-//                    displayData(channel, dataSet, reader);
-//                }
-////                reader.getGlobalHeap().printDebug();
-//            }
-//
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+        try {
+            String filePath = HdfCompoundApp.class.getResource("/compound_example.h5").getFile();
+            try (FileInputStream fis = new FileInputStream(filePath)) {
+                FileChannel channel = fis.getChannel();
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+                try ( HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup()) ) {
+                    displayData(channel, dataSet, reader);
+                }
+//                reader.getGlobalHeap().printDebug();
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 //        try {
 //            HdfFileReader reader = new HdfFileReader();
 //            String filePath = HdfCompoundApp.class.getResource("/compound_example_new.h5").getFile();
@@ -70,7 +70,7 @@ public class HdfCompoundApp {
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
-        tryHdfApiCompound();
+//        tryHdfApiCompound();
     }
 
     public void tryHdfApiCompound() {
@@ -90,7 +90,7 @@ public class HdfCompoundApp {
                     FixedPointDatatype.createClassBitField(false, false, false, false),
                     1, (short) 0, (short) 8);
             VariableLengthDatatype variableLengthDatatype = new VariableLengthDatatype(VariableLengthDatatype.createClassAndVersion(),
-                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.Type.STRING, VariableLengthDatatype.PaddingType.NULL_PAD, VariableLengthDatatype.CharacterSet.ASCII),
+                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.Type.STRING, VariableLengthDatatype.PaddingType.NULL_TERMINATE, VariableLengthDatatype.CharacterSet.ASCII),
                     (short) 16, attributeType);
             variableLengthDatatype.setGlobalHeap(file.getGlobalHeap());
 

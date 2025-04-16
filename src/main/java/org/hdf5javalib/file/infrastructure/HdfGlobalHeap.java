@@ -242,8 +242,11 @@ public class HdfGlobalHeap {
             long heapOffset = entry.getKey();
             LinkedHashMap<Integer, GlobalHeapObject> objects = entry.getValue();
 
+            long heapSize = this.dataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
             fileChannel.position(heapOffset);
-            ByteBuffer buffer = ByteBuffer.allocate((int) getWriteBufferSize(heapOffset));
+//            ByteBuffer buffer = ByteBuffer.allocate((int) getWriteBufferSize(heapOffset));
+            int size1 = (int) getWriteBufferSize(heapOffset);
+            ByteBuffer buffer = ByteBuffer.allocate((int)heapSize);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
 
             buffer.put(SIGNATURE.getBytes());
@@ -272,7 +275,8 @@ public class HdfGlobalHeap {
                 buffer.putLong(remainingSize);
             }
 
-            buffer.flip();
+//            buffer.flip();
+            buffer.rewind();
             fileChannel.write(buffer);
         }
     }
