@@ -193,7 +193,7 @@ public class HdfDataSet implements Closeable {
             );
             VariableLengthDatatype variableLengthType = new VariableLengthDatatype(
                     VariableLengthDatatype.createClassAndVersion(),
-                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.Type.STRING, VariableLengthDatatype.PaddingType.NULL_PAD,
+                    VariableLengthDatatype.createClassBitField(VariableLengthDatatype.Type.STRING, VariableLengthDatatype.PaddingType.NULL_TERMINATE,
                             VariableLengthDatatype.CharacterSet.ASCII),
                     (short) 16, fixedType
             );
@@ -246,7 +246,7 @@ public class HdfDataSet implements Closeable {
 
     private int calculateValueSize(String value, boolean requiresGlobalHeap) {
         if (requiresGlobalHeap) {
-            return 32; // Fixed size for global heap: 16 (address) + 16 (size)
+            return 16; // + 16; // Fixed size for global heap: 16 (address) + 16 (size)
         }
         int length = (value != null) ? value.length() : 0;
         return alignTo8Bytes(length);
