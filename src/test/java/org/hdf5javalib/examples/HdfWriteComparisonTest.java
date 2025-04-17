@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
@@ -34,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 public class HdfWriteComparisonTest {
@@ -50,7 +51,7 @@ public class HdfWriteComparisonTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideTestConfigurations")
-    void testWriteMatchesCpp(String testName, String refFile, String datasetName, int[] dimensions, FixedPointDatatype datatype, int timestampOffset, Consumer<HdfDataSet> writer) throws IOException {
+    void testWriteMatchesCpp(String testName, String refFile, String datasetName, int[] dimensions, FixedPointDatatype datatype, int timestampOffset, BiConsumer<HdfDataSet, HdfFile> writer) throws IOException {
         logger.info("Running test: {}", testName);
         int dataSize = dimensions[0] * (dimensions.length > 1 ? dimensions[1] : 1) * datatype.getSize();
         int headerSizeEstimate = 2048;
@@ -65,7 +66,7 @@ public class HdfWriteComparisonTest {
                     hdfDimensions, hdfDimensions, false, (byte) 0, computeDataSpaceMessageSize(hdfDimensions));
             HdfDataSet dataset = file.createDataSet(datasetName, datatype, dataSpaceMessage);
             HdfDisplayUtils.writeVersionAttribute(file, dataset);
-            writer.accept(dataset);
+            writer.accept(dataset, file);
             dataset.close();
             file.close();
 
@@ -82,7 +83,16 @@ public class HdfWriteComparisonTest {
     }
 
     @SneakyThrows
-    private static void writeVectorAll(HdfDataSet dataset) {
+    private static void writeVectorAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+
         int numRecords = 1000;
         ByteBuffer byteBuffer = ByteBuffer.allocate(numRecords * 8).order(ByteOrder.LITTLE_ENDIAN);
         for (int i = 0; i < numRecords; i++) {
@@ -93,7 +103,16 @@ public class HdfWriteComparisonTest {
     }
 
     @SneakyThrows
-    private static void writeVectorEach(HdfDataSet dataset) {
+    private static void writeVectorEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+
         int numRecords = 1000;
         AtomicInteger countHolder = new AtomicInteger(0);
         ByteBuffer byteBuffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
@@ -108,7 +127,16 @@ public class HdfWriteComparisonTest {
     }
 
     @SneakyThrows
-    private static void writeMatrixAll(HdfDataSet dataset) {
+    private static void writeMatrixAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+
         int numRecords = 4;
         int numDatapoints = 17;
         List<List<BigDecimal>> values = loadCsvData("/weatherdata.csv");
@@ -131,7 +159,16 @@ public class HdfWriteComparisonTest {
     }
 
     @SneakyThrows
-    private static void writeMatrixEach(HdfDataSet dataset) {
+    private static void writeMatrixEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+
         int numRecords = 4;
         int numDatapoints = 17;
         List<List<BigDecimal>> values = loadCsvData("/weatherdata.csv");
@@ -183,10 +220,10 @@ public class HdfWriteComparisonTest {
         short dataSpaceMessageSize = 8;
         if (hdfDimensions != null) {
             for (HdfFixedPoint dimension : hdfDimensions) {
-                dataSpaceMessageSize += dimension.getDatatype().getSize();
+                dataSpaceMessageSize += (short) dimension.getDatatype().getSize();
             }
             for (HdfFixedPoint maxDimension : hdfDimensions) {
-                dataSpaceMessageSize += maxDimension.getDatatype().getSize();
+                dataSpaceMessageSize += (short) maxDimension.getDatatype().getSize();
             }
         }
         return dataSpaceMessageSize;
@@ -202,10 +239,10 @@ public class HdfWriteComparisonTest {
                 FixedPointDatatype.createClassBitField(false, false, false, false),
                 (short) 4, (short) 7, (short) 25);
         return Stream.of(
-                Arguments.of("BulkWrite_Vector_1000", "vector.h5", "vector", new int[]{1000}, vectorDatatype, 932, (Consumer<HdfDataSet>) HdfWriteComparisonTest::writeVectorAll),
-                Arguments.of("IncrementalWrite_Vector_1000", "vector.h5", "vector", new int[]{1000}, vectorDatatype, 932, (Consumer<HdfDataSet>) HdfWriteComparisonTest::writeVectorEach),
-                Arguments.of("BulkWrite_Matrix_4x17", "weatherdata.h5", "weatherdata", new int[]{4, 17}, matrixDatatype, 0x322, (Consumer<HdfDataSet>) HdfWriteComparisonTest::writeMatrixAll),
-                Arguments.of("IncrementalWrite_Matrix_4x17", "weatherdata.h5", "weatherdata", new int[]{4, 17}, matrixDatatype, 0x322, (Consumer<HdfDataSet>) HdfWriteComparisonTest::writeMatrixEach)
+                Arguments.of("BulkWrite_Vector_1000", "vector.h5", "vector", new int[]{1000}, vectorDatatype, 932, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeVectorAll),
+                Arguments.of("IncrementalWrite_Vector_1000", "vector.h5", "vector", new int[]{1000}, vectorDatatype, 932, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeVectorEach),
+                Arguments.of("BulkWrite_Matrix_4x17", "weatherdata.h5", "weatherdata", new int[]{4, 17}, matrixDatatype, 0x322, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeMatrixAll),
+                Arguments.of("IncrementalWrite_Matrix_4x17", "weatherdata.h5", "weatherdata", new int[]{4, 17}, matrixDatatype, 0x322, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeMatrixEach)
         );
     }
 }
