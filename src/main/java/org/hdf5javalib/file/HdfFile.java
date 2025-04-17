@@ -75,15 +75,8 @@ public class HdfFile implements Closeable, HdfDataFile {
 //    }
 //
     public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
-        HdfFixedPoint[] dimensionSizes= hdfDataSet.getdimensionSizes();
-        long dataOffset = fileAllocation.allocateAndSetDataBlock(hdfDataSet.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = hdfDataSet.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!fileAllocation.hasGlobalHeapAllocation()) {
-                fileAllocation.allocateFirstGlobalHeapBlock();
-            }
-        }
-        seekableByteChannel.position(dataOffset);
+        DatasetAllocationInfo allocationInfo = hdfDataSet.getHdfGroup().getHdfFile().getFileAllocation().getDatasetAllocationInfo(hdfDataSet.getDatasetName());
+        seekableByteChannel.position(allocationInfo.getDataOffset());
         ByteBuffer buffer;
         while ((buffer = bufferSupplier.get()).hasRemaining()) {
             while (buffer.hasRemaining()) {
@@ -93,21 +86,11 @@ public class HdfFile implements Closeable, HdfDataFile {
     }
 
     public void write(ByteBuffer buffer, HdfDataSet hdfDataSet) throws IOException {
-        long dataOffset = fileAllocation.allocateAndSetDataBlock(hdfDataSet.getDatasetName(), buffer.limit());
-        boolean requiresGlobalHeap = hdfDataSet.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!fileAllocation.hasGlobalHeapAllocation()) {
-                fileAllocation.allocateFirstGlobalHeapBlock();
-            }
+        DatasetAllocationInfo allocationInfo = hdfDataSet.getHdfGroup().getHdfFile().getFileAllocation().getDatasetAllocationInfo(hdfDataSet.getDatasetName());
+        seekableByteChannel.position(allocationInfo.getDataOffset());
+        while (buffer.hasRemaining()) {
+            seekableByteChannel.write(buffer);
         }
-
-//        try (FileChannel fileChannel = FileChannel.open(Path.of(fileName), openOptions)) {
-            // fileChannel.position(bufferAllocation.getDataAddress());
-            seekableByteChannel.position(dataOffset);
-            while (buffer.hasRemaining()) {
-                seekableByteChannel.write(buffer);
-            }
-//        }
     }
 
     @Override

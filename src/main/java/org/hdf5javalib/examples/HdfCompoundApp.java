@@ -1,9 +1,6 @@
 package org.hdf5javalib.examples;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.HdfFileReader;
@@ -12,6 +9,7 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
+import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.*;
 import org.hdf5javalib.utils.HdfWriteUtils;
@@ -45,20 +43,20 @@ public class HdfCompoundApp {
     }
 
     private void run() {
-        try {
-            String filePath = HdfCompoundApp.class.getResource("/compound_example.h5").getFile();
-            try (FileInputStream fis = new FileInputStream(filePath)) {
-                FileChannel channel = fis.getChannel();
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-                try ( HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup()) ) {
-                    displayData(channel, dataSet, reader);
-                }
-//                reader.getGlobalHeap().printDebug();
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            String filePath = HdfCompoundApp.class.getResource("/compound_example.h5").getFile();
+//            try (FileInputStream fis = new FileInputStream(filePath)) {
+//                FileChannel channel = fis.getChannel();
+//                HdfFileReader reader = new HdfFileReader(channel).readFile();
+//                try ( HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup()) ) {
+//                    displayData(channel, dataSet, reader);
+//                }
+////                reader.getGlobalHeap().printDebug();
+//            }
+//
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 //        try {
 //            HdfFileReader reader = new HdfFileReader();
 //            String filePath = HdfCompoundApp.class.getResource("/compound_example_new.h5").getFile();
@@ -70,7 +68,7 @@ public class HdfCompoundApp {
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
-//        tryHdfApiCompound();
+        tryHdfApiCompound();
     }
 
     public void tryHdfApiCompound() {
@@ -83,9 +81,6 @@ public class HdfCompoundApp {
             // Create a new HDF5 file
             HdfFile file = new HdfFile(seekableByteChannel);
 
-//            StringDatatype attributeType = new StringDatatype(StringDatatype.createClassAndVersion(),
-//                    StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII),
-//                    (short) 0);
             FixedPointDatatype attributeType = new FixedPointDatatype(FixedPointDatatype.createClassAndVersion(),
                     FixedPointDatatype.createClassBitField(false, false, false, false),
                     1, (short) 0, (short) 8);
@@ -183,37 +178,34 @@ public class HdfCompoundApp {
 
             // ADD ATTRIBUTE: "GIT root revision"
             writeVersionAttribute(file, dataset);
-
-            AtomicInteger countHolder = new AtomicInteger(0);
-            ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
-            // Write to dataset
-            dataset.write(() -> {
-                int count = countHolder.getAndIncrement();
-                if (count >= NUM_RECORDS) return ByteBuffer.allocate(0);
-                CompoundExample instance = CompoundExample.builder()
-                        .recordId(count + 1000L)
-                        .fixedStr("FixedData")
-                        .varStr("varStr:" + (count + 1))
-                        .floatVal(((float)count)*3.14F)
-                        .doubleVal(((double)count)*2.718D)
-                        .int8_Val(getCycledInt8(count))
-                        .uint8_Val(getCycledUint8(count))
-                        .int16_Val(getCycledInt16(count))
-                        .uint16_Val(getCycledUint16(count))
-                        .int32_Val(getCycledInt32(count))
-                        .uint32_Val(getCycledUint32(count))
-                        .int64_Val(getCycledInt64(count))
-                        .uint64_Val(getCycledUint64(count))
-                        .scaledUintVal(BigDecimal.valueOf(count + 1).add(BigDecimal.valueOf((count % 4) * 0.25)))
-                        .build();
-                buffer.clear();
-                HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, buffer, CompoundExample.class);
-                buffer.position(0);
-                BigDecimal scaledUintVal = BigDecimal.valueOf(count + 1).add(BigDecimal.valueOf((count % 4) * 0.25));
-                log.info("scaledUintVal: {}", scaledUintVal.longValue());
-                log.info("Bytes at 88: {}", Arrays.toString(Arrays.copyOfRange(buffer.array(), 88, 96)));
-                return buffer;
-            });
+            writeCompoundAll(dataset, file);
+//            AtomicInteger countHolder = new AtomicInteger(0);
+//            ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
+//            // Write to dataset
+//            dataset.write(() -> {
+//                int count = countHolder.getAndIncrement();
+//                if (count >= NUM_RECORDS) return ByteBuffer.allocate(0);
+//                CompoundExample instance = CompoundExample.builder()
+//                        .recordId(count + 1000L)
+//                        .fixedStr("FixedData")
+//                        .varStr("varStr:" + (count + 1))
+//                        .floatVal(((float)count)*3.14F)
+//                        .doubleVal(((double)count)*2.718D)
+//                        .int8_Val(getCycledInt8(count))
+//                        .uint8_Val(getCycledUint8(count))
+//                        .int16_Val(getCycledInt16(count))
+//                        .uint16_Val(getCycledUint16(count))
+//                        .int32_Val(getCycledInt32(count))
+//                        .uint32_Val(getCycledUint32(count))
+//                        .int64_Val(getCycledInt64(count))
+//                        .uint64_Val(getCycledUint64(count))
+//                        .scaledUintVal(BigDecimal.valueOf(count + 1).add(BigDecimal.valueOf((count % 4) * 0.25)))
+//                        .build();
+//                buffer.clear();
+//                HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, buffer, CompoundExample.class);
+//                buffer.position(0);
+//                return buffer;
+//            });
 
             dataset.close();
             file.close();
@@ -225,6 +217,78 @@ public class HdfCompoundApp {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+    @SneakyThrows
+    private static void writeCompoundAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+
+        int numRecords = 1000;
+        CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();
+        int bufferSize = numRecords * compoundType.getSize();
+        ByteBuffer fileBuffer = ByteBuffer.allocate(bufferSize).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(compoundType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
+        for (int count = 0; count < numRecords; count++) {
+            CompoundExample instance = buildCompoundExample(count);
+            byteBuffer.clear();
+            HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, byteBuffer, CompoundExample.class);
+            byteBuffer.rewind();
+            fileBuffer.put(byteBuffer);
+        }
+        fileBuffer.rewind();
+        dataset.write(fileBuffer);
+    }
+
+    @SneakyThrows
+    private static void writeCompoundEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+
+        int numRecords = 1000;
+        CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();
+        int bufferSize = compoundType.getSize();
+        AtomicInteger countHolder = new AtomicInteger(0);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize).order(ByteOrder.LITTLE_ENDIAN);
+        dataset.write(() -> {
+            int count = countHolder.getAndIncrement();
+            if (count >= numRecords) return ByteBuffer.allocate(0);
+            CompoundExample instance = buildCompoundExample(count);
+            byteBuffer.clear();
+            HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, byteBuffer, CompoundExample.class);
+            byteBuffer.flip();
+            return byteBuffer;
+        });
+    }
+
+    private static CompoundExample buildCompoundExample(int count) {
+        return CompoundExample.builder()
+                .recordId(count + 1000L)
+                .fixedStr("FixedData")
+                .varStr("varStr:" + (count + 1))
+                .floatVal(((float) count) * 3.14F)
+                .doubleVal(((double) count) * 2.718D)
+                .int8_Val(getCycledInt8(count))
+                .uint8_Val(getCycledUint8(count))
+                .int16_Val(getCycledInt16(count))
+                .uint16_Val(getCycledUint16(count))
+                .int32_Val(getCycledInt32(count))
+                .uint32_Val(getCycledUint32(count))
+                .int64_Val(getCycledInt64(count))
+                .uint64_Val(getCycledUint64(count))
+                .scaledUintVal(BigDecimal.valueOf(count + 1).add(BigDecimal.valueOf((count % 4) * 0.25)))
+                .build();
     }
 
     @Data
@@ -308,120 +372,108 @@ public class HdfCompoundApp {
         new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, MonitoringData.class).streamVector().forEach(System.out::println);
     }
 
-        private static final int CYCLE_LENGTH = 5;
+    private static final int CYCLE_LENGTH = 5;
 
-        // --- Signed Types ---
+    // --- Signed Types ---
 
-        public static byte getCycledInt8(int index) {
-            int cycleIndex = index % CYCLE_LENGTH;
-            switch (cycleIndex) {
-                case 0: return Byte.MIN_VALUE;                            // -128 (0x80)
-                case 1: return (byte) (-(Byte.MAX_VALUE / 2) - 1);        //  -64 (0xC0) approx
-                case 2: return 0;                                         //    0 (0x00)
-                case 3: return (byte) (Byte.MAX_VALUE / 2);               //   63 (0x3F) approx
-                case 4: default: return Byte.MAX_VALUE;                   //  127 (0x7F)
-            }
+    public static byte getCycledInt8(int index) {
+        int cycleIndex = index % CYCLE_LENGTH;
+        switch (cycleIndex) {
+            case 0: return Byte.MIN_VALUE;                            // -128 (0x80)
+            case 1: return (byte) (-(Byte.MAX_VALUE / 2) - 1);        //  -64 (0xC0) approx
+            case 2: return 0;                                         //    0 (0x00)
+            case 3: return (byte) (Byte.MAX_VALUE / 2);               //   63 (0x3F) approx
+            case 4: default: return Byte.MAX_VALUE;                   //  127 (0x7F)
         }
+    }
 
-        public static short getCycledInt16(int index) {
-            int cycleIndex = index % CYCLE_LENGTH;
-            switch (cycleIndex) {
-                case 0: return Short.MIN_VALUE;
-                case 1: return (short) (-(Short.MAX_VALUE / 2) - 1);
-                case 2: return 0;
-                case 3: return (short) (Short.MAX_VALUE / 2);
-                case 4: default: return Short.MAX_VALUE;
-            }
+    public static short getCycledInt16(int index) {
+        int cycleIndex = index % CYCLE_LENGTH;
+        switch (cycleIndex) {
+            case 0: return Short.MIN_VALUE;
+            case 1: return (short) (-(Short.MAX_VALUE / 2) - 1);
+            case 2: return 0;
+            case 3: return (short) (Short.MAX_VALUE / 2);
+            case 4: default: return Short.MAX_VALUE;
         }
+    }
 
-        public static int getCycledInt32(int index) {
-            int cycleIndex = index % CYCLE_LENGTH;
-            switch (cycleIndex) {
-                case 0: return Integer.MIN_VALUE;
-                case 1: return -(Integer.MAX_VALUE / 2) - 1;
-                case 2: return 0;
-                case 3: return Integer.MAX_VALUE / 2;
-                case 4: default: return Integer.MAX_VALUE;
-            }
+    public static int getCycledInt32(int index) {
+        int cycleIndex = index % CYCLE_LENGTH;
+        switch (cycleIndex) {
+            case 0: return Integer.MIN_VALUE;
+            case 1: return -(Integer.MAX_VALUE / 2) - 1;
+            case 2: return 0;
+            case 3: return Integer.MAX_VALUE / 2;
+            case 4: default: return Integer.MAX_VALUE;
         }
+    }
 
-        public static long getCycledInt64(int index) {
-            int cycleIndex = index % CYCLE_LENGTH;
-            switch (cycleIndex) {
-                case 0: return Long.MIN_VALUE;
-                case 1: return -(Long.MAX_VALUE / 2) - 1;
-                case 2: return 0L;
-                case 3: return Long.MAX_VALUE / 2;
-                case 4: default: return Long.MAX_VALUE;
-            }
+    public static long getCycledInt64(int index) {
+        int cycleIndex = index % CYCLE_LENGTH;
+        switch (cycleIndex) {
+            case 0: return Long.MIN_VALUE;
+            case 1: return -(Long.MAX_VALUE / 2) - 1;
+            case 2: return 0L;
+            case 3: return Long.MAX_VALUE / 2;
+            case 4: default: return Long.MAX_VALUE;
         }
+    }
 
-        // --- Unsigned Types (Return next larger signed type to hold value) ---
-        // --- Or return 'long' for uint64 and handle bit pattern ---
+    // --- Unsigned Types (Return next larger signed type to hold value) ---
+    // --- Or return 'long' for uint64 and handle bit pattern ---
 
-        public static short getCycledUint8(int index) { // Returns short to hold 0-255
-            int cycleIndex = index % CYCLE_LENGTH;
-            switch (cycleIndex) {
-                case 0: return 0;                     // 0x00
-                case 1: return 255 / 4;               // 63 (0x3F) approx
-                case 2: return 255 / 2;               // 127 (0x7F) approx
-                case 3: return (255 / 4) * 3;         // 189 (0xBD) approx
-                case 4: default: return 255;          // 255 (0xFF)
-            }
+    public static short getCycledUint8(int index) { // Returns short to hold 0-255
+        int cycleIndex = index % CYCLE_LENGTH;
+        switch (cycleIndex) {
+            case 0: return 0;                     // 0x00
+            case 1: return 255 / 4;               // 63 (0x3F) approx
+            case 2: return 255 / 2;               // 127 (0x7F) approx
+            case 3: return (255 / 4) * 3;         // 189 (0xBD) approx
+            case 4: default: return 255;          // 255 (0xFF)
         }
+    }
 
-        public static int getCycledUint16(int index) { // Returns int to hold 0-65535
-            int cycleIndex = index % CYCLE_LENGTH;
-            int max_val = 65535; // 0xFFFF
-            switch (cycleIndex) {
-                case 0: return 0;
-                case 1: return max_val / 4;
-                case 2: return max_val / 2;
-                case 3: return (max_val / 4) * 3;
-                case 4: default: return max_val;
-            }
+    public static int getCycledUint16(int index) { // Returns int to hold 0-65535
+        int cycleIndex = index % CYCLE_LENGTH;
+        int max_val = 65535; // 0xFFFF
+        switch (cycleIndex) {
+            case 0: return 0;
+            case 1: return max_val / 4;
+            case 2: return max_val / 2;
+            case 3: return (max_val / 4) * 3;
+            case 4: default: return max_val;
         }
+    }
 
-        public static long getCycledUint32(int index) { // Returns long to hold 0-(2^32-1)
-            int cycleIndex = index % CYCLE_LENGTH;
-            long max_val = 0xFFFFFFFFL; // (1L << 32) - 1;
-            switch (cycleIndex) {
-                case 0: return 0L;
-                case 1: return max_val / 4L;
-                case 2: return max_val / 2L;
-                case 3: return (max_val / 4L) * 3L;
-                case 4: default: return max_val;
-            }
+    public static long getCycledUint32(int index) { // Returns long to hold 0-(2^32-1)
+        int cycleIndex = index % CYCLE_LENGTH;
+        long max_val = 0xFFFFFFFFL; // (1L << 32) - 1;
+        switch (cycleIndex) {
+            case 0: return 0L;
+            case 1: return max_val / 4L;
+            case 2: return max_val / 2L;
+            case 3: return (max_val / 4L) * 3L;
+            case 4: default: return max_val;
         }
+    }
 
-        // For uint64, we can return long and rely on the bit pattern being correct,
-        // or use BigInteger if the HDF5 library specifically needs that. Assuming primitive:
-        public static BigInteger getCycledUint64(int index) { // Returns long, bit pattern matches uint64
-            int cycleIndex = index % CYCLE_LENGTH;
-            // Use BigInteger for calculation constants to avoid signed long issues
-            BigInteger MAX_U64 = new BigInteger("18446744073709551615"); // 2^64 - 1
-            BigInteger FOUR = BigInteger.valueOf(4);
-            BigInteger TWO = BigInteger.valueOf(2);
-            BigInteger THREE = BigInteger.valueOf(3);
+    // For uint64, we can return long and rely on the bit pattern being correct,
+    // or use BigInteger if the HDF5 library specifically needs that. Assuming primitive:
+    public static BigInteger getCycledUint64(int index) { // Returns long, bit pattern matches uint64
+        int cycleIndex = index % CYCLE_LENGTH;
+        // Use BigInteger for calculation constants to avoid signed long issues
+        BigInteger MAX_U64 = new BigInteger("18446744073709551615"); // 2^64 - 1
+        BigInteger FOUR = BigInteger.valueOf(4);
+        BigInteger TWO = BigInteger.valueOf(2);
+        BigInteger THREE = BigInteger.valueOf(3);
 
-            switch (cycleIndex) {
-                case 0: return BigInteger.ZERO;
-                case 1: return MAX_U64.divide(FOUR);
-                case 2: return MAX_U64.divide(TWO);
-                case 3: return MAX_U64.divide(FOUR).multiply(THREE);
-                case 4: default: return MAX_U64; // Max unsigned 64 bit is -1L signed
-            }
+        switch (cycleIndex) {
+            case 0: return BigInteger.ZERO;
+            case 1: return MAX_U64.divide(FOUR);
+            case 2: return MAX_U64.divide(TWO);
+            case 3: return MAX_U64.divide(FOUR).multiply(THREE);
+            case 4: default: return MAX_U64; // Max unsigned 64 bit is -1L signed
         }
-
-        // Example usage in your Java HDF5 writer:
-        // ... inside loop ...
-        // record.setInt8_Val(CycleHelper.getCycledInt8(i));
-        // // For unsigned, the HDF5 writer needs to know how to interpret the returned signed type
-        // // E.g., if writing uint8, pass the 'short' returned by getCycledUint8
-        // short uint8_val = CycleHelper.getCycledUint8(i);
-        // hdf5Writer.writeUint8Field(uint8_val); // Assuming writer handles this
-        // int uint16_val = CycleHelper.getCycledUint16(i);
-        // long uint32_val = CycleHelper.getCycledUint32(i);
-        // long uint64_bits = CycleHelper.getCycledUint64(i);
-        // ... etc ...
+    }
 }
