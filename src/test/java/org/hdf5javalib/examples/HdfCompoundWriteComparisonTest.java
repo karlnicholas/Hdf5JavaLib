@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
@@ -30,7 +31,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype.ClassBitField.MantissaNormalization.IMPLIED_SET;
@@ -48,10 +49,8 @@ public class HdfCompoundWriteComparisonTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideTestConfigurations")
-    void testWriteMatchesReference(String testName, String refFile, String datasetName, int[] dimensions, CompoundDatatype datatype, int timestampOffset, Consumer<HdfDataSet> writer) throws IOException {
+    void testWriteMatchesReference(String testName, String refFile, String datasetName, int[] dimensions, CompoundDatatype datatype, int timestampOffset, BiConsumer<HdfDataSet, HdfFile> writer) throws IOException {
         logger.info("Running test: {}", testName);
-//        int dataSize = dimensions[0] * datatype.getSize();
-//        int headerSizeEstimate = 40000; // Increased to cover headers, b-tree, local heap, and global heap blocks
         int totalSize = 135096;
         logger.debug("Allocating MemorySeekableByteChannel with size: {}", totalSize);
         try (MemorySeekableByteChannel memoryChannel = new MemorySeekableByteChannel(totalSize)) {
@@ -65,7 +64,7 @@ public class HdfCompoundWriteComparisonTest {
                     hdfDimensions, hdfDimensions, false, (byte) 0, computeDataSpaceMessageSize(hdfDimensions));
             HdfDataSet dataset = file.createDataSet(datasetName, datatype, dataSpaceMessage);
             HdfDisplayUtils.writeVersionAttribute(file, dataset);
-            writer.accept(dataset);
+            writer.accept(dataset, file);
             dataset.close();
             file.close();
 
@@ -84,7 +83,16 @@ public class HdfCompoundWriteComparisonTest {
     }
 
     @SneakyThrows
-    private static void writeCompoundAll(HdfDataSet dataset) {
+    private static void writeCompoundAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+
         int numRecords = 1000;
         CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();
         int bufferSize = numRecords * compoundType.getSize();
@@ -100,7 +108,16 @@ public class HdfCompoundWriteComparisonTest {
     }
 
     @SneakyThrows
-    private static void writeCompoundEach(HdfDataSet dataset) {
+    private static void writeCompoundEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+
         int numRecords = 1000;
         CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();
         int bufferSize = compoundType.getSize();
@@ -142,10 +159,10 @@ public class HdfCompoundWriteComparisonTest {
         short dataSpaceMessageSize = 8;
         if (hdfDimensions != null) {
             for (HdfFixedPoint dimension : hdfDimensions) {
-                dataSpaceMessageSize += dimension.getDatatype().getSize();
+                dataSpaceMessageSize += (short) dimension.getDatatype().getSize();
             }
             for (HdfFixedPoint maxDimension : hdfDimensions) {
-                dataSpaceMessageSize += maxDimension.getDatatype().getSize();
+                dataSpaceMessageSize += (short) maxDimension.getDatatype().getSize();
             }
         }
         return dataSpaceMessageSize;
@@ -254,7 +271,7 @@ public class HdfCompoundWriteComparisonTest {
                                 new int[]{1000},
                                 compoundType,
                                 0x6F4, // Based on ObjectModificationTimeMessage position, may need adjustment
-                                (Consumer<HdfDataSet>) HdfCompoundWriteComparisonTest::writeCompoundAll),
+                                (BiConsumer<HdfDataSet, HdfFile>) HdfCompoundWriteComparisonTest::writeCompoundAll),
                         Arguments.of(
                                 "IncrementalWrite_Compound_1000",
                                 "compound_example.h5",
@@ -262,7 +279,7 @@ public class HdfCompoundWriteComparisonTest {
                                 new int[]{1000},
                                 compoundType,
                                 0x6F4, // Based on ObjectModificationTimeMessage position, may need adjustment
-                                (Consumer<HdfDataSet>) HdfCompoundWriteComparisonTest::writeCompoundEach)
+                                (BiConsumer<HdfDataSet, HdfFile>) HdfCompoundWriteComparisonTest::writeCompoundEach)
                 );
             } finally {
                 // Ensure channel is closed, avoid closing HdfFile to prevent NullPointerException
@@ -299,81 +316,81 @@ public class HdfCompoundWriteComparisonTest {
 
     public static byte getCycledInt8(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
-        switch (cycleIndex) {
-            case 0: return Byte.MIN_VALUE;
-            case 1: return (byte) (-(Byte.MAX_VALUE / 2) - 1);
-            case 2: return 0;
-            case 3: return (byte) (Byte.MAX_VALUE / 2);
-            case 4: default: return Byte.MAX_VALUE;
-        }
+        return switch (cycleIndex) {
+            case 0 -> Byte.MIN_VALUE;
+            case 1 -> (byte) (-(Byte.MAX_VALUE / 2) - 1);
+            case 2 -> 0;
+            case 3 -> (byte) (Byte.MAX_VALUE / 2);
+            default -> Byte.MAX_VALUE;
+        };
     }
 
     public static short getCycledInt16(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
-        switch (cycleIndex) {
-            case 0: return Short.MIN_VALUE;
-            case 1: return (short) (-(Short.MAX_VALUE / 2) - 1);
-            case 2: return 0;
-            case 3: return (short) (Short.MAX_VALUE / 2);
-            case 4: default: return Short.MAX_VALUE;
-        }
+        return switch (cycleIndex) {
+            case 0 -> Short.MIN_VALUE;
+            case 1 -> (short) (-(Short.MAX_VALUE / 2) - 1);
+            case 2 -> 0;
+            case 3 -> (short) (Short.MAX_VALUE / 2);
+            default -> Short.MAX_VALUE;
+        };
     }
 
     public static int getCycledInt32(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
-        switch (cycleIndex) {
-            case 0: return Integer.MIN_VALUE;
-            case 1: return -(Integer.MAX_VALUE / 2) - 1;
-            case 2: return 0;
-            case 3: return Integer.MAX_VALUE / 2;
-            case 4: default: return Integer.MAX_VALUE;
-        }
+        return switch (cycleIndex) {
+            case 0 -> Integer.MIN_VALUE;
+            case 1 -> -(Integer.MAX_VALUE / 2) - 1;
+            case 2 -> 0;
+            case 3 -> Integer.MAX_VALUE / 2;
+            default -> Integer.MAX_VALUE;
+        };
     }
 
     public static long getCycledInt64(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
-        switch (cycleIndex) {
-            case 0: return Long.MIN_VALUE;
-            case 1: return -(Long.MAX_VALUE / 2) - 1;
-            case 2: return 0L;
-            case 3: return Long.MAX_VALUE / 2;
-            case 4: default: return Long.MAX_VALUE;
-        }
+        return switch (cycleIndex) {
+            case 0 -> Long.MIN_VALUE;
+            case 1 -> -(Long.MAX_VALUE / 2) - 1;
+            case 2 -> 0L;
+            case 3 -> Long.MAX_VALUE / 2;
+            default -> Long.MAX_VALUE;
+        };
     }
 
     public static short getCycledUint8(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
-        switch (cycleIndex) {
-            case 0: return 0;
-            case 1: return 63; // 255 / 4
-            case 2: return 127; // 255 / 2
-            case 3: return 189; // (255 / 4) * 3
-            case 4: default: return 255;
-        }
+        return switch (cycleIndex) {
+            case 0 -> 0;
+            case 1 -> 63; // 255 / 4
+            case 2 -> 127; // 255 / 2
+            case 3 -> 189; // (255 / 4) * 3
+            default -> 255;
+        };
     }
 
     public static int getCycledUint16(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
         int max_val = 65535;
-        switch (cycleIndex) {
-            case 0: return 0;
-            case 1: return 16383; // max_val / 4
-            case 2: return 32767; // max_val / 2
-            case 3: return 49149; // (max_val / 4) * 3
-            case 4: default: return max_val;
-        }
+        return switch (cycleIndex) {
+            case 0 -> 0;
+            case 1 -> 16383; // max_val / 4
+            case 2 -> 32767; // max_val / 2
+            case 3 -> 49149; // (max_val / 4) * 3
+            default -> max_val;
+        };
     }
 
     public static long getCycledUint32(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
         long max_val = 0xFFFFFFFFL;
-        switch (cycleIndex) {
-            case 0: return 0L;
-            case 1: return 1073741823L; // max_val / 4
-            case 2: return 2147483647L; // max_val / 2
-            case 3: return 3221225469L; // (max_val / 4) * 3
-            case 4: default: return max_val;
-        }
+        return switch (cycleIndex) {
+            case 0 -> 0L;
+            case 1 -> 1073741823L; // max_val / 4
+            case 2 -> 2147483647L; // max_val / 2
+            case 3 -> 3221225469L; // (max_val / 4) * 3
+            default -> max_val;
+        };
     }
 
     public static BigInteger getCycledUint64(int index) {
@@ -383,12 +400,12 @@ public class HdfCompoundWriteComparisonTest {
         BigInteger TWO = BigInteger.valueOf(2);
         BigInteger THREE = BigInteger.valueOf(3);
 
-        switch (cycleIndex) {
-            case 0: return BigInteger.ZERO;
-            case 1: return MAX_U64.divide(FOUR);
-            case 2: return MAX_U64.divide(TWO);
-            case 3: return MAX_U64.divide(FOUR).multiply(THREE);
-            case 4: default: return MAX_U64;
-        }
+        return switch (cycleIndex) {
+            case 0 -> BigInteger.ZERO;
+            case 1 -> MAX_U64.divide(FOUR);
+            case 2 -> MAX_U64.divide(TWO);
+            case 3 -> MAX_U64.divide(FOUR).multiply(THREE);
+            default -> MAX_U64;
+        };
     }
 }

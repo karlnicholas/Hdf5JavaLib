@@ -3,18 +3,15 @@ package org.hdf5javalib.examples;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
-import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
-import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.*;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -378,46 +375,46 @@ public class HdfCompoundApp {
 
     public static byte getCycledInt8(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
-        switch (cycleIndex) {
-            case 0: return Byte.MIN_VALUE;                            // -128 (0x80)
-            case 1: return (byte) (-(Byte.MAX_VALUE / 2) - 1);        //  -64 (0xC0) approx
-            case 2: return 0;                                         //    0 (0x00)
-            case 3: return (byte) (Byte.MAX_VALUE / 2);               //   63 (0x3F) approx
-            case 4: default: return Byte.MAX_VALUE;                   //  127 (0x7F)
-        }
+        return switch (cycleIndex) {
+            case 0 -> Byte.MIN_VALUE;                            // -128 (0x80)
+            case 1 -> (byte) (-(Byte.MAX_VALUE / 2) - 1);        //  -64 (0xC0) approx
+            case 2 -> 0;                                         //    0 (0x00)
+            case 3 -> (byte) (Byte.MAX_VALUE / 2);               //   63 (0x3F) approx
+            default -> Byte.MAX_VALUE;                   //  127 (0x7F)
+        };
     }
 
     public static short getCycledInt16(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
-        switch (cycleIndex) {
-            case 0: return Short.MIN_VALUE;
-            case 1: return (short) (-(Short.MAX_VALUE / 2) - 1);
-            case 2: return 0;
-            case 3: return (short) (Short.MAX_VALUE / 2);
-            case 4: default: return Short.MAX_VALUE;
-        }
+        return switch (cycleIndex) {
+            case 0 -> Short.MIN_VALUE;
+            case 1 -> (short) (-(Short.MAX_VALUE / 2) - 1);
+            case 2 -> 0;
+            case 3 -> (short) (Short.MAX_VALUE / 2);
+            default -> Short.MAX_VALUE;
+        };
     }
 
     public static int getCycledInt32(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
-        switch (cycleIndex) {
-            case 0: return Integer.MIN_VALUE;
-            case 1: return -(Integer.MAX_VALUE / 2) - 1;
-            case 2: return 0;
-            case 3: return Integer.MAX_VALUE / 2;
-            case 4: default: return Integer.MAX_VALUE;
-        }
+        return switch (cycleIndex) {
+            case 0 -> Integer.MIN_VALUE;
+            case 1 -> -(Integer.MAX_VALUE / 2) - 1;
+            case 2 -> 0;
+            case 3 -> Integer.MAX_VALUE / 2;
+            default -> Integer.MAX_VALUE;
+        };
     }
 
     public static long getCycledInt64(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
-        switch (cycleIndex) {
-            case 0: return Long.MIN_VALUE;
-            case 1: return -(Long.MAX_VALUE / 2) - 1;
-            case 2: return 0L;
-            case 3: return Long.MAX_VALUE / 2;
-            case 4: default: return Long.MAX_VALUE;
-        }
+        return switch (cycleIndex) {
+            case 0 -> Long.MIN_VALUE;
+            case 1 -> -(Long.MAX_VALUE / 2) - 1;
+            case 2 -> 0L;
+            case 3 -> Long.MAX_VALUE / 2;
+            default -> Long.MAX_VALUE;
+        };
     }
 
     // --- Unsigned Types (Return next larger signed type to hold value) ---
@@ -425,37 +422,37 @@ public class HdfCompoundApp {
 
     public static short getCycledUint8(int index) { // Returns short to hold 0-255
         int cycleIndex = index % CYCLE_LENGTH;
-        switch (cycleIndex) {
-            case 0: return 0;                     // 0x00
-            case 1: return 255 / 4;               // 63 (0x3F) approx
-            case 2: return 255 / 2;               // 127 (0x7F) approx
-            case 3: return (255 / 4) * 3;         // 189 (0xBD) approx
-            case 4: default: return 255;          // 255 (0xFF)
-        }
+        return switch (cycleIndex) {
+            case 0 -> 0;                     // 0x00
+            case 1 -> 255 / 4;               // 63 (0x3F) approx
+            case 2 -> 255 / 2;               // 127 (0x7F) approx
+            case 3 -> (255 / 4) * 3;         // 189 (0xBD) approx
+            default -> 255;          // 255 (0xFF)
+        };
     }
 
     public static int getCycledUint16(int index) { // Returns int to hold 0-65535
         int cycleIndex = index % CYCLE_LENGTH;
         int max_val = 65535; // 0xFFFF
-        switch (cycleIndex) {
-            case 0: return 0;
-            case 1: return max_val / 4;
-            case 2: return max_val / 2;
-            case 3: return (max_val / 4) * 3;
-            case 4: default: return max_val;
-        }
+        return switch (cycleIndex) {
+            case 0 -> 0;
+            case 1 -> max_val / 4;
+            case 2 -> max_val / 2;
+            case 3 -> (max_val / 4) * 3;
+            default -> max_val;
+        };
     }
 
     public static long getCycledUint32(int index) { // Returns long to hold 0-(2^32-1)
         int cycleIndex = index % CYCLE_LENGTH;
         long max_val = 0xFFFFFFFFL; // (1L << 32) - 1;
-        switch (cycleIndex) {
-            case 0: return 0L;
-            case 1: return max_val / 4L;
-            case 2: return max_val / 2L;
-            case 3: return (max_val / 4L) * 3L;
-            case 4: default: return max_val;
-        }
+        return switch (cycleIndex) {
+            case 0 -> 0L;
+            case 1 -> max_val / 4L;
+            case 2 -> max_val / 2L;
+            case 3 -> (max_val / 4L) * 3L;
+            default -> max_val;
+        };
     }
 
     // For uint64, we can return long and rely on the bit pattern being correct,
@@ -468,12 +465,12 @@ public class HdfCompoundApp {
         BigInteger TWO = BigInteger.valueOf(2);
         BigInteger THREE = BigInteger.valueOf(3);
 
-        switch (cycleIndex) {
-            case 0: return BigInteger.ZERO;
-            case 1: return MAX_U64.divide(FOUR);
-            case 2: return MAX_U64.divide(TWO);
-            case 3: return MAX_U64.divide(FOUR).multiply(THREE);
-            case 4: default: return MAX_U64; // Max unsigned 64 bit is -1L signed
-        }
+        return switch (cycleIndex) {
+            case 0 -> BigInteger.ZERO;
+            case 1 -> MAX_U64.divide(FOUR);
+            case 2 -> MAX_U64.divide(TWO);
+            case 3 -> MAX_U64.divide(FOUR).multiply(THREE);
+            default -> MAX_U64; // Max unsigned 64 bit is -1L signed
+        };
     }
 }
