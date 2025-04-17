@@ -84,8 +84,11 @@ public class HdfDataSet implements Closeable {
 
         // Add FillValue message
         // not sure what's going on with fillValueWriteTime.
-//        FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 0, 1,
-        FillValueMessage fillValueMessage = new FillValueMessage(2, 2, 0, 1,
+        int fillValueWriteTime = 2;
+        if ( hdfDatatype.getDatatypeClass() == HdfDatatype.DatatypeClass.COMPOUND) {
+            fillValueWriteTime = 0;
+        }
+        FillValueMessage fillValueMessage = new FillValueMessage(2, 2, fillValueWriteTime, 1,
                 0,
                 new byte[0], (byte)1, (short)8);
         headerMessages.add(fillValueMessage);
