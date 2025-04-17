@@ -84,6 +84,24 @@ public class HdfDataSet implements Closeable {
 
         // Add FillValue message
         // not sure what's going on with fillValueWriteTime.
+        /**
+         * At the time that storage space for the dataset’s raw data is allocated,
+         * this value indicates whether the fill value should be written to the
+         * raw data storage elements. The allowed values are:
+         *
+         * Value | Description
+         * ------|---------------------------------------------------------------
+         *   0   | On allocation. The fill value is always written to the
+         *       | raw data storage when the storage space is allocated.
+         * ------|---------------------------------------------------------------
+         *   1   | Never. The fill value should never be written to the
+         *       | raw data storage.
+         * ------|---------------------------------------------------------------
+         *   2   | Fill value written if set by user. The fill value will be
+         *       | written to the raw data storage only if the user explicitly
+         *       | set the fill value. If the fill value is the library default
+         *       | or is undefined, it will not be written.
+         */
         int fillValueWriteTime = 2;
         if ( hdfDatatype.getDatatypeClass() == HdfDatatype.DatatypeClass.COMPOUND) {
             fillValueWriteTime = 0;
