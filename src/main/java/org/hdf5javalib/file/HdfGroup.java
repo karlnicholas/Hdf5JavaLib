@@ -100,7 +100,6 @@ public class HdfGroup implements Closeable {
     public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
 
         HdfFileAllocation fileAllocation = hdfFile.getFileAllocation();
-        fileAllocation.printBlocks();
         long rootGroupSize = fileAllocation.getRootGroupSize(); // Returns 704
         long rootGroupOffset = fileAllocation.getRootGroupOffset(); // Returns 96
         ByteBuffer buffer = ByteBuffer.allocate((int) rootGroupSize).order(ByteOrder.LITTLE_ENDIAN);
@@ -121,8 +120,6 @@ public class HdfGroup implements Closeable {
         }
 
         // write SNOD for group.
-        hdfFile.getFileAllocation().printBlocks();
-
         Map<Long, HdfGroupSymbolTableNode> mapOffsetToSnod = bTree.mapOffsetToSnod();
         ByteBuffer snodBuffer = ByteBuffer.allocate((int)HdfFileAllocation.getSNOD_STORAGE_SIZE()).order(ByteOrder.LITTLE_ENDIAN);
         for (Map.Entry<Long, HdfGroupSymbolTableNode> offsetAndStn: mapOffsetToSnod.entrySet()) {

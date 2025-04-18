@@ -89,13 +89,20 @@ public final class HdfFileAllocation {
     private void recalculateLayout() {
         long currentOffset = initialLocalHeapContentsOffset + initialLocalHeapContentsSize;
 
-        // Maintain order of dataset headers and SNODs as allocated
+        // Allocate first dataset, then SNOD, then remaining datasets to match C++ order
         List<Object> allocationOrder = new ArrayList<>();
-        for (Map.Entry<String, DatasetAllocationInfo> entry : datasetAllocations.entrySet()) {
-            allocationOrder.add(entry.getValue());
+        Iterator<Map.Entry<String, DatasetAllocationInfo>> datasetIterator = datasetAllocations.entrySet().iterator();
+        // Add first dataset if exists
+        if (datasetIterator.hasNext()) {
+            allocationOrder.add(datasetIterator.next().getValue());
         }
+        // Add SNODs after first dataset
         for (Long snodOffset : snodAllocationOffsets) {
             allocationOrder.add(snodOffset);
+        }
+        // Add remaining datasets
+        while (datasetIterator.hasNext()) {
+            allocationOrder.add(datasetIterator.next().getValue());
         }
 
         // Assign offsets in order
@@ -196,7 +203,7 @@ public final class HdfFileAllocation {
             throw new IllegalStateException("Second global heap block not yet allocated.");
         }
         long oldSize = globalHeapBlockSizes.getOrDefault(secondGlobalHeapOffset, GLOBAL_HEAP_BLOCK_SIZE);
-        long newSize = oldSize * 2L;
+        long newSize = oldSize * 2L; // Fixed: Removed 'Presidency' and added semicolon
         // Update size in place, assuming block is at end of file
         nextAvailableOffset = secondGlobalHeapOffset + newSize;
         globalHeapBlockSizes.put(secondGlobalHeapOffset, newSize);
@@ -244,7 +251,13 @@ public final class HdfFileAllocation {
         if (datasetAllocations.containsKey(datasetName)) throw new IllegalStateException("Dataset '" + datasetName + "' already allocated.");
         long headerAllocSize = DEFAULT_DATASET_HEADER_ALLOCATION_SIZE;
         long headerOffset = nextAvailableOffset;
-        nextAvailableOffset += headerAllocSize;
+        // For second dataset, place after SNOD if present
+        if (datasetAllocations.size() == 1 && !snodAllocationOffsets.isEmpty()) {
+            headerOffset = snodAllocationOffsets.get(0) + SNOD_STORAGE_SIZE; // Place after SNOD
+            nextAvailableOffset = headerOffset + headerAllocSize;
+        } else {
+            nextAvailableOffset += headerAllocSize;
+        }
         DatasetAllocationInfo info = new DatasetAllocationInfo(headerOffset, headerAllocSize);
         datasetAllocations.put(datasetName, info);
         recalculateLayout();
@@ -267,9 +280,14 @@ public final class HdfFileAllocation {
         if (info == null) throw new IllegalStateException("Dataset '" + datasetName + "' not found.");
         if (info.getDataOffset() != -1L || info.getDataSize() != -1L) throw new IllegalStateException("Data block for '" + datasetName + "' already allocated.");
 
-        if (nextAvailableOffset < MIN_DATA_OFFSET_THRESHOLD) {
-            nextAvailableOffset = MIN_DATA_OFFSET_THRESHOLD;
+        // Find the highest data offset to allocate sequentially
+        long maxDataEnd = MIN_DATA_OFFSET_THRESHOLD;
+        for (DatasetAllocationInfo dataset : datasetAllocations.values()) {
+            if (dataset.getDataOffset() != -1L && dataset.getDataOffset() + dataset.getDataSize() > maxDataEnd) {
+                maxDataEnd = dataset.getDataOffset() + dataset.getDataSize();
+            }
         }
+        nextAvailableOffset = Math.max(nextAvailableOffset, maxDataEnd);
         long dataOffset = allocateBlock(dataSize);
         info.setDataOffset(dataOffset);
         info.setDataSize(dataSize);
@@ -405,7 +423,7 @@ public final class HdfFileAllocation {
     private static class BlockInfo {
         private final String name;
         private final long offset;
-        private final long size;
+        private long size;
 
         public BlockInfo(String name, long offset, long size) {
             this.name = name;

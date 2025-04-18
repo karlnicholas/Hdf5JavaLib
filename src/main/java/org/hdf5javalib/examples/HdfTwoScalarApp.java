@@ -33,21 +33,19 @@ public class HdfTwoScalarApp {
 
     private void run() {
 //        try {
-//            Path filePath = getResourcePath("two_scalar_datasets.h5");
+//            Path filePath = getResourcePath("scalar.h5");
 //            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
 //                HdfFileReader reader = new HdfFileReader(channel).readFile();
-////                for( HdfDataSet dataSet: reader.getDatasets(channel, reader.getRootGroup())) {
-//                    HdfDataSet ds = reader.findDataset("FixedPointValue", channel, reader.getRootGroup());
-//                    HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
-////                    try ( HdfDataSet ds = dataSet) {
-////                        HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
-////                    }
-////                }
+//                for( HdfDataSet dataSet: reader.getDatasets(channel, reader.getRootGroup())) {
+//                    try ( HdfDataSet ds = dataSet) {
+//                        HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
+//                    }
+//                }
 //            }
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
-        tryHdfApiScalar("two_scalar_datasets.h5");
+        tryHdfApiScalar("scalar.h5");
     }
 
     private Path getResourcePath(String fileName) {
@@ -60,55 +58,97 @@ public class HdfTwoScalarApp {
 
 
     private void tryHdfApiScalar(String FILE_NAME) {
-        final String DATASET_NAME = "dataset_";
-
+        // Create a new file using default properties
         try (HdfFile hdfFile = new HdfFile(Files.newByteChannel(Path.of(FILE_NAME), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE))) {
-            // Create a new file using default properties
-
-
             // Define scalar dataspace (rank 0).
             HdfFixedPoint[] hdfDimensions = {};
             DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(false, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointApp.computeDataSpaceMessageSize(hdfDimensions));
 
+            hdfFile.getFileAllocation().printBlocks();
+            writeByte(hdfFile, dataSpaceMessage);
+            hdfFile.getFileAllocation().printBlocks();
+            writeInteger(hdfFile, dataSpaceMessage);
+            hdfFile.getFileAllocation().printBlocks();
 
-            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
-                    FixedPointDatatype.createClassAndVersion(),
-                    FixedPointDatatype.createClassBitField( false, false, false, true),
-                    (short)4, (short)0, (short)32);
-
-
-            //            for ( int i = 1; i <= 2; i++ ) {
-                // Create dataset
-                HdfDataSet dataset = hdfFile.createDataSet("FixedPointValue", fixedPointDatatype, dataSpaceMessage);
-                HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
-
-                HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-                hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-                boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-                if (requiresGlobalHeap) {
-                    if (!hdfFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                        hdfFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-                    }
-                }
-
-                ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
-                byteBuffer.putInt(42);
-//                , fixedPointDatatype
-//                HdfWriteUtils.writeFixedPointToBuffer(byteBuffer, fixedPointDatatype.getInstance(HdfFixedPoint.class, Integer.valueOf(42).) );
-                byteBuffer.flip();
-                // Write to dataset
-                dataset.write(byteBuffer);
-
-//                dataset.close();
-//            }
-//
-//            file.close();
+            hdfFile.close();
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         // auto close
         System.out.println("HDF5 file " + FILE_NAME + " created and written successfully!");
+    }
+
+    private static void writeByte(HdfFile hdfFile, DataspaceMessage dataSpaceMessage) throws IOException {
+        FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
+                FixedPointDatatype.createClassAndVersion(),
+                FixedPointDatatype.createClassBitField( false, false, false, true),
+                (short)1, (short)0, (short)8);
+        // Create dataset
+        HdfDataSet dataset = hdfFile.createDataSet("byte", fixedPointDatatype, dataSpaceMessage);
+        HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
+
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1).order(ByteOrder.LITTLE_ENDIAN);
+        byteBuffer.put((byte) 42);
+        byteBuffer.flip();
+        dataset.write(byteBuffer);
+        dataset.close();
+    }
+
+    private static void writeShort(HdfFile hdfFile, DataspaceMessage dataSpaceMessage) throws IOException {
+        FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
+                FixedPointDatatype.createClassAndVersion(),
+                FixedPointDatatype.createClassBitField( false, false, false, true),
+                (short)2, (short)0, (short)16);
+        // Create dataset
+        HdfDataSet dataset = hdfFile.createDataSet("byte", fixedPointDatatype, dataSpaceMessage);
+        HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
+
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+        ByteBuffer byteBuffer = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN);
+        byteBuffer.putShort((short) 42);
+        byteBuffer.flip();
+        dataset.write(byteBuffer);
+        dataset.close();
+    }
+
+    private static void writeInteger(HdfFile hdfFile, DataspaceMessage dataSpaceMessage) throws IOException {
+        FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
+                FixedPointDatatype.createClassAndVersion(),
+                FixedPointDatatype.createClassBitField( false, false, false, true),
+                (short)4, (short)0, (short)32);
+        // Create dataset
+        HdfDataSet dataset = hdfFile.createDataSet("integer", fixedPointDatatype, dataSpaceMessage);
+        HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
+
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+        ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
+        byteBuffer.putInt(42);
+        byteBuffer.flip();
+        dataset.write(byteBuffer);
+        dataset.close();
     }
 
 }

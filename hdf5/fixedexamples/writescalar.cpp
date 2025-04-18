@@ -19,15 +19,15 @@ int main() {
     StrType attr_type(PredType::C_S1, attribute_value.size());
     DataSpace attr_space(H5S_SCALAR);
 
-    // // 1. "byte" dataset (8-bit signed integer)
-    // H5::IntType byteType(PredType::NATIVE_INT8); // 1 byte, signed
-    // byteType.setOrder(H5T_ORDER_LE);
-    // H5::DataSet byteDataset = file.createDataSet("byte", byteType, scalarSpace);
-    // int8_t byteValue = 42;
-    // byteDataset.write(&byteValue, PredType::NATIVE_INT8);
-    // Attribute byteAttr = byteDataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
-    // byteAttr.write(attr_type, attribute_value);
-    // byteAttr.close();
+    // 1. "byte" dataset (8-bit signed integer)
+    H5::IntType byteType(PredType::NATIVE_INT8); // 1 byte, signed
+    byteType.setOrder(H5T_ORDER_LE);
+    H5::DataSet byteDataset = file.createDataSet("byte", byteType, scalarSpace);
+    int8_t byteValue = 42;
+    byteDataset.write(&byteValue, PredType::NATIVE_INT8);
+    Attribute byteAttr = byteDataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
+    byteAttr.write(attr_type, attribute_value);
+    byteAttr.close();
 
     // // 2. "short" dataset (16-bit signed integer)
     // H5::IntType shortType(PredType::NATIVE_INT16); // 2 bytes, signed
@@ -42,7 +42,7 @@ int main() {
     // 3. "integer" dataset (32-bit signed integer)
     H5::IntType intType(PredType::NATIVE_INT32); // 4 bytes, signed
     intType.setOrder(H5T_ORDER_LE);
-    H5::DataSet intDataset = file.createDataSet("FixedPointValue", intType, scalarSpace);
+    H5::DataSet intDataset = file.createDataSet("integer", intType, scalarSpace);
     int32_t intValue = 42;
     intDataset.write(&intValue, PredType::NATIVE_INT32);
     Attribute intAttr = intDataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
