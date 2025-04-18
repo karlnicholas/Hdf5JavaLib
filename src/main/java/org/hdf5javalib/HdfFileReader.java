@@ -102,7 +102,7 @@ public class HdfFileReader implements HdfDataFile {
                     fileChannel.position(dataObjectHeaderAddress);
                     HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
                     DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
-                    HdfDataSet dataset = new HdfDataSet(null, linkName.toString(), dataType.getHdfDatatype(), header);
+                    HdfDataSet dataset = new HdfDataSet(this, linkName.toString(), dataType.getHdfDatatype(), header);
                     dataSets.put(linkName.toString(), dataset);
                 }
             } else if (entry.isInternalEntry()) {
