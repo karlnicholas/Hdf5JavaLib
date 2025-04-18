@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Getter
@@ -37,14 +36,16 @@ public class HdfGroup implements Closeable {
     private final Map<String, HdfDataSet> dataSets;
 
     /**
-     * Used when HDF file is being read.
-     * @param hdfFile
-     * @param name
-     * @param objectHeader
-     * @param bTree
-     * @param localHeap
-     * @param localHeapContents
-     * @param dataSets
+     * Constructs an HdfGroup for reading an existing HDF5 file.
+     * Initializes the group with metadata and datasets parsed from the file.
+     *
+     * @param hdfFile the HDF5 file containing this group
+     * @param name the name of the group
+     * @param objectHeader the object header prefix containing group metadata
+     * @param bTree the B-tree managing symbol table entries
+     * @param localHeap the local heap storing link names
+     * @param localHeapContents the contents of the local heap
+     * @param dataSets a map of dataset names to their corresponding HdfDataSet objects
      */
     public HdfGroup(
             HdfFile hdfFile,
@@ -65,11 +66,13 @@ public class HdfGroup implements Closeable {
     }
 
     /**
-     * For creating a new HDF file to be written.
-     * @param hdfFile
-     * @param name
-     * @param btreeAddress
-     * @param localHeapAddress
+     * Constructs an HdfGroup for creating a new HDF5 file to be written.
+     * Initializes the group with a new B-tree, local heap, and empty dataset map.
+     *
+     * @param hdfFile the HDF5 file to be written
+     * @param name the name of the group
+     * @param btreeAddress the file address for the B-tree
+     * @param localHeapAddress the file address for the local heap
      */
     public HdfGroup(HdfFile hdfFile, String name, long btreeAddress, long localHeapAddress) {
         HdfFileAllocation fileAllocation = hdfFile.getFileAllocation();
@@ -144,14 +147,6 @@ public class HdfGroup implements Closeable {
         }
     }
 
-//    public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
-//        hdfFile.write(bufferSupplier, hdfDataSet);
-//    }
-//
-//    public void write(ByteBuffer byteBuffer, HdfDataSet hdfDataSet) throws IOException {
-//        hdfFile.write(byteBuffer, hdfDataSet);
-//    }
-
     public Collection<HdfDataSet> getDataSets() {
         return dataSets.values();
     }
@@ -186,5 +181,4 @@ public class HdfGroup implements Closeable {
             }
         }
     }
-
 }
