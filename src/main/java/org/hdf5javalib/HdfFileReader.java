@@ -13,7 +13,6 @@ import org.hdf5javalib.file.metadata.HdfSuperblock;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
