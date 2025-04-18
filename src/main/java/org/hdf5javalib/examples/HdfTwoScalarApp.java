@@ -36,7 +36,7 @@ public class HdfTwoScalarApp {
 //            Path filePath = getResourcePath("scalar.h5");
 //            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
 //                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                for( HdfDataSet dataSet: reader.getDatasets(channel, reader.getRootGroup())) {
+//                for( HdfDataSet dataSet: reader.getRootGroup().getDataSets()) {
 //                    try ( HdfDataSet ds = dataSet) {
 //                        HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
 //                    }
@@ -66,6 +66,8 @@ public class HdfTwoScalarApp {
 
             hdfFile.getFileAllocation().printBlocks();
             writeByte(hdfFile, dataSpaceMessage);
+            hdfFile.getFileAllocation().printBlocks();
+            writeShort(hdfFile, dataSpaceMessage);
             hdfFile.getFileAllocation().printBlocks();
             writeInteger(hdfFile, dataSpaceMessage);
             hdfFile.getFileAllocation().printBlocks();
@@ -109,7 +111,7 @@ public class HdfTwoScalarApp {
                 FixedPointDatatype.createClassBitField( false, false, false, true),
                 (short)2, (short)0, (short)16);
         // Create dataset
-        HdfDataSet dataset = hdfFile.createDataSet("byte", fixedPointDatatype, dataSpaceMessage);
+        HdfDataSet dataset = hdfFile.createDataSet("short", fixedPointDatatype, dataSpaceMessage);
         HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
 
         HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();

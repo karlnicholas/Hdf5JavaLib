@@ -1,6 +1,7 @@
 package org.hdf5javalib.file;
 
 import lombok.Getter;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
@@ -18,9 +19,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Getter
 public class HdfGroup implements Closeable {
@@ -30,15 +34,26 @@ public class HdfGroup implements Closeable {
     private final HdfBTreeV1 bTree;
     private final HdfLocalHeap localHeap;
     private final HdfLocalHeapContents localHeapContents;
-    private HdfDataSet dataSet;
+    private final Map<String, HdfDataSet> dataSets;
 
+    /**
+     * Used when HDF file is being read.
+     * @param hdfFile
+     * @param name
+     * @param objectHeader
+     * @param bTree
+     * @param localHeap
+     * @param localHeapContents
+     * @param dataSets
+     */
     public HdfGroup(
             HdfFile hdfFile,
             String name,
             HdfObjectHeaderPrefixV1 objectHeader,
             HdfBTreeV1 bTree,
             HdfLocalHeap localHeap,
-            HdfLocalHeapContents localHeapContents
+            HdfLocalHeapContents localHeapContents,
+            Map<String, HdfDataSet> dataSets
     ) {
         this.hdfFile = hdfFile;
         this.name = name;
@@ -46,8 +61,16 @@ public class HdfGroup implements Closeable {
         this.bTree = bTree;
         this.localHeap = localHeap;
         this.localHeapContents = localHeapContents;
+        this.dataSets = dataSets;
     }
 
+    /**
+     * For creating a new HDF file to be written.
+     * @param hdfFile
+     * @param name
+     * @param btreeAddress
+     * @param localHeapAddress
+     */
     public HdfGroup(HdfFile hdfFile, String name, long btreeAddress, long localHeapAddress) {
         HdfFileAllocation fileAllocation = hdfFile.getFileAllocation();
         this.hdfFile = hdfFile;
@@ -64,7 +87,6 @@ public class HdfGroup implements Closeable {
                 , localHeapContents
         );
 
-        // Define a B-Tree for group indexing
         bTree = new HdfBTreeV1("TREE", 0, 0,
                 HdfFixedPoint.undefined((short)8),
                 HdfFixedPoint.undefined((short)8),
@@ -73,40 +95,35 @@ public class HdfGroup implements Closeable {
         HdfFixedPoint btree = HdfFixedPoint.of(btreeAddress);
         HdfFixedPoint localHeap = HdfFixedPoint.of(localHeapAddress);
 
-        // (short) (bTreeAddress.getDatatype().getSize() + localHeapAddress.getDatatype().getSize()
-        // this is not the dataset objectHeader, its for the group to keep a SymbolTableMessage
-        // a SymbolTableMessage with bree and localheap locations.
         objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 24,
-                Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte)0,(short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))));
+                Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte)0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))));
 
+        this.dataSets = new LinkedHashMap<>();
     }
 
-    public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
+    public HdfDataSet createDataSet(HdfDataFile hdfDataFile, String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
         HdfFileAllocation fileAllocation = hdfFile.getFileAllocation();
         DatasetAllocationInfo allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
 
         HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length));
-        // this possibly changes addresses for anything after the dataGroupAddress, which includes the SNOD address.
-        dataSet = new HdfDataSet(this, datasetName, hdfDatatype, dataSpaceMessage);
+        HdfDataSet newDataSet = new HdfDataSet(hdfDataFile, datasetName, hdfDatatype, dataSpaceMessage);
+        dataSets.put(datasetName, newDataSet);
 
-        // add the datasetName into the localHeap for this group
         int linkNameOffset = localHeap.addToHeap(hdfDatasetName, localHeapContents);
-        //
         bTree.addDataset(linkNameOffset, allocationInfo.getHeaderOffset());
 
-        return dataSet;
+        return newDataSet;
     }
 
     public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
-
         HdfFileAllocation fileAllocation = hdfFile.getFileAllocation();
-        long rootGroupSize = fileAllocation.getRootGroupSize(); // Returns 704
-        long rootGroupOffset = fileAllocation.getRootGroupOffset(); // Returns 96
+        long rootGroupSize = fileAllocation.getRootGroupSize();
+        long rootGroupOffset = fileAllocation.getRootGroupOffset();
         ByteBuffer buffer = ByteBuffer.allocate((int) rootGroupSize).order(ByteOrder.LITTLE_ENDIAN);
-        objectHeader.writeToBuffer(buffer);  // Writes 40 bytes (96-135)
-        bTree.writeToByteBuffer(buffer);        // Writes 544 bytes (136-679)
-        localHeap.writeToByteBuffer(buffer);    // Writes 32 bytes (680-711)
-        localHeapContents.writeToByteBuffer(buffer); // Writes 88 bytes (712-799)
+        objectHeader.writeToBuffer(buffer);
+        bTree.writeToByteBuffer(buffer);
+        localHeap.writeToByteBuffer(buffer);
+        localHeapContents.writeToByteBuffer(buffer);
         buffer.rewind();
 
         fileChannel.position(rootGroupOffset);
@@ -114,15 +131,9 @@ public class HdfGroup implements Closeable {
             fileChannel.write(buffer);
         }
 
-        // need to write the dataset
-        if ( dataSet != null ) {
-            dataSet.writeToFileChannel(fileChannel);
-        }
-
-        // write SNOD for group.
         Map<Long, HdfGroupSymbolTableNode> mapOffsetToSnod = bTree.mapOffsetToSnod();
         ByteBuffer snodBuffer = ByteBuffer.allocate((int)HdfFileAllocation.getSNOD_STORAGE_SIZE()).order(ByteOrder.LITTLE_ENDIAN);
-        for (Map.Entry<Long, HdfGroupSymbolTableNode> offsetAndStn: mapOffsetToSnod.entrySet()) {
+        for (Map.Entry<Long, HdfGroupSymbolTableNode> offsetAndStn : mapOffsetToSnod.entrySet()) {
             offsetAndStn.getValue().writeToBuffer(snodBuffer);
             snodBuffer.rewind();
             fileChannel.position(offsetAndStn.getKey());
@@ -133,27 +144,47 @@ public class HdfGroup implements Closeable {
         }
     }
 
-    public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
-        hdfFile.write(bufferSupplier, hdfDataSet);
+//    public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
+//        hdfFile.write(bufferSupplier, hdfDataSet);
+//    }
+//
+//    public void write(ByteBuffer byteBuffer, HdfDataSet hdfDataSet) throws IOException {
+//        hdfFile.write(byteBuffer, hdfDataSet);
+//    }
+
+    public Collection<HdfDataSet> getDataSets() {
+        return dataSets.values();
     }
-    public void write(ByteBuffer byteBuffer, HdfDataSet hdfDataSet) throws IOException {
-        hdfFile.write(byteBuffer,  hdfDataSet);
+
+    public HdfDataSet findDataset(String datasetName) {
+        return dataSets.get(datasetName);
     }
 
     @Override
     public String toString() {
+        String dataSetsString = dataSets.isEmpty()
+                ? ""
+                : "\r\ndataSets=[\r\n" + dataSets.entrySet().stream()
+                .map(entry -> "  " + entry.getKey() + ": " + entry.getValue().getDataObjectHeaderPrefix())
+                .collect(Collectors.joining(",\r\n")) + "\r\n]";
+
         return "HdfGroup{" +
                 "name='" + name + '\'' +
                 "\r\nobjectHeader=" + objectHeader +
                 "\r\nbTree=" + bTree +
                 "\r\nlocalHeap=" + localHeap +
                 "\r\nlocalHeapContents=" + localHeapContents +
-                (dataSet != null ? "\r\ndataSet=" + dataSet.getDataObjectHeaderPrefix() : "") +
+                dataSetsString +
                 "}";
     }
 
     @Override
     public void close() throws IOException {
-        dataSet.close();
+        for (HdfDataSet dataSet : dataSets.values()) {
+            if (dataSet != null) {
+                dataSet.close();
+            }
+        }
     }
+
 }

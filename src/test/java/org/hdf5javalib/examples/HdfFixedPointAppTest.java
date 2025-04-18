@@ -56,19 +56,19 @@ public class HdfFixedPointAppTest {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
 
             // "byte" dataset (1 byte, value 42)
-            HdfDataSet byteDataSet = reader.findDataset("byte", channel, reader.getRootGroup());
+            HdfDataSet byteDataSet = reader.getRootGroup().findDataset("byte");
             testConverters(byteDataSet, channel, reader, (byte) 42, 1);
 
             // "short" dataset (2 bytes, value 42)
-            HdfDataSet shortDataSet = reader.findDataset("short", channel, reader.getRootGroup());
+            HdfDataSet shortDataSet = reader.getRootGroup().findDataset("short");
             testConverters(shortDataSet, channel, reader, (short) 42, 2);
 
             // "integer" dataset (4 bytes, value 42)
-            HdfDataSet intDataSet = reader.findDataset("integer", channel, reader.getRootGroup());
+            HdfDataSet intDataSet = reader.getRootGroup().findDataset("integer");
             testConverters(intDataSet, channel, reader, 42, 4);
 
             // "long" dataset (8 bytes, value 42)
-            HdfDataSet longDataSet = reader.findDataset("long", channel, reader.getRootGroup());
+            HdfDataSet longDataSet = reader.getRootGroup().findDataset("long");
             testConverters(longDataSet, channel, reader, 42L, 8);
         }
     }
@@ -148,7 +148,7 @@ public class HdfFixedPointAppTest {
         Path filePath = getResourcePath("vector.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.findDataset("vector", channel, reader.getRootGroup());
+            HdfDataSet dataSet = reader.getRootGroup().findDataset("vector");
             TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, reader, dataSet, BigInteger.class);
 
             BigInteger[] vector = dataSource.readVector();
@@ -175,7 +175,7 @@ public class HdfFixedPointAppTest {
         Path filePath = getResourcePath("weatherdata.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.findDataset("weatherdata", channel, reader.getRootGroup());
+            HdfDataSet dataSet = reader.getRootGroup().findDataset("weatherdata");
             TypedDataSource<BigDecimal> dataSource = new TypedDataSource<>(channel, reader, dataSet, BigDecimal.class);
 
             BigDecimal[][] matrix = dataSource.readMatrix();
@@ -216,7 +216,7 @@ public class HdfFixedPointAppTest {
         Path filePath = getResourcePath("tictactoe_4d_state.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.findDataset("game", channel, reader.getRootGroup());
+            HdfDataSet dataSet = reader.getRootGroup().findDataset("game");
             TypedDataSource<Integer> dataSource = new TypedDataSource<>(channel, reader, dataSet, Integer.class);
 
             int[] shape = dataSource.getShape();

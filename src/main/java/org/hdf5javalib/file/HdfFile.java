@@ -12,9 +12,7 @@ import org.hdf5javalib.file.metadata.HdfSuperblock;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
-import java.util.function.Supplier;
 
 @Getter
 @Slf4j
@@ -25,8 +23,10 @@ public class HdfFile implements Closeable, HdfDataFile {
     private final HdfGlobalHeap globalHeap;
     private final HdfFileAllocation fileAllocation;
     private final SeekableByteChannel seekableByteChannel;
+    private boolean closed;
 
     public HdfFile(SeekableByteChannel seekableByteChannel) {
+        closed = false;
         this.seekableByteChannel = seekableByteChannel;
         // this.globalHeap = new HdfGlobalHeap(bufferAllocation::getGlobalHeapAddress);
         this.fileAllocation = new HdfFileAllocation();
@@ -65,7 +65,7 @@ public class HdfFile implements Closeable, HdfDataFile {
     public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
         hdfDatatype.setGlobalHeap(globalHeap);
         // return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage, bufferAllocation.getDataGroupAddress());
-        return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage);
+        return rootGroup.createDataSet(this, datasetName, hdfDatatype, dataSpaceMessage);
     }
 
 //    protected void recomputeGlobalHeapAddress(HdfDataSet dataSet) {
@@ -74,27 +74,30 @@ public class HdfFile implements Closeable, HdfDataFile {
 //        fileAllocation.computeGlobalHeapOffset(dimensionSize.getInstance(Long.class));
 //    }
 //
-    public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
-        DatasetAllocationInfo allocationInfo = hdfDataSet.getHdfGroup().getHdfFile().getFileAllocation().getDatasetAllocationInfo(hdfDataSet.getDatasetName());
-        seekableByteChannel.position(allocationInfo.getDataOffset());
-        ByteBuffer buffer;
-        while ((buffer = bufferSupplier.get()).hasRemaining()) {
-            while (buffer.hasRemaining()) {
-                seekableByteChannel.write(buffer);
-            }
-        }
-    }
-
-    public void write(ByteBuffer buffer, HdfDataSet hdfDataSet) throws IOException {
-        DatasetAllocationInfo allocationInfo = hdfDataSet.getHdfGroup().getHdfFile().getFileAllocation().getDatasetAllocationInfo(hdfDataSet.getDatasetName());
-        seekableByteChannel.position(allocationInfo.getDataOffset());
-        while (buffer.hasRemaining()) {
-            seekableByteChannel.write(buffer);
-        }
-    }
+//    public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
+//        DatasetAllocationInfo allocationInfo = hdfDataSet.getHdfDataFile().getFileAllocation().getDatasetAllocationInfo(hdfDataSet.getDatasetName());
+//        seekableByteChannel.position(allocationInfo.getDataOffset());
+//        ByteBuffer buffer;
+//        while ((buffer = bufferSupplier.get()).hasRemaining()) {
+//            while (buffer.hasRemaining()) {
+//                seekableByteChannel.write(buffer);
+//            }
+//        }
+//    }
+//
+//    public void write(ByteBuffer buffer, HdfDataSet hdfDataSet) throws IOException {
+//        DatasetAllocationInfo allocationInfo = hdfDataSet.getHdfDataFile().getFileAllocation().getDatasetAllocationInfo(hdfDataSet.getDatasetName());
+//        seekableByteChannel.position(allocationInfo.getDataOffset());
+//        while (buffer.hasRemaining()) {
+//            seekableByteChannel.write(buffer);
+//        }
+//    }
 
     @Override
     public void close() throws IOException {
+        if (closed) {
+            return;
+        }
         rootGroup.close();
         // long endOfFileAddress = bufferAllocation.getDataAddress();
         long endOfFileAddress = fileAllocation.getEndOfFileOffset();
@@ -148,6 +151,6 @@ public class HdfFile implements Closeable, HdfDataFile {
 
 //        }
 
-
+        closed = true;
     }
 }

@@ -27,7 +27,7 @@ public class HdfVLenTypesApp {
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                for ( HdfDataSet dataSet: reader.getDatasets(channel, reader.getRootGroup()) ) {
+                for ( HdfDataSet dataSet: reader.getRootGroup().getDataSets() ) {
                     try (HdfDataSet ds = dataSet) {
                         System.out.println();
                         System.out.println("Dataset name: " + ds.getDatasetName());

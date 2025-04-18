@@ -45,7 +45,7 @@ public class HdfCompoundApp {
 //            try (FileInputStream fis = new FileInputStream(filePath)) {
 //                FileChannel channel = fis.getChannel();
 //                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                try ( HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup()) ) {
+//                try ( HdfDataSet dataSet = reader.getRootGroup().findDataset("CompoundData", channel, reader.getRootGroup()) ) {
 //                    displayData(channel, dataSet, reader);
 //                }
 ////                reader.getGlobalHeap().printDebug();

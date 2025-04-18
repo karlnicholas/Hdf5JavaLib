@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HdfCompoundAppTest {
@@ -101,7 +100,7 @@ public class HdfCompoundAppTest {
         Path filePath = getResourcePath();
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup());
+            HdfDataSet dataSet = reader.getRootGroup().findDataset("CompoundData");
 
             // Test with CompoundExample
             TypedDataSource<CompoundExample> compoundSource = new TypedDataSource<>(channel, reader, dataSet, CompoundExample.class);
@@ -180,7 +179,7 @@ public class HdfCompoundAppTest {
         Path filePath = getResourcePath();
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.findDataset("CompoundData", channel, reader.getRootGroup());
+            HdfDataSet dataSet = reader.getRootGroup().findDataset("CompoundData");
 
             TypedDataSource<MonitoringData> dataSource = new TypedDataSource<>(channel, reader, dataSet, MonitoringData.class);
             MonitoringData[] allData = dataSource.readVector();

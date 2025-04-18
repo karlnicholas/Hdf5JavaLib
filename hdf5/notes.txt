@@ -1,14 +1,4 @@
-        DatasetAllocationInfo allocationInfo = fileAllocation.allocateDatasetStorage("byte");
-		long snodOffset = fileAllocation.allocateNextSnodStorage();
-        hdfFile.getFileAllocation().allocateAndSetDataBlock("byte", 1);
-        DatasetAllocationInfo allocationInfo = fileAllocation.allocateDatasetStorage("integer");
-        hdfFile.getFileAllocation().allocateAndSetDataBlock("integer", 4);
-
-
-
-
-
-
+"C:\Program Files\Java\jdk-17\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2021.3.2\lib\idea_rt.jar=57158" -Dfile.encoding=UTF-8 -classpath C:\Users\karln\IdeaProjects\Hdf5JavaLib\target\classes;C:\Users\karln\.m2\repository\org\projectlombok\lombok\1.18.36\lombok-1.18.36.jar;C:\Users\karln\.m2\repository\org\apache\commons\commons-csv\1.12.0\commons-csv-1.12.0.jar;C:\Users\karln\.m2\repository\commons-io\commons-io\2.17.0\commons-io-2.17.0.jar;C:\Users\karln\.m2\repository\commons-codec\commons-codec\1.17.1\commons-codec-1.17.1.jar;C:\Users\karln\.m2\repository\org\slf4j\slf4j-api\2.0.17\slf4j-api-2.0.17.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar org.hdf5javalib.examples.HdfTwoScalarApp
 === HDF File Allocation Layout ===
 Current End of File Offset: 800
 ----------------------------------
@@ -33,7 +23,7 @@ Offset (Dec) | Offset (Hex) | Size     | Name
 2048         | 0x00000800   | 1        | Data Block (byte)
 ==================================
 === HDF File Allocation Layout ===
-Current End of File Offset: 2052
+Current End of File Offset: 2051
 ----------------------------------
 Offset (Dec) | Offset (Hex) | Size     | Name
 0            | 0x00000000   | 96       | Superblock
@@ -42,30 +32,62 @@ Offset (Dec) | Offset (Hex) | Size     | Name
 680          | 0x000002A8   | 32       | Local Heap Header
 712          | 0x000002C8   | 88       | Initial Local Heap Contents
 800          | 0x00000320   | 272      | Dataset Header (byte)
-1072         | 0x00000430   | 272      | Dataset Header (integer)
-1344         | 0x00000540   | 328      | SNOD Block 1
+1072         | 0x00000430   | 328      | SNOD Block 1
+1400         | 0x00000578   | 272      | Dataset Header (short)
 2048         | 0x00000800   | 1        | Data Block (byte)
-2048         | 0x00000800   | 4        | Data Block (integer)
+2049         | 0x00000801   | 2        | Data Block (short)
 ==================================
-
-
+=== HDF File Allocation Layout ===
+Current End of File Offset: 2055
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Name
+0            | 0x00000000   | 96       | Superblock
+96           | 0x00000060   | 40       | Object Header Prefix
+136          | 0x00000088   | 544      | B-tree (Node + Storage)
+680          | 0x000002A8   | 32       | Local Heap Header
+712          | 0x000002C8   | 88       | Initial Local Heap Contents
+800          | 0x00000320   | 272      | Dataset Header (byte)
+1072         | 0x00000430   | 328      | SNOD Block 1
+1400         | 0x00000578   | 272      | Dataset Header (short)
+1672         | 0x00000688   | 272      | Dataset Header (integer)
+2048         | 0x00000800   | 1        | Data Block (byte)
+2049         | 0x00000801   | 2        | Data Block (short)
+2051         | 0x00000803   | 4        | Data Block (integer)
 ==================================
-2025-04-18 11:05:00 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=2052, driverInformationAddress=-1
+2025-04-18 13:35:44 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=2055, driverInformationAddress=-1
 rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
-2025-04-18 11:05:00 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfGroup{name=''
+2025-04-18 13:35:44 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
-bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=8, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=2, symbolTableEntries=
-[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=16, objectHeaderOffset=1072, cacheType=0}]
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=8, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=3, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=16, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1672, cacheType=0}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=712}
-localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 98, 121, 116, 101, 0, 0, 0, 0, 105, 110, 116, 101, 103, 101, 114, 0, 1, 0, 0, 0, 0, 0, 0, 0]... (truncated)}
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=32, dataSegmentAddress=712}
+localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 98, 121, 116, 101, 0, 0, 0, 0, 115, 104, 111, 114, 116, 0, 0, 0, 105, 110, 116, 101, 103, 101, 114, 0]... (truncated)}
 dataSet=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
 DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-18T15:05:00Z}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2051, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-18T17:35:44Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}}}
+2025-04-18 13:35:44 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=2055, driverInformationAddress=-1
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
+2025-04-18 13:35:44 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfGroup{name=''
+objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
+SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=8, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=3, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=16, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1672, cacheType=0}]
+}}]}
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=32, dataSegmentAddress=712}
+localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 98, 121, 116, 101, 0, 0, 0, 0, 115, 104, 111, 114, 116, 0, 0, 0, 105, 110, 116, 101, 103, 101, 114, 0]... (truncated)}
+dataSet=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2051, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-18T17:35:44Z}
 AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
 NilMessage(72){}}}
 HDF5 file scalar.h5 created and written successfully!
@@ -73,72 +95,67 @@ HDF5 file scalar.h5 created and written successfully!
 Process finished with exit code 0
 
 
--------------
+=====
 
-
-Current End of File Offset: 2052
-----------------------------------
-Offset (Dec) | Offset (Hex) | Size     | Name
-0            | 0x00000000   | 96       | Superblock
-96           | 0x00000060   | 40       | Object Header Prefix
-136          | 0x00000088   | 544      | B-tree (Node + Storage)
-680          | 0x000002A8   | 32       | Local Heap Header
-712          | 0x000002C8   | 88       | Initial Local Heap Contents
-800          | 0x00000320   | 272      | Dataset Header (byte)
-1072         | 0x00000430   | 272      | Dataset Header (integer)
-1344         | 0x00000540   | 328      | SNOD Block 1
-2048         | 0x00000800   | 1        | Data Block (byte)
-2048         | 0x00000800   | 4        | Data Block (integer)
-
-
-
-endOfFileAddress=2053
+endOfFileAddress=2055
 objectHeaderOffset=96
-objectHeaderOffset=800
+bTreeOffset=136
+localHeapOffset=680
 childPointer=1072
+objectHeaderOffset=800
 objectHeaderOffset=1400
+objectHeaderOffset=1672
 dataAddress=2048
+dataAddress=2051
 dataAddress=2049
-
 
 ------  EXISTING ---
 
-2025-04-18 10:49:56 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=2053, driverInformationAddress=-1
+2025-04-18 13:20:18 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=2055, driverInformationAddress=-1
 rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
-2025-04-18 10:49:56 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfGroup{name=''
+2025-04-18 13:20:18 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
-bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=16, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=2, symbolTableEntries=
-[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=16, objectHeaderOffset=1400, cacheType=0}]
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=16, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=3, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, 
+objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=16, objectHeaderOffset=1400, cacheType=0}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=712}
-localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 98, 121, 116, 101, 0, 0, 0, 0, 105, 110, 116, 101, 103, 101, 114, 0, 1, 0, 0, 0, 0, 0, 0, 0]... (truncated)}}
-2025-04-18 10:49:56 [main] DEBUG org.hdf5javalib.HdfFileReader - Parsing complete. NEXT: 184
-2025-04-18 10:49:56 [main] DEBUG org.hdf5javalib.HdfFileReader - Dataset byte@800
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=32, dataSegmentAddress=712}
+localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 98, 121, 116, 101, 0, 0, 0, 0, 115, 104, 111, 114, 116, 0, 0, 0, 105, 110, 116, 101, 103, 101, 114, 0]... (truncated)}}
+2025-04-18 13:20:18 [main] DEBUG org.hdf5javalib.HdfFileReader - Parsing complete. NEXT: 184
+2025-04-18 13:20:18 [main] DEBUG org.hdf5javalib.HdfFileReader - Dataset byte@800
 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
 DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[1], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-18T14:47:53Z}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-18T17:19:45Z}
 AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
 NilMessage(72){}}
-2025-04-18 10:49:56 [main] DEBUG org.hdf5javalib.HdfFileReader - Dataset integer@1400
+2025-04-18 13:20:18 [main] DEBUG org.hdf5javalib.HdfFileReader - Dataset short@1400
+HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=2, bitOffset=0, bitPrecision=16}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2049, dimensionSizes=[2], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-18T17:19:45Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}}
+2025-04-18 13:20:18 [main] DEBUG org.hdf5javalib.HdfFileReader - Dataset integer@1672
 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
 DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2049, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-18T14:47:53Z}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2051, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-18T17:19:45Z}
 AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
 NilMessage(72){}}
 byte:Long read   = 42
 byte:Long stream = 42
 integer:Long read   = 42
 integer:Long stream = 42
-
-Process finished with exit code 0
-
+short:Long read   = 42
+short:Long stream = 42
 
 
 ======================

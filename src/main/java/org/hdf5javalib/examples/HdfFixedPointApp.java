@@ -53,13 +53,13 @@ public class HdfFixedPointApp {
 ////        Path filePath = getResourcePath("two_scalar_datasets.h5");
 ////        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
 ////            HdfFileReader reader = new HdfFileReader(channel).readFile();
-////            tryScalarDataSpliterator(channel, reader, reader.findDataset("FixedPointValue", channel, reader.getRootGroup()));
+////            tryScalarDataSpliterator(channel, reader, reader.getRootGroup().findDataset("FixedPointValue", channel, reader.getRootGroup()));
 ////        }
 ////        try {
 ////            filePath = getResourcePath("vector.h5");
 ////            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
 ////                HdfFileReader reader = new HdfFileReader(channel).readFile();
-////                tryVectorSpliterator(channel, reader, reader.findDataset("vector", channel, reader.getRootGroup()));
+////                tryVectorSpliterator(channel, reader, reader.getRootGroup().findDataset("vector", channel, reader.getRootGroup()));
 ////            }
 ////        } catch (IOException e) {
 ////            throw new RuntimeException(e);
@@ -68,7 +68,7 @@ public class HdfFixedPointApp {
 ////            filePath = getResourcePath("weatherdata.h5");
 ////            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
 ////                HdfFileReader reader = new HdfFileReader(channel).readFile();
-////                tryMatrixSpliterator(channel, reader, reader.findDataset("weatherdata", channel, reader.getRootGroup()));
+////                tryMatrixSpliterator(channel, reader, reader.getRootGroup().findDataset("weatherdata", channel, reader.getRootGroup()));
 ////            }
 ////        } catch (IOException e) {
 ////            throw new RuntimeException(e);
@@ -77,7 +77,7 @@ public class HdfFixedPointApp {
 ////            filePath = getResourcePath("tictactoe_4d_state.h5");
 ////            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
 ////                HdfFileReader reader = new HdfFileReader(channel).readFile();
-////                display4DData(channel, reader, reader.findDataset("game", channel, reader.getRootGroup()));
+////                display4DData(channel, reader, reader.getRootGroup().findDataset("game", channel, reader.getRootGroup()));
 ////            }
 ////        } catch (IOException e) {
 ////            throw new RuntimeException(e);

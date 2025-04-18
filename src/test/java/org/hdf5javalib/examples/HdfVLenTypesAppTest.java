@@ -34,7 +34,7 @@ public class HdfVLenTypesAppTest {
         Path filePath = getResourcePath("vlen_types_example.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet doubleDs = reader.findDataset("vlen_double", channel, reader.getRootGroup());
+            HdfDataSet doubleDs = reader.getRootGroup().findDataset("vlen_double");
             double[] expectedDoubles = {1.234, 5.678, 9.101};
             byte[][] expectedDoubleBytes = {
                     ByteBuffer.allocate(8).order(java.nio.ByteOrder.LITTLE_ENDIAN).putDouble(1.234).array(),
@@ -64,7 +64,7 @@ public class HdfVLenTypesAppTest {
         Path filePath = getResourcePath("vlen_types_example.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet floatDs = reader.findDataset("vlen_float", channel, reader.getRootGroup());
+            HdfDataSet floatDs = reader.getRootGroup().findDataset("vlen_float");
             float[] expectedFloats = {1.1f, 2.2f, 3.3f};
             byte[][] expectedFloatBytes = {
                     ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putFloat(1.1f).array(),
@@ -94,7 +94,7 @@ public class HdfVLenTypesAppTest {
         Path filePath = getResourcePath("vlen_types_example.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet intDs = reader.findDataset("vlen_int", channel, reader.getRootGroup());
+            HdfDataSet intDs = reader.getRootGroup().findDataset("vlen_int");
             int[] expectedInts = {1, 2, 3, 4, 5};
             TypedDataSource<HdfVariableLength> intVlenSource = new TypedDataSource<>(channel, reader, intDs, HdfVariableLength.class);
             assertArrayEquals(expectedInts, toIntArray((HdfData[]) intVlenSource.readScalar().getInstance(Object.class)));
@@ -116,7 +116,7 @@ public class HdfVLenTypesAppTest {
         Path filePath = getResourcePath("vlen_types_example.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet shortDs = reader.findDataset("vlen_short", channel, reader.getRootGroup());
+            HdfDataSet shortDs = reader.getRootGroup().findDataset("vlen_short");
             short[] expectedShorts = {10, 20, 30};
             TypedDataSource<HdfVariableLength> shortVlenSource = new TypedDataSource<>(channel, reader, shortDs, HdfVariableLength.class);
             assertArrayEquals(expectedShorts, toShortArray((HdfData[]) shortVlenSource.readScalar().getInstance(Object.class)));
@@ -138,7 +138,7 @@ public class HdfVLenTypesAppTest {
         Path filePath = getResourcePath("vlen_types_example.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet stringDs = reader.findDataset("vlen_string", channel, reader.getRootGroup());
+            HdfDataSet stringDs = reader.getRootGroup().findDataset("vlen_string");
             String expectedString = "Hello, Variable Length String!";
             int[] expectedBytes = {72, 101, 108, 108, 111, 44, 32, 86, 97, 114, 105, 97, 98, 108, 101,
                     32, 76, 101, 110, 103, 116, 104, 32, 83, 116, 114, 105, 110, 103, 33};

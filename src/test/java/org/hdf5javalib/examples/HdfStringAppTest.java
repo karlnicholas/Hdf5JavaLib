@@ -44,7 +44,7 @@ public class HdfStringAppTest {
         Path filePath = getResourcePath("ascii_dataset.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup());
+            HdfDataSet dataSet = reader.getRootGroup().findDataset("strings");
 
             // String
             TypedDataSource<String> stringDataSource = new TypedDataSource<>(channel, reader, dataSet, String.class);
@@ -84,7 +84,7 @@ public class HdfStringAppTest {
         Path filePath = getResourcePath("utf8_dataset.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup());
+            HdfDataSet dataSet = reader.getRootGroup().findDataset("strings");
 
             // String
             TypedDataSource<String> stringDataSource = new TypedDataSource<>(channel, reader, dataSet, String.class);

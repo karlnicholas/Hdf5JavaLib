@@ -31,7 +31,7 @@ public class HdfStringApp {
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                try ( HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup()) ) {
+                try ( HdfDataSet dataSet = reader.getRootGroup().findDataset("strings") ) {
                     HdfDisplayUtils.displayVectorData(channel, dataSet, String.class, reader);
                 }
             }
@@ -43,7 +43,7 @@ public class HdfStringApp {
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                try ( HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup()) ) {
+                try ( HdfDataSet dataSet = reader.getRootGroup().findDataset("strings") ) {
                     HdfDisplayUtils.displayVectorData(channel, dataSet, String.class, reader);
                 }
             }
@@ -55,7 +55,7 @@ public class HdfStringApp {
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                try ( HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup()) ) {
+                try ( HdfDataSet dataSet = reader.getRootGroup().findDataset("strings") ) {
                     HdfDisplayUtils.displayVectorData(channel, dataSet, String.class, reader);
                 }
             }
@@ -67,7 +67,7 @@ public class HdfStringApp {
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                try ( HdfDataSet dataSet = reader.findDataset("strings", channel, reader.getRootGroup()) ) {
+                try ( HdfDataSet dataSet = reader.getRootGroup().findDataset("strings") ) {
                     HdfDisplayUtils.displayVectorData(channel, dataSet, String.class, reader);
                 }
             }
