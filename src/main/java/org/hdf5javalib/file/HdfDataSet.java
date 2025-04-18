@@ -173,14 +173,16 @@ public class HdfDataSet implements Closeable {
         boolean requiresGlobalHeap = hdfDatatype.requiresGlobalHeap(false);
 
         // Create datatype and messages
-        HdfDatatype attributeType = createAttributeType(requiresGlobalHeap);
+        HdfDatatype attributeType = createAttributeType(requiresGlobalHeap, value);
         DatatypeMessage datatypeMessage = createDatatypeMessage(attributeType);
         DataspaceMessage dataspaceMessage = createDataspaceMessage();
 
         // Calculate sizes with 8-byte alignment
         int nameSize = alignTo8Bytes(name.length());
         int valueSize = calculateValueSize(value, requiresGlobalHeap);
-        int attributeMessageSize = 12 + nameSize + datatypeMessage.getSizeMessageData() +
+
+        int attributeMessageSize = requiresGlobalHeap ? 12 : 8;
+        attributeMessageSize = attributeMessageSize + nameSize + datatypeMessage.getSizeMessageData() +
                 dataspaceMessage.getSizeMessageData() + valueSize;
 
         // Create and register attribute message
@@ -207,7 +209,7 @@ public class HdfDataSet implements Closeable {
         return attributeMessage;
     }
 
-    private HdfDatatype createAttributeType(boolean requiresGlobalHeap) {
+    private HdfDatatype createAttributeType(boolean requiresGlobalHeap, String value) {
         if (requiresGlobalHeap) {
             FixedPointDatatype fixedType = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
@@ -226,7 +228,7 @@ public class HdfDataSet implements Closeable {
                 StringDatatype.createClassAndVersion(),
                 StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE,
                         StringDatatype.CharacterSet.ASCII),
-                (short) 0
+                (short) value.length()
         );
     }
 

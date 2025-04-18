@@ -49,10 +49,10 @@ public class HdfDisplayUtils {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T result = dataSource.readScalar();
-        System.out.println(displayType(clazz, result) + " read   = " + displayValue(result));
+        System.out.println(dataSet.getDatasetName() + ":" + displayType(clazz, result) + " read   = " + displayValue(result));
 
         result = dataSource.streamScalar().findFirst().orElseThrow();
-        System.out.println(displayType(clazz, result) + " stream = " + displayValue(result));
+        System.out.println(dataSet.getDatasetName() + ":" + displayType(clazz, result) + " stream = " + displayValue(result));
     }
 
     public static <T> void displayVectorData(SeekableByteChannel fileChannel, HdfDataSet dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
