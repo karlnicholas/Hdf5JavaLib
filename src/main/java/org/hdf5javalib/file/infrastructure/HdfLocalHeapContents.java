@@ -15,17 +15,14 @@ import java.util.Arrays;
 @Getter
 public class HdfLocalHeapContents {
     private final byte[] heapData;
-    private final HdfDataFile hdfDataFile;
 
     /**
      * Constructor for application-defined heap data.
      *
      * @param heapData The heap data as a byte array.
-     * @param hdfDataFile HdfDataFile
      */
-    public HdfLocalHeapContents(byte[] heapData, HdfDataFile hdfDataFile) {
+    public HdfLocalHeapContents(byte[] heapData) {
         this.heapData = heapData;
-        this.hdfDataFile = hdfDataFile;
     }
 
     /**
@@ -34,14 +31,14 @@ public class HdfLocalHeapContents {
      * @return HdfLocalHeapContents
      * @throws IOException ioexception
      */
-    public static HdfLocalHeapContents readFromFileChannel(SeekableByteChannel fileChannel, int dataSize, HdfDataFile hdfDataFile) throws IOException {
+    public static HdfLocalHeapContents readFromFileChannel(SeekableByteChannel fileChannel, int dataSize) throws IOException {
         // Allocate buffer and read heap data from the file channel
         byte[] heapData = new byte[dataSize];
         ByteBuffer buffer = ByteBuffer.wrap(heapData);
 
         fileChannel.read(buffer);
 
-        return new HdfLocalHeapContents(heapData, hdfDataFile);
+        return new HdfLocalHeapContents(heapData);
     }
 
     /**
@@ -67,10 +64,12 @@ public class HdfLocalHeapContents {
         return new HdfString(Arrays.copyOfRange(heapData, (int) start, (int) iOffset), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), (int) (iOffset - start)));
     }
 
-    public void writeToByteBuffer(ByteBuffer buffer) {
-        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        buffer.position((int)(fileAllocation.getCurrentLocalHeapContentsOffset() - fileAllocation.getRootGroupOffset()));
-        buffer.put(heapData);
+    public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
+        ByteBuffer buffer = ByteBuffer.wrap(heapData);
+        seekableByteChannel.position(fileAllocation.getCurrentLocalHeapContentsOffset());
+        while (buffer.hasRemaining()) {
+            seekableByteChannel.write(buffer);
+        }
     }
 
     /**

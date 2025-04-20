@@ -24,6 +24,24 @@ public class HdfLocalHeap {
     private HdfFixedPoint heapContentsOffset;
     private final HdfDataFile hdfDataFile;
 
+    public static class Pair<T, U> {
+        private final T first;
+        private final U second;
+
+        public Pair(T first, U second) {
+            this.first = first;
+            this.second = second;
+        }
+
+        public T getFirst() {
+            return first;
+        }
+
+        public U getSecond() {
+            return second;
+        }
+    }
+
     public HdfLocalHeap(String signature, int version, HdfFixedPoint heapContentsSize,
                         HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile) {
         this.signature = signature;
@@ -38,31 +56,55 @@ public class HdfLocalHeap {
         this("HEAP", 0, heapContentsSize, HdfFixedPoint.of(0), heapContentsOffset, hdfDataFile);
     }
 
-    public int addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents) {
+    public Pair<HdfLocalHeapContents, Integer> addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         byte[] objectNameBytes = objectName.getBytes();
         int freeListOffset = this.freeListOffset.getInstance(Long.class).intValue();
         byte[] heapData = localHeapContents.getHeapData();
+        if (heapData == null || freeListOffset < 0 || freeListOffset > heapData.length) {
+            throw new IllegalStateException("Invalid heap state: freeListOffset=" + freeListOffset + ", heapData.length=" + (heapData == null ? 0 : heapData.length));
+        }
 
-        // Extract free space size
-        int freeBlockSize = ByteBuffer.wrap(heapData, freeListOffset + 8, 8)
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .getInt();
-
-        // Check if there’s enough space; if not, request resize from HdfFileAllocation
+        // Calculate required space
         int requiredSpace = objectNameBytes.length + ((objectNameBytes.length == 0) ? 8 :
                 ((objectNameBytes.length + 7) & ~7) - objectNameBytes.length + 16);
-        if (requiredSpace > freeBlockSize) {
-            // Call resizeHeap, assuming HdfFileAllocation knows current size
-            long newSize = fileAllocation.expandLocalHeapContents();
-            localHeapContents = new HdfLocalHeapContents(new byte[(int) newSize], hdfDataFile);
-            this.heapContentsSize = HdfFixedPoint.of(newSize);
-            this.heapContentsOffset = HdfFixedPoint.of(fileAllocation.getCurrentLocalHeapContentsOffset());
-            heapData = localHeapContents.getHeapData(); // Refresh heapData
+
+        // Check available space
+        int availableSpace = heapData.length - freeListOffset;
+        int freeBlockSize = 0;
+        if (freeListOffset + 16 <= heapData.length) {
             freeBlockSize = ByteBuffer.wrap(heapData, freeListOffset + 8, 8)
                     .order(ByteOrder.LITTLE_ENDIAN)
-                    .getInt(); // Refresh freeBlockSize
+                    .getInt();
         }
+
+        // Expand heap if needed
+        if (requiredSpace > availableSpace) {
+            byte[] oldHeapData = heapData;
+            int oldHeapLength = oldHeapData.length;
+            long newSize = fileAllocation.expandLocalHeapContents();
+            if (newSize <= oldHeapLength) {
+                throw new IllegalStateException("Heap expansion failed: newSize=" + newSize + " <= oldHeapLength=" + oldHeapLength);
+            }
+            localHeapContents = new HdfLocalHeapContents(new byte[(int) newSize]);
+            this.heapContentsSize = HdfFixedPoint.of(newSize);
+            this.heapContentsOffset = HdfFixedPoint.of(fileAllocation.getCurrentLocalHeapContentsOffset());
+            heapData = localHeapContents.getHeapData();
+            System.arraycopy(oldHeapData, 0, heapData, 0, oldHeapLength);
+            freeListOffset = oldHeapLength;
+            this.freeListOffset = HdfFixedPoint.of(freeListOffset);
+            availableSpace = heapData.length - freeListOffset;
+            freeBlockSize = availableSpace - 16;
+            // Initialize free block metadata
+            ByteBuffer buffer = ByteBuffer.wrap(heapData).order(ByteOrder.LITTLE_ENDIAN);
+            buffer.putLong(freeListOffset, 1);
+            buffer.putLong(freeListOffset + 8, freeBlockSize);
+        } else if (requiredSpace > freeBlockSize) {
+            throw new IllegalStateException("Insufficient free block size: requiredSpace=" + requiredSpace + ", freeBlockSize=" + freeBlockSize);
+        }
+
+        // Store linkNameOffset for return
+        int linkNameOffset = freeListOffset;
 
         // Copy the new objectName
         System.arraycopy(objectNameBytes, 0, heapData, freeListOffset, objectNameBytes.length);
@@ -80,17 +122,17 @@ public class HdfLocalHeap {
         ByteBuffer buffer = ByteBuffer.wrap(heapData).order(ByteOrder.LITTLE_ENDIAN);
         buffer.putLong(newFreeListOffset, 1);
         buffer.putLong(newFreeListOffset + 8, remainingFreeSpace);
-        return freeListOffset;
+
+        return new Pair<>(localHeapContents, linkNameOffset);
     }
+
     public static HdfLocalHeap readFromFileChannel(SeekableByteChannel fileChannel, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
-        // Allocate buffer for the local heap header
-        ByteBuffer buffer = ByteBuffer.allocate(32); // Initial size for header parsing
+        ByteBuffer buffer = ByteBuffer.allocate(32);
         buffer.order(java.nio.ByteOrder.LITTLE_ENDIAN);
 
         fileChannel.read(buffer);
         buffer.flip();
 
-        // Parse the signature
         byte[] signatureBytes = new byte[4];
         buffer.get(signatureBytes);
         String signature = new String(signatureBytes);
@@ -98,17 +140,14 @@ public class HdfLocalHeap {
             throw new IllegalArgumentException("Invalid heap signature: " + signature);
         }
 
-        // Parse the version
         int version = Byte.toUnsignedInt(buffer.get());
 
-        // Parse reserved bytes
         byte[] reserved = new byte[3];
         buffer.get(reserved);
         if (!allBytesZero(reserved)) {
             throw new IllegalArgumentException("Reserved bytes in heap header must be zero.");
         }
 
-        // Parse fixed-point fields using HdfFixedPoint
         BitSet emptyBitSet = new BitSet();
         HdfFixedPoint dataSegmentSize = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(lengthSize*8));
         HdfFixedPoint freeListOffset = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
@@ -137,26 +176,19 @@ public class HdfLocalHeap {
                 '}';
     }
 
-    public void writeToByteBuffer(ByteBuffer buffer) {
-        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        buffer.position((int)(fileAllocation.getLocalHeapOffset() - fileAllocation.getRootGroupOffset()));
+    public void writeToByteChannel(SeekableByteChannel seekableByteChannel) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(32).order(java.nio.ByteOrder.LITTLE_ENDIAN);
 
-        // Step 1: Write the "HEAP" signature (4 bytes)
         buffer.put(signature.getBytes());
-
-        // Step 2: Write the version (1 byte)
         buffer.put((byte) version);
-
-        // Step 3: Write reserved bytes (3 bytes, must be 0)
         buffer.put(new byte[3]);
-
-        // Step 4: Write Data Segment Size (lengthSize bytes, little-endian)
         writeFixedPointToBuffer(buffer, heapContentsSize);
-
-        // Step 5: Write Free List Offset (lengthSize bytes, little-endian)
         writeFixedPointToBuffer(buffer, freeListOffset);
-
-        // Step 6: Write Data Segment Address (offsetSize bytes, little-endian)
         writeFixedPointToBuffer(buffer, heapContentsOffset);
+
+        buffer.rewind();
+        while (buffer.hasRemaining()) {
+            seekableByteChannel.write(buffer);
+        }
     }
 }

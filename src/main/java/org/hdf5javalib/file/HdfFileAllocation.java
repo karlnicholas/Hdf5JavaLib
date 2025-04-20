@@ -27,6 +27,7 @@ public final class HdfFileAllocation {
     public static final long GLOBAL_HEAP_BLOCK_SIZE = 4096L;
     private static final long DEFAULT_DATASET_HEADER_ALLOCATION_SIZE = DATA_OBJECT_HEADER_MESSAGE_SIZE + 256L;
     private static final long MIN_DATA_OFFSET_THRESHOLD = 2048L;
+    private static final long ALIGNMENT_BOUNDARY = 2048L;
     @Getter
     private static final long SNOD_STORAGE_SIZE = SETUP_SNOD_V1_HEADER_SIZE + (DEFAULT_SETUP_SNOD_ENTRY_COUNT * SETUP_SNOD_V1_ENTRY_SIZE);
 
@@ -85,6 +86,11 @@ public final class HdfFileAllocation {
         this.nextAvailableOffset = currentOffset;
     }
 
+    /** Helper method to compute the next alignment boundary after a given offset. */
+    private long nextAlignmentBoundary(long offset) {
+        return ((offset + ALIGNMENT_BOUNDARY - 1) / ALIGNMENT_BOUNDARY) * ALIGNMENT_BOUNDARY;
+    }
+
     /** Recalculates layout based on current sizes. */
     private void recalculateLayout() {
         long currentOffset = initialLocalHeapContentsOffset + initialLocalHeapContentsSize;
@@ -105,12 +111,24 @@ public final class HdfFileAllocation {
             allocationOrder.add(datasetIterator.next().getValue());
         }
 
+        // Compute the highest data block end to avoid overlap
+        long maxDataEnd = MIN_DATA_OFFSET_THRESHOLD;
+        for (DatasetAllocationInfo dataset : datasetAllocations.values()) {
+            if (dataset.getDataOffset() != -1L && dataset.getDataOffset() + dataset.getDataSize() > maxDataEnd) {
+                maxDataEnd = dataset.getDataOffset() + dataset.getDataSize();
+            }
+        }
+
         // Assign offsets in order
         snodOffset = -1L;
         snodAllocationOffsets.clear();
         for (Object alloc : allocationOrder) {
             if (alloc instanceof DatasetAllocationInfo) {
                 DatasetAllocationInfo info = (DatasetAllocationInfo) alloc;
+                // Check for overlap with data region (2048+)
+                if (currentOffset < maxDataEnd && currentOffset + info.getHeaderSize() > MIN_DATA_OFFSET_THRESHOLD) {
+                    currentOffset = nextAlignmentBoundary(maxDataEnd);
+                }
                 info.setHeaderOffset(currentOffset);
                 currentOffset += info.getHeaderSize();
             } else if (alloc instanceof Long) {
@@ -195,7 +213,7 @@ public final class HdfFileAllocation {
         long newOffset = allocateBlock(newSize);
         this.currentLocalHeapContentsOffset = newOffset;
         this.currentLocalHeapContentsSize = newSize;
-        return newOffset;
+        return newSize;
     }
 
     public long expandGlobalHeapBlock() {
@@ -203,7 +221,7 @@ public final class HdfFileAllocation {
             throw new IllegalStateException("Second global heap block not yet allocated.");
         }
         long oldSize = globalHeapBlockSizes.getOrDefault(secondGlobalHeapOffset, GLOBAL_HEAP_BLOCK_SIZE);
-        long newSize = oldSize * 2L; // Fixed: Removed 'Presidency' and added semicolon
+        long newSize = oldSize * 2L;
         // Update size in place, assuming block is at end of file
         nextAvailableOffset = secondGlobalHeapOffset + newSize;
         globalHeapBlockSizes.put(secondGlobalHeapOffset, newSize);
@@ -287,8 +305,9 @@ public final class HdfFileAllocation {
                 maxDataEnd = dataset.getDataOffset() + dataset.getDataSize();
             }
         }
-        nextAvailableOffset = Math.max(nextAvailableOffset, maxDataEnd);
-        long dataOffset = allocateBlock(dataSize);
+        // Allocate data block sequentially from maxDataEnd
+        long dataOffset = maxDataEnd;
+        nextAvailableOffset = Math.max(nextAvailableOffset, dataOffset + dataSize);
         info.setDataOffset(dataOffset);
         info.setDataSize(dataSize);
         return dataOffset;

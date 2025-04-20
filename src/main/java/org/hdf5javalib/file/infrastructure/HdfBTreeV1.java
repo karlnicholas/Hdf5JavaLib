@@ -8,6 +8,7 @@ import org.hdf5javalib.file.HdfFileAllocation;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
@@ -212,7 +213,7 @@ public class HdfBTreeV1 {
     public boolean isLeafLevelNode() { return this.nodeLevel == 0; }
     public boolean isInternalLevelNode() { return this.nodeLevel > 0; }
 
-    public void addDataset(long linkNameOffset, long datasetObjectHeaderAddress) {
+    public void addDataset(long linkNameOffset, long datasetObjectHeaderAddress, String datasetName) {
         if (!isLeafLevelNode()) {
             throw new IllegalStateException("addDataset can only be called on leaf B-tree nodes (nodeLevel 0).");
         }
@@ -255,9 +256,8 @@ public class HdfBTreeV1 {
         targetSnod.addEntry(ste);
     }
 
-    public void writeToByteBuffer(ByteBuffer buffer) {
-        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        buffer.position((int)(fileAllocation.getBtreeOffset() - fileAllocation.getRootGroupOffset()));
+    public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate((int) fileAllocation.getBtreeTotalSize()).order(ByteOrder.LITTLE_ENDIAN);
         buffer.put(signature.getBytes());
         buffer.put((byte) nodeType);
         buffer.put((byte) nodeLevel);
@@ -273,6 +273,10 @@ public class HdfBTreeV1 {
             } else {
                 throw new NullPointerException("BTree Entry key cannot be null during write");
             }
+        }
+        buffer.rewind();
+        while (buffer.hasRemaining()) {
+            seekableByteChannel.write(buffer);
         }
     }
 

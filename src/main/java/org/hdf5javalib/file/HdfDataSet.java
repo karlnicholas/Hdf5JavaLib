@@ -302,7 +302,7 @@ public class HdfDataSet implements Closeable {
     @Override
     public void close() throws IOException {
         if (closed) return;
-        if (hdfDataFile == null) return;
+        if (hdfDataFile.getFileAllocation().getDatasetAllocationInfo(datasetName) == null) return;
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
         // int headerSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();

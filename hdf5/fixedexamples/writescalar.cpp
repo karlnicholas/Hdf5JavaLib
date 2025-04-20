@@ -29,15 +29,15 @@ int main() {
     byteAttr.write(attr_type, attribute_value);
     byteAttr.close();
 
-    // 2. "short" dataset (16-bit signed integer)
-    H5::IntType shortType(PredType::NATIVE_INT16); // 2 bytes, signed
-    shortType.setOrder(H5T_ORDER_LE);
-    H5::DataSet shortDataset = file.createDataSet("short", shortType, scalarSpace);
-    int16_t shortValue = 42;
-    shortDataset.write(&shortValue, PredType::NATIVE_INT16);
-    Attribute shortAttr = shortDataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
-    shortAttr.write(attr_type, attribute_value);
-    shortAttr.close();
+    // // 2. "short" dataset (16-bit signed integer)
+    // H5::IntType shortType(PredType::NATIVE_INT16); // 2 bytes, signed
+    // shortType.setOrder(H5T_ORDER_LE);
+    // H5::DataSet shortDataset = file.createDataSet("short", shortType, scalarSpace);
+    // int16_t shortValue = 42;
+    // shortDataset.write(&shortValue, PredType::NATIVE_INT16);
+    // Attribute shortAttr = shortDataset.createAttribute(ATTRIBUTE_NAME, attr_type, attr_space);
+    // shortAttr.write(attr_type, attribute_value);
+    // shortAttr.close();
 
     // 3. "integer" dataset (32-bit signed integer)
     H5::IntType intType(PredType::NATIVE_INT32); // 4 bytes, signed

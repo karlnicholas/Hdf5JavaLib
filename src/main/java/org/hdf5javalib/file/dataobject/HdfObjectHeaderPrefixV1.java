@@ -2,6 +2,7 @@ package org.hdf5javalib.file.dataobject;
 
 import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
+import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.dataobject.message.HdfMessage;
 import org.hdf5javalib.file.dataobject.message.ObjectHeaderContinuationMessage;
 
@@ -77,7 +78,17 @@ public class HdfObjectHeaderPrefixV1 {
         return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages);
     }
 
-    public void writeToBuffer(ByteBuffer buffer) {
+    public void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
+        int currentSize = 16;
+        int i=0;
+        while (i < headerMessages.size()) {
+            HdfMessage hdfMessage = headerMessages.get(i);
+            currentSize += hdfMessage.getSizeMessageData() + 8;
+            currentSize  = (currentSize + 7) & ~7;
+            i++;
+        }
+        ByteBuffer buffer = ByteBuffer.allocate(currentSize).order(ByteOrder.LITTLE_ENDIAN);
+
         // Write version (1 byte)
         buffer.put((byte) version);
 
@@ -110,9 +121,17 @@ public class HdfObjectHeaderPrefixV1 {
 //            if (i == 5 && optContinuationMessage.isPresent()) {
 //                buffer.position(optContinuationMessage.get().getContinuationOffset().getInstance(Long.class).intValue());
 //            }
-            if (buffer.position() >= buffer.capacity()) {
-                break;
+            // assuming this doesn't happen.
+            if (buffer.position() > buffer.capacity()) {
+                throw new IllegalStateException("Buffer overflow writing group header messages to byte channel.");
             }
+        }
+        buffer.rewind();
+        long rootGroupOffset = fileAllocation.getRootGroupOffset();
+
+        seekableByteChannel.position(rootGroupOffset);
+        while (buffer.hasRemaining()) {
+            seekableByteChannel.write(buffer);
         }
     }
     public void writeInitialMessageBlockToBuffer(ByteBuffer buffer) {
