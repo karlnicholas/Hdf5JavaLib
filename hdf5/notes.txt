@@ -1,39 +1,144 @@
+2025-04-20 12:45:56 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=130816, driverInformationAddress=-1
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
+2025-04-20 12:45:56 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfGroup{name=''
+objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
+SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=8, childPointer=1784, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}]
+}}]}
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=712}
+localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 67, 111, 109, 112, 111, 117, 110, 100, 68, 97, 116, 97, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]... (truncated)}
+dataSets=[
+  CompoundData@800 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 8 Object Reference Count: 1 Object Header Size: 968
+ObjectHeaderContinuationMessage(24){continuationOffset=2112, continuationSize=120}
+NilMessage(8){}
+DatatypeMessage(872){hdfDatatype=CompoundDatatype { classBitField: {1, 2, 3}, size: 96, 
+Member{name='recordId', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
+Member{name='fixedStr', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=StringDatatype{size=10, padding='Null Terminate', charSet='ASCII'}, sizeMessageData=56}
+Member{name='varStr', offset=24, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII'}, sizeMessageData=60}
+Member{name='floatVal', offset=40, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=4, bitOffset=0, bitPrecision=32, exponentLocation=23, exponentSize=8, mantissaLocation=0, mantissaSize=23, exponentBias=127}, sizeMessageData=68}
+Member{name='doubleVal', offset=48, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}
+Member{name='int8_Val', offset=56, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8}, sizeMessageData=60}
+Member{name='uint8_Val', offset=57, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}, sizeMessageData=60}
+Member{name='int16_Val', offset=58, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=2, bitOffset=0, bitPrecision=16}, sizeMessageData=60}
+Member{name='uint16_Val', offset=60, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=2, bitOffset=0, bitPrecision=16}, sizeMessageData=60}
+Member{name='int32_Val', offset=64, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}, sizeMessageData=60}
+Member{name='uint32_Val', offset=68, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=4, bitOffset=0, bitPrecision=32}, sizeMessageData=60}
+Member{name='int64_Val', offset=72, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
+Member{name='uint64_Val', offset=80, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
+Member{name='scaledUintVal', offset=88, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=8, bitOffset=7, bitPrecision=57}, sizeMessageData=60}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=0, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[96000], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T16:45:56Z}
+DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[1000], maxDimensions=[1000], hasMaxDimensions=false}
+AttributeMessage(88){version=1, name='GIT root revision', value='Revision: , URL: '}}
+]}
+=== HDF File Allocation Layout ===
+Current End of File Offset: 130816
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Name
+0            | 0x00000000   | 96       | Superblock
+96           | 0x00000060   | 40       | Object Header Prefix
+136          | 0x00000088   | 544      | B-tree (Node + Storage)
+680          | 0x000002A8   | 32       | Local Heap Header
+712          | 0x000002C8   | 88       | Initial Local Heap Contents
+800          | 0x00000320   | 984      | Dataset Header (CompoundData)
+1784         | 0x000006F8   | 328      | SNOD Block 1
+2048         | 0x00000800   | 96000    | Data Block (CompoundData)
+2112         | 0x00000840   | 120      | Continuation (CompoundData)
+2232         | 0x000008B8   | 4096     | Global Heap Block 2
+98048        | 0x00017F00   | 32768    | Global Heap Block 1
+==================================
+HDF5 file created and written successfully!
+
+Process finished with exit code 0
+
+
+
+
+===================  
+
+
+endOfFileAddress=135096
+objectHeaderOffset=96
+bTreeOffset=136
+localHeapOffset=680
+childPointer=1784
+inkNameOffset=8
+objectHeaderOffset=800
+Object Header Size: 968
+DatatypeMessage(872)
+continuationOffset=2112
+continuationSize=120
+dataAddress=6328
+
+0x8B8 (2232) = global heap 1  = 4096
 
 ====== EXISTING ===
 
-2025-04-20 12:10:42 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=2053, driverInformationAddress=-1
+2025-04-20 12:32:31 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=135096, driverInformationAddress=-1
 rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
-2025-04-20 12:10:42 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfGroup{name=''
+2025-04-20 12:32:31 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
-bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=16, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=2, symbolTableEntries=
-[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=16, objectHeaderOffset=1400, cacheType=0}]
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=8, childPointer=1784, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}]
 }}]}
 localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=712}
-localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 98, 121, 116, 101, 0, 0, 0, 0, 105, 110, 116, 101, 103, 101, 114, 0, 1, 0, 0, 0, 0, 0, 0, 0]... (truncated)}
+localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 67, 111, 109, 112, 111, 117, 110, 100, 68, 97, 116, 97, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]... (truncated)}
 dataSets=[
-  byte: HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[1], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T16:09:19Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  integer: HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2049, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T16:09:19Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}}
+  CompoundData@800 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 8 Object Reference Count: 1 Object Header Size: 968
+ObjectHeaderContinuationMessage(24){continuationOffset=2112, continuationSize=120}
+NilMessage(8){}
+DatatypeMessage(872){hdfDatatype=CompoundDatatype { classBitField: {1, 2, 3}, size: 96, 
+Member{name='recordId', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
+Member{name='fixedStr', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=StringDatatype{size=10, padding='Null Terminate', charSet='ASCII'}, sizeMessageData=56}
+Member{name='varStr', offset=24, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII'}, sizeMessageData=60}
+Member{name='floatVal', offset=40, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=4, bitOffset=0, bitPrecision=32, exponentLocation=23, exponentSize=8, mantissaLocation=0, mantissaSize=23, exponentBias=127}, sizeMessageData=68}
+Member{name='doubleVal', offset=48, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}
+Member{name='int8_Val', offset=56, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8}, sizeMessageData=60}
+Member{name='uint8_Val', offset=57, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}, sizeMessageData=60}
+Member{name='int16_Val', offset=58, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=2, bitOffset=0, bitPrecision=16}, sizeMessageData=60}
+Member{name='uint16_Val', offset=60, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=2, bitOffset=0, bitPrecision=16}, sizeMessageData=60}
+Member{name='int32_Val', offset=64, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}, sizeMessageData=60}
+Member{name='uint32_Val', offset=68, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=4, bitOffset=0, bitPrecision=32}, sizeMessageData=60}
+Member{name='int64_Val', offset=72, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
+Member{name='uint64_Val', offset=80, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
+Member{name='scaledUintVal', offset=88, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=8, bitOffset=7, bitPrecision=57}, sizeMessageData=60}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=0, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=6328, dimensionSizes=[96000], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-16T20:47:23Z}
+DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[1000], maxDimensions=[1000], hasMaxDimensions=true}
+AttributeMessage(88){version=1, name='GIT root revision', value='Revision: , URL: '}}
 ]}
-2025-04-20 12:10:42 [main] DEBUG org.hdf5javalib.HdfFileReader - Parsing complete. NEXT: 1672
-byte:Long read   = 42
-byte:Long stream = 42
-integer:Long read   = 42
-integer:Long stream = 42
+2025-04-20 12:32:31 [main] DEBUG org.hdf5javalib.HdfFileReader - Parsing complete. NEXT: 6328
+Ten Rows:
+Row: [1000, FixedData, varStr:1, 5.877472E-39, 1.1125369292536007E-308, -128, 0, -32768, 0, -2147483648, 0, -9223372036854775808, 0, 1.0000000]
+Row: [1001, FixedData, varStr:2, 3.14, 2.718, -100, 28, -25487, 7281, -1670265060, 477218588, -7173733806442603407, 2049638230412172401, 2.2500000]
+Row: [1002, FixedData, varStr:3, 6.28, 5.436, -72, 56, -18206, 14562, -1193046472, 954437176, -5124095576030431006, 4099276460824344802, 3.5000000]
+Row: [1003, FixedData, varStr:4, 9.42, 8.154, -44, 84, -10925, 21843, -715827884, 1431655764, -3074457345618258605, 6148914691236517203, 4.7500000]
+Row: [1004, FixedData, varStr:5, 12.56, 10.872, -16, 112, -3644, 29124, -238609296, 1908874352, -1024819115206086204, 8198552921648689604, 5.0000000]
+Row: [1005, FixedData, varStr:6, 15.700001, 13.59, 12, 140, 3637, 36405, 238609292, 2386092940, 1024819115206086197, 10248191152060862005, 6.2500000]
+Row: [1006, FixedData, varStr:7, 18.84, 16.308, 40, 168, 10918, 43686, 715827880, 2863311528, 3074457345618258598, 12297829382473034406, 7.5000000]
+Row: [1007, FixedData, varStr:8, 21.980001, 19.026, 68, 196, 18199, 50967, 1193046468, 3340530116, 5124095576030430999, 14347467612885206807, 8.7500000]
+Row: [1008, FixedData, varStr:9, 25.12, 21.744, 96, 224, 25480, 58248, 1670265056, 3817748704, 7173733806442603400, 16397105843297379208, 9.0000000]
+Row: [1009, FixedData, varStr:10, 28.26, 24.462, 127, 255, 32767, 65535, 2147483647, 4294967295, 9223372036854775807, 18446744073709551615, 10.2500000]
+Ten BigDecimals = [1.0000000, 2.2500000, 3.5000000, 4.7500000, 5.0000000, 6.2500000, 7.5000000, 8.7500000, 9.0000000, 10.2500000]
+RecordId < 1010, custom class:
+Row: HdfCompoundApp.CompoundExample(recordId=1000, fixedStr=FixedData, varStr=varStr:1, floatVal=5.877472E-39, doubleVal=1.1125369292536007E-308, int8_Val=-128, int16_Val=-32768, int32_Val=-2147483648, int64_Val=-9223372036854775808, uint8_Val=0, uint16_Val=0, uint32_Val=0, uint64_Val=0, scaledUintVal=1.0000000)
+Row: HdfCompoundApp.CompoundExample(recordId=1001, fixedStr=FixedData, varStr=varStr:2, floatVal=3.14, doubleVal=2.718, int8_Val=-100, int16_Val=-25487, int32_Val=-1670265060, int64_Val=-7173733806442603407, uint8_Val=28, uint16_Val=7281, uint32_Val=477218588, uint64_Val=2049638230412172401, scaledUintVal=2.2500000)
+Row: HdfCompoundApp.CompoundExample(recordId=1002, fixedStr=FixedData, varStr=varStr:3, floatVal=6.28, doubleVal=5.436, int8_Val=-72, int16_Val=-18206, int32_Val=-1193046472, int64_Val=-5124095576030431006, uint8_Val=56, uint16_Val=14562, uint32_Val=954437176, uint64_Val=4099276460824344802, scaledUintVal=3.5000000)
+Row: HdfCompoundApp.CompoundExample(recordId=1003, fixedStr=FixedData, varStr=varStr:4, floatVal=9.42, doubleVal=8.154, int8_Val=-44, int16_Val=-10925, int32_Val=-715827884, int64_Val=-3074457345618258605, uint8_Val=84, uint16_Val=21843, uint32_Val=1431655764, uint64_Val=6148914691236517203, scaledUintVal=4.7500000)
+Row: HdfCompoundApp.CompoundExample(recordId=1004, fixedStr=FixedData, varStr=varStr:5, floatVal=12.56, doubleVal=10.872, int8_Val=-16, int16_Val=-3644, int32_Val=-238609296, int64_Val=-1024819115206086204, uint8_Val=112, uint16_Val=29124, uint32_Val=1908874352, uint64_Val=8198552921648689604, scaledUintVal=5.0000000)
+Row: HdfCompoundApp.CompoundExample(recordId=1005, fixedStr=FixedData, varStr=varStr:6, floatVal=15.700001, doubleVal=13.59, int8_Val=12, int16_Val=3637, int32_Val=238609292, int64_Val=1024819115206086197, uint8_Val=140, uint16_Val=36405, uint32_Val=2386092940, uint64_Val=10248191152060862005, scaledUintVal=6.2500000)
+Row: HdfCompoundApp.CompoundExample(recordId=1006, fixedStr=FixedData, varStr=varStr:7, floatVal=18.84, doubleVal=16.308, int8_Val=40, int16_Val=10918, int32_Val=715827880, int64_Val=3074457345618258598, uint8_Val=168, uint16_Val=43686, uint32_Val=2863311528, uint64_Val=12297829382473034406, scaledUintVal=7.5000000)
+Row: HdfCompoundApp.CompoundExample(recordId=1007, fixedStr=FixedData, varStr=varStr:8, floatVal=21.980001, doubleVal=19.026, int8_Val=68, int16_Val=18199, int32_Val=1193046468, int64_Val=5124095576030430999, uint8_Val=196, uint16_Val=50967, uint32_Val=3340530116, uint64_Val=14347467612885206807, scaledUintVal=8.7500000)
+Row: HdfCompoundApp.CompoundExample(recordId=1008, fixedStr=FixedData, varStr=varStr:9, floatVal=25.12, doubleVal=21.744, int8_Val=96, int16_Val=25480, int32_Val=1670265056, int64_Val=7173733806442603400, uint8_Val=224, uint16_Val=58248, uint32_Val=3817748704, uint64_Val=16397105843297379208, scaledUintVal=9.0000000)
+Row: HdfCompoundApp.CompoundExample(recordId=1009, fixedStr=FixedData, varStr=varStr:10, floatVal=28.26, doubleVal=24.462, int8_Val=127, int16_Val=32767, int32_Val=2147483647, int64_Val=9223372036854775807, uint8_Val=255, uint16_Val=65535, uint32_Val=4294967295, uint64_Val=18446744073709551615, scaledUintVal=10.2500000)
+DONE
+
+Process finished with exit code 0
+
 
 
 ======================

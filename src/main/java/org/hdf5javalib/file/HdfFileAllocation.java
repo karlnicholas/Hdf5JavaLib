@@ -27,7 +27,6 @@ public final class HdfFileAllocation {
     public static final long GLOBAL_HEAP_BLOCK_SIZE = 4096L;
     private static final long DEFAULT_DATASET_HEADER_ALLOCATION_SIZE = DATA_OBJECT_HEADER_MESSAGE_SIZE + 256L;
     private static final long MIN_DATA_OFFSET_THRESHOLD = 2048L;
-    private static final long ALIGNMENT_BOUNDARY = 2048L;
     @Getter
     private static final long SNOD_STORAGE_SIZE = SETUP_SNOD_V1_HEADER_SIZE + (DEFAULT_SETUP_SNOD_ENTRY_COUNT * SETUP_SNOD_V1_ENTRY_SIZE);
 
@@ -86,37 +85,17 @@ public final class HdfFileAllocation {
         this.nextAvailableOffset = currentOffset;
     }
 
-    /** Helper method to compute the next alignment boundary after a given offset. */
-    private long nextAlignmentBoundary(long offset) {
-        return ((offset + ALIGNMENT_BOUNDARY - 1) / ALIGNMENT_BOUNDARY) * ALIGNMENT_BOUNDARY;
-    }
-
     /** Recalculates layout based on current sizes. */
     private void recalculateLayout() {
         long currentOffset = initialLocalHeapContentsOffset + initialLocalHeapContentsSize;
 
-        // Allocate first dataset, then SNOD, then remaining datasets to match C++ order
+        // Maintain order of dataset headers and SNODs as allocated
         List<Object> allocationOrder = new ArrayList<>();
-        Iterator<Map.Entry<String, DatasetAllocationInfo>> datasetIterator = datasetAllocations.entrySet().iterator();
-        // Add first dataset if exists
-        if (datasetIterator.hasNext()) {
-            allocationOrder.add(datasetIterator.next().getValue());
+        for (Map.Entry<String, DatasetAllocationInfo> entry : datasetAllocations.entrySet()) {
+            allocationOrder.add(entry.getValue());
         }
-        // Add SNODs after first dataset
         for (Long snodOffset : snodAllocationOffsets) {
             allocationOrder.add(snodOffset);
-        }
-        // Add remaining datasets
-        while (datasetIterator.hasNext()) {
-            allocationOrder.add(datasetIterator.next().getValue());
-        }
-
-        // Compute the highest data block end to avoid overlap
-        long maxDataEnd = MIN_DATA_OFFSET_THRESHOLD;
-        for (DatasetAllocationInfo dataset : datasetAllocations.values()) {
-            if (dataset.getDataOffset() != -1L && dataset.getDataOffset() + dataset.getDataSize() > maxDataEnd) {
-                maxDataEnd = dataset.getDataOffset() + dataset.getDataSize();
-            }
         }
 
         // Assign offsets in order
@@ -125,10 +104,6 @@ public final class HdfFileAllocation {
         for (Object alloc : allocationOrder) {
             if (alloc instanceof DatasetAllocationInfo) {
                 DatasetAllocationInfo info = (DatasetAllocationInfo) alloc;
-                // Check for overlap with data region (2048+)
-                if (currentOffset < maxDataEnd && currentOffset + info.getHeaderSize() > MIN_DATA_OFFSET_THRESHOLD) {
-                    currentOffset = nextAlignmentBoundary(maxDataEnd);
-                }
                 info.setHeaderOffset(currentOffset);
                 currentOffset += info.getHeaderSize();
             } else if (alloc instanceof Long) {
@@ -213,7 +188,7 @@ public final class HdfFileAllocation {
         long newOffset = allocateBlock(newSize);
         this.currentLocalHeapContentsOffset = newOffset;
         this.currentLocalHeapContentsSize = newSize;
-        return newSize;
+        return newOffset;
     }
 
     public long expandGlobalHeapBlock() {
@@ -269,13 +244,7 @@ public final class HdfFileAllocation {
         if (datasetAllocations.containsKey(datasetName)) throw new IllegalStateException("Dataset '" + datasetName + "' already allocated.");
         long headerAllocSize = DEFAULT_DATASET_HEADER_ALLOCATION_SIZE;
         long headerOffset = nextAvailableOffset;
-        // For second dataset, place after SNOD if present
-        if (datasetAllocations.size() == 1 && !snodAllocationOffsets.isEmpty()) {
-            headerOffset = snodAllocationOffsets.get(0) + SNOD_STORAGE_SIZE; // Place after SNOD
-            nextAvailableOffset = headerOffset + headerAllocSize;
-        } else {
-            nextAvailableOffset += headerAllocSize;
-        }
+        nextAvailableOffset += headerAllocSize;
         DatasetAllocationInfo info = new DatasetAllocationInfo(headerOffset, headerAllocSize);
         datasetAllocations.put(datasetName, info);
         recalculateLayout();
@@ -298,16 +267,10 @@ public final class HdfFileAllocation {
         if (info == null) throw new IllegalStateException("Dataset '" + datasetName + "' not found.");
         if (info.getDataOffset() != -1L || info.getDataSize() != -1L) throw new IllegalStateException("Data block for '" + datasetName + "' already allocated.");
 
-        // Find the highest data offset to allocate sequentially
-        long maxDataEnd = MIN_DATA_OFFSET_THRESHOLD;
-        for (DatasetAllocationInfo dataset : datasetAllocations.values()) {
-            if (dataset.getDataOffset() != -1L && dataset.getDataOffset() + dataset.getDataSize() > maxDataEnd) {
-                maxDataEnd = dataset.getDataOffset() + dataset.getDataSize();
-            }
+        if (nextAvailableOffset < MIN_DATA_OFFSET_THRESHOLD) {
+            nextAvailableOffset = MIN_DATA_OFFSET_THRESHOLD;
         }
-        // Allocate data block sequentially from maxDataEnd
-        long dataOffset = maxDataEnd;
-        nextAvailableOffset = Math.max(nextAvailableOffset, dataOffset + dataSize);
+        long dataOffset = allocateBlock(dataSize);
         info.setDataOffset(dataOffset);
         info.setDataSize(dataSize);
         return dataOffset;
@@ -442,7 +405,7 @@ public final class HdfFileAllocation {
     private static class BlockInfo {
         private final String name;
         private final long offset;
-        private long size;
+        private final long size;
 
         public BlockInfo(String name, long offset, long size) {
             this.name = name;
