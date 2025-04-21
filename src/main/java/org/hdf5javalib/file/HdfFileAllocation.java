@@ -1,6 +1,8 @@
 package org.hdf5javalib.file;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.*;
 
@@ -419,5 +421,34 @@ System.out.println("allocateAndSetDataBlock '" + datasetName + "' dataSize " + d
         public String getName() { return name; }
         public long getOffset() { return offset; }
         public long getSize() { return size; }
+    }
+
+    // --- Helper Classes ---
+    public static class DatasetAllocationInfo {
+        private long headerOffset;
+        private long headerSize;
+        private long dataOffset = -1;
+        private long dataSize = -1;
+        private long continuationOffset = -1;
+        private long continuationSize = -1;
+
+        public DatasetAllocationInfo(long headerOffset, long headerSize) {
+            this.headerOffset = headerOffset;
+            this.headerSize = headerSize;
+        }
+
+        public long getHeaderOffset() { return headerOffset; }
+        public long getHeaderSize() { return headerSize; }
+        public long getDataOffset() { return dataOffset; }
+        public long getDataSize() { return dataSize; }
+        public long getContinuationOffset() { return continuationOffset; }
+        public long getContinuationSize() { return continuationSize; }
+
+        public void setHeaderOffset(long offset) { this.headerOffset = offset; }
+        public void setHeaderSize(long size) { this.headerSize = size; }
+        public void setDataOffset(long offset) { this.dataOffset = offset; }
+        public void setDataSize(long size) { this.dataSize = size; }
+        public void setContinuationOffset(long offset) { this.continuationOffset = offset; }
+        public void setContinuationSize(long size) { this.continuationSize = size; }
     }
 }

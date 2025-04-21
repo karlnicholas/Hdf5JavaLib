@@ -133,7 +133,7 @@ public class HdfGroup implements Closeable {
 
     public HdfDataSet createDataSet(HdfDataFile hdfDataFile, String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        DatasetAllocationInfo allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
+        HdfFileAllocation.DatasetAllocationInfo allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
 
         HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length));
         HdfDataSet newDataSet = new HdfDataSet(hdfDataFile, datasetName, hdfDatatype, dataSpaceMessage);
