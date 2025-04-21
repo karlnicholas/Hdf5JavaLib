@@ -20,11 +20,11 @@ public final class HdfFileAllocation {
     private static final long SETUP_BTREE_STORAGE_SIZE = 512L;
     private static final long SETUP_LOCAL_HEAP_HEADER_SIZE = 32L;
     private static final long SETUP_LOCAL_HEAP_CONTENTS_SIZE = 88L;
-    public static final long DATA_OBJECT_HEADER_MESSAGE_SIZE = 16L;
+    private static final long DATA_OBJECT_HEADER_MESSAGE_SIZE = 16L;
     private static final long SETUP_SNOD_V1_HEADER_SIZE = 8L;
     private static final long SETUP_SNOD_V1_ENTRY_SIZE = 32L;
     private static final long DEFAULT_SETUP_SNOD_ENTRY_COUNT = 10L;
-    public static final long GLOBAL_HEAP_BLOCK_SIZE = 4096L;
+    private static final long GLOBAL_HEAP_BLOCK_SIZE = 4096L;
     private static final long DEFAULT_DATASET_HEADER_ALLOCATION_SIZE = DATA_OBJECT_HEADER_MESSAGE_SIZE + 256L;
     private static final long MIN_DATA_OFFSET_THRESHOLD = 2048L;
     @Getter
