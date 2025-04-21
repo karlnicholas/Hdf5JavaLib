@@ -172,6 +172,7 @@ public final class HdfFileAllocation {
     }
 
     public long allocateNextSnodStorage() {
+System.out.println("allocateNextSnodStorage");
         long allocationSize = SNOD_STORAGE_SIZE;
         if (allocationSize <= 0L) throw new IllegalStateException("SNOD storage size is not valid: " + allocationSize);
         long offset = nextAvailableOffset;
@@ -239,6 +240,7 @@ public final class HdfFileAllocation {
     }
 
     public DatasetAllocationInfo allocateDatasetStorage(String datasetName) {
+System.out.println("allocateDatasetStorage '" + datasetName + "'");
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (datasetName.isEmpty()) throw new IllegalArgumentException("Dataset name cannot be empty");
         if (datasetAllocations.containsKey(datasetName)) throw new IllegalStateException("Dataset '" + datasetName + "' already allocated.");
@@ -261,6 +263,7 @@ public final class HdfFileAllocation {
     }
 
     public long allocateAndSetDataBlock(String datasetName, long dataSize) {
+System.out.println("allocateAndSetDataBlock '" + datasetName + "' dataSize " + dataSize);
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (dataSize < 0L) throw new IllegalArgumentException("Data size cannot be negative.");
         DatasetAllocationInfo info = datasetAllocations.get(datasetName);

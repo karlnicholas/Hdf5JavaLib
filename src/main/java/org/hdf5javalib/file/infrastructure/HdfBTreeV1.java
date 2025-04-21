@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfFileAllocation;
+import org.hdf5javalib.file.HdfGroup;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -89,7 +90,7 @@ public class HdfBTreeV1 {
         long startPos = nodeAddress;
 
         int headerSize = 8 + offsetSize + offsetSize;
-        ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
         int headerBytesRead = fileChannel.read(headerBuffer);
         if (headerBytesRead != headerSize) {
             throw new IOException("Could not read complete BTree header (" + headerSize + " bytes) at position " + startPos + ". Read only " + headerBytesRead + " bytes.");
@@ -121,7 +122,7 @@ public class HdfBTreeV1 {
             throw new IOException("Calculated BTree entriesDataSize (" + entriesDataSize + ") exceeds available file size at position " + currentPosBeforeEntries + " (Node: " + startPos + ")");
         }
 
-        ByteBuffer entriesBuffer = ByteBuffer.allocate(entriesDataSize).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer entriesBuffer = ByteBuffer.allocate(entriesDataSize).order(ByteOrder.LITTLE_ENDIAN);
         if (entriesDataSize > 0) {
             int entryBytesRead = fileChannel.read(entriesBuffer);
             if (entryBytesRead != entriesDataSize) {
@@ -143,6 +144,7 @@ public class HdfBTreeV1 {
         for (int i = 0; i < entriesUsed; i++) {
             HdfFixedPoint childPointer = HdfFixedPoint.readFromByteBuffer(entriesBuffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
             HdfFixedPoint key = HdfFixedPoint.readFromByteBuffer(entriesBuffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
+            System.out.println("BTree entry " + i + ": key=" + key + ", childPointer=" + childPointer);
             long childAddress = childPointer.getInstance(Long.class);
             HdfBTreeEntry entry;
 
@@ -155,11 +157,6 @@ public class HdfBTreeV1 {
                 if (childAddress != -1L) {
                     fileChannel.position(childAddress);
                     HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
-                    int snodEntriesToRead = snod.getNumberOfSymbols();
-                    for (int e = 0; e < snodEntriesToRead; ++e) {
-                        HdfSymbolTableEntry snodEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
-                        snod.getSymbolTableEntries().add(snodEntry);
-                    }
                     entry = new HdfBTreeEntry(key, childPointer, snod);
                     fileChannel.position(filePosAfterEntriesBlock);
                 } else {
@@ -177,6 +174,243 @@ public class HdfBTreeV1 {
             entries.add(entry);
         }
         return currentNode;
+    }
+
+    public void addDataset(long linkNameOffset, long datasetObjectHeaderAddress, String datasetName, HdfGroup group) {
+        if (!isLeafLevelNode()) {
+            throw new IllegalStateException("addDataset can only be called on leaf B-tree nodes (nodeLevel 0).");
+        }
+        if (datasetName == null || datasetName.isEmpty()) {
+            throw new IllegalArgumentException("Dataset name cannot be null or empty");
+        }
+
+        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
+        final int MAX_SNOD_ENTRIES = 8;
+        HdfGroupSymbolTableNode targetSnod = null;
+        HdfBTreeEntry targetEntry = null;
+        int targetEntryIndex = -1;
+        int insertIndex = 0;
+
+        // Step 1: Find target SNOD using binary search
+        if (entries.isEmpty()) {
+            // Create new SNOD (first dataset)
+            long snodOffset = fileAllocation.allocateNextSnodStorage();
+            targetSnod = new HdfGroupSymbolTableNode("SNOD", 1, new ArrayList<>(MAX_SNOD_ENTRIES));
+            HdfFixedPoint key = HdfFixedPoint.of(linkNameOffset);
+            HdfFixedPoint childPointer = HdfFixedPoint.of(snodOffset);
+            targetEntry = new HdfBTreeEntry(key, childPointer, targetSnod);
+            entries.add(targetEntry);
+            entriesUsed++;
+            targetEntryIndex = 0;
+            insertIndex = 0;
+        } else {
+            // Binary search to find the insertion point
+            int low = 0;
+            int high = entries.size() - 1;
+            int insertPos = entries.size();
+            while (low <= high) {
+                int mid = (low + high) / 2;
+                HdfBTreeEntry entry = entries.get(mid);
+                HdfGroupSymbolTableNode snod = entry.getSymbolTableNode();
+                if (snod == null) {
+                    throw new IllegalStateException("Null SNOD in B-tree entry at index " + mid);
+                }
+                String maxName = group.getDatasetNameByLinkNameOffset(entry.getKey().getInstance(Long.class));
+                if (maxName == null) {
+                    throw new IllegalStateException("No dataset name found for key linkNameOffset: " + entry.getKey().getInstance(Long.class));
+                }
+                if (datasetName.compareTo(maxName) < 0) {
+                    high = mid - 1;
+                    insertPos = mid;
+                } else {
+                    low = mid + 1;
+                    insertPos = mid + 1;
+                }
+            }
+
+            // Select SNOD based on insertPos
+            if (insertPos > 0) {
+                // Use SNOD at insertPos - 1
+                targetEntry = entries.get(insertPos - 1);
+                targetSnod = targetEntry.getSymbolTableNode();
+                if (targetSnod == null) {
+                    throw new IllegalStateException("Null SNOD in B-tree entry at index " + (insertPos - 1));
+                }
+                targetEntryIndex = insertPos - 1;
+            } else {
+                // Use SNOD at index 0 if it exists
+                targetEntry = entries.get(0);
+                targetSnod = targetEntry.getSymbolTableNode();
+                if (targetSnod == null) {
+                    throw new IllegalStateException("Null SNOD in B-tree entry at index 0");
+                }
+                targetEntryIndex = 0;
+            }
+
+            // Find insertion index within SNOD
+            List<HdfSymbolTableEntry> symbolTableEntries = targetSnod.getSymbolTableEntries();
+            for (int j = 0; j < symbolTableEntries.size(); j++) {
+                String existingName = group.getDatasetNameByLinkNameOffset(symbolTableEntries.get(j).getLinkNameOffset().getInstance(Long.class));
+                if (existingName == null) {
+                    throw new IllegalStateException("No dataset name found for linkNameOffset: " + symbolTableEntries.get(j).getLinkNameOffset().getInstance(Long.class));
+                }
+                if (datasetName.compareTo(existingName) < 0) {
+                    insertIndex = j;
+                    break;
+                }
+                insertIndex = j + 1;
+            }
+        }
+
+        // Step 2: Insert HdfSymbolTableEntry
+        HdfSymbolTableEntry ste = new HdfSymbolTableEntry(
+                HdfFixedPoint.of(linkNameOffset),
+                HdfFixedPoint.of(datasetObjectHeaderAddress)
+        );
+        List<HdfSymbolTableEntry> symbolTableEntries = targetSnod.getSymbolTableEntries();
+        symbolTableEntries.add(insertIndex, ste);
+
+        // Step 3: Update B-tree key if necessary
+        String newMaxName = symbolTableEntries.stream()
+                .map(e -> group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class)))
+                .filter(Objects::nonNull)
+                .max(String::compareTo)
+                .orElseThrow(() -> new IllegalStateException("No valid dataset names in SNOD"));
+        long maxLinkNameOffset = symbolTableEntries.stream()
+                .filter(e -> newMaxName.equals(group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class))))
+                .findFirst()
+                .map(e -> e.getLinkNameOffset().getInstance(Long.class))
+                .orElseThrow(() -> new IllegalStateException("Could not find linkNameOffset for max dataset name: " + newMaxName));
+        targetEntry.setKey(HdfFixedPoint.of(maxLinkNameOffset));
+
+        // Step 4: Handle SNOD split if full
+        if (symbolTableEntries.size() > MAX_SNOD_ENTRIES) {
+            splitSnod(targetEntryIndex, fileAllocation, group);
+        }
+    }
+
+    private void splitSnod(int targetEntryIndex, HdfFileAllocation fileAllocation, HdfGroup group) {
+        final int MAX_SNOD_ENTRIES = 8;
+        HdfBTreeEntry targetEntry = entries.get(targetEntryIndex);
+        HdfGroupSymbolTableNode targetSnod = targetEntry.getSymbolTableNode();
+        List<HdfSymbolTableEntry> symbolTableEntries = targetSnod.getSymbolTableEntries();
+
+        // Create new SNOD
+        long newSnodOffset = fileAllocation.allocateNextSnodStorage();
+        HdfGroupSymbolTableNode newSnod = new HdfGroupSymbolTableNode("SNOD", 1, new ArrayList<>(MAX_SNOD_ENTRIES));
+
+        // Redistribute entries: first 4 to target SNOD, last 5 to new SNOD
+        List<HdfSymbolTableEntry> retainedEntries = new ArrayList<>(symbolTableEntries.subList(0, 4));
+        List<HdfSymbolTableEntry> movedEntries = new ArrayList<>(symbolTableEntries.subList(4, symbolTableEntries.size()));
+
+        // Update target SNOD
+        symbolTableEntries.clear();
+        symbolTableEntries.addAll(retainedEntries);
+
+        // Update new SNOD
+        List<HdfSymbolTableEntry> newSnodEntries = newSnod.getSymbolTableEntries();
+        newSnodEntries.addAll(movedEntries);
+
+        // Update key for target SNOD
+        String targetMaxName = symbolTableEntries.stream()
+                .map(e -> group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class)))
+                .filter(Objects::nonNull)
+                .max(String::compareTo)
+                .orElseThrow(() -> new IllegalStateException("No valid dataset names in target SNOD"));
+        long targetMaxLinkNameOffset = symbolTableEntries.stream()
+                .filter(e -> targetMaxName.equals(group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class))))
+                .findFirst()
+                .map(e -> e.getLinkNameOffset().getInstance(Long.class))
+                .orElseThrow(() -> new IllegalStateException("Could not find linkNameOffset for max dataset name: " + targetMaxName));
+        targetEntry.setKey(HdfFixedPoint.of(targetMaxLinkNameOffset));
+
+        // Create new BTreeEntry
+        String newMaxName = newSnodEntries.stream()
+                .map(e -> group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class)))
+                .filter(Objects::nonNull)
+                .max(String::compareTo)
+                .orElseThrow(() -> new IllegalStateException("No valid dataset names in new SNOD"));
+        long newMaxLinkNameOffset = newSnodEntries.stream()
+                .filter(e -> newMaxName.equals(group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class))))
+                .findFirst()
+                .map(e -> e.getLinkNameOffset().getInstance(Long.class))
+                .orElseThrow(() -> new IllegalStateException("Could not find linkNameOffset for max dataset name: " + newMaxName));
+        HdfFixedPoint newKey = HdfFixedPoint.of(newMaxLinkNameOffset);
+        HdfFixedPoint newChildPointer = HdfFixedPoint.of(newSnodOffset);
+        HdfBTreeEntry newEntry = new HdfBTreeEntry(newKey, newChildPointer, newSnod);
+
+        // Insert new BTreeEntry in sorted order
+        int insertPos = targetEntryIndex + 1;
+        for (int i = targetEntryIndex + 1; i < entries.size(); i++) {
+            String maxName = group.getDatasetNameByLinkNameOffset(entries.get(i).getKey().getInstance(Long.class));
+            if (maxName == null) {
+                throw new IllegalStateException("No dataset name found for key linkNameOffset: " + entries.get(i).getKey().getInstance(Long.class));
+            }
+            if (newMaxName.compareTo(maxName) < 0) {
+                break;
+            }
+            insertPos++;
+        }
+        entries.add(insertPos, newEntry);
+        entriesUsed++;
+    }
+
+    public boolean isLeafLevelNode() { return this.nodeLevel == 0; }
+    public boolean isInternalLevelNode() { return this.nodeLevel > 0; }
+
+    public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate((int) fileAllocation.getBtreeTotalSize()).order(ByteOrder.LITTLE_ENDIAN);
+        buffer.put(signature.getBytes());
+        buffer.put((byte) nodeType);
+        buffer.put((byte) nodeLevel);
+        buffer.putShort((short) entriesUsed);
+        writeFixedPointToBuffer(buffer, leftSiblingAddress);
+        writeFixedPointToBuffer(buffer, rightSiblingAddress);
+        writeFixedPointToBuffer(buffer, keyZero);
+
+        for (HdfBTreeEntry entry : entries) {
+            writeFixedPointToBuffer(buffer, entry.getChildPointer());
+            if (entry.getKey() != null) {
+                writeFixedPointToBuffer(buffer, entry.getKey());
+            } else {
+                throw new NullPointerException("BTree Entry key cannot be null during write");
+            }
+        }
+        buffer.rewind();
+        while (buffer.hasRemaining()) {
+            seekableByteChannel.write(buffer);
+        }
+    }
+
+    public Map<Long, HdfGroupSymbolTableNode> mapOffsetToSnod() {
+        Map<Long, HdfGroupSymbolTableNode> offsetToSnodMap = new HashMap<>();
+        collectSnodsRecursively(this, offsetToSnodMap);
+        return offsetToSnodMap;
+    }
+
+    private void collectSnodsRecursively(HdfBTreeV1 node, Map<Long, HdfGroupSymbolTableNode> map) {
+        if (node == null || node.getEntries() == null) {
+            return;
+        }
+
+        if (node.isLeafLevelNode()) {
+            for (HdfBTreeEntry entry : entries) {
+                HdfGroupSymbolTableNode snod = entry.getSymbolTableNode();
+                if (snod != null) {
+                    long offset = entry.getChildPointer().getInstance(Long.class);
+                    if (offset != -1L) {
+                        map.put(offset, snod);
+                    }
+                }
+            }
+        } else {
+            for (HdfBTreeEntry entry : entries) {
+                HdfBTreeV1 childBTree = entry.getChildBTree();
+                if (childBTree != null) {
+                    collectSnodsRecursively(childBTree, map);
+                }
+            }
+        }
     }
 
     @Override
@@ -208,120 +442,5 @@ public class HdfBTreeV1 {
         sb.append("]");
         sb.append('}');
         return sb.toString();
-    }
-
-    public boolean isLeafLevelNode() { return this.nodeLevel == 0; }
-    public boolean isInternalLevelNode() { return this.nodeLevel > 0; }
-
-    public void addDataset(long linkNameOffset, long datasetObjectHeaderAddress, String datasetName) {
-        if (!isLeafLevelNode()) {
-            throw new IllegalStateException("addDataset can only be called on leaf B-tree nodes (nodeLevel 0).");
-        }
-
-        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        HdfGroupSymbolTableNode targetSnod;
-
-        if (entries.isEmpty()) {
-            if (entriesUsed != 0) {
-                throw new IllegalStateException("B-tree entries list is empty but entriesUsed is " + entriesUsed);
-            }
-
-            final int MAX_SNOD_ENTRIES = 8;
-            long snodOffset = fileAllocation.allocateNextSnodStorage();
-            targetSnod = new HdfGroupSymbolTableNode("SNOD", 1, 0, new ArrayList<>(MAX_SNOD_ENTRIES));
-            HdfFixedPoint key = HdfFixedPoint.of(linkNameOffset);
-            HdfFixedPoint childPointer = HdfFixedPoint.of(snodOffset);
-            HdfBTreeEntry newEntry = new HdfBTreeEntry(key, childPointer, targetSnod);
-            entries.add(newEntry);
-            entriesUsed++;
-        } else {
-            if (entriesUsed != 1) {
-                throw new IllegalStateException("addDataset currently only supports adding to the SNOD within the first B-tree entry. entriesUsed=" + entriesUsed);
-            }
-            HdfBTreeEntry firstEntry = entries.get(0);
-            targetSnod = firstEntry.getSymbolTableNode();
-            if (targetSnod == null) {
-                throw new IllegalStateException("The first B-tree entry does not contain a Symbol Table Node.");
-            }
-        }
-
-        if (targetSnod.getNumberOfSymbols() >= 8) {
-            throw new IllegalStateException("Cannot add more than 8 datasets to this Symbol Table Node.");
-        }
-
-        HdfSymbolTableEntry ste = new HdfSymbolTableEntry(
-                HdfFixedPoint.of(linkNameOffset),
-                HdfFixedPoint.of(datasetObjectHeaderAddress)
-        );
-        targetSnod.addEntry(ste);
-    }
-
-    public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate((int) fileAllocation.getBtreeTotalSize()).order(ByteOrder.LITTLE_ENDIAN);
-        buffer.put(signature.getBytes());
-        buffer.put((byte) nodeType);
-        buffer.put((byte) nodeLevel);
-        buffer.putShort((short) entriesUsed);
-        writeFixedPointToBuffer(buffer, leftSiblingAddress);
-        writeFixedPointToBuffer(buffer, rightSiblingAddress);
-        writeFixedPointToBuffer(buffer, keyZero);
-
-        for (HdfBTreeEntry entry : entries) {
-            writeFixedPointToBuffer(buffer, entry.getChildPointer());
-            if (entry.getKey() != null) {
-                writeFixedPointToBuffer(buffer, entry.getKey());
-            } else {
-                throw new NullPointerException("BTree Entry key cannot be null during write");
-            }
-        }
-        buffer.rewind();
-        while (buffer.hasRemaining()) {
-            seekableByteChannel.write(buffer);
-        }
-    }
-
-    /**
-     * Returns a map of SNOD offsets to their corresponding HdfGroupSymbolTableNode instances.
-     * Traverses the B-tree recursively to collect all SNODs from leaf nodes.
-     *
-     * @return A Map where keys are SNOD offsets (from childPointer) and values are HdfGroupSymbolTableNode instances.
-     */
-    public Map<Long, HdfGroupSymbolTableNode> mapOffsetToSnod() {
-        Map<Long, HdfGroupSymbolTableNode> offsetToSnodMap = new HashMap<>();
-        collectSnodsRecursively(this, offsetToSnodMap);
-        return offsetToSnodMap;
-    }
-
-    /**
-     * Helper method to recursively collect SNODs from the B-tree.
-     *
-     * @param node The current B-tree node to process.
-     * @param map  The map to populate with SNOD offsets and nodes.
-     */
-    private void collectSnodsRecursively(HdfBTreeV1 node, Map<Long, HdfGroupSymbolTableNode> map) {
-        if (node == null || node.getEntries() == null) {
-            return;
-        }
-
-        if (node.isLeafLevelNode()) {
-            // Leaf node: collect SNODs from entries
-            for (HdfBTreeEntry entry : node.getEntries()) {
-                HdfGroupSymbolTableNode snod = entry.getSymbolTableNode();
-                if (snod != null) {
-                    long offset = entry.getChildPointer().getInstance(Long.class);
-                    if (offset != -1L) { // Skip undefined pointers
-                        map.put(offset, snod);
-                    }
-                }
-            }
-        } else {
-            // Internal node: recurse into child B-trees
-            for (HdfBTreeEntry entry : node.getEntries()) {
-                HdfBTreeV1 childBTree = entry.getChildBTree();
-                if (childBTree != null) {
-                    collectSnodsRecursively(childBTree, map);
-                }
-            }
-        }
     }
 }

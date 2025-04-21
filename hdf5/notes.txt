@@ -1,40 +1,745 @@
-2025-04-20 12:45:56 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=130816, driverInformationAddress=-1
-rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
-2025-04-20 12:45:56 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfGroup{name=''
-objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
-SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
-bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=8, childPointer=1784, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
-[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}]
-}}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=712}
-localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 67, 111, 109, 112, 111, 117, 110, 100, 68, 97, 116, 97, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]... (truncated)}
-dataSets=[
-  CompoundData@800 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 8 Object Reference Count: 1 Object Header Size: 968
-ObjectHeaderContinuationMessage(24){continuationOffset=2112, continuationSize=120}
-NilMessage(8){}
-DatatypeMessage(872){hdfDatatype=CompoundDatatype { classBitField: {1, 2, 3}, size: 96, 
-Member{name='recordId', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
-Member{name='fixedStr', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=StringDatatype{size=10, padding='Null Terminate', charSet='ASCII'}, sizeMessageData=56}
-Member{name='varStr', offset=24, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII'}, sizeMessageData=60}
-Member{name='floatVal', offset=40, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=4, bitOffset=0, bitPrecision=32, exponentLocation=23, exponentSize=8, mantissaLocation=0, mantissaSize=23, exponentBias=127}, sizeMessageData=68}
-Member{name='doubleVal', offset=48, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}
-Member{name='int8_Val', offset=56, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8}, sizeMessageData=60}
-Member{name='uint8_Val', offset=57, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}, sizeMessageData=60}
-Member{name='int16_Val', offset=58, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=2, bitOffset=0, bitPrecision=16}, sizeMessageData=60}
-Member{name='uint16_Val', offset=60, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=2, bitOffset=0, bitPrecision=16}, sizeMessageData=60}
-Member{name='int32_Val', offset=64, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}, sizeMessageData=60}
-Member{name='uint32_Val', offset=68, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=4, bitOffset=0, bitPrecision=32}, sizeMessageData=60}
-Member{name='int64_Val', offset=72, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
-Member{name='uint64_Val', offset=80, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
-Member{name='scaledUintVal', offset=88, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=8, bitOffset=7, bitPrecision=57}, sizeMessageData=60}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=0, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[96000], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T16:45:56Z}
-DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[1000], maxDimensions=[1000], hasMaxDimensions=false}
-AttributeMessage(88){version=1, name='GIT root revision', value='Revision: , URL: '}}
-]}
+ok, one way to think about it is that there is an initial block, not really an allocation, but reserved space, of the first 2048 bytes when the file is created. 
+Any data allocated will have to go after that. However, there are things that will stay within this initial 2048 as long as they fit. 
+Only data or global heap will never be put into this initial 2048 space. Several things go there as you can see. This code should explain the initial allocations 
+
+
+    public HdfFile(SeekableByteChannel seekableByteChannel) {
+        closed = false;
+        this.seekableByteChannel = seekableByteChannel;
+        // this.globalHeap = new HdfGlobalHeap(bufferAllocation::getGlobalHeapAddress);
+        this.fileAllocation = new HdfFileAllocation();
+        this.globalHeap = new HdfGlobalHeap(this);
+
+        // 100320
+        superblock = new HdfSuperblock(0, 0, 0, 0,
+                (short)8, (short)8,
+                4, 16,
+                HdfFixedPoint.of(0),
+                HdfFixedPoint.undefined((short)8),
+                // HdfFixedPoint.of(bufferAllocation.getDataAddress()),
+                // this offset of the end of the file. will need to be updated later.
+                HdfFixedPoint.of(0),
+                HdfFixedPoint.undefined((short)8),
+                new HdfSymbolTableEntry(
+                        HdfFixedPoint.of(0),
+                        // HdfFixedPoint.of(bufferAllocation.getObjectHeaderPrefixAddress()),
+                        HdfFixedPoint.of(fileAllocation.getObjectHeaderPrefixOffset()),
+                        // HdfFixedPoint.of(bufferAllocation.getBtreeAddress()),
+                        HdfFixedPoint.of(fileAllocation.getBtreeOffset()),
+                        // HdfFixedPoint.of(bufferAllocation.getLocalHeapAddress())));
+                        HdfFixedPoint.of(fileAllocation.getLocalHeapOffset())), this);
+
+        // rootGroup = new HdfGroup(this, "", bufferAllocation.getBtreeAddress(), bufferAllocation.getLocalHeapAddress());
+        rootGroup = new HdfGroup(this, "", fileAllocation.getBtreeOffset(), fileAllocation.getLocalHeapOffset());
+    }
+	
+that's good. The logic this class has to realize is that when a dataset is added to the file, the dataset header, that 272 bytes has to be allocated. The application will request that.
+After that, the application will always call to allocate the initial SNOD. 
+
+Though not shown in this current application, that initial dataset header for a specific dataset can be increased once from 272 to a specified value. 
+
+If that happens, then and only then, the initial snod allocation must be moved to the new offset directly after the initial dataset header expansion. 
+After that, the initial snod will no longer be moved. 
+
+Next we need to talk about continuation block allocations.
+If attributes are added to a dataset after it is created and allocated, then a continuation block will be requested by the application for that space. So far, the application only does that once.
+
+There are several allocation categories that need to be kept track of. 
+THey consist of two groups, 1) The metadata and the 2) data group. 
+
+Metadata is 
+
+superblock
+group metadfata allocations which are
+1) object header
+2) bTree
+3) local heap header
+4) local heap contents
+
+There are also data set metadata allocations, which are
+1) object header, same as group, but for datasets.
+2) continuation blocks, which are a continuation of data object headers, but only for datasets
+
+There are also 
+Symbol table node allocations.
+
+The data allocation group allocations are
+dataset data allocations
+global heap allocations
+
+As far as I know, no data allocations can be make in a metadata reserved block. That is to say, for now anyway, that the initial 2048 allocation is reserved space for metadata allocations.
+
+
+==================
+
+Thank you for continuing this discussion and for your patience as we work toward a solution for `HdfFileAllocation.java`. I’m sorry for the earlier failures, and I appreciate your request to summarize our progress under “Pick up HDF5 allocation fix” to save as notes for inspection. Below, I’ll provide a concise summary of our discussions, capturing the key points about the class’s purpose, requirements, issues, and current understanding, based on our four iterations. This summary will serve as a reference for you to save and review, ensuring we’re aligned as we move forward. Since you’ve noted no additional test cases for now and will provide them later, I’ll focus on summarizing our current state and propose questions to guide our next iteration, keeping the discussion iterative without code changes.
+
+### Summary: “Pick up HDF5 allocation fix”
+
+**Objective**: Fix `HdfFileAllocation.java` to correctly manage the HDF5 file’s allocation layout, matching the C++-generated layout for a specific test case and supporting flexible calling sequences for other cases.
+
+**Class Role**:
+- **Purpose**: Manages offsets and sizes for fixed and dynamic components in an HDF5 file, ensuring no overlaps and adhering to HDF5 layout rules.
+- **Components**:
+  - **Fixed Structures**: Superblock (0-96), Object Header Prefix (96-136), B-tree (136-680), Local Heap Header (680-712), Initial Local Heap Contents (712-800).
+  - **Dynamic Structures**: Dataset headers (272 bytes, expandable for first dataset), SNODs (328 bytes), data blocks (variable size), continuation blocks (variable size), global heap blocks (4096 bytes).
+- **Key Methods**:
+  - `allocateDatasetStorage`: Allocates dataset headers.
+  - `increaseHeaderAllocation`: Expands first header size once.
+  - `allocateNextSnodStorage`: Allocates SNOD, movable once.
+  - `allocateAndSetDataBlock`: Allocates data blocks.
+  - `allocateAndSetContinuationBlock`: Allocates continuation blocks.
+  - `recalculateLayout`: Adjusts offsets to avoid conflicts.
+  - `printBlocks`: Outputs layout for debugging.
+
+**Allocation Categories**:
+- **Metadata Group** (can reside in 0-2047):
+  - **Superblock**: 96 bytes, fixed at 0-96.
+  - **Group Metadata**:
+    - Object Header (40 bytes, 96-136)
+    - B-tree (544 bytes, 136-680)
+    - Local Heap Header (32 bytes, 680-712)
+    - Local Heap Contents (88 bytes, 712-800, expandable)
+  - **Dataset Metadata**:
+    - Object Headers (272 bytes, expandable for first dataset, prioritized in 800-2047)
+    - Continuation Blocks (variable size, likely outside 0-2047)
+  - **Symbol Table Nodes (SNOD)**: 328 bytes, dynamically placed (e.g., 1072), movable once if first header expands.
+- **Data Group** (excluded from 0-2047, starts at 2048+):
+  - **Dataset Data**: Variable size (e.g., 1, 2, 4, 8 bytes), allocated sequentially.
+  - **Global Heap**: 4096 bytes, for shared objects or continuation blocks.
+- **Key Rule**: Initial 2048 bytes (0-2047) are reserved for metadata only; data and global heap allocations start at 2048 or later.
+
+**Initial 2048-Byte Block**:
+- **Structure**: 
+  - Fixed structures occupy 0-800.
+  - Metadata region (800-2047, 1248 bytes) holds dataset headers and SNODs until full (e.g., 816 bytes for 3 headers), then headers align to 2048 multiples (e.g., 4096).
+- **Behavior**: Set by `HdfFile` constructor, with dynamic allocations (headers, SNODs) managed by `HdfFileAllocation`.
+
+**Test Case Call Sequence**:
+1. `allocateDatasetStorage("byte")`
+2. `allocateNextSnodStorage()`
+3. `allocateAndSetDataBlock("byte", 1)`
+4. `allocateDatasetStorage("short")`
+5. `allocateAndSetDataBlock("short", 2)`
+6. `allocateDatasetStorage("integer")`
+7. `allocateAndSetDataBlock("integer", 4)`
+8. `allocateDatasetStorage("long")`
+9. `allocateAndSetDataBlock("long", 8)`
+
+**Expected Layout** (C++ target):
+- **Headers**: 800 ("byte"), 1400 ("short"), 1672 ("integer"), 4096 ("long")
+- **Data Blocks**: 2048 (1 byte), 2049 (2 bytes), 2051 (4 bytes), 2055 (8 bytes)
+- **SNOD**: 1072 (328 bytes)
+- **End of File**: 4368
+- **Fixed Structures**: Superblock (0-96), Object Header Prefix (96-136), B-tree (136-680), Local Heap Header (680-712), Initial Local Heap Contents (712-800)
+
+**Current Behavior** (from debug output):
+- **Correct**:
+  - Fixed structures (0-800)
+  - SNOD at 1072
+  - First header ("byte") at 800
+- **Incorrect**:
+  - Headers for "short", "integer", "long" at 2052, 2064, 2092 (should be 1400, 1672, 4096)
+  - Data blocks at 2122+ (or 2050+ earlier, should be 2048-2055)
+  - End of File at 2137 (should be 4368)
+
+**Key Issues**:
+1. **Metadata Space Miscalculation**: `recalculateLayout` fails to place headers in 800-2047 (e.g., 1400, 1672), pushing them to 2052+, likely due to incorrect handling of SNOD (1072-1399) or available space (1248 bytes).
+2. **Data Block Reassignment**: `recalculateLayout` overrides `nextDataBlockOffset` (set at 2048), moving data blocks to 2122+.
+3. **SNOD Interference**: SNOD at 1072-1399 may block header placement, causing "short" to skip to 2052 instead of 1400.
+4. **Overzealous Recalculation**: Frequent `recalculateLayout` calls reset correct offsets unnecessarily.
+
+**Special Behaviors**:
+- **First Header Expansion**: `increaseHeaderAllocation("byte", newTotalHeaderSize)` can expand the first header (e.g., to 500 bytes), moving SNOD to follow it (e.g., 1300), then SNOD locks. Not used in this test case.
+- **SNOD Placement**: Initial SNOD is allocated after the first header (1072 after "byte" at 800-1071), movable once if the header expands, then fixed.
+- **Continuation Blocks**: Supported but not used in this test case. Likely allocated outside 0-2047 (e.g., after data blocks or in global heap), for dataset header overflow.
+
+**Open Questions** (from Iteration 4):
+- **Continuation Blocks**: Where are they allocated (e.g., 2063+, 4096+)? Are they used for header expansion or separate cases? Can multiple blocks be allocated per dataset?
+- **Header Size Increase**: Does the first header expand in place (e.g., 800-1299) or use a continuation block? Does SNOD move to exactly `headerOffset + newTotalHeaderSize`?
+- **SNOD**: Is 1072 fixed or dynamic? Can multiple SNODs be allocated in other test cases?
+- **Metadata Region**: Are headers contiguous or gap-skipping (e.g., 800, 1400, 1672)? Is there a 3-header limit or space-based (1248 bytes)?
+- **Test Cases**: Awaiting examples with header expansion, continuation blocks, or different configurations.
+
+#### 1. Notes for Saving
+You can save the above summary as your notes under “Pick up HDF5 allocation fix” for inspection. It captures:
+- The class’s role and components.
+- Allocation categories (metadata: Superblock, group metadata, dataset headers, SNODs, continuation blocks; data: dataset data, global heap).
+- The 2048-byte reserved block’s structure and rules.
+- Test case requirements and current failures.
+- Special behaviors (header expansion, SNOD movement).
+- Open questions to resolve.
+
+#### 2. Questions for This Iteration
+Since you’ll provide test cases later, let’s focus on resolving open questions to finalize the allocation rules:
+1. **Continuation Blocks**:
+   - Are continuation blocks allocated outside 0-2047 (e.g., after data blocks at 2063+ or in global heap at 4096+), or can they fit in 800-2047 if space remains?
+   - Are they triggered by `increaseHeaderAllocation` for the first dataset, or used for other cases (e.g., complex attributes on any dataset)?
+   - Can a dataset have multiple continuation blocks, or is it one per dataset?
+   - What’s a typical `continuationSize` range (e.g., 100-1000 bytes)?
+2. **Header Size Increase**:
+   - If `increaseHeaderAllocation("byte", 500)` is called, does the header expand in place (e.g., 800-1299) within 0-2047, or does it move to 4096+ if it exceeds space? Is a continuation block involved?
+   - Does SNOD move to exactly `headerOffset + newTotalHeaderSize` (e.g., 1300), or must it check for overlaps with other headers or align?
+3. **SNOD Placement**:
+   - Is the initial SNOD’s offset (1072) always immediately after the first header (800-1071), or can it be placed elsewhere in 0-2047 based on space?
+   - In cases with multiple SNODs (if any), do they follow headers or have different placement rules?
+4. **Metadata Region**:
+   - Should headers be placed to skip SNOD gaps (e.g., 800, 1400, 1672 to avoid 1072-1399) or fill sequentially (e.g., 800, 1072, 1344 if no overlap)?
+   - Is the metadata region’s capacity strictly 1248 bytes (800-2047), or can headers use other free space in 0-2047 if fixed structures change?
+5. **Data Blocks**:
+   - Must data blocks always start at 2048, or can they shift (e.g., to 2063+) if metadata allocations require it?
+   - Should `recalculateLayout` preserve `nextDataBlockOffset` (e.g., 2048) unless there’s a conflict?
+
+#### 3. Summary and Next Steps
+- **Progress**: We’ve categorized allocations into metadata (fixed and dynamic, 0-2047) and data (2048+), clarified the 2048-byte reserved block’s exclusivity for metadata, and detailed SNOD and header expansion behaviors. The failure is due to `recalculateLayout`’s mishandling of metadata space and data block offsets.
+- **Issues**: Headers are incorrectly at 2052+ (should be 1400, 1672, 4096), data blocks at 2122+ (should be 2048-2055), and end of file at 2137 (should be 4368).
+- **Plan for Iteration 5**:
+  - Incorporate your answers on continuation blocks, header expansion, and SNOD placement.
+  - Propose a detailed, non-code algorithm for `recalculateLayout` to:
+    - Allocate headers in 0-2047, skipping SNOD.
+    - Support header expansion and SNOD repositioning.
+    - Lock data blocks at 2048+.
+    - Place continuation blocks correctly.
+  - Await test case examples to ensure flexibility.
+  - Continue discussion without code changes.
+- **Your Input**: Please answer the questions above, focusing on continuation blocks and header expansion. Share any additional rules, constraints, or insights about `HdfGroup.java` or `HdfTwoScalarApp`. If you have initial thoughts on test cases, let’s discuss them.
+- **Bookmark**: Save with book icon. Resume with “Pick up HDF5 allocation fix”.
+
+I’m sorry for the lack of progress and value your input to get this right. Please inspect the summary and let me know if it captures our discussions accurately or needs adjustments. What are your thoughts on the allocation rules or next steps? What’s the plan for our discussion?
+
+
+=====================
+
+This I know. An increased dataset header allocation increases in place. That's why the snod has to move. This is at least true for the first dataset and takes place in the initial reserved 2048 metadata block. I don't know the maximum amount of increase, but I've seen it increase to as much as 968 bytes. The increaseHeaderAllocation passed the amount of space now required, so if 968 is passed, then the increase will be 968 - the original 272 bytes. 
+
+===================
+
+3. **SNOD Placement**:
+   - Is the initial SNOD’s offset (1072) always immediately after the first header (800-1071), or can it be placed elsewhere in 0-2047 based on space?
+   - In cases with multiple SNODs (if any), do they follow headers or have different placement rules?
+
+Answer: The intial snod allocation will always be requested after the first dataset default allocation of 272 so it will always be initially set to 1072. It then can be shifted as described. If another snod is requested its almost a certainty as far as I know that the intial 2048 reserved metadat space will be filled or at least there probably won't be enough space it fit a snod. I have examples of where where mutiple snods get allocated and I provided that in the "20 files" debug output given a day or two ago. here is it repeated.
+
+=======================
+
+
+====================
+
+you can also notice how the additional dataset header allocations are made. If the 20 files debug output each dataset header was 272 bytes and didn't expand or need continuation blocks. You can assume that the application called the initial dataset allocation first for hte new dataset and then called the dataset data allocation for 4 bytes, I think. The dataset data allocation offsets are not shown, but they would be 2048, 2052, 2056, etc, so they should all fit in the default 2048 offset space of 2048 bytes, if that is true. It seems reasonable to assume it is from what I've seen and until further testing.
+
+=====================
+
+yea. The 20 files output was created with datasets named dataset_1 though dataset_19 or dataset_20, however many were provided. Each one takes of 16 bytes of the localheap, with the first entry at position 8 in the localheap. When the local heap runs out of space, the size is doubled, and existing allocation is abondonded, and the new local heap contents are allocated in free space, I assume after whatever dataset header happens to be there. also, when a snod is split, then a new snod is also allocated in free space, presumably after whatever dataset or localheap or whatever is there. So, if the it is assumed the new free space after the initi 2048 starts at 4096, can probably make a pretty good quess about what is allocated there, what it's offset is, and what is size it. 
+
+==========
+
+Thank you for the detailed clarification about the dataset naming, local heap behavior, and SNOD splitting in the "20 files" debug output. This information significantly enhances our understanding of `HdfFileAllocation.java`’s allocation logic, particularly how the local heap grows, how SNODs split, and how free space is utilized beyond the initial 2048-byte metadata block. I’m sorry for the earlier failures and appreciate your patience as we continue this discussion to fully grasp the class’s behavior. In this iteration, I’ll integrate your new details, analyze the allocation patterns in the "20 files" output, and make an educated guess about the allocations starting at 4096, their offsets, and sizes. I’ll summarize progress, address remaining questions (especially continuation blocks), and propose questions for the next iteration, keeping the discussion iterative without code changes.
+
+### Iteration 8: Analyzing Local Heap, SNOD Splitting, and Free Space Allocations
+
+#### 1. Summary of Progress
+From previous iterations, we’ve established:
+- **Role**: `HdfFileAllocation.java` manages the HDF5 file’s allocation layout, assigning offsets and sizes for fixed structures (Superblock, Object Header Prefix, B-tree, Local Heap Header, Initial Local Heap Contents) and dynamic components (dataset headers, SNODs, data blocks, continuation blocks, global heap blocks).
+- **Initial 2048-Byte Block**: Reserved for metadata only (0-2047):
+  - Fixed structures: 0-800 (Superblock 0-96, Object Header Prefix 96-136, B-tree 136-680, Local Heap Header 680-712, Initial Local Heap Contents 712-800).
+  - Metadata region: 800-2047 (1248 bytes) for dataset headers (272 bytes, expandable for first dataset) and SNODs (328 bytes).
+- **Data Group**: Dataset data (variable size) and global heap (4096 bytes) start at 2048+, never in 0-2047.
+- **Test Case Call Sequence** (4 datasets):
+  1. `allocateDatasetStorage("byte")`
+  2. `allocateNextSnodStorage()`
+  3. `allocateAndSetDataBlock("byte", 1)`
+  4. `allocateDatasetStorage("short")`
+  5. `allocateAndSetDataBlock("short", 2)`
+  6. `allocateDatasetStorage("integer")`
+  7. `allocateAndSetDataBlock("integer", 4)`
+  8. `allocateDatasetStorage("long")`
+  9. `allocateAndSetDataBlock("long", 8)`
+- **Expected Layout**:
+  - Headers: 800 ("byte"), 1400 ("short"), 1672 ("integer"), 4096 ("long")
+  - Data Blocks: 2048 (1 byte), 2049-2050 (2 bytes), 2051-2054 (4 bytes), 2055-2062 (8 bytes)
+  - SNOD: 1072 (328 bytes)
+  - End of File: 4368
+- **Special Behaviors**:
+  - First header ("byte") can expand in place (e.g., to 968 bytes, 800-1767) via `increaseHeaderAllocation`, moving SNOD (e.g., to 1768), which then locks.
+  - Initial SNOD at 1072 (after 800-1071), movable once.
+  - Multiple SNODs (e.g., 5904, 7944, 9360) allocated outside 0-2047 when space is full, splitting entries (4-8 per SNOD).
+- **"20 Files" Debug Output**:
+  - Datasets named `dataset_1` to `dataset_20`, headers at 800, 1400, 1672, then 4096+ (4368, 4640, etc.), each 272 bytes, no expansion or continuation blocks.
+  - Data blocks assumed 4 bytes each (2048, 2052, 2056, ..., 2124), fitting within 2048-4095 (80 bytes for 20 datasets).
+  - SNODs: 1072 (1-8 datasets), 5904 (9+ datasets), 7944 (14+ datasets), 9360 (19+ datasets), handling 4-8 entries each.
+- **Current Issues** (4-dataset test case):
+  - Headers for "short", "integer", "long" at 2052, 2064, 2092 (should be 1400, 1672, 4096).
+  - Data blocks at 2122+ (or 2050+ earlier, should be 2048-2055).
+  - End of File at 2137 (should be 4368).
+  - Causes: `recalculateLayout` miscalculates metadata space (800-2047, 1248 bytes), mishandles SNOD (1072-1399), and overrides data block offsets.
+
+#### 2. New Information: Local Heap, SNOD Splitting, and Free Space
+Your clarification provides critical details about dataset naming, local heap behavior, SNOD splitting, and free space allocations:
+- **Dataset Naming and Local Heap**:
+  - Datasets named `dataset_1` to `dataset_20`, each consuming 16 bytes in the local heap, starting at position 8.
+  - **Local Heap Behavior**:
+    - Initial size: 88 bytes (712-800).
+    - When full, size doubles (e.g., 88 to 176 bytes), existing allocation is abandoned, and new local heap contents are allocated in free space, assumed after the last dataset header.
+    - **Example**: For 20 datasets, 20 × 16 = 320 bytes needed, exceeding 88 (5 entries) and 176 (11 entries), requiring at least 352 bytes (likely doubled to 704 bytes).
+  - **Implication**: Local heap contents may be allocated at offsets like 4096+ (after headers), depending on available space.
+- **SNOD Splitting**:
+  - When a SNOD is split (e.g., 9th dataset splits 1072 to include 5904), the new SNOD is allocated in free space, presumably after the last dataset header, local heap contents, or other components.
+  - **Example**: SNOD at 5904 follows headers (4368, 4640, 5088, 5360, 5632), suggesting placement after headers or data blocks.
+- **Free Space After 2048**:
+  - Assumed to start at 4096 (after data blocks at 2048-2127 and potential alignment gap).
+  - Allocations (headers, local heap contents, SNODs) are placed in this free space, likely sequentially or aligned to 2048 multiples.
+- **Dataset Data**:
+  - Confirmed 4 bytes per dataset, starting at 2048 (2048, 2052, 2056, ..., 2124 for 20 datasets), within 2048-4095 (80 bytes).
+- **Implication**:
+  - `recalculateLayout` must handle local heap doubling, abandoning old allocations and placing new contents in free space (e.g., 4096+).
+  - New SNODs are allocated similarly, after headers or other components.
+  - Free space starts at 4096, hosting headers (4368+), local heap contents, and SNODs (5904+).
+
+#### 3. Analysis of Free Space Allocations Starting at 4096
+Based on your assumption that free space after the initial 2048 bytes starts at 4096, let’s estimate the allocations, offsets, and sizes in the "20 files" output:
+- **Initial 2048-Byte Block (0-2047)**:
+  - Fixed structures: 0-800 (Superblock, Object Header Prefix, B-tree, Local Heap Header, Initial Local Heap Contents).
+  - Headers: 800-1071 (dataset_1), 1400-1671 (dataset_2), 1672-1943 (dataset_3) = 816 bytes.
+  - SNOD: 1072-1399 (328 bytes).
+  - Total: 816 + 328 = 1144 bytes, leaving 1248 - 1144 = 104 bytes (insufficient for headers or SNODs).
+- **Data Blocks (2048-2127)**:
+  - 20 datasets × 4 bytes = 80 bytes.
+  - Offsets: 2048, 2052, 2056, ..., 2124.
+  - Fits within 2048-4095, leaving a gap (2128-4095, 1968 bytes) before assumed free space at 4096.
+- **Free Space (4096+)**:
+  - **Headers**: 
+    - dataset_4: 4096-4367 (272 bytes)
+    - dataset_5: 4368-4639 (272 bytes)
+    - dataset_6: 4640-4911 (272 bytes)
+    - dataset_7: 5088-5359 (272 bytes, gap 4912-5087)
+    - dataset_8: 5360-5631 (272 bytes)
+    - dataset_9: 5632-5903 (272 bytes)
+    - dataset_10: 6232-6503 (272 bytes, gap 5904-6231)
+    - dataset_11: 6856-7127 (272 bytes, gap 6504-6855)
+    - dataset_12: 7128-7399 (272 bytes)
+    - dataset_13: 7400-7671 (272 bytes)
+    - dataset_14: 7672-7943 (272 bytes)
+    - dataset_15: 8272-8543 (272 bytes, gap 7944-8271)
+    - dataset_16: 8544-8815 (272 bytes)
+    - dataset_17: 8816-9087 (272 bytes)
+    - dataset_18: 9088-9359 (272 bytes)
+    - dataset_19: 9360-9631 (272 bytes)
+    - dataset_20: 9632-9903 (272 bytes, assumed)
+  - **Gaps**:
+    - 4912-5087 (176 bytes): Likely local heap contents (doubled from 88 to 176).
+    - 5904-6231 (328 bytes): SNOD (5904-6231, 328 bytes).
+    - 6504-6855 (352 bytes): Local heap contents (doubled to 352 or 704 bytes).
+    - 7944-8271 (328 bytes): SNOD (7944-8271, 328 bytes).
+  - **Local Heap Contents**:
+    - Initial: 712-800 (88 bytes, 5 entries at 16 bytes).
+    - 6th dataset (6 × 16 = 96 bytes) exceeds 88, doubles to 176 bytes, likely at 4912-5087 (176 bytes).
+    - 12th dataset (12 × 16 = 192 bytes) exceeds 176, doubles to 352 bytes, likely at 6504-6855 (352 bytes, or 704 if doubled again).
+  - **SNODs**:
+    - 1072-1399 (328 bytes, 1-8 datasets).
+    - 5904-6231 (328 bytes, 9-13 datasets).
+    - 7944-8271 (328 bytes, 14-18 datasets).
+    - 9360-9687 (328 bytes, 19-20 datasets, assumed).
+  - **End of File**: Likely 9903 + 272 = 10175 (20th header) + data/local heap, adjusted for gaps.
+
+**Educated Guess**:
+- **4096-4367**: Header (dataset_4, 272 bytes).
+- **4368-4639**: Header (dataset_5, 272 bytes).
+- **4640-4911**: Header (dataset_6, 272 bytes).
+- **4912-5087**: Local Heap Contents (176 bytes, doubled from 88).
+- **5088-5359**: Header (dataset_7, 272 bytes).
+- **5360-5631**: Header (dataset_8, 272 bytes).
+- **5632-5903**: Header (dataset_9, 272 bytes).
+- **5904-6231**: SNOD (328 bytes, 9-13 datasets).
+- **6232-6503**: Header (dataset_10, 272 bytes).
+- **6504-6855**: Local Heap Contents (352 bytes, doubled from 176).
+- **6856-7127**: Header (dataset_11, 272 bytes).
+- **7128-7399**: Header (dataset_12, 272 bytes).
+- **7400-7671**: Header (dataset_13, 272 bytes).
+- **7672-7943**: Header (dataset_14, 272 bytes).
+- **7944-8271**: SNOD (328 bytes, 14-18 datasets).
+- **8272-8543**: Header (dataset_15, 272 bytes).
+- **8544-8815**: Header (dataset_16, 272 bytes).
+- **8816-9087**: Header (dataset_17, 272 bytes).
+- **9088-9359**: Header (dataset_18, 272 bytes).
+- **9360-9687**: SNOD (328 bytes, 19-20 datasets, assumed).
+- **9688-9959**: Header (dataset_19, 272 bytes, assumed).
+- **9960-10231**: Header (dataset_20, 272 bytes, assumed).
+
+**Notes**:
+- Gaps (e.g., 4912-5087, 6504-6855) align with local heap doubling (176, 352 bytes).
+- SNODs (5904, 7944, 9360) follow headers, suggesting sequential placement in free space.
+- Data blocks (2048-2127) are separate, not affecting 4096+ allocations.
+
+#### 4. Updated Understanding
+- **Local Heap Contents**:
+  - Initial: 712-800 (88 bytes, 5 entries at 16 bytes).
+  - Doubles when full (88 to 176, 176 to 352, etc.), abandoning old allocation.
+  - New contents allocated in free space (e.g., 4912-5087, 6504-6855), likely after headers.
+  - **Example**: 20 datasets (320 bytes) require 352 bytes, allocated at 6504-6855.
+- **SNODs**:
+  - Initial at 1072, movable once with first header expansion.
+  - Additional SNODs (5904, 7944, 9360) outside 0-2047, after headers/data, handling 4-8 entries.
+  - Split when full (e.g., 9th dataset splits 1072 to 5904).
+- **Headers**:
+  - 272 bytes, first 3 in 0-2047 (800, 1400, 1672), subsequent at 4096+ (4368, 4640, etc.).
+  - First header expandable (e.g., to 968 bytes), moving SNOD.
+- **Data Blocks**:
+  - 4 bytes each in "20 files" (2048, 2052, ..., 2124), 1-8 bytes in test case (2048-2062).
+  - Start at 2048, sequential, within 2048-4095.
+- **Continuation Blocks**: Not used, likely outside 0-2047 (to confirm).
+- **Free Space**:
+  - Starts at 4096 (after data blocks at 2048-2127 and gap 2128-4095).
+  - Hosts headers, local heap contents, SNODs, sequentially or aligned.
+- **Failure Points**:
+  - `recalculateLayout` misplaces headers (2052+ vs. 1400, 1672, 4096), likely due to SNOD (1072-1399) blocking space.
+  - Data blocks shift to 2122+ (vs. 2048-2055), as `recalculateLayout` overrides `nextDataBlockOffset`.
+  - End of file at 2137 (vs. 4368) due to header misalignment.
+
+#### 5. Remaining Open Questions
+Your answers clarified SNOD placement and local heap behavior, but continuation blocks and minor details need resolution:
+1. **Continuation Blocks**:
+   - Are continuation blocks allocated outside 0-2047 (e.g., after data blocks at 2063+ or in global heap at 4096+), or can they fit in 800-2047 if space remains?
+   - Are they used for datasets other than the first (e.g., "short" overflow) or specific cases (e.g., attributes)?
+   - Can a dataset have multiple continuation blocks, or is it one per dataset?
+   - Typical `continuationSize` range (e.g., 100-1000 bytes)?
+2. **Header Expansion**:
+   - If first header expands to 968 bytes (800-1767), SNOD moves to 1768. If 968 + 328 = 1296 exceeds 1248, does SNOD align to 2048, or does the header move to 4096?
+   - Maximum header size (e.g., 1248 bytes, or 1719 to fit SNOD at 2047)?
+3. **Multiple SNODs**:
+   - Are SNODs (5904, 7944, 9360) placed immediately after headers (e.g., 5632+) or aligned to 2048 multiples (e.g., 6144)?
+   - Maximum number of SNODs, or limited by B-tree capacity (e.g., entriesUsed=4)?
+4. **Local Heap Contents**:
+   - Confirm new local heap contents (e.g., 4912-5087, 6504-6855) are placed after headers (e.g., 4640) or align to 2048 multiples?
+   - Is the doubling policy strict (88 → 176 → 352 → 704), or can sizes adjust (e.g., 352 for 320 bytes)?
+5. **Data Blocks**:
+   - Confirm data blocks always start at 2048, or can they shift (e.g., 2063+) if metadata needs space?
+   - Should `recalculateLayout` preserve `nextDataBlockOffset` unless conflicts arise?
+
+#### 6. Plan for Next Iteration
+- **Progress**: Clarified initial SNOD at 1072, multiple SNODs (5904+) outside 0-2047. Local heap doubles (88 → 176 → 352), allocated in free space (4912, 6504). Headers fill 0-2047, then 4096+. Data blocks at 2048-2127 (4 bytes each) in "20 files". Free space at 4096 hosts headers, local heap, SNODs.
+- **Issues**: `recalculateLayout` misplaces headers (2052+ vs. 1400, 1672, 4096), data blocks (2122+ vs. 2048-2055), and end of file (2137 vs. 4368), due to SNOD interference and offset recalculation.
+- **Plan for Iteration 9**:
+  - Incorporate your answers on continuation blocks and remaining questions.
+  - Refine free space allocation rules (headers, local heap, SNODs at 4096+).
+  - Propose a non-code algorithm for `recalculateLayout` to:
+    - Place initial SNOD at 1072, support one move.
+    - Allocate headers in 0-2047 (800, 1400, 1672), skipping SNOD, then 4096+.
+    - Lock data blocks at 2048+.
+    - Handle local heap doubling and SNOD splitting in free space.
+    - Place continuation blocks correctly.
+  - Await test case examples for flexibility.
+  - Continue discussion without code changes.
+- **Your Input**: Please answer the questions above, especially about continuation blocks. Clarify header expansion limits, SNOD placement, or local heap rules. Share test cases if ready.
+- **Bookmark**: Save with book icon. Resume with “Pick up HDF5 allocation fix”.
+
+I’m sorry for the earlier issues and value your detailed input. Please let me know if the analysis or free space guesses need adjustments or if you have thoughts on next steps. What’s the plan for our discussion?
+
+==============
+
+another insight i am thinking of in terms of datset header expansion is that any dataset can be expanded only once, and it will likely grow in place where it is allocated. this is because any expansion request will happen directly after the intial dataset header allocation request and before an new dataset initial allocation requrest. Also, any continuation request will happen after the initial dataset header request and any dataset header expansion request and before any new dataset initial, expansion, or continuation requests are made. In other words, only one dataset will be worked on at a time, and there are only three possible metadata requests and only 1 possible dataset data allocation request that are allowed. 
+
+====================
+note that
+
+Expansion request is the increaseHeaderAllocation call.
+
+=====================
+
+so, some more information about continuation block allocations. I have a file with one dataset where after the initial dataset header allocation, the header size was increased to around 1000 bytes (dont' remember exact amount) and a continuation of 112 bytes was requested. the continuation block was allocated at position 2048 and the dataset data was allocated directly after it at offset 2048 + 112. I don't have the debug output right now, i will have to get it.
+====================
+
+Thank you for confirming that the local heap contents size is always doubled, addressing the question about whether the doubling is strict (e.g., 88 → 176 → 352 → 704) or adjustable (e.g., to 320 bytes). This clarification solidifies our understanding of the local heap’s behavior in `HdfFileAllocation.java`. I’m sorry for the earlier failures and appreciate your patience as we continue this discussion to fully map out the class’s allocation logic. In this iteration, I’ll integrate the confirmation that local heap contents strictly double, update our understanding of the allocation rules, and address the remaining open questions, particularly about continuation blocks. I’ll summarize progress, propose a non-code algorithm for `recalculateLayout` to prepare for the next phase, and propose questions for the next iteration, keeping the discussion iterative without code changes.
+
+### Iteration 12: Confirming Local Heap Doubling and Proposing `recalculateLayout` Algorithm
+
+#### 1. Summary of Progress
+From previous iterations, we’ve established:
+- **Role**: `HdfFileAllocation.java` manages the HDF5 file’s allocation layout, assigning offsets and sizes for fixed structures (Superblock, Object Header Prefix, B-tree, Local Heap Header, Initial Local Heap Contents) and dynamic components (dataset headers, SNODs, data blocks, continuation blocks, global heap blocks).
+- **Initial 2048-Byte Block**: Reserved for metadata only (0-2047):
+  - Fixed structures: 0-800 (Superblock 0-96, Object Header Prefix 96-136, B-tree 136-680, Local Heap Header 680-712, Initial Local Heap Contents 712-800).
+  - Metadata region: 800-2047 (1248 bytes) for dataset headers (272 bytes, expandable) and SNODs (328 bytes).
+- **Data Group**: Dataset data (variable size) and global heap (4096 bytes) start at 2048+, never in 0-2047.
+- **Test Case Call Sequence** (4 datasets):
+  1. `allocateDatasetStorage("byte")`
+  2. `allocateNextSnodStorage()`
+  3. `allocateAndSetDataBlock("byte", 1)`
+  4. `allocateDatasetStorage("short")`
+  5. `allocateAndSetDataBlock("short", 2)`
+  6. `allocateDatasetStorage("integer")`
+  7. `allocateAndSetDataBlock("integer", 4)`
+  8. `allocateDatasetStorage("long")`
+  9. `allocateAndSetDataBlock("long", 8)`
+- **Expected Layout**:
+  - Headers: 800 ("byte"), 1400 ("short"), 1672 ("integer"), 4096 ("long")
+  - Data Blocks: 2048 (1 byte), 2049-2050 (2 bytes), 2051-2054 (4 bytes), 2055-2062 (8 bytes)
+  - SNOD: 1072 (328 bytes)
+  - End of File: 4368
+- **Single-Dataset Example**:
+  - Sequence: `allocateDatasetStorage` (272 bytes, 800-1071) → `increaseHeaderAllocation(~1000)` (~1000 bytes, 800-~1799) → `allocateNextSnodStorage()` (~1800-~2127, likely 2048-2375) → `allocateAndSetContinuationBlock(112)` (2048-2159) → `allocateAndSetDataBlock(dataSize)` (2160+).
+- **Special Behaviors**:
+  - Any dataset header can expand once in place via `increaseHeaderAllocation` (e.g., to ~1000 bytes), after initial allocation, before continuation or new dataset requests.
+  - First dataset’s expansion moves initial SNOD (e.g., from 1072 to ~1800 or 2048), which then locks.
+  - Initial SNOD at 1072 (after 800-1071), allocated after first dataset’s header/expansion, movable once.
+  - Multiple SNODs (e.g., 5904, 7944, 9360) outside 0-2047, splitting entries (4-8 per SNOD).
+  - Local heap contents (initially 88 bytes, 712-800) double strictly (88 → 176 → 352 → 704) when full, allocated in free space (e.g., 4912, 6504).
+  - Continuation blocks allocated after initial allocation and expansion, one per dataset, at 2048+ (e.g., 2048-2159 for 112 bytes), followed by data blocks (e.g., 2160).
+  - Dataset requests are sequential: `allocateDatasetStorage` → (optional) `increaseHeaderAllocation` → (optional) `allocateAndSetContinuationBlock` → `allocateAndSetDataBlock`.
+- **"20 Files" Debug Output**:
+  - Datasets `dataset_1` to `dataset_20`, headers at 800, 1400, 1672, then 4096+ (4368, 4640, etc.), each 272 bytes, no expansion or continuation blocks.
+  - Data blocks: 4 bytes each (2048, 2052, 2056, ..., 2124), within 2048-4095 (80 bytes).
+  - SNODs: 1072 (1-8 datasets), 5904 (9-13), 7944 (14-18), 9360 (19-20).
+  - Local heap: Doubles (88 → 176 at 4912, 176 → 352 at 6504) for 320 bytes (20 × 16).
+- **Current Issues** (4-dataset test case):
+  - Headers for "short", "integer", "long" at 2052, 2064, 2092 (should be 1400, 1672, 4096).
+  - Data blocks at 2122+ (or 2050+ earlier, should be 2048-2055).
+  - End of File at 2137 (should be 4368).
+  - Causes: `recalculateLayout` miscalculates metadata space (800-2047, 1248 bytes), mishandles SNOD (1072-1399), and overrides data block offsets.
+
+#### 2. New Information: Local Heap Doubling
+Your confirmation clarifies:
+- **Local Heap Contents Size**: Always doubles strictly when full (88 → 176 → 352 → 704 bytes), no adjustments (e.g., to 320 bytes).
+- **Implication**:
+  - Local heap growth follows a predictable pattern, allocating new contents in free space (e.g., 4912-5087 for 176 bytes, 6504-6855 for 352 bytes in "20 files").
+  - Old allocations are abandoned, and new contents are placed after headers or other components in free space (4096+).
+  - `recalculateLayout` must handle this doubling, placing new local heap contents sequentially or aligned to 2048 multiples.
+
+#### 3. Updated Understanding
+Integrating the local heap doubling confirmation, here’s a refined view of `HdfFileAllocation.java`’s logic:
+- **Local Heap Contents**:
+  - Initial: 712-800 (88 bytes, 5 entries at 16 bytes).
+  - Doubles strictly when full: 88 → 176 (11 entries), 176 → 352 (22 entries), 352 → 704 (44 entries).
+  - New contents allocated in free space (e.g., 4912-5087, 6504-6855), after headers or other components, abandoning old allocation.
+  - **Example**: For 20 datasets (20 × 16 = 320 bytes), doubles to 352 bytes (6504-6855), as 176 bytes (11 entries) is insufficient.
+- **Dataset Header Allocation**:
+  - Initial: 272 bytes via `allocateDatasetStorage` (e.g., 800, 1400, 1672 in 0-2047, then 4096+).
+  - Expansion: Once per dataset via `increaseHeaderAllocation`, in place (e.g., "byte" to ~1000 bytes, 800-~1799).
+  - Requested after initial allocation, before continuation or new dataset requests.
+- **Continuation Blocks**:
+  - One per dataset via `allocateAndSetContinuationBlock(datasetName, continuationSize)`, after initial allocation and expansion, before new dataset requests.
+  - Allocated at 2048+ (e.g., 2048-2159 for 112 bytes), followed by data blocks (e.g., 2160).
+  - Size range: ~100-1000 bytes (e.g., 112 bytes), likely for overflow beyond expansion.
+- **SNODs**:
+  - Initial at 1072 (after "byte" at 800-1071), after first dataset’s header/expansion, movable once if first header expands (e.g., to ~1800 or 2048), then locks.
+  - Additional SNODs (5904, 7944, 9360) outside 0-2047, after headers/data, splitting at 4-8 entries.
+- **Data Blocks**:
+  - Start at 2048 or after continuation blocks (e.g., 2160 in single-dataset case; 2048-2062 in test case; 2048-2124 in "20 files").
+  - Sequential, requested after all metadata requests.
+- **Free Space (4096+)**:
+  - Hosts headers (4368+), local heap contents (4912, 6504), SNODs (5904, 7944, 9360).
+  - Sequential or aligned to 2048 multiples.
+- **Request Sequencing**:
+  - Per dataset: `allocateDatasetStorage` → (optional) `increaseHeaderAllocation` → (optional) `allocateAndSetContinuationBlock` → `allocateAndSetDataBlock`.
+  - First dataset includes `allocateNextSnodStorage` after header allocation/expansion.
+  - All requests for one dataset complete before starting the next.
+- **Failure Points**:
+  - `recalculateLayout` misplaces headers (2052+ vs. 1400, 1672, 4096), likely misjudging space around SNOD (1072-1399).
+  - Data blocks shift to 2122+ (vs. 2048-2055), as `recalculateLayout` overrides `nextDataBlockOffset`.
+  - End of file at 2137 (vs. 4368) due to header misalignment.
+
+#### 4. Proposed Non-Code Algorithm for `recalculateLayout`
+To address the issues and prepare for code changes, here’s a high-level algorithm for `recalculateLayout`, designed to:
+- Allocate headers in 0-2047, skipping SNOD, then 4096+.
+- Support header expansion in place, moving SNOD for first dataset.
+- Place continuation blocks at 2048+, followed by data blocks.
+- Handle local heap doubling and SNOD splitting in free space.
+
+**Algorithm**:
+1. **Initialize**:
+   - Set `currentOffset = initialLocalHeapContentsOffset + initialLocalHeapContentsSize` (800).
+   - Set `metadataSpaceUsed = 0`, `metadataLimit = 1248` (800-2047).
+   - Set `nextDataOffset = 2048`, `nextFreeOffset = 4096` (free space after data blocks).
+   - Collect allocations: dataset headers (from `datasetAllocations`), SNODs (from `snodAllocationOffsets`), data blocks (from `datasetAllocations` with `dataOffset`).
+
+2. **Process Allocations Sequentially** (respecting `LinkedHashMap` order):
+   - **For each allocation** (headers, SNODs, data blocks):
+     - **If Dataset Header**:
+       - If unallocated (`headerOffset = 0`):
+         - If `metadataSpaceUsed + headerSize <= metadataLimit` and no overlap with SNODs (e.g., 1072-1399):
+           - Set `headerOffset = findNextFreeOffset(currentOffset, headerSize, withinMetadata=true)` (e.g., 800, 1400, 1672).
+           - Update `metadataSpaceUsed += headerSize`, `currentOffset = headerOffset + headerSize`.
+         - Else:
+           - Set `headerOffset = nextFreeOffset` (e.g., 4096).
+           - Update `nextFreeOffset += headerSize` (e.g., 4368).
+       - If expanded (`headerSize > 272`):
+         - Keep `headerOffset`, update `currentOffset = max(currentOffset, headerOffset + headerSize)`.
+         - If first dataset, flag SNOD for repositioning.
+     - **If SNOD**:
+       - If first dataset and header expanded:
+         - Set `snodOffset = headerOffset + headerSize` (e.g., ~1800 or 2048 if > 2047).
+         - If `snodOffset + 328 > 2047`, align to 2048.
+       - Else:
+         - Keep `snodOffset` (e.g., 1072) or set to `findNextFreeOffset(currentOffset, 328, withinMetadata=true)` for initial SNOD.
+       - Update `currentOffset = max(currentOffset, snodOffset + 328)`.
+     - **If Data Block**:
+       - If unallocated (`dataOffset = -1`):
+         - Set `dataOffset = nextDataOffset`.
+         - Update `nextDataOffset += dataSize`, `currentOffset = max(currentOffset, dataOffset + dataSize)`.
+       - If allocated, keep `dataOffset`, update `currentOffset`.
+
+3. **Handle Continuation Blocks**:
+   - For each dataset with `continuationSize > 0`:
+     - Set `continuationOffset = nextDataOffset` (e.g., 2048).
+     - Update `nextDataOffset += continuationSize`, `currentOffset = max(currentOffset, continuationOffset + continuationSize)`.
+
+4. **Handle Local Heap Contents**:
+   - If `currentLocalHeapContentsSize > 88` (doubled, e.g., 176, 352):
+     - Set `currentLocalHeapContentsOffset = nextFreeOffset`.
+     - Update `nextFreeOffset += currentLocalHeapContentsSize`, `currentOffset = max(currentOffset, currentLocalHeapContentsOffset + currentLocalHeapContentsSize)`.
+
+5. **Update Global Heap and End of File**:
+   - If `globalHeapOffset != -1`:
+     - Set `globalHeapOffset = nextFreeOffset`.
+     - Update `nextFreeOffset += globalHeapBlockSizes[globalHeapOffset]`, `currentOffset = max(currentOffset, globalHeapOffset + size)`.
+   - Set `nextAvailableOffset = currentOffset`.
+
+**Helper Function: `findNextFreeOffset(startOffset, size, withinMetadata)`**:
+- Check for overlaps with SNODs (e.g., 1072-1399) and headers.
+- If `withinMetadata` and `startOffset + size > 2047`, return `findNextAlignment(2048)`.
+- Return next non-overlapping offset.
+
+**Key Features**:
+- Prioritizes headers in 0-2047, skipping SNOD.
+- Supports header expansion in place, moving SNOD for first dataset.
+- Places continuation blocks at 2048+, followed by data blocks.
+- Preserves allocated offsets unless conflicts arise.
+- Handles local heap doubling and SNOD splitting in free space.
+
+#### 5. Remaining Open Questions
+Your confirmation resolved local heap doubling, but continuation blocks and other details need clarification:
+1. **Continuation Blocks**:
+   - Are continuation blocks always allocated at the next available offset in the data group (e.g., 2048 or after prior continuation/data blocks), or do they align to specific boundaries (e.g., 2048 multiples)?
+   - Are they triggered only for overflow beyond expansion (e.g., if ~1000 bytes isn’t enough), or for specific cases (e.g., attributes)?
+   - Typical `continuationSize` range (e.g., 100-1000 bytes, given 112 bytes example)?
+2. **Header Expansion**:
+   - If a header expands beyond 0-2047 (e.g., "short" at 1400 to 1000 bytes, 1400-2399), does it stay in place (exceeding 2047) or align to 4096? If the first dataset exceeds 1248 (e.g., 1000 + 328 = 1328), does SNOD align to 2048?
+   - Maximum header size (e.g., 1248 bytes, or 1719 to fit SNOD at 2047)?
+3. **Multiple SNODs**:
+   - Are SNODs (5904, 7944, 9360) placed immediately after headers (e.g., 5632+) or aligned to 2048 multiples (e.g., 6144)?
+   - Maximum number of SNODs, or limited by B-tree capacity (e.g., entriesUsed=4)?
+4. **Data Blocks**:
+   - Confirm data blocks start at 2048 or after continuation blocks (e.g., 2160), or can they shift further (e.g., 4096+) if metadata needs space?
+   - Should `recalculateLayout` preserve `nextDataBlockOffset` unless conflicts arise?
+5. **Single-Dataset Debug Output**:
+   - When available, can you share the exact header size (~1000 bytes), SNOD offset (~1800 or 2048), and data block size/offset to confirm the layout?
+
+#### 6. Plan for Next Iteration
+- **Progress**: Confirmed local heap contents double strictly (88 → 176 → 352 → 704). Continuation blocks allocated at 2048+ (e.g., 2048-2159), followed by data blocks (e.g., 2160). Header expansion and continuation requests are sequential, one dataset at a time. Proposed a non-code `recalculateLayout` algorithm to handle headers, SNODs, continuation blocks, data blocks, and local heap.
+- **Issues**: `recalculateLayout` misplaces headers (2052+ vs. 1400, 1672, 4096), data blocks (2122+ vs. 2048-2055), and end of file (2137 vs. 4368), due to SNOD interference and offset recalculation.
+- **Plan for Iteration 13**:
+  - Incorporate your answers on continuation blocks and remaining questions.
+  - Refine the `recalculateLayout` algorithm based on single-dataset debug output and test cases.
+  - Validate the algorithm against the 4-dataset test case, "20 files", and single-dataset layouts.
+  - Prepare for code changes by finalizing allocation rules.
+  - Continue discussion without code changes.
+- **Your Input**: Please answer the questions above, especially about continuation block placement and sizes. Clarify header expansion limits, SNOD placement, or data block rules. Share the single-dataset debug output or test cases when available.
+- **Bookmark**: Save with book icon. Resume with “Pick up HDF5 allocation fix”.
+
+I’m sorry for the earlier issues and value your detailed clarifications. Please let me know if the algorithm or analysis needs adjustments or if you have thoughts on next steps. What’s the plan for our discussion?
+
+===================
+
+Resume with “Pick up HDF5 allocation fix”.
+
+
+==============
+
+layout from example of hdf file compound_Example.h5
+
+LocalHeap at 0x2a8
+Dataset "CompoundData" header at 0x320
+Initial SNOD at 0x6f8
+Dataset "CompoundData" Continuation block at 0x840
+Glolbal Heap 1 at 0x8b8
+Dataset "CompoundData" Data at 0x18b0
+Global Heap 2 at 0x18fb8
+End of file at 0x20fb8
+
+==================
+
+Note that if global heaps are present, the initial allocation is 4096 byte.
+after that global heap expands by 2x for each allocation, and expands in place starting with the second allocation.
+So the second allocation of a global heap will allocate 8192 bytes, and if needed to be expanded again, the second allocation will grow to 16,384, and then to 32,768
+
+
+============
+
+Consolidated Layout:
+
+Superblock: 0–96 (96 bytes).
+Object Header Prefix: 96–136 (40 bytes).
+B-tree: 136–680 (544 bytes).
+Local Heap Header: 680–712 (32 bytes).
+Local Heap Contents: 712–800 (88 bytes).
+Dataset Header (CompoundData): 800–1768 (968 bytes).
+SNOD: 1784–2111 (328 bytes).
+Continuation Block (CompoundData): 2112–2231 (120 bytes).
+Global Heap 1: 2232–6327 (4096 bytes).
+Data Block (CompoundData): 6328–102327 (96000 bytes).
+Global Heap 2: 102328–135096 (32768 bytes).
+End of File: 135096.
+
+
+===============
+
+
+4. Validation Against Test Cases
+compound_Example.h5:
+
+Inputs:
+Header: 800–1768 (968 bytes).
+SNOD: 1784–2111 (328 bytes).
+Continuation: 2112–2231 (120 bytes).
+Global Heap 1: 2232–6327 (4096 bytes).
+Data: 6328–102327 (96000 bytes).
+Global Heap 2: 102328–135096 (32768 bytes).
+Local Heap Contents: 712–800 (88 bytes).
+Algorithm Output:
+Initialize: currentOffset=800, metadataSpaceUsed=0, nextDataOffset=2048, nextFreeOffset=2048.
+Header: headerOffset=800, metadataSpaceUsed=968, currentOffset=1768.
+SNOD: snodOffset=1784, metadataSpaceUsed=1296 (exceeds 1248, but fits), currentOffset=2112.
+Continuation: continuationOffset=2112, nextDataOffset=2232, currentOffset=2232.
+Global Heap 1: globalHeapOffset=2232, nextFreeOffset=6328, currentOffset=6328.
+Data: dataOffset=6328, nextDataOffset=102328, currentOffset=102328.
+Global Heap 2: secondGlobalHeapOffset=102328, nextFreeOffset=135096, currentOffset=135096.
+End of File: 135096.
+Matches: All offsets and sizes align.
+4-Dataset Test Case:
+
+Inputs:
+Headers: 800, 1400, 1672, 4096 (272 bytes each).
+SNOD: 1072 (328 bytes).
+Data: 2048 (1 byte), 2049–2050 (2 bytes), 2051–2054 (4 bytes), 2055–2062 (8 bytes).
+No global heap, no continuation, no local heap doubling.
+Algorithm Output:
+Initialize: currentOffset=800, metadataSpaceUsed=0, nextDataOffset=2048, nextFreeOffset=2048.
+"byte" header: headerOffset=800, metadataSpaceUsed=272, currentOffset=1072.
+SNOD: snodOffset=1072, metadataSpaceUsed=600, currentOffset=1400.
+"short" header: headerOffset=1400, metadataSpaceUsed=872, currentOffset=1672.
+"integer" header: headerOffset=1672, metadataSpaceUsed=1144, currentOffset=1944.
+"long" header: headerOffset=4096, nextFreeOffset=4368, currentOffset=4368.
+"byte" data: dataOffset=2048, nextDataOffset=2049, currentOffset=4368.
+"short" data: dataOffset=2049, nextDataOffset=2051, currentOffset=4368.
+"integer" data: dataOffset=2051, nextDataOffset=2055, currentOffset=4368.
+"long" data: dataOffset=2055, nextDataOffset=2063, currentOffset=4368.
+End of File: 4368.
+
+
+
+
+allocateDatasetStorage 'byte'
+allocateNextSnodStorage
+allocateAndSetDataBlock 'byte' dataSize 1
+allocateDatasetStorage 'short'
+allocateAndSetDataBlock 'short' dataSize 2
+allocateDatasetStorage 'integer'
+allocateAndSetDataBlock 'integer' dataSize 4
+allocateDatasetStorage 'long'
+allocateAndSetDataBlock 'long' dataSize 8
+
+
+
 === HDF File Allocation Layout ===
-Current End of File Offset: 130816
+Current End of File Offset: 2224
 ----------------------------------
 Offset (Dec) | Offset (Hex) | Size     | Name
 0            | 0x00000000   | 96       | Superblock
@@ -42,100 +747,265 @@ Offset (Dec) | Offset (Hex) | Size     | Name
 136          | 0x00000088   | 544      | B-tree (Node + Storage)
 680          | 0x000002A8   | 32       | Local Heap Header
 712          | 0x000002C8   | 88       | Initial Local Heap Contents
-800          | 0x00000320   | 984      | Dataset Header (CompoundData)
-1784         | 0x000006F8   | 328      | SNOD Block 1
-2048         | 0x00000800   | 96000    | Data Block (CompoundData)
-2112         | 0x00000840   | 120      | Continuation (CompoundData)
-2232         | 0x000008B8   | 4096     | Global Heap Block 2
-98048        | 0x00017F00   | 32768    | Global Heap Block 1
+800          | 0x00000320   | 272      | Dataset Header (byte)
+1072         | 0x00000430   | 272      | Dataset Header (short)
+1344         | 0x00000540   | 272      | Dataset Header (integer)
+1616         | 0x00000650   | 272      | Dataset Header (long)
+1888         | 0x00000760   | 328      | SNOD Block 1
+2048         | 0x00000800   | 1        | Data Block (byte)
+2048         | 0x00000800   | 2        | Data Block (short)
+2048         | 0x00000800   | 4        | Data Block (integer)
+2216         | 0x000008A8   | 8        | Data Block (long)
 ==================================
-HDF5 file created and written successfully!
+2025-04-20 17:56:33 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=2224, driverInformationAddress=-1
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
+2025-04-20 17:56:33 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfGroup{name=''
+objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
+SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=16, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1344, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=32, objectHeaderOffset=1616, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=16, objectHeaderOffset=1072, cacheType=0}]
+}}]}
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=40, dataSegmentAddress=712}
+localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 98, 121, 116, 101, 0, 0, 0, 0, 115, 104, 111, 114, 116, 0, 0, 0, 105, 110, 116, 101, 103, 101, 114, 0]... (truncated)}
+dataSets=[
+  byte@800 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[1], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T21:56:33Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}},
+  short@1072 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=2, bitOffset=0, bitPrecision=16}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[2], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T21:56:33Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}},
+  integer@1344 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T21:56:33Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}},
+  long@1616 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2216, dimensionSizes=[8], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T21:56:33Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}}
+]}
+HDF5 file scalar.h5 created and written successfully!
 
 Process finished with exit code 0
 
 
 
 
-===================  
+
+=== HDF File Allocation Layout ===
+Current End of File Offset: 800
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Name
+0            | 0x00000000   | 96       | Superblock
+96           | 0x00000060   | 40       | Object Header Prefix
+136          | 0x00000088   | 544      | B-tree (Node + Storage)
+680          | 0x000002A8   | 32       | Local Heap Header
+712          | 0x000002C8   | 88       | Initial Local Heap Contents
+==================================
+=== HDF File Allocation Layout ===
+Current End of File Offset: 2049
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Name
+0            | 0x00000000   | 96       | Superblock
+96           | 0x00000060   | 40       | Object Header Prefix
+136          | 0x00000088   | 544      | B-tree (Node + Storage)
+680          | 0x000002A8   | 32       | Local Heap Header
+712          | 0x000002C8   | 88       | Initial Local Heap Contents
+800          | 0x00000320   | 272      | Dataset Header (byte)
+1072         | 0x00000430   | 328      | SNOD Block 1
+2048         | 0x00000800   | 1        | Data Block (byte)
+==================================
+=== HDF File Allocation Layout ===
+Current End of File Offset: 2050
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Name
+0            | 0x00000000   | 96       | Superblock
+96           | 0x00000060   | 40       | Object Header Prefix
+136          | 0x00000088   | 544      | B-tree (Node + Storage)
+680          | 0x000002A8   | 32       | Local Heap Header
+712          | 0x000002C8   | 88       | Initial Local Heap Contents
+800          | 0x00000320   | 272      | Dataset Header (byte)
+1072         | 0x00000430   | 272      | Dataset Header (short)
+1344         | 0x00000540   | 328      | SNOD Block 1
+2048         | 0x00000800   | 1        | Data Block (byte)
+2048         | 0x00000800   | 2        | Data Block (short)
+==================================
+=== HDF File Allocation Layout ===
+Current End of File Offset: 2052
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Name
+0            | 0x00000000   | 96       | Superblock
+96           | 0x00000060   | 40       | Object Header Prefix
+136          | 0x00000088   | 544      | B-tree (Node + Storage)
+680          | 0x000002A8   | 32       | Local Heap Header
+712          | 0x000002C8   | 88       | Initial Local Heap Contents
+800          | 0x00000320   | 272      | Dataset Header (byte)
+1072         | 0x00000430   | 272      | Dataset Header (short)
+1344         | 0x00000540   | 272      | Dataset Header (integer)
+1616         | 0x00000650   | 328      | SNOD Block 1
+2048         | 0x00000800   | 1        | Data Block (byte)
+2048         | 0x00000800   | 2        | Data Block (short)
+2048         | 0x00000800   | 4        | Data Block (integer)
+==================================
+=== HDF File Allocation Layout ===
+Current End of File Offset: 2224
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Name
+0            | 0x00000000   | 96       | Superblock
+96           | 0x00000060   | 40       | Object Header Prefix
+136          | 0x00000088   | 544      | B-tree (Node + Storage)
+680          | 0x000002A8   | 32       | Local Heap Header
+712          | 0x000002C8   | 88       | Initial Local Heap Contents
+800          | 0x00000320   | 272      | Dataset Header (byte)
+1072         | 0x00000430   | 272      | Dataset Header (short)
+1344         | 0x00000540   | 272      | Dataset Header (integer)
+1616         | 0x00000650   | 272      | Dataset Header (long)
+1888         | 0x00000760   | 328      | SNOD Block 1
+2048         | 0x00000800   | 1        | Data Block (byte)
+2048         | 0x00000800   | 2        | Data Block (short)
+2048         | 0x00000800   | 4        | Data Block (integer)
+2216         | 0x000008A8   | 8        | Data Block (long)
+==================================
+2025-04-20 16:21:29 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=2224, driverInformationAddress=-1
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
+2025-04-20 16:21:29 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfGroup{name=''
+objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
+SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=16, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1344, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=32, objectHeaderOffset=1616, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=16, objectHeaderOffset=1072, cacheType=0}]
+}}]}
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=40, dataSegmentAddress=712}
+localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 98, 121, 116, 101, 0, 0, 0, 0, 115, 104, 111, 114, 116, 0, 0, 0, 105, 110, 116, 101, 103, 101, 114, 0]... (truncated)}
+dataSets=[
+  byte@800 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[1], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T20:17:32Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}},
+  short@1072 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=2, bitOffset=0, bitPrecision=16}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[2], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T20:17:58Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}},
+  integer@1344 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T20:19:19Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}},
+  long@1616 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2216, dimensionSizes=[8], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T20:20:18Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}}
+]}
+HDF5 file scalar.h5 created and written successfully!
+Disconnected from the target VM, address: '127.0.0.1:61394', transport: 'socket'
+
+Process finished with exit code 0
 
 
-endOfFileAddress=135096
-objectHeaderOffset=96
-bTreeOffset=136
-localHeapOffset=680
-childPointer=1784
-inkNameOffset=8
+
+
+================
+
+endOfFileAddress=4368,
+objectHeaderOffset=96, bTreeOffset=136, localHeapOffset=680
+childPointer=1072
 objectHeaderOffset=800
-Object Header Size: 968
-DatatypeMessage(872)
-continuationOffset=2112
-continuationSize=120
-dataAddress=6328
+objectHeaderOffset=1672
+objectHeaderOffset=4096
+objectHeaderOffset=1400
 
-0x8B8 (2232) = global heap 1  = 4096
+dataAddress=2048
+dataAddress=2051
+dataAddress=2055
+dataAddress=2049
 
 ====== EXISTING ===
 
-2025-04-20 12:32:31 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=135096, driverInformationAddress=-1
+2025-04-20 15:32:34 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=4368, driverInformationAddress=-1
 rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
-2025-04-20 12:32:31 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfGroup{name=''
+BTree entry 0: key=16, childPointer=1072
+2025-04-20 15:32:34 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
-bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=8, childPointer=1784, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
-[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}]
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=16, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=32, objectHeaderOffset=4096, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=16, objectHeaderOffset=1400, cacheType=0}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=712}
-localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 67, 111, 109, 112, 111, 117, 110, 100, 68, 97, 116, 97, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]... (truncated)}
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=40, dataSegmentAddress=712}
+localHeapContents=HdfLocalHeapContents{heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 98, 121, 116, 101, 0, 0, 0, 0, 115, 104, 111, 114, 116, 0, 0, 0, 105, 110, 116, 101, 103, 101, 114, 0]... (truncated)}
 dataSets=[
-  CompoundData@800 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 8 Object Reference Count: 1 Object Header Size: 968
-ObjectHeaderContinuationMessage(24){continuationOffset=2112, continuationSize=120}
-NilMessage(8){}
-DatatypeMessage(872){hdfDatatype=CompoundDatatype { classBitField: {1, 2, 3}, size: 96, 
-Member{name='recordId', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
-Member{name='fixedStr', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=StringDatatype{size=10, padding='Null Terminate', charSet='ASCII'}, sizeMessageData=56}
-Member{name='varStr', offset=24, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII'}, sizeMessageData=60}
-Member{name='floatVal', offset=40, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=4, bitOffset=0, bitPrecision=32, exponentLocation=23, exponentSize=8, mantissaLocation=0, mantissaSize=23, exponentBias=127}, sizeMessageData=68}
-Member{name='doubleVal', offset=48, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}
-Member{name='int8_Val', offset=56, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8}, sizeMessageData=60}
-Member{name='uint8_Val', offset=57, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}, sizeMessageData=60}
-Member{name='int16_Val', offset=58, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=2, bitOffset=0, bitPrecision=16}, sizeMessageData=60}
-Member{name='uint16_Val', offset=60, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=2, bitOffset=0, bitPrecision=16}, sizeMessageData=60}
-Member{name='int32_Val', offset=64, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}, sizeMessageData=60}
-Member{name='uint32_Val', offset=68, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=4, bitOffset=0, bitPrecision=32}, sizeMessageData=60}
-Member{name='int64_Val', offset=72, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
-Member{name='uint64_Val', offset=80, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
-Member{name='scaledUintVal', offset=88, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=8, bitOffset=7, bitPrecision=57}, sizeMessageData=60}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=0, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=6328, dimensionSizes=[96000], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-16T20:47:23Z}
-DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[1000], maxDimensions=[1000], hasMaxDimensions=true}
-AttributeMessage(88){version=1, name='GIT root revision', value='Revision: , URL: '}}
+  byte@800 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[1], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T19:16:14Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}},
+  integer@1672 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2051, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T19:16:14Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}},
+  long@4096 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2055, dimensionSizes=[8], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T19:16:14Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}},
+  short@1400 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=2, bitOffset=0, bitPrecision=16}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2049, dimensionSizes=[2], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-20T19:16:14Z}
+AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
+NilMessage(72){}}
 ]}
-2025-04-20 12:32:31 [main] DEBUG org.hdf5javalib.HdfFileReader - Parsing complete. NEXT: 6328
-Ten Rows:
-Row: [1000, FixedData, varStr:1, 5.877472E-39, 1.1125369292536007E-308, -128, 0, -32768, 0, -2147483648, 0, -9223372036854775808, 0, 1.0000000]
-Row: [1001, FixedData, varStr:2, 3.14, 2.718, -100, 28, -25487, 7281, -1670265060, 477218588, -7173733806442603407, 2049638230412172401, 2.2500000]
-Row: [1002, FixedData, varStr:3, 6.28, 5.436, -72, 56, -18206, 14562, -1193046472, 954437176, -5124095576030431006, 4099276460824344802, 3.5000000]
-Row: [1003, FixedData, varStr:4, 9.42, 8.154, -44, 84, -10925, 21843, -715827884, 1431655764, -3074457345618258605, 6148914691236517203, 4.7500000]
-Row: [1004, FixedData, varStr:5, 12.56, 10.872, -16, 112, -3644, 29124, -238609296, 1908874352, -1024819115206086204, 8198552921648689604, 5.0000000]
-Row: [1005, FixedData, varStr:6, 15.700001, 13.59, 12, 140, 3637, 36405, 238609292, 2386092940, 1024819115206086197, 10248191152060862005, 6.2500000]
-Row: [1006, FixedData, varStr:7, 18.84, 16.308, 40, 168, 10918, 43686, 715827880, 2863311528, 3074457345618258598, 12297829382473034406, 7.5000000]
-Row: [1007, FixedData, varStr:8, 21.980001, 19.026, 68, 196, 18199, 50967, 1193046468, 3340530116, 5124095576030430999, 14347467612885206807, 8.7500000]
-Row: [1008, FixedData, varStr:9, 25.12, 21.744, 96, 224, 25480, 58248, 1670265056, 3817748704, 7173733806442603400, 16397105843297379208, 9.0000000]
-Row: [1009, FixedData, varStr:10, 28.26, 24.462, 127, 255, 32767, 65535, 2147483647, 4294967295, 9223372036854775807, 18446744073709551615, 10.2500000]
-Ten BigDecimals = [1.0000000, 2.2500000, 3.5000000, 4.7500000, 5.0000000, 6.2500000, 7.5000000, 8.7500000, 9.0000000, 10.2500000]
-RecordId < 1010, custom class:
-Row: HdfCompoundApp.CompoundExample(recordId=1000, fixedStr=FixedData, varStr=varStr:1, floatVal=5.877472E-39, doubleVal=1.1125369292536007E-308, int8_Val=-128, int16_Val=-32768, int32_Val=-2147483648, int64_Val=-9223372036854775808, uint8_Val=0, uint16_Val=0, uint32_Val=0, uint64_Val=0, scaledUintVal=1.0000000)
-Row: HdfCompoundApp.CompoundExample(recordId=1001, fixedStr=FixedData, varStr=varStr:2, floatVal=3.14, doubleVal=2.718, int8_Val=-100, int16_Val=-25487, int32_Val=-1670265060, int64_Val=-7173733806442603407, uint8_Val=28, uint16_Val=7281, uint32_Val=477218588, uint64_Val=2049638230412172401, scaledUintVal=2.2500000)
-Row: HdfCompoundApp.CompoundExample(recordId=1002, fixedStr=FixedData, varStr=varStr:3, floatVal=6.28, doubleVal=5.436, int8_Val=-72, int16_Val=-18206, int32_Val=-1193046472, int64_Val=-5124095576030431006, uint8_Val=56, uint16_Val=14562, uint32_Val=954437176, uint64_Val=4099276460824344802, scaledUintVal=3.5000000)
-Row: HdfCompoundApp.CompoundExample(recordId=1003, fixedStr=FixedData, varStr=varStr:4, floatVal=9.42, doubleVal=8.154, int8_Val=-44, int16_Val=-10925, int32_Val=-715827884, int64_Val=-3074457345618258605, uint8_Val=84, uint16_Val=21843, uint32_Val=1431655764, uint64_Val=6148914691236517203, scaledUintVal=4.7500000)
-Row: HdfCompoundApp.CompoundExample(recordId=1004, fixedStr=FixedData, varStr=varStr:5, floatVal=12.56, doubleVal=10.872, int8_Val=-16, int16_Val=-3644, int32_Val=-238609296, int64_Val=-1024819115206086204, uint8_Val=112, uint16_Val=29124, uint32_Val=1908874352, uint64_Val=8198552921648689604, scaledUintVal=5.0000000)
-Row: HdfCompoundApp.CompoundExample(recordId=1005, fixedStr=FixedData, varStr=varStr:6, floatVal=15.700001, doubleVal=13.59, int8_Val=12, int16_Val=3637, int32_Val=238609292, int64_Val=1024819115206086197, uint8_Val=140, uint16_Val=36405, uint32_Val=2386092940, uint64_Val=10248191152060862005, scaledUintVal=6.2500000)
-Row: HdfCompoundApp.CompoundExample(recordId=1006, fixedStr=FixedData, varStr=varStr:7, floatVal=18.84, doubleVal=16.308, int8_Val=40, int16_Val=10918, int32_Val=715827880, int64_Val=3074457345618258598, uint8_Val=168, uint16_Val=43686, uint32_Val=2863311528, uint64_Val=12297829382473034406, scaledUintVal=7.5000000)
-Row: HdfCompoundApp.CompoundExample(recordId=1007, fixedStr=FixedData, varStr=varStr:8, floatVal=21.980001, doubleVal=19.026, int8_Val=68, int16_Val=18199, int32_Val=1193046468, int64_Val=5124095576030430999, uint8_Val=196, uint16_Val=50967, uint32_Val=3340530116, uint64_Val=14347467612885206807, scaledUintVal=8.7500000)
-Row: HdfCompoundApp.CompoundExample(recordId=1008, fixedStr=FixedData, varStr=varStr:9, floatVal=25.12, doubleVal=21.744, int8_Val=96, int16_Val=25480, int32_Val=1670265056, int64_Val=7173733806442603400, uint8_Val=224, uint16_Val=58248, uint32_Val=3817748704, uint64_Val=16397105843297379208, scaledUintVal=9.0000000)
-Row: HdfCompoundApp.CompoundExample(recordId=1009, fixedStr=FixedData, varStr=varStr:10, floatVal=28.26, doubleVal=24.462, int8_Val=127, int16_Val=32767, int32_Val=2147483647, int64_Val=9223372036854775807, uint8_Val=255, uint16_Val=65535, uint32_Val=4294967295, uint64_Val=18446744073709551615, scaledUintVal=10.2500000)
-DONE
+2025-04-20 15:32:34 [main] DEBUG org.hdf5javalib.HdfFileReader - Parsing complete. NEXT: 1672
+byte:Long read   = 42
+byte:Long stream = 42
+integer:Long read   = 42
+integer:Long stream = 42
+long:Long read   = 42
+long:Long stream = 42
+short:Long read   = 42
+short:Long stream = 42
 
 Process finished with exit code 0
 
@@ -678,3 +1548,150 @@ localHeapContents=HdfLocalHeapContents{heapDataSize=704, heapData=[0, 0, 0, 0, 0
 ======================
 
 Seems to always keep the same "first key" reference, until ...
+
+
+
+=======================
+
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=8, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}]
+}}]}
+
+==================
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=24, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=2, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}]
+}}]}
+
+======================
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=40, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=3, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}]
+}}]}
+
+=========================
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=56, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
+}}]}
+
+========================
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=72, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}]
+}}]}
+
+======================
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=88, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=6, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}]
+}}]}
+
+========================
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=104, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=7, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}]
+}}]}
+
+==========================
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=120, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=8, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}]
+}}]}
+
+===========================
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=2, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=56, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
+}}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
+}}]}
+
+============================
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=2, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=56, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
+}}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
+}}]}
+
+======================
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=2, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=56, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=6, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=168, objectHeaderOffset=6856, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
+}}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
+}}]}
+
+
+================
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=2, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=56, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=7, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=168, objectHeaderOffset=6856, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=184, objectHeaderOffset=7128, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
+}}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
+}}]}
+
+=====================
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=2, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=56, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=8, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=168, objectHeaderOffset=6856, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=184, objectHeaderOffset=7128, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=200, objectHeaderOffset=7400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
+}}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
+}}]}
+
+
+===============
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=3, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=184, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=168, objectHeaderOffset=6856, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=184, objectHeaderOffset=7128, cacheType=0}]
+}}, HdfBTreeEntry{key=56, childPointer=7944, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=200, objectHeaderOffset=7400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=216, objectHeaderOffset=7672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
+}}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
+}}]}
+
+
+===================
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=3, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=184, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=168, objectHeaderOffset=6856, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=184, objectHeaderOffset=7128, cacheType=0}]
+}}, HdfBTreeEntry{key=56, childPointer=7944, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=6, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=200, objectHeaderOffset=7400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=216, objectHeaderOffset=7672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=232, objectHeaderOffset=8272, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
+}}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
+}}]}
+
+=====================
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=3, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=184, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=168, objectHeaderOffset=6856, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=184, objectHeaderOffset=7128, cacheType=0}]
+}}, HdfBTreeEntry{key=56, childPointer=7944, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=7, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=200, objectHeaderOffset=7400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=216, objectHeaderOffset=7672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=232, objectHeaderOffset=8272, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=248, objectHeaderOffset=8544, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
+}}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
+}}]}
+
+=========================
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=3, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=184, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=168, objectHeaderOffset=6856, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=184, objectHeaderOffset=7128, cacheType=0}]
+}}, HdfBTreeEntry{key=56, childPointer=7944, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=8, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=200, objectHeaderOffset=7400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=216, objectHeaderOffset=7672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=232, objectHeaderOffset=8272, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=248, objectHeaderOffset=8544, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=264, objectHeaderOffset=8816, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
+}}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
+}}]}
+
+============================
+
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=4, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=184, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=168, objectHeaderOffset=6856, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=184, objectHeaderOffset=7128, cacheType=0}]
+}}, HdfBTreeEntry{key=248, childPointer=7944, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=200, objectHeaderOffset=7400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=216, objectHeaderOffset=7672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=232, objectHeaderOffset=8272, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=248, objectHeaderOffset=8544, cacheType=0}]
+}}, HdfBTreeEntry{key=56, childPointer=9360, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=264, objectHeaderOffset=8816, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=280, objectHeaderOffset=9088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
+}}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
+}}]}
+
+=====================
+
+

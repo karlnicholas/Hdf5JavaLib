@@ -45,7 +45,7 @@ public class HdfTwoScalarApp {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-//        tryHdfApiScalar("two_scalar_datasets.h5");
+//        tryHdfApiScalar("scalar.h5");
     }
 
     private Path getResourcePath(String fileName) {
@@ -63,11 +63,15 @@ public class HdfTwoScalarApp {
             // Define scalar dataspace (rank 0).
             HdfFixedPoint[] hdfDimensions = {};
             DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(false, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointApp.computeDataSpaceMessageSize(hdfDimensions));
-            String datasetName = "dataset_";
-            for(int i=0; i<6; i++) {
-                writeInteger(datasetName + (i+1), hdfFile, dataSpaceMessage);
-                hdfFile.getFileAllocation().printBlocks();
-            }
+            hdfFile.getFileAllocation().printBlocks();
+            writeByte(hdfFile, dataSpaceMessage);
+            hdfFile.getFileAllocation().printBlocks();
+            writeShort(hdfFile, dataSpaceMessage);
+            hdfFile.getFileAllocation().printBlocks();
+            writeInteger(hdfFile, dataSpaceMessage);
+            hdfFile.getFileAllocation().printBlocks();
+            writeLong(hdfFile, dataSpaceMessage);
+            hdfFile.getFileAllocation().printBlocks();
 
             hdfFile.close();
 
@@ -114,6 +118,15 @@ public class HdfTwoScalarApp {
         HdfDataSet dataset = hdfFile.createDataSet("byte", fixedPointDatatype, dataSpaceMessage);
         HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
 
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+
         ByteBuffer byteBuffer = ByteBuffer.allocate(1).order(ByteOrder.LITTLE_ENDIAN);
         byteBuffer.put((byte) 42);
         byteBuffer.flip();
@@ -130,6 +143,15 @@ public class HdfTwoScalarApp {
         HdfDataSet dataset = hdfFile.createDataSet("short", fixedPointDatatype, dataSpaceMessage);
         HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
 
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+
         ByteBuffer byteBuffer = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN);
         byteBuffer.putShort((short) 42);
         byteBuffer.flip();
@@ -137,14 +159,23 @@ public class HdfTwoScalarApp {
         dataset.close();
     }
 
-    private static void writeInteger(String datasetName, HdfFile hdfFile, DataspaceMessage dataSpaceMessage) throws IOException {
+    private static void writeInteger(HdfFile hdfFile, DataspaceMessage dataSpaceMessage) throws IOException {
         FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
                 FixedPointDatatype.createClassAndVersion(),
                 FixedPointDatatype.createClassBitField( false, false, false, true),
                 (short)4, (short)0, (short)32);
         // Create dataset
-        HdfDataSet dataset = hdfFile.createDataSet(datasetName, fixedPointDatatype, dataSpaceMessage);
+        HdfDataSet dataset = hdfFile.createDataSet("integer", fixedPointDatatype, dataSpaceMessage);
         HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
+
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
         byteBuffer.putInt(42);
@@ -161,6 +192,15 @@ public class HdfTwoScalarApp {
         // Create dataset
         HdfDataSet dataset = hdfFile.createDataSet("long", fixedPointDatatype, dataSpaceMessage);
         HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
+
+        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+        hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!hdfFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                hdfFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         byteBuffer.putLong(42);

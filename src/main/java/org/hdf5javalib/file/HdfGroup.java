@@ -144,8 +144,8 @@ public class HdfGroup implements Closeable {
         DataSetInfo dataSetInfo = new DataSetInfo(newDataSet, HdfFixedPoint.of(allocationInfo.getHeaderOffset()), updateHeapResult.getSecond().longValue());
         dataSets.put(datasetName, dataSetInfo);
 
-        bTree.addDataset(updateHeapResult.getSecond(), allocationInfo.getHeaderOffset(), datasetName);
-
+        bTree.addDataset(updateHeapResult.getSecond(), allocationInfo.getHeaderOffset(), datasetName, this);
+System.out.println(bTree.toString());
         return newDataSet;
     }
 

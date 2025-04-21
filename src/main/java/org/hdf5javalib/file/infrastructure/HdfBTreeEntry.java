@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.infrastructure;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 
 // These would be imports in a real scenario
@@ -11,7 +12,8 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 
 @Getter // Using Getter only
 public class HdfBTreeEntry {
-    private final HdfFixedPoint key;
+    @Setter
+    private HdfFixedPoint key;
     private final HdfFixedPoint childPointer; // Keep original address for reference/debug
 
     // Payload: Only one of these should be non-null
