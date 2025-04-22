@@ -144,7 +144,6 @@ public class HdfBTreeV1 {
         for (int i = 0; i < entriesUsed; i++) {
             HdfFixedPoint childPointer = HdfFixedPoint.readFromByteBuffer(entriesBuffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
             HdfFixedPoint key = HdfFixedPoint.readFromByteBuffer(entriesBuffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
-            System.out.println("BTree entry " + i + ": key=" + key + ", childPointer=" + childPointer);
             long childAddress = childPointer.getInstance(Long.class);
             HdfBTreeEntry entry;
 

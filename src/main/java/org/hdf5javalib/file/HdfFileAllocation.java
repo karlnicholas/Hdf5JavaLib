@@ -448,6 +448,8 @@ public class HdfFileAllocation {
 
     public Map<String, DatasetAllocationInfo> getAllDatasetAllocations() { return Collections.unmodifiableMap(datasetAllocations); }
 
+    public List<AllocationRecord> getAllAllocationRecords() { return Collections.unmodifiableList(allocationRecords); }
+
     // --- Helper Classes ---
     public static class DatasetAllocationInfo {
         private long headerOffset;
@@ -477,7 +479,7 @@ public class HdfFileAllocation {
         public void setContinuationSize(long size) { this.continuationSize = size; }
     }
 
-    private static class AllocationRecord {
+    public static class AllocationRecord {
         private final String type; // FIXED, HEADER, SNOD, DATA, GLOBAL_HEAP, CONTINUATION, LOCAL_HEAP
         private final String name;
         private long offset;

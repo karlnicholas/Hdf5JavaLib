@@ -33,7 +33,7 @@ public class HdfTwoScalarApp {
 
     private void run() {
         try {
-            Path filePath = getResourcePath("scalar.h5");
+            Path filePath = getResourcePath("two_scalar_datasets.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 for( HdfDataSet dataSet: reader.getRootGroup().getDataSets()) {

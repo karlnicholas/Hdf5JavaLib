@@ -1,3 +1,121 @@
+- **4096-4367**: Header (dataset_1, 272 bytes).
+intial snod
+- **4096-4367**: data (dataset_1, 272 bytes).
+
+- **4368-4639**: Header (dataset_2, 272 bytes).
+- **4368-4639**: data (dataset_2, 272 bytes).
+- **4640-4911**: Header (dataset_3, 272 bytes).
+- **4640-4911**: data (dataset_3, 272 bytes).
+
+- **4096-4367**: Header (dataset_4, 272 bytes).
+- **4096-4367**: data (dataset_4, 272 bytes).
+- **4368-4639**: Header (dataset_5, 272 bytes).
+- **4368-4639**: data (dataset_5, 272 bytes).
+- **4640-4911**: Header (dataset_6, 272 bytes).
+- **4912-5087**: Local Heap Contents (176 bytes, doubled from 88).
+- **4640-4911**: data (dataset_6, 272 bytes).
+- **5088-5359**: Header (dataset_7, 272 bytes).
+- **5088-5359**: data (dataset_7, 272 bytes).
+- **5360-5631**: Header (dataset_8, 272 bytes).
+- **5360-5631**: data (dataset_8, 272 bytes).
+- **5632-5903**: Header (dataset_9, 272 bytes).
+- **5904-6231**: SNOD (328 bytes, 9-13 datasets).
+- **5632-5903**: data (dataset_9, 272 bytes).
+- **6232-6503**: Header (dataset_10, 272 bytes).
+- **6504-6855**: Local Heap Contents (352 bytes, doubled from 176).
+- **6232-6503**: data (dataset_10, 272 bytes).
+- **6856-7127**: Header (dataset_11, 272 bytes).
+- **6856-7127**: data (dataset_11, 272 bytes).
+- **7128-7399**: Header (dataset_12, 272 bytes).
+- **7128-7399**: data (dataset_12, 272 bytes).
+- **7400-7671**: Header (dataset_13, 272 bytes).
+- **7400-7671**: data (dataset_13, 272 bytes).
+- **7672-7943**: Header (dataset_14, 272 bytes).
+- **7944-8271**: SNOD (328 bytes, 14-18 datasets).
+- **7672-7943**: data (dataset_14, 272 bytes).
+- **8272-8543**: Header (dataset_15, 272 bytes).
+- **8272-8543**: data (dataset_15, 272 bytes).
+- **8544-8815**: Header (dataset_16, 272 bytes).
+- **8544-8815**: data (dataset_16, 272 bytes).
+- **8816-9087**: Header (dataset_17, 272 bytes).
+- **8816-9087**: data (dataset_17, 272 bytes).
+- **9088-9359**: Header (dataset_18, 272 bytes).
+- **9360-9687**: SNOD (328 bytes, 19-20 datasets, assumed).
+- **9088-9359**: data (dataset_18, 272 bytes).
+- **9688-9959**: Header (dataset_19, 272 bytes, assumed).
+- **9688-9959**: data (dataset_19, 272 bytes, assumed).
+- **9960-10231**: Header (dataset_20, 272 bytes, assumed).
+- **9960-10231**: data (dataset_20, 272 bytes, assumed).
+
+
+
+- **Data Blocks (2048-2127)**:
+  - 20 datasets × 4 bytes = 80 bytes.
+  - Offsets: 2048, 2052, 2056, ..., 2124.
+  - Fits within 2048-4095, leaving a gap (2128-4095, 1968 bytes) before assumed free space at 4096.
+- **Free Space (4096+)**:
+  - **Headers**: 
+    - dataset_4: 4096-4367 (272 bytes)
+    - dataset_5: 4368-4639 (272 bytes)
+    - dataset_6: 4640-4911 (272 bytes)
+    - dataset_7: 5088-5359 (272 bytes, gap 4912-5087)
+    - dataset_8: 5360-5631 (272 bytes)
+    - dataset_9: 5632-5903 (272 bytes)
+    - dataset_10: 6232-6503 (272 bytes, gap 5904-6231)
+    - dataset_11: 6856-7127 (272 bytes, gap 6504-6855)
+    - dataset_12: 7128-7399 (272 bytes)
+    - dataset_13: 7400-7671 (272 bytes)
+    - dataset_14: 7672-7943 (272 bytes)
+    - dataset_15: 8272-8543 (272 bytes, gap 7944-8271)
+    - dataset_16: 8544-8815 (272 bytes)
+    - dataset_17: 8816-9087 (272 bytes)
+    - dataset_18: 9088-9359 (272 bytes)
+    - dataset_19: 9360-9631 (272 bytes)
+    - dataset_20: 9632-9903 (272 bytes, assumed)
+  - **Gaps**:
+    - 4912-5087 (176 bytes): Likely local heap contents (doubled from 88 to 176).
+    - 5904-6231 (328 bytes): SNOD (5904-6231, 328 bytes).
+    - 6504-6855 (352 bytes): Local heap contents (doubled to 352 or 704 bytes).
+    - 7944-8271 (328 bytes): SNOD (7944-8271, 328 bytes).
+  - **Local Heap Contents**:
+    - Initial: 712-800 (88 bytes, 5 entries at 16 bytes).
+    - 6th dataset (6 × 16 = 96 bytes) exceeds 88, doubles to 176 bytes, likely at 4912-5087 (176 bytes).
+    - 12th dataset (12 × 16 = 192 bytes) exceeds 176, doubles to 352 bytes, likely at 6504-6855 (352 bytes, or 704 if doubled again).
+  - **SNODs**:
+    - 1072-1399 (328 bytes, 1-8 datasets).
+    - 5904-6231 (328 bytes, 9-13 datasets).
+    - 7944-8271 (328 bytes, 14-18 datasets).
+    - 9360-9687 (328 bytes, 19-20 datasets, assumed).
+  - **End of File**: Likely 9903 + 272 = 10175 (20th header) + data/local heap, adjusted for gaps.
+
+**Educated Guess**:
+- **4096-4367**: Header (dataset_4, 272 bytes).
+- **4368-4639**: Header (dataset_5, 272 bytes).
+- **4640-4911**: Header (dataset_6, 272 bytes).
+- **4912-5087**: Local Heap Contents (176 bytes, doubled from 88).
+- **5088-5359**: Header (dataset_7, 272 bytes).
+- **5360-5631**: Header (dataset_8, 272 bytes).
+- **5632-5903**: Header (dataset_9, 272 bytes).
+- **5904-6231**: SNOD (328 bytes, 9-13 datasets).
+- **6232-6503**: Header (dataset_10, 272 bytes).
+- **6504-6855**: Local Heap Contents (352 bytes, doubled from 176).
+- **6856-7127**: Header (dataset_11, 272 bytes).
+- **7128-7399**: Header (dataset_12, 272 bytes).
+- **7400-7671**: Header (dataset_13, 272 bytes).
+- **7672-7943**: Header (dataset_14, 272 bytes).
+- **7944-8271**: SNOD (328 bytes, 14-18 datasets).
+- **8272-8543**: Header (dataset_15, 272 bytes).
+- **8544-8815**: Header (dataset_16, 272 bytes).
+- **8816-9087**: Header (dataset_17, 272 bytes).
+- **9088-9359**: Header (dataset_18, 272 bytes).
+- **9360-9687**: SNOD (328 bytes, 19-20 datasets, assumed).
+- **9688-9959**: Header (dataset_19, 272 bytes, assumed).
+- **9960-10231**: Header (dataset_20, 272 bytes, assumed).
+
+
+
+
+
 Offset Update Rules (Private Method):
 You’ve proposed a private method to update metadataNextAvailableOffset and dataNextAvailableOffset after each allocation, with the following logic:
 
@@ -20,6 +138,7 @@ testInvalidAllocations
 testReset
 testLocalHeapExpansion
 testScalarH5
+testCompoundExampleH5
 
 ============
 
