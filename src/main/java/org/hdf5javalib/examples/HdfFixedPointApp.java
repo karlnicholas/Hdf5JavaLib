@@ -50,7 +50,7 @@ public class HdfFixedPointApp {
 //
 //
 //    private void run() throws IOException {
-////        Path filePath = getResourcePath("two_scalar_datasets.h5");
+////        Path filePath = getResourcePath("twenty_datasets.h5");
 ////        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
 ////            HdfFileReader reader = new HdfFileReader(channel).readFile();
 ////            tryScalarDataSpliterator(channel, reader, reader.getRootGroup().findDataset("FixedPointValue", channel, reader.getRootGroup()));
@@ -82,7 +82,7 @@ public class HdfFixedPointApp {
 ////        } catch (IOException e) {
 ////            throw new RuntimeException(e);
 ////        }
-////        tryHdfApiScalar("two_scalar_datasets.h5");
+////        tryHdfApiScalar("twenty_datasets.h5");
 ////        tryHdfApiInts("vector_each.h5", this::writeEach);
 //        tryHdfApiInts("vector_all.h5", this::writeAll);
 //        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);

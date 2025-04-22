@@ -116,7 +116,7 @@ public class HdfFileAllocationTest {
     }
 
     @Test
-    void testTwentyDatasets() {
+    void testTwentyFiles() {
         allocation.allocateDatasetStorage("dataset_1");
         allocation.allocateNextSnodStorage();
         allocation.allocateAndSetDataBlock("dataset_1", 4);

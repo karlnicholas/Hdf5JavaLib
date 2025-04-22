@@ -61,69 +61,58 @@ public class HdfLocalHeap {
         byte[] objectNameBytes = objectName.getBytes();
         int freeListOffset = this.freeListOffset.getInstance(Long.class).intValue();
         byte[] heapData = localHeapContents.getHeapData();
-        if (heapData == null || freeListOffset < 0 || freeListOffset > heapData.length) {
-            throw new IllegalStateException("Invalid heap state: freeListOffset=" + freeListOffset + ", heapData.length=" + (heapData == null ? 0 : heapData.length));
-        }
+        int heapSize = heapData.length;
 
-        // Calculate required space
-        int requiredSpace = objectNameBytes.length + ((objectNameBytes.length == 0) ? 8 :
-                ((objectNameBytes.length + 7) & ~7) - objectNameBytes.length + 16);
+        // Calculate string size and alignment
+        int stringSize = objectNameBytes.length + 1; // Include null terminator
+        int alignedStringSize = (stringSize + 7) & ~7; // Pad to 8-byte boundary
 
-        // Check available space
-        int availableSpace = heapData.length - freeListOffset;
-        int freeBlockSize = 0;
-        if (freeListOffset + 16 <= heapData.length) {
-            freeBlockSize = ByteBuffer.wrap(heapData, freeListOffset + 8, 8)
-                    .order(ByteOrder.LITTLE_ENDIAN)
-                    .getInt();
-        }
+        // Determine current heap offset
+        int currentOffset = freeListOffset == 1 ? heapSize : freeListOffset;
 
-        // Expand heap if needed
-        if (requiredSpace > availableSpace) {
-            byte[] oldHeapData = heapData;
-            int oldHeapLength = oldHeapData.length;
+        // Calculate initial required space (string only)
+        int requiredSpace = alignedStringSize;
+
+        // Check if there's enough space for the string
+        if (currentOffset + requiredSpace > heapSize) {
+            // Resize heap
             long newSize = fileAllocation.expandLocalHeapContents();
-            if (newSize <= oldHeapLength) {
-                throw new IllegalStateException("Heap expansion failed: newSize=" + newSize + " <= oldHeapLength=" + oldHeapLength);
-            }
-            localHeapContents = new HdfLocalHeapContents(new byte[(int) newSize]);
+            byte[] newHeapData = new byte[(int) newSize];
+            System.arraycopy(heapData, 0, newHeapData, 0, heapData.length); // Copy existing data
+            localHeapContents = new HdfLocalHeapContents(newHeapData);
             this.heapContentsSize = HdfFixedPoint.of(newSize);
             this.heapContentsOffset = HdfFixedPoint.of(fileAllocation.getCurrentLocalHeapContentsOffset());
-            heapData = localHeapContents.getHeapData();
-            System.arraycopy(oldHeapData, 0, heapData, 0, oldHeapLength);
-            freeListOffset = oldHeapLength;
-            this.freeListOffset = HdfFixedPoint.of(freeListOffset);
-            availableSpace = heapData.length - freeListOffset;
-            freeBlockSize = availableSpace - 16;
-            // Initialize free block metadata
-            ByteBuffer buffer = ByteBuffer.wrap(heapData).order(ByteOrder.LITTLE_ENDIAN);
-            buffer.putLong(freeListOffset, 1);
-            buffer.putLong(freeListOffset + 8, freeBlockSize);
-        } else if (requiredSpace > freeBlockSize) {
-            throw new IllegalStateException("Insufficient free block size: requiredSpace=" + requiredSpace + ", freeBlockSize=" + freeBlockSize);
+            heapData = newHeapData;
+            heapSize = (int) newSize;
         }
 
-        // Store linkNameOffset for return
-        int linkNameOffset = freeListOffset;
+        // Check if there's enough space for a free block after the string
+        boolean includeFreeBlock = (heapSize - (currentOffset + alignedStringSize)) >= 16;
+        if (includeFreeBlock) {
+            requiredSpace += 16; // Add 16 bytes for free block
+        }
 
-        // Copy the new objectName
-        System.arraycopy(objectNameBytes, 0, heapData, freeListOffset, objectNameBytes.length);
+        // Write string
+        System.arraycopy(objectNameBytes, 0, heapData, currentOffset, objectNameBytes.length);
+        heapData[currentOffset + objectNameBytes.length] = 0; // Null terminator
+        Arrays.fill(heapData, currentOffset + stringSize, currentOffset + alignedStringSize, (byte) 0); // Padding
 
-        // Align freeListOffset
-        int newFreeListOffset = (objectNameBytes.length == 0) ? freeListOffset + 8 :
-                (freeListOffset + objectNameBytes.length + 7) & ~7;
-        Arrays.fill(heapData, freeListOffset + objectNameBytes.length, newFreeListOffset, (byte) 0);
+        // Update offset
+        int newFreeListOffset = currentOffset + alignedStringSize;
 
-        // Update remaining free space
-        int remainingFreeSpace = freeBlockSize - (newFreeListOffset - freeListOffset);
-        this.freeListOffset = HdfFixedPoint.of(newFreeListOffset);
+        // Handle free list
+        if (includeFreeBlock) {
+            // Write free block metadata
+            ByteBuffer buffer = ByteBuffer.wrap(heapData).order(ByteOrder.LITTLE_ENDIAN);
+            buffer.putLong(newFreeListOffset, 1); // Next offset: 1 (last block)
+            buffer.putLong(newFreeListOffset + 8, heapSize - newFreeListOffset); // Remaining space
+            this.freeListOffset = HdfFixedPoint.of(newFreeListOffset);
+        } else {
+            // Omit free block, set freeListOffset to 1
+            this.freeListOffset = HdfFixedPoint.of(1);
+        }
 
-        // Write free block metadata
-        ByteBuffer buffer = ByteBuffer.wrap(heapData).order(ByteOrder.LITTLE_ENDIAN);
-        buffer.putLong(newFreeListOffset, 1);
-        buffer.putLong(newFreeListOffset + 8, remainingFreeSpace);
-
-        return new Pair<>(localHeapContents, linkNameOffset);
+        return new Pair<>(localHeapContents, currentOffset);
     }
 
     public static HdfLocalHeap readFromFileChannel(SeekableByteChannel fileChannel, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {

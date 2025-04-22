@@ -1,136 +1,307 @@
-- **4096-4367**: Header (dataset_1, 272 bytes).
-intial snod
-- **4096-4367**: data (dataset_1, 272 bytes).
-
-- **4368-4639**: Header (dataset_2, 272 bytes).
-- **4368-4639**: data (dataset_2, 272 bytes).
-- **4640-4911**: Header (dataset_3, 272 bytes).
-- **4640-4911**: data (dataset_3, 272 bytes).
-
-- **4096-4367**: Header (dataset_4, 272 bytes).
-- **4096-4367**: data (dataset_4, 272 bytes).
-- **4368-4639**: Header (dataset_5, 272 bytes).
-- **4368-4639**: data (dataset_5, 272 bytes).
-- **4640-4911**: Header (dataset_6, 272 bytes).
-- **4912-5087**: Local Heap Contents (176 bytes, doubled from 88).
-- **4640-4911**: data (dataset_6, 272 bytes).
-- **5088-5359**: Header (dataset_7, 272 bytes).
-- **5088-5359**: data (dataset_7, 272 bytes).
-- **5360-5631**: Header (dataset_8, 272 bytes).
-- **5360-5631**: data (dataset_8, 272 bytes).
-- **5632-5903**: Header (dataset_9, 272 bytes).
-- **5904-6231**: SNOD (328 bytes, 9-13 datasets).
-- **5632-5903**: data (dataset_9, 272 bytes).
-- **6232-6503**: Header (dataset_10, 272 bytes).
-- **6504-6855**: Local Heap Contents (352 bytes, doubled from 176).
-- **6232-6503**: data (dataset_10, 272 bytes).
-- **6856-7127**: Header (dataset_11, 272 bytes).
-- **6856-7127**: data (dataset_11, 272 bytes).
-- **7128-7399**: Header (dataset_12, 272 bytes).
-- **7128-7399**: data (dataset_12, 272 bytes).
-- **7400-7671**: Header (dataset_13, 272 bytes).
-- **7400-7671**: data (dataset_13, 272 bytes).
-- **7672-7943**: Header (dataset_14, 272 bytes).
-- **7944-8271**: SNOD (328 bytes, 14-18 datasets).
-- **7672-7943**: data (dataset_14, 272 bytes).
-- **8272-8543**: Header (dataset_15, 272 bytes).
-- **8272-8543**: data (dataset_15, 272 bytes).
-- **8544-8815**: Header (dataset_16, 272 bytes).
-- **8544-8815**: data (dataset_16, 272 bytes).
-- **8816-9087**: Header (dataset_17, 272 bytes).
-- **8816-9087**: data (dataset_17, 272 bytes).
-- **9088-9359**: Header (dataset_18, 272 bytes).
-- **9360-9687**: SNOD (328 bytes, 19-20 datasets, assumed).
-- **9088-9359**: data (dataset_18, 272 bytes).
-- **9688-9959**: Header (dataset_19, 272 bytes, assumed).
-- **9688-9959**: data (dataset_19, 272 bytes, assumed).
-- **9960-10231**: Header (dataset_20, 272 bytes, assumed).
-- **9960-10231**: data (dataset_20, 272 bytes, assumed).
-
-
-
-- **Data Blocks (2048-2127)**:
-  - 20 datasets × 4 bytes = 80 bytes.
-  - Offsets: 2048, 2052, 2056, ..., 2124.
-  - Fits within 2048-4095, leaving a gap (2128-4095, 1968 bytes) before assumed free space at 4096.
-- **Free Space (4096+)**:
-  - **Headers**: 
-    - dataset_4: 4096-4367 (272 bytes)
-    - dataset_5: 4368-4639 (272 bytes)
-    - dataset_6: 4640-4911 (272 bytes)
-    - dataset_7: 5088-5359 (272 bytes, gap 4912-5087)
-    - dataset_8: 5360-5631 (272 bytes)
-    - dataset_9: 5632-5903 (272 bytes)
-    - dataset_10: 6232-6503 (272 bytes, gap 5904-6231)
-    - dataset_11: 6856-7127 (272 bytes, gap 6504-6855)
-    - dataset_12: 7128-7399 (272 bytes)
-    - dataset_13: 7400-7671 (272 bytes)
-    - dataset_14: 7672-7943 (272 bytes)
-    - dataset_15: 8272-8543 (272 bytes, gap 7944-8271)
-    - dataset_16: 8544-8815 (272 bytes)
-    - dataset_17: 8816-9087 (272 bytes)
-    - dataset_18: 9088-9359 (272 bytes)
-    - dataset_19: 9360-9631 (272 bytes)
-    - dataset_20: 9632-9903 (272 bytes, assumed)
-  - **Gaps**:
-    - 4912-5087 (176 bytes): Likely local heap contents (doubled from 88 to 176).
-    - 5904-6231 (328 bytes): SNOD (5904-6231, 328 bytes).
-    - 6504-6855 (352 bytes): Local heap contents (doubled to 352 or 704 bytes).
-    - 7944-8271 (328 bytes): SNOD (7944-8271, 328 bytes).
-  - **Local Heap Contents**:
-    - Initial: 712-800 (88 bytes, 5 entries at 16 bytes).
-    - 6th dataset (6 × 16 = 96 bytes) exceeds 88, doubles to 176 bytes, likely at 4912-5087 (176 bytes).
-    - 12th dataset (12 × 16 = 192 bytes) exceeds 176, doubles to 352 bytes, likely at 6504-6855 (352 bytes, or 704 if doubled again).
-  - **SNODs**:
-    - 1072-1399 (328 bytes, 1-8 datasets).
-    - 5904-6231 (328 bytes, 9-13 datasets).
-    - 7944-8271 (328 bytes, 14-18 datasets).
-    - 9360-9687 (328 bytes, 19-20 datasets, assumed).
-  - **End of File**: Likely 9903 + 272 = 10175 (20th header) + data/local heap, adjusted for gaps.
-
-**Educated Guess**:
-- **4096-4367**: Header (dataset_4, 272 bytes).
-- **4368-4639**: Header (dataset_5, 272 bytes).
-- **4640-4911**: Header (dataset_6, 272 bytes).
-- **4912-5087**: Local Heap Contents (176 bytes, doubled from 88).
-- **5088-5359**: Header (dataset_7, 272 bytes).
-- **5360-5631**: Header (dataset_8, 272 bytes).
-- **5632-5903**: Header (dataset_9, 272 bytes).
-- **5904-6231**: SNOD (328 bytes, 9-13 datasets).
-- **6232-6503**: Header (dataset_10, 272 bytes).
-- **6504-6855**: Local Heap Contents (352 bytes, doubled from 176).
-- **6856-7127**: Header (dataset_11, 272 bytes).
-- **7128-7399**: Header (dataset_12, 272 bytes).
-- **7400-7671**: Header (dataset_13, 272 bytes).
-- **7672-7943**: Header (dataset_14, 272 bytes).
-- **7944-8271**: SNOD (328 bytes, 14-18 datasets).
-- **8272-8543**: Header (dataset_15, 272 bytes).
-- **8544-8815**: Header (dataset_16, 272 bytes).
-- **8816-9087**: Header (dataset_17, 272 bytes).
-- **9088-9359**: Header (dataset_18, 272 bytes).
-- **9360-9687**: SNOD (328 bytes, 19-20 datasets, assumed).
-- **9688-9959**: Header (dataset_19, 272 bytes, assumed).
-- **9960-10231**: Header (dataset_20, 272 bytes, assumed).
 
 
 
 
+8 = dataset_1
+24 = dataset_2
+40 = dataset_3
+56 = dataset_4
+72 = dataset_5
+88 = dataset_6
+104 = dataset_7
+120
+136
+152
+168
+184
+200
+216
+232
+248
+264
+280
+296
+312
 
-Offset Update Rules (Private Method):
-You’ve proposed a private method to update metadataNextAvailableOffset and dataNextAvailableOffset after each allocation, with the following logic:
-
-If dataNextAvailableOffset Changed (e.g., after allocateAndSetDataBlock, allocateFirstGlobalHeapBlock):
-  If metadataNextAvailableOffset < 2048: Leave metadataNextAvailableOffset unchanged; dataNextAvailableOffset is valid as is.
-  If metadataNextAvailableOffset >= 2048: Set metadataNextAvailableOffset = dataNextAvailableOffset IF metadataNextAvailableOffset < dataNextAvailableOffset
-  Example: After allocateAndSetDataBlock("byte", 1), dataNextAvailableOffset = 2049. If metadataNextAvailableOffset = 1072, it stays; if metadataNextAvailableOffset = 4096, it stays 4096.
-If metadataNextAvailableOffset Changed (e.g., after allocateDatasetStorage, allocateNextSnodStorage):
-  Leave both offsets unchanged; metadataNextAvailableOffset is valid in the metadata region.
-  If metadataNextAvailableOffset >= 2048: Set dataNextAvailableOffset = metadataNextAvailableOffset to ensure data follows metadata in free space.
-  Example: After allocateNextSnodStorage, metadataNextAvailableOffset = 1072. Both offsets stay unchanged. If metadataNextAvailableOffset = 4096 (e.g., after large header), dataNextAvailableOffset = 2049.
 
 
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=4, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=184, childPointer=1072, payload(SNOD)=
+HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=[
+  HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=168, objectHeaderOffset=6856, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=184, objectHeaderOffset=7128, cacheType=0}]
+}}, HdfBTreeEntry{key=248, childPointer=7944, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=[
+  HdfSymbolTableEntry{linkNameOffset=200, objectHeaderOffset=7400, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=216, objectHeaderOffset=7672, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=232, objectHeaderOffset=8272, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=248, objectHeaderOffset=8544, cacheType=0}]
+}}, HdfBTreeEntry{key=56, childPointer=9360, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=7, symbolTableEntries=[
+  HdfSymbolTableEntry{linkNameOffset=264, objectHeaderOffset=8816, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=280, objectHeaderOffset=9088, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=296, objectHeaderOffset=9688, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=312, objectHeaderOffset=9960, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
+}}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=[
+  HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, 
+  HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
+}}]}
 
 
+
+This is the test method for the following debug output. Please update the test method assertions to be accurate.
+
+    @Test
+    void testTwentyFiles() {
+
+        allocation.allocateDatasetStorage("dataset_1");
+        allocation.allocateNextSnodStorage();
+        allocation.allocateAndSetDataBlock("dataset_1", 4);
+        allocation.allocateDatasetStorage("dataset_2");
+        allocation.allocateAndSetDataBlock("dataset_2", 4);
+        allocation.allocateDatasetStorage("dataset_3");
+        allocation.allocateAndSetDataBlock("dataset_3", 4);
+        allocation.allocateDatasetStorage("dataset_4");
+        allocation.allocateAndSetDataBlock("dataset_4", 4);
+        allocation.allocateDatasetStorage("dataset_5");
+        allocation.allocateAndSetDataBlock("dataset_5", 4);
+        allocation.allocateDatasetStorage("dataset_6");
+        allocation.expandLocalHeapContents(); // 88 → 176
+        allocation.allocateAndSetDataBlock("dataset_6", 4);
+        allocation.allocateDatasetStorage("dataset_7");
+        allocation.allocateAndSetDataBlock("dataset_7", 4);
+        allocation.allocateDatasetStorage("dataset_8");
+        allocation.allocateAndSetDataBlock("dataset_8", 4);
+        allocation.allocateDatasetStorage("dataset_9");
+        allocation.allocateNextSnodStorage();
+        allocation.allocateAndSetDataBlock("dataset_9", 4);
+        allocation.allocateDatasetStorage("dataset_10");
+        allocation.expandLocalHeapContents(); // 88 → 176
+        allocation.allocateAndSetDataBlock("dataset_10", 4);
+        allocation.allocateDatasetStorage("dataset_11");
+        allocation.allocateAndSetDataBlock("dataset_11", 4);
+        allocation.allocateDatasetStorage("dataset_12");
+        allocation.allocateAndSetDataBlock("dataset_12", 4);
+        allocation.allocateDatasetStorage("dataset_13");
+        allocation.allocateAndSetDataBlock("dataset_13", 4);
+        allocation.allocateDatasetStorage("dataset_14");
+        allocation.allocateNextSnodStorage();
+        allocation.allocateAndSetDataBlock("dataset_14", 4);
+        allocation.allocateDatasetStorage("dataset_15");
+        allocation.allocateAndSetDataBlock("dataset_15", 4);
+        allocation.allocateDatasetStorage("dataset_16");
+        allocation.allocateAndSetDataBlock("dataset_16", 4);
+        allocation.allocateDatasetStorage("dataset_17");
+        allocation.allocateAndSetDataBlock("dataset_17", 4);
+        allocation.allocateDatasetStorage("dataset_18");
+        allocation.allocateNextSnodStorage();
+        allocation.allocateAndSetDataBlock("dataset_18", 4);
+        allocation.allocateDatasetStorage("dataset_19");
+        allocation.allocateAndSetDataBlock("dataset_19", 4);
+        allocation.allocateDatasetStorage("dataset_20");
+        allocation.allocateAndSetDataBlock("dataset_20", 4);
+
+
+        // Verify layout
+        assertEquals(9688, allocation.getEndOfFileOffset());
+        List<Long> snodOffsets = allocation.getAllSnodAllocationOffsets();
+        assertEquals(4, snodOffsets.size());
+        assertEquals(1072, snodOffsets.get(0));
+        assertEquals(5904, snodOffsets.get(1));
+        assertEquals(7944, snodOffsets.get(2));
+        assertEquals(9360, snodOffsets.get(3));
+
+        HdfFileAllocation.DatasetAllocationInfo info1 = allocation.getDatasetAllocationInfo("dataset_1");
+        assertEquals(800, info1.getHeaderOffset());
+        assertEquals(272, info1.getHeaderSize());
+        assertEquals(2048, info1.getDataOffset());
+        assertEquals(4, info1.getDataSize());
+
+        HdfFileAllocation.DatasetAllocationInfo info2 = allocation.getDatasetAllocationInfo("dataset_2");
+        assertEquals(1400, info2.getHeaderOffset());
+        assertEquals(272, info2.getHeaderSize());
+        assertEquals(2052, info2.getDataOffset());
+        assertEquals(4, info2.getDataSize());
+
+        HdfFileAllocation.DatasetAllocationInfo info20 = allocation.getDatasetAllocationInfo("dataset_20");
+        assertEquals(5456, info20.getHeaderOffset());
+        assertEquals(272, info20.getHeaderSize());
+        assertEquals(2124, info20.getDataOffset());
+        assertEquals(4, info20.getDataSize());
+
+        assertFalse(allocation.hasGlobalHeapAllocation());
+        assertEquals(4096, allocation.getGlobalHeapBlockSize(0)); // No heaps, default size
+        assertEquals(6504, allocation.getCurrentLocalHeapContentsOffset());
+        assertEquals(352, allocation.getCurrentLocalHeapContentsSize());
+    }
+
+
+2025-04-22 12:54:52 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=10232, driverInformationAddress=-1
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
+2025-04-22 12:54:52 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfGroup{name=''
+objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
+SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=4, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=184, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=168, objectHeaderOffset=6856, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=184, objectHeaderOffset=7128, cacheType=0}]
+}}, HdfBTreeEntry{key=248, childPointer=7944, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=200, objectHeaderOffset=7400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=216, objectHeaderOffset=7672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=232, objectHeaderOffset=8272, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=248, objectHeaderOffset=8544, cacheType=0}]
+}}, HdfBTreeEntry{key=56, childPointer=9360, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=7, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=264, objectHeaderOffset=8816, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=280, objectHeaderOffset=9088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=296, objectHeaderOffset=9688, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=312, objectHeaderOffset=9960, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
+}}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
+[HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
+}}]}
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=352, freeListOffset=328, dataSegmentAddress=6504}
+localHeapContents=HdfLocalHeapContents{heapDataSize=352, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 100, 97, 116, 97, 115, 101, 116, 95, 49, 0, 0, 0, 0, 0, 0, 0, 100, 97, 116, 97, 115, 101, 116, 95]... (truncated)}
+dataSets=[
+  dataset_1@800 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_10@6232 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2084, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_11@6856 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2088, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_12@7128 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2092, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_13@7400 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2096, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_14@7672 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2100, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_15@8272 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2104, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_16@8544 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2108, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_17@8816 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2112, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_18@9088 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2116, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_19@9688 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2120, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_2@1400 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2052, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_20@9960 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2124, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_3@1672 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2056, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_4@4096 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2060, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_5@4368 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2064, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_6@4640 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2068, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_7@5088 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2072, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_8@5360 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2076, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}},
+  dataset_9@5632 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2080, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T16:53:26Z}
+NilMessage(152){}}
+]}
+
+
+
+=================
 
 testInitialLayout
 testGlobalHeapMethods
@@ -139,6 +310,7 @@ testReset
 testLocalHeapExpansion
 testScalarH5
 testCompoundExampleH5
+testTwentyFiles -> renamed to testTwentyDatasets
 
 ============
 
