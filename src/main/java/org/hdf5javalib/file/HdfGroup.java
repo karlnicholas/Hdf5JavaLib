@@ -172,7 +172,8 @@ System.out.println(bTree.toString());
         localHeapContents.writeToByteChannel(seekableByteChannel, fileAllocation);
 
         Map<Long, HdfGroupSymbolTableNode> mapOffsetToSnod = bTree.mapOffsetToSnod();
-        ByteBuffer snodBuffer = ByteBuffer.allocate((int)HdfFileAllocation.getSNOD_STORAGE_SIZE()).order(ByteOrder.LITTLE_ENDIAN);
+        //TODO: hardcoed SNod storage size.
+        ByteBuffer snodBuffer = ByteBuffer.allocate(328).order(ByteOrder.LITTLE_ENDIAN);
         for (Map.Entry<Long, HdfGroupSymbolTableNode> offsetAndStn : mapOffsetToSnod.entrySet()) {
             offsetAndStn.getValue().writeToBuffer(snodBuffer);
             snodBuffer.rewind();

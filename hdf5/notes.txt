@@ -1,3 +1,28 @@
+Offset Update Rules (Private Method):
+You’ve proposed a private method to update metadataNextAvailableOffset and dataNextAvailableOffset after each allocation, with the following logic:
+
+If dataNextAvailableOffset Changed (e.g., after allocateAndSetDataBlock, allocateFirstGlobalHeapBlock):
+  If metadataNextAvailableOffset < 2048: Leave metadataNextAvailableOffset unchanged; dataNextAvailableOffset is valid as is.
+  If metadataNextAvailableOffset >= 2048: Set metadataNextAvailableOffset = dataNextAvailableOffset IF metadataNextAvailableOffset < dataNextAvailableOffset
+  Example: After allocateAndSetDataBlock("byte", 1), dataNextAvailableOffset = 2049. If metadataNextAvailableOffset = 1072, it stays; if metadataNextAvailableOffset = 4096, it stays 4096.
+If metadataNextAvailableOffset Changed (e.g., after allocateDatasetStorage, allocateNextSnodStorage):
+  Leave both offsets unchanged; metadataNextAvailableOffset is valid in the metadata region.
+  If metadataNextAvailableOffset >= 2048: Set dataNextAvailableOffset = metadataNextAvailableOffset to ensure data follows metadata in free space.
+  Example: After allocateNextSnodStorage, metadataNextAvailableOffset = 1072. Both offsets stay unchanged. If metadataNextAvailableOffset = 4096 (e.g., after large header), dataNextAvailableOffset = 2049.
+
+
+
+
+
+testInitialLayout
+testGlobalHeapMethods
+testInvalidAllocations
+testReset
+testLocalHeapExpansion
+testScalarH5
+
+============
+
 ok, one way to think about it is that there is an initial block, not really an allocation, but reserved space, of the first 2048 bytes when the file is created. 
 Any data allocated will have to go after that. However, there are things that will stay within this initial 2048 as long as they fit. 
 Only data or global heap will never be put into this initial 2048 space. Several things go there as you can see. This code should explain the initial allocations 
@@ -722,6 +747,61 @@ SNOD: snodOffset=1072, metadataSpaceUsed=600, currentOffset=1400.
 "integer" data: dataOffset=2051, nextDataOffset=2055, currentOffset=4368.
 "long" data: dataOffset=2055, nextDataOffset=2063, currentOffset=4368.
 End of File: 4368.
+
+================
+
+
+Revised Algorithm:
+
+Initialize:
+Set currentOffset = initialLocalHeapContentsOffset + initialLocalHeapContentsSize = 800.
+Set metadataSpaceUsed = 0, metadataLimit = 1248 (800–2047).
+Set nextDataOffset = MIN_DATA_OFFSET_THRESHOLD = 2048, nextFreeOffset = 2048.
+Initialize snodMoved = false, globalHeaps = [].
+Collect allocations: dataset headers, SNODs, continuation blocks, data blocks, global heaps from datasetAllocations, snodAllocationOffsets, globalHeapBlockSizes.
+Process Headers and SNODs (Metadata First):
+Sort allocations by request order (per datasetAllocations LinkedHashMap and snodAllocationOffsets).
+For each allocation:
+If Dataset Header (DatasetAllocationInfo):
+If metadataSpaceUsed + headerSize <= metadataLimit and no SNOD overlap:
+Set info.headerOffset = findNextFreeOffset(currentOffset, headerSize, withinMetadata=true) (e.g., 800, 1400, 1672).
+Update metadataSpaceUsed += headerSize, currentOffset = headerOffset + headerSize.
+Else:
+Set info.headerOffset = nextFreeOffset (e.g., 4096, 4368).
+Update nextFreeOffset += headerSize.
+If expanded (headerSize > DEFAULT_DATASET_HEADER_ALLOCATION_SIZE=272):
+If first dataset and headerOffset + headerSize + SNOD_STORAGE_SIZE > 2047:
+Set snodMoved = true (SNOD to 2048).
+If SNOD (from snodAllocationOffsets):
+If first SNOD and not snodMoved:
+Set snodOffset = findNextFreeOffset(currentOffset, SNOD_STORAGE_SIZE, withinMetadata=true) (e.g., 1072, 1784).
+Update metadataSpaceUsed += SNOD_STORAGE_SIZE.
+Else:
+Set snodOffset = nextFreeOffset (e.g., 2048, 5904).
+Update nextFreeOffset += SNOD_STORAGE_SIZE.
+Add to snodAllocationOffsets, set this.snodOffset = snodOffset (first SNOD).
+Update currentOffset = max(currentOffset, snodOffset + SNOD_STORAGE_SIZE).
+Process Continuation and Data Blocks:
+For each DatasetAllocationInfo:
+If Continuation Block (continuationSize > 0):
+Set info.continuationOffset = nextDataOffset (e.g., 2112).
+Update nextDataOffset += continuationSize, currentOffset = max(currentOffset, continuationOffset + continuationSize).
+If Data Block (dataSize > 0):
+Set info.dataOffset = nextDataOffset (e.g., 6328, 2048).
+Update nextDataOffset += dataSize, currentOffset = max(currentOffset, dataOffset + dataSize).
+Process Global Heaps:
+If globalHeapOffset != -1:
+Set globalHeapOffset = nextFreeOffset (e.g., 2232).
+Update nextFreeOffset += globalHeapBlockSizes.getOrDefault(globalHeapOffset, GLOBAL_HEAP_BLOCK_SIZE), currentOffset = max(currentOffset, globalHeapOffset + size).
+If secondGlobalHeapOffset != -1:
+Set secondGlobalHeapOffset = nextFreeOffset (e.g., 102328).
+Update nextFreeOffset += globalHeapBlockSizes.getOrDefault(secondGlobalHeapOffset, GLOBAL_HEAP_BLOCK_SIZE), currentOffset = max(currentOffset, secondGlobalHeapOffset + size).
+Process Local Heap Contents:
+If currentLocalHeapContentsSize > initialLocalHeapContentsSize:
+Set currentLocalHeapContentsOffset = nextFreeOffset (e.g., 4912).
+Update nextFreeOffset += currentLocalHeapContentsSize, currentOffset = max(currentOffset, currentLocalHeapContentsOffset + currentLocalHeapContentsSize).
+Update End of File:
+Set nextAvailableOffset = max(currentOffset, nextFreeOffset).
 
 
 
