@@ -81,27 +81,16 @@ public class HdfFileAllocationTest {
     @Test
     void testCompoundExampleH5() {
         // Replicate compound_Example.h5: 1 dataset, header expansion, continuation, global heaps
-        allocation.printBlocks();
         allocation.allocateDatasetStorage("CompoundData");
-        allocation.printBlocks();
         allocation.increaseHeaderAllocation("CompoundData", 968+16);
-        allocation.printBlocks();
         allocation.allocateNextSnodStorage();
-        allocation.printBlocks();
         allocation.allocateAndSetContinuationBlock("CompoundData", 120);
-        allocation.printBlocks();
         allocation.allocateFirstGlobalHeapBlock();
-        allocation.printBlocks();
         allocation.allocateAndSetDataBlock("CompoundData", 96000);
-        allocation.printBlocks();
         allocation.allocateNextGlobalHeapBlock();
-        allocation.printBlocks();
         allocation.expandGlobalHeapBlock(); // 4096 → 8192
-        allocation.printBlocks();
         allocation.expandGlobalHeapBlock(); // 8192 → 16384
-        allocation.printBlocks();
         allocation.expandGlobalHeapBlock(); // 16384 → 32768
-        allocation.printBlocks();
 
         // Verify layout
         assertEquals(135096, allocation.getEndOfFileOffset());
@@ -111,7 +100,7 @@ public class HdfFileAllocationTest {
 
         HdfFileAllocation.DatasetAllocationInfo info = allocation.getDatasetAllocationInfo("CompoundData");
         assertEquals(800, info.getHeaderOffset());
-        assertEquals(968, info.getHeaderSize());
+        assertEquals(968+16, info.getHeaderSize());
         assertEquals(2112, info.getContinuationOffset());
         assertEquals(120, info.getContinuationSize());
         assertEquals(6328, info.getDataOffset());

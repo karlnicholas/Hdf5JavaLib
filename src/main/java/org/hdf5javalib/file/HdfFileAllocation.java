@@ -179,16 +179,16 @@ public class HdfFileAllocation {
         if (info == null) throw new IllegalStateException("Dataset '" + datasetName + "' not found");
         if (info.getContinuationSize() != -1) throw new IllegalStateException("Continuation block for '" + datasetName + "' already allocated");
 
-        if (checkForOverlap(dataNextAvailableOffset, continuationSize)) {
-            moveDataNextAvailableOffset(dataNextAvailableOffset, continuationSize);
+        if (checkForOverlap(metadataNextAvailableOffset, continuationSize)) {
+            moveMetadataNextAvailableOffset(metadataNextAvailableOffset, continuationSize);
         }
 
-        long continuationOffset = dataNextAvailableOffset;
+        long continuationOffset = metadataNextAvailableOffset;
         info.setContinuationOffset(continuationOffset);
         info.setContinuationSize(continuationSize);
         allocationRecords.add(new AllocationRecord("CONTINUATION", "Continuation (" + datasetName + ")", continuationOffset, continuationSize));
-        dataNextAvailableOffset += continuationSize;
-        updateDataOffset(dataNextAvailableOffset);
+        metadataNextAvailableOffset += continuationSize;
+        updateMetadataOffset(metadataNextAvailableOffset);
         return continuationOffset;
     }
 
@@ -313,6 +313,16 @@ public class HdfFileAllocation {
     // --- Offset and Overlap Management ---
     private void updateMetadataOffset(long newOffset) {
         metadataNextAvailableOffset = newOffset;
+        // the situation of metadataNextAvailableOffset has overlapped with dataNextAvailableOffset
+        // but there is no data allocations yet, so move dataNextAvailableOffset
+        // to metadataNextAvailableOffset
+        if (metadataNextAvailableOffset >= dataNextAvailableOffset &&
+                !isDataBlocksAllocated() &&
+                globalHeapOffset == -1 &&
+                secondGlobalHeapOffset == -1) {
+            dataNextAvailableOffset = metadataNextAvailableOffset;
+            updateDataOffset(dataNextAvailableOffset);
+        }
     }
 
     private void updateDataOffset(long newOffset) {
