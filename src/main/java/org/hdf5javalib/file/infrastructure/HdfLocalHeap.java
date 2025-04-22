@@ -108,8 +108,12 @@ public class HdfLocalHeap {
             buffer.putLong(newFreeListOffset + 8, heapSize - newFreeListOffset); // Remaining space
             this.freeListOffset = HdfFixedPoint.of(newFreeListOffset);
         } else {
-            // Omit free block, set freeListOffset to 1
-            this.freeListOffset = HdfFixedPoint.of(1);
+            // Set freeListOffset to actual offset unless heap is exactly full
+            if (currentOffset + alignedStringSize == heapSize) {
+                this.freeListOffset = HdfFixedPoint.of(1); // Heap full, mimic C++ behavior
+            } else {
+                this.freeListOffset = HdfFixedPoint.of(newFreeListOffset); // Use actual offset
+            }
         }
 
         return new Pair<>(localHeapContents, currentOffset);

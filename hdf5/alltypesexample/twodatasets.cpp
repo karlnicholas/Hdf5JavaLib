@@ -13,7 +13,7 @@ int main() {
         H5::DataSpace scalarSpace;
 
         // Create 10 datasets, each containing a single integer value from 1 to 10.
-        for (int i = 1; i <= 6; ++i) {
+        for (int i = 1; i <= 10; ++i) {
             std::string datasetName = "dataset_" + std::to_string(i);
             H5::DataSet dataset = file.createDataSet(datasetName, H5::PredType::NATIVE_INT, scalarSpace);
             dataset.write(&i, H5::PredType::NATIVE_INT);
