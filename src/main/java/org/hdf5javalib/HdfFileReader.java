@@ -57,16 +57,16 @@ public class HdfFileReader implements HdfDataFile {
         fileChannel.position(localHeapAddress);
         HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
 
-        long dataSize = localHeap.getHeapContentsSize().getInstance(Long.class);
-        long dataSegmentAddress = localHeap.getHeapContentsOffset().getInstance(Long.class);
-        fileChannel.position(dataSegmentAddress);
-        HdfLocalHeapContents localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, (int) dataSize);
+//        long dataSize = localHeap.getHeapContentsSize().getInstance(Long.class);
+//        long dataSegmentAddress = localHeap.getHeapContentsOffset().getInstance(Long.class);
+//        fileChannel.position(dataSegmentAddress);
+//        HdfLocalHeapContents localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, (int) dataSize);
 
         long bTreeAddress = superblock.getRootGroupSymbolTableEntry().getBTreeOffset().getInstance(Long.class);
         fileChannel.position(bTreeAddress);
         HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
 
-        Map<String, HdfGroup.DataSetInfo> datasetMap = collectDatasetsMap(fileChannel, bTree, localHeapContents);
+        Map<String, HdfGroup.DataSetInfo> datasetMap = collectDatasetsMap(fileChannel, bTree, localHeap);
 
         rootGroup = new HdfGroup(
                 null,
@@ -74,7 +74,7 @@ public class HdfFileReader implements HdfDataFile {
                 objectHeader,
                 bTree,
                 localHeap,
-                localHeapContents,
+//                localHeapContents,
                 datasetMap
         );
 
@@ -84,21 +84,21 @@ public class HdfFileReader implements HdfDataFile {
         return this;
     }
 
-    private Map<String, HdfGroup.DataSetInfo> collectDatasetsMap(SeekableByteChannel fileChannel, HdfBTreeV1 bTree, HdfLocalHeapContents heapContents) throws IOException {
+    private Map<String, HdfGroup.DataSetInfo> collectDatasetsMap(SeekableByteChannel fileChannel, HdfBTreeV1 bTree, HdfLocalHeap localHeap) throws IOException {
         Map<String, HdfGroup.DataSetInfo> dataSets = new LinkedHashMap<>();
-        collectDatasetsRecursive(bTree, dataSets, heapContents, fileChannel);
+        collectDatasetsRecursive(bTree, dataSets, localHeap, fileChannel);
         return dataSets;
     }
 
     private void collectDatasetsRecursive(HdfBTreeV1 currentNode,
                                           Map<String, HdfGroup.DataSetInfo> dataSets,
-                                          HdfLocalHeapContents heapContents,
+                                          HdfLocalHeap localHeap,
                                           SeekableByteChannel fileChannel) throws IOException {
         for (HdfBTreeEntry entry : currentNode.getEntries()) {
             if (entry.isLeafEntry()) {
                 HdfGroupSymbolTableNode snod = entry.getSymbolTableNode();
                 for (HdfSymbolTableEntry ste : snod.getSymbolTableEntries()) {
-                    HdfString linkName = heapContents.parseStringAtOffset(ste.getLinkNameOffset());
+                    HdfString linkName = localHeap.parseStringAtOffset(ste.getLinkNameOffset());
                     long dataObjectHeaderAddress = ste.getObjectHeaderOffset().getInstance(Long.class);
                     long linkNameOffset = ste.getLinkNameOffset().getInstance(Long.class);
                     fileChannel.position(dataObjectHeaderAddress);
@@ -110,7 +110,7 @@ public class HdfFileReader implements HdfDataFile {
                 }
             } else if (entry.isInternalEntry()) {
                 HdfBTreeV1 childBTree = entry.getChildBTree();
-                collectDatasetsRecursive(childBTree, dataSets, heapContents, fileChannel);
+                collectDatasetsRecursive(childBTree, dataSets, localHeap, fileChannel);
             }
         }
     }

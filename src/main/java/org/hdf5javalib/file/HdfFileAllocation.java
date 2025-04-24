@@ -257,22 +257,21 @@ public class HdfFileAllocation {
         }
 
         long newOffset = metadataNextAvailableOffset;
-        this.currentLocalHeapContentsOffset = newOffset;
-        this.currentLocalHeapContentsSize = newSize;
+        long oldOffset = this.currentLocalHeapContentsOffset;
 
-        // Update allocationRecords
-        boolean updated = false;
+        // Rename existing LOCAL_HEAP record to indicate abandonment
         for (AllocationRecord record : allocationRecords) {
-            if (record.getType().equals("LOCAL_HEAP")) {
-                record.setOffset(newOffset);
-                record.setSize(newSize);
-                updated = true;
+            if (record.getType().equals("LOCAL_HEAP") && record.getOffset() == oldOffset) {
+                record.setName("Abandoned Local Heap Contents (Offset " + oldOffset + ")");
                 break;
             }
         }
-        if (!updated) {
-            allocationRecords.add(new AllocationRecord("LOCAL_HEAP", "Expanded Local Heap Contents", newOffset, newSize));
-        }
+
+        // Add new record
+        allocationRecords.add(new AllocationRecord("LOCAL_HEAP", "Expanded Local Heap Contents", newOffset, newSize));
+
+        this.currentLocalHeapContentsOffset = newOffset;
+        this.currentLocalHeapContentsSize = newSize;
 
         metadataNextAvailableOffset += newSize;
         updateMetadataOffset(metadataNextAvailableOffset);
@@ -406,10 +405,99 @@ public class HdfFileAllocation {
         System.out.println("----------------------------------");
 
         System.out.println("Offset (Dec) | Offset (Hex) | Size     | Type       | Name");
-        for (AllocationRecord block : allocationRecords) {
+        List<AllocationRecord> sortedRecords = new ArrayList<>(allocationRecords);
+        sortedRecords.sort(Comparator.comparingLong(AllocationRecord::getOffset));
+        for (AllocationRecord block : sortedRecords) {
             String hexOffset = String.format("0x%08X", block.getOffset());
             System.out.printf("%-12d | %-12s | %-8d | %-10s | %s%n",
                     block.getOffset(), hexOffset, block.getSize(), block.getType(), block.getName());
+        }
+
+        // Detect gaps
+        System.out.println("--- Gap Analysis ---");
+        long lastEnd = 0;
+        for (AllocationRecord record : sortedRecords) {
+            long start = record.getOffset();
+            if (start > lastEnd) {
+                long gapSize = start - lastEnd;
+                System.out.printf("Gap detected: Offset %d to %d, Size %d%n", lastEnd, start, gapSize);
+            }
+            lastEnd = Math.max(lastEnd, start + record.getSize());
+        }
+
+        // Check for overlaps
+        System.out.println("--- Overlap Check ---");
+        boolean hasOverlap = false;
+        for (int i = 0; i < sortedRecords.size(); i++) {
+            AllocationRecord record1 = sortedRecords.get(i);
+            long start1 = record1.getOffset();
+            long end1 = start1 + record1.getSize() - 1;
+
+            for (int j = i + 1; j < sortedRecords.size(); j++) {
+                AllocationRecord record2 = sortedRecords.get(j);
+                long start2 = record2.getOffset();
+                long end2 = start2 + record2.getSize() - 1;
+
+                if (start1 <= end2 && start2 <= end1) {
+                    hasOverlap = true;
+                    System.out.printf("Overlap detected between:%n");
+                    System.out.printf("  %s (Offset: %d, Size: %d, End: %d)%n",
+                            record1.getName(), start1, record1.getSize(), end1);
+                    System.out.printf("  %s (Offset: %d, Size: %d, End: %d)%n",
+                            record2.getName(), start2, record2.getSize(), end2);
+                }
+            }
+        }
+        if (!hasOverlap) {
+            System.out.println("No overlaps detected.");
+        }
+
+        System.out.println("==================================");
+    }
+
+    public void printBlocksSorted() {
+        System.out.println("=== HDF File Allocation Layout (Sorted by Offset) ===");
+        System.out.println("Metadata End of File Offset: " + metadataNextAvailableOffset);
+        System.out.println("Data End of File Offset: " + dataNextAvailableOffset);
+        System.out.println("Current End of File Offset: " + getEndOfFileOffset());
+        System.out.println("----------------------------------");
+
+        System.out.println("Offset (Dec) | Offset (Hex) | Size     | Type       | Name");
+        // Create a sorted list of allocation records by offset
+        List<AllocationRecord> sortedRecords = new ArrayList<>(allocationRecords);
+        sortedRecords.sort(Comparator.comparingLong(AllocationRecord::getOffset));
+        for (AllocationRecord block : sortedRecords) {
+            String hexOffset = String.format("0x%08X", block.getOffset());
+            System.out.printf("%-12d | %-12s | %-8d | %-10s | %s%n",
+                    block.getOffset(), hexOffset, block.getSize(), block.getType(), block.getName());
+        }
+
+        // Check for overlaps
+        System.out.println("--- Overlap Check ---");
+        boolean hasOverlap = false;
+        for (int i = 0; i < sortedRecords.size(); i++) {
+            AllocationRecord record1 = sortedRecords.get(i);
+            long start1 = record1.getOffset();
+            long end1 = start1 + record1.getSize() - 1;
+
+            for (int j = i + 1; j < sortedRecords.size(); j++) {
+                AllocationRecord record2 = sortedRecords.get(j);
+                long start2 = record2.getOffset();
+                long end2 = start2 + record2.getSize() - 1;
+
+                // Check if record1 and record2 overlap
+                if (start1 <= end2 && start2 <= end1) {
+                    hasOverlap = true;
+                    System.out.printf("Overlap detected between:%n");
+                    System.out.printf("  %s (Offset: %d, Size: %d, End: %d)%n",
+                            record1.getName(), start1, record1.getSize(), end1);
+                    System.out.printf("  %s (Offset: %d, Size: %d, End: %d)%n",
+                            record2.getName(), start2, record2.getSize(), end2);
+                }
+            }
+        }
+        if (!hasOverlap) {
+            System.out.println("No overlaps detected.");
         }
 
         System.out.println("==================================");
@@ -481,7 +569,7 @@ public class HdfFileAllocation {
 
     public static class AllocationRecord {
         private final String type; // FIXED, HEADER, SNOD, DATA, GLOBAL_HEAP, CONTINUATION, LOCAL_HEAP
-        private final String name;
+        private String name;
         private long offset;
         private long size;
 
@@ -498,5 +586,9 @@ public class HdfFileAllocation {
         public long getSize() { return size; }
         public void setOffset(long offset) { this.offset = offset; }
         public void setSize(long size) { this.size = size; }
+
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 }

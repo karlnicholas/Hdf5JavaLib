@@ -64,6 +64,7 @@ public class HdfTwentyScalarApp {
             }
 
             hdfFile.close();
+            hdfFile.getFileAllocation().printBlocksSorted();
 
         } catch (IOException e) {
             throw new RuntimeException(e);

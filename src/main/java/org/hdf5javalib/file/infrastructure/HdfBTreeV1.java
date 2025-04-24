@@ -175,7 +175,12 @@ public class HdfBTreeV1 {
         return currentNode;
     }
 
-    public void addDataset(long linkNameOffset, long datasetObjectHeaderAddress, String datasetName, HdfGroup group) {
+    public void addDataset(
+            long linkNameOffset,
+            long datasetObjectHeaderAddress,
+            String datasetName,
+            HdfGroup group
+    ) {
         if (!isLeafLevelNode()) {
             throw new IllegalStateException("addDataset can only be called on leaf B-tree nodes (nodeLevel 0).");
         }
@@ -203,56 +208,43 @@ public class HdfBTreeV1 {
             targetEntryIndex = 0;
             insertIndex = 0;
         } else {
-            // Binary search to find the insertion point
             int low = 0;
             int high = entries.size() - 1;
-            int insertPos = entries.size();
+            int insertionPoint = entries.size();
+
             while (low <= high) {
-                int mid = (low + high) / 2;
-                HdfBTreeEntry entry = entries.get(mid);
-                HdfGroupSymbolTableNode snod = entry.getSymbolTableNode();
-                if (snod == null) {
-                    throw new IllegalStateException("Null SNOD in B-tree entry at index " + mid);
-                }
-                String maxName = group.getDatasetNameByLinkNameOffset(entry.getKey().getInstance(Long.class));
-                if (maxName == null) {
-                    throw new IllegalStateException("No dataset name found for key linkNameOffset: " + entry.getKey().getInstance(Long.class));
-                }
-                if (datasetName.compareTo(maxName) < 0) {
+                int mid = low + ((high - low) >>> 1);  // Avoid overflow
+                HdfBTreeEntry currentEntry = entries.get(mid);
+
+                // Get key and resolve to the max dataset name in this SNOD
+                long maxOffset = currentEntry.getKey().getInstance(Long.class); // adapt if it's just getKey()
+                String maxName = group.getDatasetNameByLinkNameOffset(maxOffset);
+
+                int cmp = datasetName.compareTo(maxName);
+                if (cmp <= 0) {
+                    insertionPoint = mid;
                     high = mid - 1;
-                    insertPos = mid;
                 } else {
                     low = mid + 1;
-                    insertPos = mid + 1;
                 }
             }
 
-            // Select SNOD based on insertPos
-            if (insertPos > 0) {
-                // Use SNOD at insertPos - 1
-                targetEntry = entries.get(insertPos - 1);
-                targetSnod = targetEntry.getSymbolTableNode();
-                if (targetSnod == null) {
-                    throw new IllegalStateException("Null SNOD in B-tree entry at index " + (insertPos - 1));
-                }
-                targetEntryIndex = insertPos - 1;
-            } else {
-                // Use SNOD at index 0 if it exists
-                targetEntry = entries.get(0);
-                targetSnod = targetEntry.getSymbolTableNode();
-                if (targetSnod == null) {
-                    throw new IllegalStateException("Null SNOD in B-tree entry at index 0");
-                }
-                targetEntryIndex = 0;
-            }
+            int targetIndex = (insertionPoint == entries.size()) ? entries.size() - 1 : insertionPoint;
+
+            // 'targetSnodIndex' now holds the index of the HdfBTreeEntry in the non-empty 'entries' list
+            // that should be considered first for inserting the new 'datasetName'.
+            // This index is determined assuming 'entries' is sorted by 'maxName'.
+            // Further logic outside this search block will handle capacity checks and splits.
+
+            // Select SNOD based on targetSnodIndex
+            targetEntry = entries.get(targetIndex);
+            targetSnod = targetEntry.getSymbolTableNode();
+            targetEntryIndex = targetIndex;
 
             // Find insertion index within SNOD
             List<HdfSymbolTableEntry> symbolTableEntries = targetSnod.getSymbolTableEntries();
             for (int j = 0; j < symbolTableEntries.size(); j++) {
                 String existingName = group.getDatasetNameByLinkNameOffset(symbolTableEntries.get(j).getLinkNameOffset().getInstance(Long.class));
-                if (existingName == null) {
-                    throw new IllegalStateException("No dataset name found for linkNameOffset: " + symbolTableEntries.get(j).getLinkNameOffset().getInstance(Long.class));
-                }
                 if (datasetName.compareTo(existingName) < 0) {
                     insertIndex = j;
                     break;

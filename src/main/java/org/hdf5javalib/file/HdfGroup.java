@@ -12,7 +12,6 @@ import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.file.infrastructure.HdfBTreeV1;
 import org.hdf5javalib.file.infrastructure.HdfGroupSymbolTableNode;
 import org.hdf5javalib.file.infrastructure.HdfLocalHeap;
-import org.hdf5javalib.file.infrastructure.HdfLocalHeapContents;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -32,7 +31,6 @@ public class HdfGroup implements Closeable {
     private final HdfObjectHeaderPrefixV1 objectHeader;
     private final HdfBTreeV1 bTree;
     private final HdfLocalHeap localHeap;
-    private HdfLocalHeapContents localHeapContents;
     private final Map<String, DataSetInfo> dataSets;
 
     /**
@@ -71,7 +69,6 @@ public class HdfGroup implements Closeable {
      * @param objectHeader the object header prefix containing group metadata
      * @param bTree the B-tree managing symbol table entries
      * @param localHeap the local heap storing link names
-     * @param localHeapContents the contents of the local heap
      * @param dataSets a map of dataset names to their corresponding HdfDataSet objects
      */
     public HdfGroup(
@@ -80,7 +77,6 @@ public class HdfGroup implements Closeable {
             HdfObjectHeaderPrefixV1 objectHeader,
             HdfBTreeV1 bTree,
             HdfLocalHeap localHeap,
-            HdfLocalHeapContents localHeapContents,
             Map<String, DataSetInfo> dataSets
     ) {
         this.hdfFile = hdfFile;
@@ -88,7 +84,6 @@ public class HdfGroup implements Closeable {
         this.objectHeader = objectHeader;
         this.bTree = bTree;
         this.localHeap = localHeap;
-        this.localHeapContents = localHeapContents;
         this.dataSets = dataSets;
     }
 
@@ -111,11 +106,8 @@ public class HdfGroup implements Closeable {
         heapData[8] = (byte)localHeapContentsSize;
 
         localHeap = new HdfLocalHeap(HdfFixedPoint.of(localHeapContentsSize), HdfFixedPoint.of(fileAllocation.getCurrentLocalHeapContentsOffset()), hdfFile);
-        localHeapContents = new HdfLocalHeapContents(heapData);
         localHeap.addToHeap(
-                new HdfString(new byte[0], new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0))
-                , localHeapContents
-        );
+                new HdfString(new byte[0], new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0))        );
 
         bTree = new HdfBTreeV1("TREE", 0, 0,
                 HdfFixedPoint.undefined((short)8),
@@ -133,19 +125,23 @@ public class HdfGroup implements Closeable {
 
     public HdfDataSet createDataSet(HdfDataFile hdfDataFile, String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        HdfFileAllocation.DatasetAllocationInfo allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
-
         HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length));
+        int linkNameOffset;
+        HdfFileAllocation.DatasetAllocationInfo allocationInfo;
+        if ( localHeap.getFreeListOffset().getInstance(Long.class) != 1 ) {
+            linkNameOffset = localHeap.addToHeap(hdfDatasetName);
+            allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
+        } else {
+            allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
+            linkNameOffset = localHeap.addToHeap(hdfDatasetName);
+        }
+
         HdfDataSet newDataSet = new HdfDataSet(hdfDataFile, datasetName, hdfDatatype, dataSpaceMessage);
 
-        HdfLocalHeap.Pair<HdfLocalHeapContents, Integer> updateHeapResult = localHeap.addToHeap(hdfDatasetName, localHeapContents);
-        this.localHeapContents = updateHeapResult.getFirst();
-
-        DataSetInfo dataSetInfo = new DataSetInfo(newDataSet, HdfFixedPoint.of(allocationInfo.getHeaderOffset()), updateHeapResult.getSecond().longValue());
+        DataSetInfo dataSetInfo = new DataSetInfo(newDataSet, HdfFixedPoint.of(allocationInfo.getHeaderOffset()), linkNameOffset);
         dataSets.put(datasetName, dataSetInfo);
 
-        bTree.addDataset(updateHeapResult.getSecond(), allocationInfo.getHeaderOffset(), datasetName, this);
-System.out.println(bTree.toString());
+        bTree.addDataset(linkNameOffset, allocationInfo.getHeaderOffset(), datasetName, this);
         return newDataSet;
     }
 
@@ -169,7 +165,6 @@ System.out.println(bTree.toString());
         objectHeader.writeAsGroupToByteChannel(seekableByteChannel, fileAllocation);
         bTree.writeToByteChannel(seekableByteChannel, fileAllocation);
         localHeap.writeToByteChannel(seekableByteChannel);
-        localHeapContents.writeToByteChannel(seekableByteChannel, fileAllocation);
 
         Map<Long, HdfGroupSymbolTableNode> mapOffsetToSnod = bTree.mapOffsetToSnod();
         //TODO: hardcoed SNod storage size.
@@ -206,7 +201,6 @@ System.out.println(bTree.toString());
                 "\r\nobjectHeader=" + objectHeader +
                 "\r\nbTree=" + bTree +
                 "\r\nlocalHeap=" + localHeap +
-                "\r\nlocalHeapContents=" + localHeapContents +
                 dataSetsString +
                 "}";
     }

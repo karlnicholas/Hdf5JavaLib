@@ -198,7 +198,7 @@ public class HdfFileAllocationTest {
 
         // Verify allocationRecords
         List<HdfFileAllocation.AllocationRecord> records = allocation.getAllocationRecords();
-        assertEquals(50, records.size(), "Expected 50 allocation records");
+        assertEquals(51, records.size(), "Expected 50 allocation records");
 
         // Fixed structures
         assertRecord(records.get(0), "FIXED", "Superblock", 0, 96);
@@ -220,7 +220,7 @@ public class HdfFileAllocationTest {
         assertRecord(records.get(14), "HEADER", "Dataset Header (dataset_5)", 4368, 272);
         assertRecord(records.get(15), "DATA", "Data Block (dataset_5)", 2064, 4);
         assertRecord(records.get(16), "HEADER", "Dataset Header (dataset_6)", 4640, 272);
-        assertRecord(records.get(17), "LOCAL_HEAP", "Expanded Local Heap Contents", 6504, 352); // After first expand
+        assertRecord(records.get(17), "LOCAL_HEAP", "Abandoned Local Heap Contents (Offset 4912)", 4912, 176); // After first expand
         assertRecord(records.get(18), "DATA", "Data Block (dataset_6)", 2068, 4);
         assertRecord(records.get(19), "HEADER", "Dataset Header (dataset_7)", 5088, 272);
         assertRecord(records.get(20), "DATA", "Data Block (dataset_7)", 2072, 4);
@@ -230,29 +230,30 @@ public class HdfFileAllocationTest {
         assertRecord(records.get(24), "SNOD", "SNOD Block 2", 5904, 328);
         assertRecord(records.get(25), "DATA", "Data Block (dataset_9)", 2080, 4);
         assertRecord(records.get(26), "HEADER", "Dataset Header (dataset_10)", 6232, 272);
-        assertRecord(records.get(27), "DATA", "Data Block (dataset_10)", 2084, 4);
-        assertRecord(records.get(28), "HEADER", "Dataset Header (dataset_11)", 6856, 272);
-        assertRecord(records.get(29), "DATA", "Data Block (dataset_11)", 2088, 4);
-        assertRecord(records.get(30), "HEADER", "Dataset Header (dataset_12)", 7128, 272);
-        assertRecord(records.get(31), "DATA", "Data Block (dataset_12)", 2092, 4);
-        assertRecord(records.get(32), "HEADER", "Dataset Header (dataset_13)", 7400, 272);
-        assertRecord(records.get(33), "DATA", "Data Block (dataset_13)", 2096, 4);
-        assertRecord(records.get(34), "HEADER", "Dataset Header (dataset_14)", 7672, 272);
-        assertRecord(records.get(35), "SNOD", "SNOD Block 3", 7944, 328);
-        assertRecord(records.get(36), "DATA", "Data Block (dataset_14)", 2100, 4);
-        assertRecord(records.get(37), "HEADER", "Dataset Header (dataset_15)", 8272, 272);
-        assertRecord(records.get(38), "DATA", "Data Block (dataset_15)", 2104, 4);
-        assertRecord(records.get(39), "HEADER", "Dataset Header (dataset_16)", 8544, 272);
-        assertRecord(records.get(40), "DATA", "Data Block (dataset_16)", 2108, 4);
-        assertRecord(records.get(41), "HEADER", "Dataset Header (dataset_17)", 8816, 272);
-        assertRecord(records.get(42), "DATA", "Data Block (dataset_17)", 2112, 4);
-        assertRecord(records.get(43), "HEADER", "Dataset Header (dataset_18)", 9088, 272);
-        assertRecord(records.get(44), "SNOD", "SNOD Block 4", 9360, 328);
-        assertRecord(records.get(45), "DATA", "Data Block (dataset_18)", 2116, 4);
-        assertRecord(records.get(46), "HEADER", "Dataset Header (dataset_19)", 9688, 272);
-        assertRecord(records.get(47), "DATA", "Data Block (dataset_19)", 2120, 4);
-        assertRecord(records.get(48), "HEADER", "Dataset Header (dataset_20)", 9960, 272);
-        assertRecord(records.get(49), "DATA", "Data Block (dataset_20)", 2124, 4);
+        assertRecord(records.get(27), "LOCAL_HEAP", "Expanded Local Heap Contents", 6504, 352);
+        assertRecord(records.get(28), "DATA", "Data Block (dataset_10)", 2084, 4);
+        assertRecord(records.get(29), "HEADER", "Dataset Header (dataset_11)", 6856, 272);
+        assertRecord(records.get(30), "DATA", "Data Block (dataset_11)", 2088, 4);
+        assertRecord(records.get(31), "HEADER", "Dataset Header (dataset_12)", 7128, 272);
+        assertRecord(records.get(32), "DATA", "Data Block (dataset_12)", 2092, 4);
+        assertRecord(records.get(33), "HEADER", "Dataset Header (dataset_13)", 7400, 272);
+        assertRecord(records.get(34), "DATA", "Data Block (dataset_13)", 2096, 4);
+        assertRecord(records.get(35), "HEADER", "Dataset Header (dataset_14)", 7672, 272);
+        assertRecord(records.get(36), "SNOD", "SNOD Block 3", 7944, 328);
+        assertRecord(records.get(37), "DATA", "Data Block (dataset_14)", 2100, 4);
+        assertRecord(records.get(38), "HEADER", "Dataset Header (dataset_15)", 8272, 272);
+        assertRecord(records.get(39), "DATA", "Data Block (dataset_15)", 2104, 4);
+        assertRecord(records.get(40), "HEADER", "Dataset Header (dataset_16)", 8544, 272);
+        assertRecord(records.get(41), "DATA", "Data Block (dataset_16)", 2108, 4);
+        assertRecord(records.get(42), "HEADER", "Dataset Header (dataset_17)", 8816, 272);
+        assertRecord(records.get(43), "DATA", "Data Block (dataset_17)", 2112, 4);
+        assertRecord(records.get(44), "HEADER", "Dataset Header (dataset_18)", 9088, 272);
+        assertRecord(records.get(45), "SNOD", "SNOD Block 4", 9360, 328);
+        assertRecord(records.get(46), "DATA", "Data Block (dataset_18)", 2116, 4);
+        assertRecord(records.get(47), "HEADER", "Dataset Header (dataset_19)", 9688, 272);
+        assertRecord(records.get(48), "DATA", "Data Block (dataset_19)", 2120, 4);
+        assertRecord(records.get(49), "HEADER", "Dataset Header (dataset_20)", 9960, 272);
+        assertRecord(records.get(50), "DATA", "Data Block (dataset_20)", 2124, 4);
 
         // Debug output
         allocation.printBlocks();

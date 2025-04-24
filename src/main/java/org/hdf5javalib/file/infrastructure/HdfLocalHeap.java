@@ -5,6 +5,7 @@ import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfFileAllocation;
+import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -23,6 +24,8 @@ public class HdfLocalHeap {
     private HdfFixedPoint freeListOffset;
     private HdfFixedPoint heapContentsOffset;
     private final HdfDataFile hdfDataFile;
+    private byte[] heapData;
+
 
     public static class Pair<T, U> {
         private final T first;
@@ -42,25 +45,58 @@ public class HdfLocalHeap {
         }
     }
 
+    /**
+     * Constructs an {@code HdfLocalHeap} for reading an HDF5 local heap from a file.
+     * Initializes the local heap with the provided signature, version, and heap properties,
+     * associating it with the given HDF5 data file and heap data buffer.
+     *
+     * @param signature the signature of the local heap (e.g., "HEAP")
+     * @param version the version of the local heap format
+     * @param heapContentsSize the size of the heap's data segment
+     * @param freeListOffset the offset to the free list within the heap
+     * @param heapContentsOffset the offset to the heap's data segment in the file
+     * @param hdfDataFile the HDF5 data file containing the local heap
+     * @param heapData the raw byte array containing the heap's data
+     */
     public HdfLocalHeap(String signature, int version, HdfFixedPoint heapContentsSize,
-                        HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile) {
+                        HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, byte[] heapData) {
         this.signature = signature;
         this.version = version;
         this.heapContentsSize = heapContentsSize;
         this.freeListOffset = freeListOffset;
         this.heapContentsOffset = heapContentsOffset;
         this.hdfDataFile = hdfDataFile;
+        this.heapData = heapData;
     }
 
+    /**
+     * Constructs an {@code HdfLocalHeap} for writing a new HDF5 local heap to a file.
+     * Initializes the local heap with a default signature ("HEAP") and version (0),
+     * using the specified heap size and offset, and associates it with the given HDF5 data file.
+     * Allocates a heap data buffer based on the file allocation's current local heap size,
+     * initializing it with specific byte values.
+     *
+     * @param heapContentsSize the size of the heap's data segment
+     * @param heapContentsOffset the offset to the heap's data segment in the file
+     * @param hdfDataFile the HDF5 data file to which the local heap will be written
+     */
     public HdfLocalHeap(HdfFixedPoint heapContentsSize, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile) {
-        this("HEAP", 0, heapContentsSize, HdfFixedPoint.of(0), heapContentsOffset, hdfDataFile);
+        this.signature = "HEAP";
+        this.version = 0;
+        this.heapContentsSize = heapContentsSize;
+        this.freeListOffset = HdfFixedPoint.of(0);
+        this.heapContentsOffset = heapContentsOffset;
+        this.hdfDataFile = hdfDataFile;
+        long localHeapContentsSize = hdfDataFile.getFileAllocation().getCurrentLocalHeapContentsSize();
+        heapData = new byte[(int) localHeapContentsSize];
+        heapData[0] = (byte)0x1;
+        heapData[8] = (byte)localHeapContentsSize;
     }
 
-    public Pair<HdfLocalHeapContents, Integer> addToHeap(HdfString objectName, HdfLocalHeapContents localHeapContents) {
+    public int addToHeap(HdfString objectName) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         byte[] objectNameBytes = objectName.getBytes();
         int freeListOffset = this.freeListOffset.getInstance(Long.class).intValue();
-        byte[] heapData = localHeapContents.getHeapData();
         int heapSize = heapData.length;
 
         // Calculate string size and alignment
@@ -79,7 +115,6 @@ public class HdfLocalHeap {
             long newSize = fileAllocation.expandLocalHeapContents();
             byte[] newHeapData = new byte[(int) newSize];
             System.arraycopy(heapData, 0, newHeapData, 0, heapData.length); // Copy existing data
-            localHeapContents = new HdfLocalHeapContents(newHeapData);
             this.heapContentsSize = HdfFixedPoint.of(newSize);
             this.heapContentsOffset = HdfFixedPoint.of(fileAllocation.getCurrentLocalHeapContentsOffset());
             heapData = newHeapData;
@@ -116,7 +151,7 @@ public class HdfLocalHeap {
             }
         }
 
-        return new Pair<>(localHeapContents, currentOffset);
+        return currentOffset;
     }
 
     public static HdfLocalHeap readFromFileChannel(SeekableByteChannel fileChannel, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
@@ -142,11 +177,18 @@ public class HdfLocalHeap {
         }
 
         BitSet emptyBitSet = new BitSet();
-        HdfFixedPoint dataSegmentSize = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(lengthSize*8));
-        HdfFixedPoint freeListOffset = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-        HdfFixedPoint dataSegmentAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint dataSegmentSize = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short) (lengthSize * 8));
+        HdfFixedPoint freeListOffset = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short) (offsetSize * 8));
+        HdfFixedPoint dataSegmentAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short) (offsetSize * 8));
 
-        return new HdfLocalHeap(signature, version, dataSegmentSize, freeListOffset, dataSegmentAddress, hdfDataFile);
+        fileChannel.position(dataSegmentAddress.getInstance(Long.class));
+        // Allocate buffer and read heap data from the file channel
+        byte[] heapData = new byte[dataSegmentSize.getInstance(Long.class).intValue()];
+        buffer = ByteBuffer.wrap(heapData);
+
+        fileChannel.read(buffer);
+
+        return new HdfLocalHeap(signature, version, dataSegmentSize, freeListOffset, dataSegmentAddress, hdfDataFile, heapData);
     }
 
     private static boolean allBytesZero(byte[] bytes) {
@@ -166,6 +208,9 @@ public class HdfLocalHeap {
                 ", dataSegmentSize=" + heapContentsSize +
                 ", freeListOffset=" + freeListOffset +
                 ", dataSegmentAddress=" + heapContentsOffset +
+                ", heapDataSize=" + heapData.length +
+                ", heapData=" + Arrays.toString(Arrays.copyOf(heapData, Math.min(heapData.length, 32))) +
+                "... (truncated)" +
                 '}';
     }
 
@@ -183,5 +228,35 @@ public class HdfLocalHeap {
         while (buffer.hasRemaining()) {
             seekableByteChannel.write(buffer);
         }
+
+        buffer = ByteBuffer.wrap(heapData);
+        seekableByteChannel.position(hdfDataFile.getFileAllocation().getCurrentLocalHeapContentsOffset());
+        while (buffer.hasRemaining()) {
+            seekableByteChannel.write(buffer);
+        }
     }
+
+    /**
+     * Parses the next null-terminated string from the heap data.
+     *
+     * @return The next string, or null if no more strings are available.
+     */
+    public HdfString parseStringAtOffset(HdfFixedPoint offset) {
+        long iOffset = offset.getInstance(Long.class);
+        if (iOffset >= heapData.length) {
+            return null; // End of heap data
+        }
+
+        long start = iOffset;
+
+        // Find the null terminator
+        while (iOffset < heapData.length && heapData[(int) iOffset] != 0) {
+            iOffset++;
+        }
+
+        // Extract the string
+
+        return new HdfString(Arrays.copyOfRange(heapData, (int) start, (int) iOffset), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), (int) (iOffset - start)));
+    }
+
 }

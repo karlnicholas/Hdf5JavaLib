@@ -1,320 +1,144 @@
+HdfBTreeV1:
+  Signature: TREE
+  Node Type: 0
+  Node Level: 0
+  Entries Used: 4
+  Left Sibling Address: -1
+  Right Sibling Address: -1
+  Key Zero: 0
+  Entries:
+    - Entry 1:
+        Key: 184
+        Child Pointer: 1072
+        Payload (SNOD):
+          HdfGroupSymbolTableNode:
+            Signature: SNOD
+            Version: 1
+            Number of Symbols: 4
+            Symbol Table Entries:
+              - Link Name Offset: 8, Object Header Offset: 800, Cache Type: 0, Dataset Name: dataset_1
+              - Link Name Offset: 152, Object Header Offset: 6232, Cache Type: 0, Dataset Name: dataset_10
+              - Link Name Offset: 168, Object Header Offset: 6856, Cache Type: 0, Dataset Name: dataset_11
+              - Link Name Offset: 184, Object Header Offset: 7128, Cache Type: 0, Dataset Name: dataset_12
+    - Entry 2:
+        Key: 248
+        Child Pointer: 7944
+        Payload (SNOD):
+          HdfGroupSymbolTableNode:
+            Signature: SNOD
+            Version: 1
+            Number of Symbols: 4
+            Symbol Table Entries:
+              - Link Name Offset: 200, Object Header Offset: 7400, Cache Type: 0, Dataset Name: dataset_13
+              - Link Name Offset: 216, Object Header Offset: 7672, Cache Type: 0, Dataset Name: dataset_14
+              - Link Name Offset: 232, Object Header Offset: 8272, Cache Type: 0, Dataset Name: dataset_15
+              - Link Name Offset: 248, Object Header Offset: 8544, Cache Type: 0, Dataset Name: dataset_16
+    - Entry 3:
+        Key: 56
+        Child Pointer: 9360
+        Payload (SNOD):
+          HdfGroupSymbolTableNode:
+            Signature: SNOD
+            Version: 1
+            Number of Symbols: 7
+            Symbol Table Entries:
+              - Link Name Offset: 264, Object Header Offset: 8816, Cache Type: 0, Dataset Name: dataset_17
+              - Link Name Offset: 280, Object Header Offset: 9088, Cache Type: 0, Dataset Name: dataset_18
+              - Link Name Offset: 296, Object Header Offset: 9688, Cache Type: 0, Dataset Name: dataset_19
+              - Link Name Offset: 24, Object Header Offset: 1400, Cache Type: 0, Dataset Name: dataset_2
+              - Link Name Offset: 312, Object Header Offset: 9960, Cache Type: 0, Dataset Name: dataset_20
+              - Link Name Offset: 40, Object Header Offset: 1672, Cache Type: 0, Dataset Name: dataset_3
+              - Link Name Offset: 56, Object Header Offset: 4096, Cache Type: 0, Dataset Name: dataset_4
+    - Entry 4:
+        Key: 136
+        Child Pointer: 5904
+        Payload (SNOD):
+          HdfGroupSymbolTableNode:
+            Signature: SNOD
+            Version: 1
+            Number of Symbols: 5
+            Symbol Table Entries:
+              - Link Name Offset: 72, Object Header Offset: 4368, Cache Type: 0, Dataset Name: dataset_5
+              - Link Name Offset: 88, Object Header Offset: 4640, Cache Type: 0, Dataset Name: dataset_6
+              - Link Name Offset: 104, Object Header Offset: 5088, Cache Type: 0, Dataset Name: dataset_7
+              - Link Name Offset: 120, Object Header Offset: 5360, Cache Type: 0, Dataset Name: dataset_8
+              - Link Name Offset: 136, Object Header Offset: 5632, Cache Type: 0, Dataset Name: dataset_9
+			  
+=====
 
-bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=4, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[
-  HdfBTreeEntry{key=192, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=[
-    HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=176, objectHeaderOffset=6504, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=192, objectHeaderOffset=7128, cacheType=0}]
-  }}, 
-  HdfBTreeEntry{key=320, childPointer=9632, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=6, symbolTableEntries=[
-    HdfSymbolTableEntry{linkNameOffset=240, objectHeaderOffset=8272, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=256, objectHeaderOffset=8544, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=272, objectHeaderOffset=8816, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=288, objectHeaderOffset=9088, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=304, objectHeaderOffset=9360, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=320, objectHeaderOffset=9960, cacheType=0}]
-  }}, 
-  HdfBTreeEntry{key=56, childPointer=7944, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=[
-    HdfSymbolTableEntry{linkNameOffset=208, objectHeaderOffset=7400, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=224, objectHeaderOffset=7672, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
-  }}, 
-  HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=[
-    HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}
-  ]}}
-]}
+HdfBTreeV1:
+  Signature: TREE
+  Node Type: 0
+  Node Level: 0
+  Entries Used: 4
+  Left Sibling Address: -1
+  Right Sibling Address: -1
+  Key Zero: 0
+  Entries:
+    - Entry 1:
+        Key: 184
+        Child Pointer: 1072
+        Payload (SNOD):
+          HdfGroupSymbolTableNode:
+            Signature: SNOD
+            Version: 1
+            Number of Symbols: 4
+            Symbol Table Entries:
+              - Link Name Offset: 8, Object Header Offset: 800, Cache Type: 0, Dataset Name: dataset_1
+              - Link Name Offset: 152, Object Header Offset: 6232, Cache Type: 0, Dataset Name: dataset_10
+              - Link Name Offset: 168, Object Header Offset: 6856, Cache Type: 0, Dataset Name: dataset_11
+              - Link Name Offset: 184, Object Header Offset: 7128, Cache Type: 0, Dataset Name: dataset_12
+    - Entry 2:
+        Key: 248
+        Child Pointer: 7944
+        Payload (SNOD):
+          HdfGroupSymbolTableNode:
+            Signature: SNOD
+            Version: 1
+            Number of Symbols: 4
+            Symbol Table Entries:
+              - Link Name Offset: 200, Object Header Offset: 7400, Cache Type: 0, Dataset Name: dataset_13
+              - Link Name Offset: 216, Object Header Offset: 7672, Cache Type: 0, Dataset Name: dataset_14
+              - Link Name Offset: 232, Object Header Offset: 8272, Cache Type: 0, Dataset Name: dataset_15
+              - Link Name Offset: 248, Object Header Offset: 8544, Cache Type: 0, Dataset Name: dataset_16
+    - Entry 3:
+        Key: 56
+        Child Pointer: 9360
+        Payload (SNOD):
+          HdfGroupSymbolTableNode:
+            Signature: SNOD
+            Version: 1
+            Number of Symbols: 7
+            Symbol Table Entries:
+              - Link Name Offset: 264, Object Header Offset: 8816, Cache Type: 0, Dataset Name: dataset_17
+              - Link Name Offset: 280, Object Header Offset: 9088, Cache Type: 0, Dataset Name: dataset_18
+              - Link Name Offset: 296, Object Header Offset: 9688, Cache Type: 0, Dataset Name: dataset_19
+              - Link Name Offset: 24, Object Header Offset: 1400, Cache Type: 0, Dataset Name: dataset_2
+              - Link Name Offset: 312, Object Header Offset: 9960, Cache Type: 0, Dataset Name: dataset_20
+              - Link Name Offset: 40, Object Header Offset: 1672, Cache Type: 0, Dataset Name: dataset_3
+              - Link Name Offset: 56, Object Header Offset: 4096, Cache Type: 0, Dataset Name: dataset_4
+    - Entry 4:
+        Key: 136
+        Child Pointer: 5904
+        Payload (SNOD):
+          HdfGroupSymbolTableNode:
+            Signature: SNOD
+            Version: 1
+            Number of Symbols: 5
+            Symbol Table Entries:
+              - Link Name Offset: 72, Object Header Offset: 4368, Cache Type: 0, Dataset Name: dataset_5
+              - Link Name Offset: 88, Object Header Offset: 4640, Cache Type: 0, Dataset Name: dataset_6
+              - Link Name Offset: 104, Object Header Offset: 5088, Cache Type: 0, Dataset Name: dataset_7
+              - Link Name Offset: 120, Object Header Offset: 5360, Cache Type: 0, Dataset Name: dataset_8
+              - Link Name Offset: 136, Object Header Offset: 5632, Cache Type: 0, Dataset Name: dataset_9
 
 
 
+============ EXISTIN
 
-bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=4, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[
-  HdfBTreeEntry{key=184, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=[
-    HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=168, objectHeaderOffset=6856, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=184, objectHeaderOffset=7128, cacheType=0}]
-  }}, 
-  HdfBTreeEntry{key=248, childPointer=7944, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=[
-    HdfSymbolTableEntry{linkNameOffset=200, objectHeaderOffset=7400, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=216, objectHeaderOffset=7672, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=232, objectHeaderOffset=8272, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=248, objectHeaderOffset=8544, cacheType=0}]
-  }}, 
-  HdfBTreeEntry{key=56, childPointer=9360, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=7, symbolTableEntries=[
-    HdfSymbolTableEntry{linkNameOffset=264, objectHeaderOffset=8816, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=280, objectHeaderOffset=9088, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=296, objectHeaderOffset=9688, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=312, objectHeaderOffset=9960, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
-  }}, 
-  HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=[
-    HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, 
-	HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
-  }}
-]}
-
-
-
-
-================ NEW ================
-
-=== HDF File Allocation Layout ===
-Metadata End of File Offset: 10232
-Data End of File Offset: 2128
-Current End of File Offset: 10232
-----------------------------------
-Offset (Dec) | Offset (Hex) | Size     | Type       | Name
-0            | 0x00000000   | 96       | FIXED      | Superblock
-96           | 0x00000060   | 40       | FIXED      | Object Header Prefix
-136          | 0x00000088   | 544      | FIXED      | B-tree (Node + Storage)
-680          | 0x000002A8   | 32       | FIXED      | Local Heap Header
-712          | 0x000002C8   | 88       | FIXED      | Initial Local Heap Contents
-800          | 0x00000320   | 272      | HEADER     | Dataset Header (dataset_1)
-1072         | 0x00000430   | 328      | SNOD       | SNOD Block 1
-2048         | 0x00000800   | 4        | DATA       | Data Block (dataset_1)
-1400         | 0x00000578   | 272      | HEADER     | Dataset Header (dataset_2)
-2052         | 0x00000804   | 4        | DATA       | Data Block (dataset_2)
-1672         | 0x00000688   | 272      | HEADER     | Dataset Header (dataset_3)
-2056         | 0x00000808   | 4        | DATA       | Data Block (dataset_3)
-4096         | 0x00001000   | 272      | HEADER     | Dataset Header (dataset_4)
-2060         | 0x0000080C   | 4        | DATA       | Data Block (dataset_4)
-4368         | 0x00001110   | 272      | HEADER     | Dataset Header (dataset_5)
-2064         | 0x00000810   | 4        | DATA       | Data Block (dataset_5)
-4640         | 0x00001220   | 272      | HEADER     | Dataset Header (dataset_6)
-6776         | 0x00001A78   | 352      | LOCAL_HEAP | Expanded Local Heap Contents
-2068         | 0x00000814   | 4        | DATA       | Data Block (dataset_6)
-5088         | 0x000013E0   | 272      | HEADER     | Dataset Header (dataset_7)
-2072         | 0x00000818   | 4        | DATA       | Data Block (dataset_7)
-5360         | 0x000014F0   | 272      | HEADER     | Dataset Header (dataset_8)
-2076         | 0x0000081C   | 4        | DATA       | Data Block (dataset_8)
-5632         | 0x00001600   | 272      | HEADER     | Dataset Header (dataset_9)
-5904         | 0x00001710   | 328      | SNOD       | SNOD Block 2
-2080         | 0x00000820   | 4        | DATA       | Data Block (dataset_9)
-6232         | 0x00001858   | 272      | HEADER     | Dataset Header (dataset_10)
-2084         | 0x00000824   | 4        | DATA       | Data Block (dataset_10)
-6504         | 0x00001968   | 272      | HEADER     | Dataset Header (dataset_11)
-2088         | 0x00000828   | 4        | DATA       | Data Block (dataset_11)
-7128         | 0x00001BD8   | 272      | HEADER     | Dataset Header (dataset_12)
-2092         | 0x0000082C   | 4        | DATA       | Data Block (dataset_12)
-7400         | 0x00001CE8   | 272      | HEADER     | Dataset Header (dataset_13)
-2096         | 0x00000830   | 4        | DATA       | Data Block (dataset_13)
-7672         | 0x00001DF8   | 272      | HEADER     | Dataset Header (dataset_14)
-7944         | 0x00001F08   | 328      | SNOD       | SNOD Block 3
-2100         | 0x00000834   | 4        | DATA       | Data Block (dataset_14)
-8272         | 0x00002050   | 272      | HEADER     | Dataset Header (dataset_15)
-2104         | 0x00000838   | 4        | DATA       | Data Block (dataset_15)
-8544         | 0x00002160   | 272      | HEADER     | Dataset Header (dataset_16)
-2108         | 0x0000083C   | 4        | DATA       | Data Block (dataset_16)
-8816         | 0x00002270   | 272      | HEADER     | Dataset Header (dataset_17)
-2112         | 0x00000840   | 4        | DATA       | Data Block (dataset_17)
-9088         | 0x00002380   | 272      | HEADER     | Dataset Header (dataset_18)
-2116         | 0x00000844   | 4        | DATA       | Data Block (dataset_18)
-9360         | 0x00002490   | 272      | HEADER     | Dataset Header (dataset_19)
-9632         | 0x000025A0   | 328      | SNOD       | SNOD Block 4
-2120         | 0x00000848   | 4        | DATA       | Data Block (dataset_19)
-9960         | 0x000026E8   | 272      | HEADER     | Dataset Header (dataset_20)
-2124         | 0x0000084C   | 4        | DATA       | Data Block (dataset_20)
-==================================
-2025-04-22 18:46:21 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=10232, driverInformationAddress=-1
+2025-04-23 17:47:48 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=10232, driverInformationAddress=-1
 rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
-2025-04-22 18:46:21 [main] DEBUG org.hdf5javalib.file.HdfFile - HdfGroup{name=''
-objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
-SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
-bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=4, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=184, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
-[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=152, objectHeaderOffset=6232, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=168, objectHeaderOffset=6504, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=184, objectHeaderOffset=7128, cacheType=0}]
-}}, HdfBTreeEntry{key=312, childPointer=9632, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=6, symbolTableEntries=
-[HdfSymbolTableEntry{linkNameOffset=232, objectHeaderOffset=8272, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=248, objectHeaderOffset=8544, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=264, objectHeaderOffset=8816, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=280, objectHeaderOffset=9088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=296, objectHeaderOffset=9360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=312, objectHeaderOffset=9960, cacheType=0}]
-}}, HdfBTreeEntry{key=56, childPointer=7944, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
-[HdfSymbolTableEntry{linkNameOffset=200, objectHeaderOffset=7400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=216, objectHeaderOffset=7672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=1400, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=40, objectHeaderOffset=1672, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=56, objectHeaderOffset=4096, cacheType=0}]
-}}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
-[HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
-}}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=352, freeListOffset=328, dataSegmentAddress=6776}
-localHeapContents=HdfLocalHeapContents{heapDataSize=352, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 100, 97, 116, 97, 115, 101, 116, 95, 49, 0, 0, 0, 0, 0, 0, 0, 100, 97, 116, 97, 115, 101, 116, 95]... (truncated)}
-dataSets=[
-  dataset_1@800 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_2@1400 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2052, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_3@1672 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2056, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_4@4096 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2060, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_5@4368 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2064, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_6@4640 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2068, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_7@5088 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2072, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_8@5360 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2076, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_9@5632 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2080, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_10@6232 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2084, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_11@6504 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2088, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_12@7128 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2092, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_13@7400 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2096, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_14@7672 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2100, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_15@8272 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2104, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_16@8544 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2108, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_17@8816 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2112, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_18@9088 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2116, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_19@9360 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2120, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}},
-  dataset_20@9960 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=[], hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2124, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:46:21Z}
-AttributeMessage(80){version=1, name='GIT root revision', value='Revision: , URL: '}
-NilMessage(72){}}
-]}
-HDF5 file twenty_datasets.h5 created and written successfully!
-
-
-
-
-=============== EXISTING ===============
-
-
-2025-04-22 18:10:42 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=10232, driverInformationAddress=-1
-rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
-2025-04-22 18:10:42 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfGroup{name=''
+2025-04-23 17:47:48 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=4, leftSiblingAddress=-1, rightSiblingAddress=-1, keyZero=0, entries=[HdfBTreeEntry{key=184, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
@@ -326,8 +150,7 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=4, leftS
 }}, HdfBTreeEntry{key=136, childPointer=5904, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
 [HdfSymbolTableEntry{linkNameOffset=72, objectHeaderOffset=4368, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=88, objectHeaderOffset=4640, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=104, objectHeaderOffset=5088, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=120, objectHeaderOffset=5360, cacheType=0}, HdfSymbolTableEntry{linkNameOffset=136, objectHeaderOffset=5632, cacheType=0}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=352, freeListOffset=328, dataSegmentAddress=6504}
-localHeapContents=HdfLocalHeapContents{heapDataSize=352, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 100, 97, 116, 97, 115, 101, 116, 95, 49, 0, 0, 0, 0, 0, 0, 0, 100, 97, 116, 97, 115, 101, 116, 95]... (truncated)}
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=352, freeListOffset=328, dataSegmentAddress=6504, heapDataSize=352, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 100, 97, 116, 97, 115, 101, 116, 95, 49, 0, 0, 0, 0, 0, 0, 0, 100, 97, 116, 97, 115, 101, 116, 95]... (truncated)}
 dataSets=[
   dataset_1@800 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
@@ -470,6 +293,8 @@ DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2080, dimensionSizes
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-22T22:10:06Z}
 NilMessage(152){}}
 ]}
+
+
 
 =======================
 
