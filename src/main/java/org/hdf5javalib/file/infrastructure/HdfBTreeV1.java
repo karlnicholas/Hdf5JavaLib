@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.util.*;
+import java.util.function.Function;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
@@ -190,94 +191,78 @@ public class HdfBTreeV1 {
 
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         final int MAX_SNOD_ENTRIES = 8;
-        HdfGroupSymbolTableNode targetSnod = null;
-        HdfBTreeEntry targetEntry = null;
-        int targetEntryIndex = -1;
-        int insertIndex = 0;
+        HdfGroupSymbolTableNode targetSnod;
+        HdfBTreeEntry targetEntry;
+        int targetSnodIndex;
+        int insertIndex;
 
-        // Step 1: Find target SNOD using binary search
+        // --- Step 1: Find or create target SNOD ---
         if (entries.isEmpty()) {
-            // Create new SNOD (first dataset)
             long snodOffset = fileAllocation.allocateNextSnodStorage();
             targetSnod = new HdfGroupSymbolTableNode("SNOD", 1, new ArrayList<>(MAX_SNOD_ENTRIES));
-            HdfFixedPoint key = HdfFixedPoint.of(linkNameOffset);
-            HdfFixedPoint childPointer = HdfFixedPoint.of(snodOffset);
-            targetEntry = new HdfBTreeEntry(key, childPointer, targetSnod);
+            targetEntry = new HdfBTreeEntry(HdfFixedPoint.of(linkNameOffset), HdfFixedPoint.of(snodOffset), targetSnod);
             entries.add(targetEntry);
             entriesUsed++;
-            targetEntryIndex = 0;
+            targetSnodIndex = 0;
             insertIndex = 0;
         } else {
-            int low = 0;
-            int high = entries.size() - 1;
-            int insertionPoint = entries.size();
-
-            while (low <= high) {
-                int mid = low + ((high - low) >>> 1);  // Avoid overflow
-                HdfBTreeEntry currentEntry = entries.get(mid);
-
-                // Get key and resolve to the max dataset name in this SNOD
-                long maxOffset = currentEntry.getKey().getInstance(Long.class); // adapt if it's just getKey()
+            // instead of the full while loop over entries:
+            targetSnodIndex = binarySearchDatasetName(entries.size(), (mid)->{
+                HdfBTreeEntry entry = entries.get(mid);
+                long maxOffset = entry.getKey().getInstance(Long.class);
                 String maxName = group.getDatasetNameByLinkNameOffset(maxOffset);
+                return datasetName.compareTo(maxName);
+            });
+            targetSnodIndex = targetSnodIndex == entries.size() ? entries.size() - 1 : targetSnodIndex;
 
-                int cmp = datasetName.compareTo(maxName);
-                if (cmp <= 0) {
-                    insertionPoint = mid;
-                    high = mid - 1;
-                } else {
-                    low = mid + 1;
-                }
-            }
-
-            int targetIndex = (insertionPoint == entries.size()) ? entries.size() - 1 : insertionPoint;
-
-            // 'targetSnodIndex' now holds the index of the HdfBTreeEntry in the non-empty 'entries' list
-            // that should be considered first for inserting the new 'datasetName'.
-            // This index is determined assuming 'entries' is sorted by 'maxName'.
-            // Further logic outside this search block will handle capacity checks and splits.
-
-            // Select SNOD based on targetSnodIndex
-            targetEntry = entries.get(targetIndex);
+            targetEntry = entries.get(targetSnodIndex);
             targetSnod = targetEntry.getSymbolTableNode();
-            targetEntryIndex = targetIndex;
 
-            // Find insertion index within SNOD
-            List<HdfSymbolTableEntry> symbolTableEntries = targetSnod.getSymbolTableEntries();
-            for (int j = 0; j < symbolTableEntries.size(); j++) {
-                String existingName = group.getDatasetNameByLinkNameOffset(symbolTableEntries.get(j).getLinkNameOffset().getInstance(Long.class));
-                if (datasetName.compareTo(existingName) < 0) {
-                    insertIndex = j;
-                    break;
-                }
-                insertIndex = j + 1;
-            }
+            // --- Step 2: Binary search within SNOD's symbol table ---
+            insertIndex = binarySearchDatasetName(targetSnod.getSymbolTableEntries().size(), (mid)->{
+                HdfSymbolTableEntry ste = targetSnod.getSymbolTableEntries().get(mid);
+                long offset = ste.getLinkNameOffset().getInstance(Long.class);
+                String name = group.getDatasetNameByLinkNameOffset(offset);
+                return datasetName.compareTo(name);
+            });
         }
 
-        // Step 2: Insert HdfSymbolTableEntry
+        // --- Step 3: Insert new dataset ---
         HdfSymbolTableEntry ste = new HdfSymbolTableEntry(
                 HdfFixedPoint.of(linkNameOffset),
                 HdfFixedPoint.of(datasetObjectHeaderAddress)
         );
+        targetSnod.getSymbolTableEntries().add(insertIndex, ste);
+
+        // --- Step 4: Update B-tree key with new max ---
         List<HdfSymbolTableEntry> symbolTableEntries = targetSnod.getSymbolTableEntries();
-        symbolTableEntries.add(insertIndex, ste);
+        long maxOffset = symbolTableEntries.get(symbolTableEntries.size() - 1).getLinkNameOffset().getInstance(Long.class);
+        targetEntry.setKey(HdfFixedPoint.of(maxOffset));
 
-        // Step 3: Update B-tree key if necessary
-        String newMaxName = symbolTableEntries.stream()
-                .map(e -> group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class)))
-                .filter(Objects::nonNull)
-                .max(String::compareTo)
-                .orElseThrow(() -> new IllegalStateException("No valid dataset names in SNOD"));
-        long maxLinkNameOffset = symbolTableEntries.stream()
-                .filter(e -> newMaxName.equals(group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class))))
-                .findFirst()
-                .map(e -> e.getLinkNameOffset().getInstance(Long.class))
-                .orElseThrow(() -> new IllegalStateException("Could not find linkNameOffset for max dataset name: " + newMaxName));
-        targetEntry.setKey(HdfFixedPoint.of(maxLinkNameOffset));
-
-        // Step 4: Handle SNOD split if full
+        // --- Step 5: Split if SNOD too large ---
         if (symbolTableEntries.size() > MAX_SNOD_ENTRIES) {
-            splitSnod(targetEntryIndex, fileAllocation, group);
+            splitSnod(targetSnodIndex, fileAllocation, group);
         }
+    }
+
+    private int binarySearchDatasetName(
+            int size,
+            Function<Integer, Integer> compareNames
+    ) {
+        int low = 0;
+        int high = size - 1;
+        int insertionPoint = size;
+
+        while (low <= high) {
+            int mid = low + ((high - low) >>> 1);
+            if (compareNames.apply(mid) <= 0) {
+                insertionPoint = mid;
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return insertionPoint;
     }
 
     private void splitSnod(int targetEntryIndex, HdfFileAllocation fileAllocation, HdfGroup group) {
