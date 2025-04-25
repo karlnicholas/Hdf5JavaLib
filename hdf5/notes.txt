@@ -1,3 +1,73 @@
+
+HdfBTreeV1:
+  Signature: TREE
+  Node Type: 0
+  Node Level: 0
+  Entries Used: 4
+  Left Sibling Address: -1
+  Right Sibling Address: -1
+  Key Zero: 0
+  Entries:
+    - Entry 1:
+        Key: 184
+        Child Pointer: 1072
+        Payload (SNOD):
+          HdfGroupSymbolTableNode:
+            Signature: SNOD
+            Version: 1
+            Number of Symbols: 4
+            Symbol Table Entries:
+              - Link Name Offset: 8, Object Header Offset: 800, Cache Type: 0, Dataset Name: dataset_1
+              - Link Name Offset: 152, Object Header Offset: 6232, Cache Type: 0, Dataset Name: dataset_10
+              - Link Name Offset: 168, Object Header Offset: 6856, Cache Type: 0, Dataset Name: dataset_11
+              - Link Name Offset: 184, Object Header Offset: 7128, Cache Type: 0, Dataset Name: dataset_12
+    - Entry 2:
+        Key: 248
+        Child Pointer: 7944
+        Payload (SNOD):
+          HdfGroupSymbolTableNode:
+            Signature: SNOD
+            Version: 1
+            Number of Symbols: 4
+            Symbol Table Entries:
+              - Link Name Offset: 200, Object Header Offset: 7400, Cache Type: 0, Dataset Name: dataset_13
+              - Link Name Offset: 216, Object Header Offset: 7672, Cache Type: 0, Dataset Name: dataset_14
+              - Link Name Offset: 232, Object Header Offset: 8272, Cache Type: 0, Dataset Name: dataset_15
+              - Link Name Offset: 248, Object Header Offset: 8544, Cache Type: 0, Dataset Name: dataset_16
+    - Entry 3:
+        Key: 56
+        Child Pointer: 9360
+        Payload (SNOD):
+          HdfGroupSymbolTableNode:
+            Signature: SNOD
+            Version: 1
+            Number of Symbols: 7
+            Symbol Table Entries:
+              - Link Name Offset: 264, Object Header Offset: 8816, Cache Type: 0, Dataset Name: dataset_17
+              - Link Name Offset: 280, Object Header Offset: 9088, Cache Type: 0, Dataset Name: dataset_18
+              - Link Name Offset: 296, Object Header Offset: 9688, Cache Type: 0, Dataset Name: dataset_19
+              - Link Name Offset: 24, Object Header Offset: 1400, Cache Type: 0, Dataset Name: dataset_2
+              - Link Name Offset: 312, Object Header Offset: 9960, Cache Type: 0, Dataset Name: dataset_20
+              - Link Name Offset: 40, Object Header Offset: 1672, Cache Type: 0, Dataset Name: dataset_3
+              - Link Name Offset: 56, Object Header Offset: 4096, Cache Type: 0, Dataset Name: dataset_4
+    - Entry 4:
+        Key: 136
+        Child Pointer: 5904
+        Payload (SNOD):
+          HdfGroupSymbolTableNode:
+            Signature: SNOD
+            Version: 1
+            Number of Symbols: 5
+            Symbol Table Entries:
+              - Link Name Offset: 72, Object Header Offset: 4368, Cache Type: 0, Dataset Name: dataset_5
+              - Link Name Offset: 88, Object Header Offset: 4640, Cache Type: 0, Dataset Name: dataset_6
+              - Link Name Offset: 104, Object Header Offset: 5088, Cache Type: 0, Dataset Name: dataset_7
+              - Link Name Offset: 120, Object Header Offset: 5360, Cache Type: 0, Dataset Name: dataset_8
+              - Link Name Offset: 136, Object Header Offset: 5632, Cache Type: 0, Dataset Name: dataset_9
+
+===========
+
+
 HdfBTreeV1:
   Signature: TREE
   Node Type: 0

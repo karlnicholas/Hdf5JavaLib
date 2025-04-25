@@ -59,7 +59,7 @@ public class HdfTwentyScalarApp {
             HdfFixedPoint[] hdfDimensions = {};
             DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(false, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointApp.computeDataSpaceMessageSize(hdfDimensions));
             for( int i=1; i<=20; i++) {
-                writeInteger("dataset_"+i, hdfFile, dataSpaceMessage);
+                writeInteger(i, "dataset_"+i, hdfFile, dataSpaceMessage);
                 hdfFile.getFileAllocation().printBlocks();
             }
 
@@ -150,14 +150,14 @@ public class HdfTwentyScalarApp {
         dataset.close();
     }
 
-    private static void writeInteger(String datasetName, HdfFile hdfFile, DataspaceMessage dataSpaceMessage) throws IOException {
+    private static void writeInteger(int count, String datasetName, HdfFile hdfFile, DataspaceMessage dataSpaceMessage) throws IOException {
         FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
                 FixedPointDatatype.createClassAndVersion(),
                 FixedPointDatatype.createClassBitField( false, false, false, true),
                 (short)4, (short)0, (short)32);
         // Create dataset
         HdfDataSet dataset = hdfFile.createDataSet(datasetName, fixedPointDatatype, dataSpaceMessage);
-        HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
+//        HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
 
         HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
         hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
@@ -169,7 +169,7 @@ public class HdfTwentyScalarApp {
         }
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
-        byteBuffer.putInt(42);
+        byteBuffer.putInt(count);
         byteBuffer.flip();
         dataset.write(byteBuffer);
         dataset.close();

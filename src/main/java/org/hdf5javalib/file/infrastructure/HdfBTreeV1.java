@@ -353,9 +353,24 @@ public class HdfBTreeV1 {
             }
         }
         buffer.rewind();
+        long bTreeOffset = fileAllocation.getBtreeOffset();
+        seekableByteChannel.position(bTreeOffset);
         while (buffer.hasRemaining()) {
             seekableByteChannel.write(buffer);
         }
+
+        Map<Long, HdfGroupSymbolTableNode> mapOffsetToSnod = mapOffsetToSnod();
+        //TODO: hardcoed SNod storage size.
+        ByteBuffer snodBuffer = ByteBuffer.allocate(328).order(ByteOrder.LITTLE_ENDIAN);
+        for (Map.Entry<Long, HdfGroupSymbolTableNode> offsetAndStn : mapOffsetToSnod.entrySet()) {
+            offsetAndStn.getValue().writeToBuffer(snodBuffer);
+            snodBuffer.rewind();
+            seekableByteChannel.position(offsetAndStn.getKey());
+            while (snodBuffer.hasRemaining()) {
+                seekableByteChannel.write(snodBuffer);
+            }
+            Arrays.fill(snodBuffer.array(), (byte) 0);
+            snodBuffer.clear();        }
     }
 
     public Map<Long, HdfGroupSymbolTableNode> mapOffsetToSnod() {

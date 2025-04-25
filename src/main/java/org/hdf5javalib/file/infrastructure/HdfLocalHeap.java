@@ -214,7 +214,7 @@ public class HdfLocalHeap {
                 '}';
     }
 
-    public void writeToByteChannel(SeekableByteChannel seekableByteChannel) throws IOException {
+    public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(32).order(java.nio.ByteOrder.LITTLE_ENDIAN);
 
         buffer.put(signature.getBytes());
@@ -225,6 +225,7 @@ public class HdfLocalHeap {
         writeFixedPointToBuffer(buffer, heapContentsOffset);
 
         buffer.rewind();
+        seekableByteChannel.position(fileAllocation.getLocalHeapHeaderOffset());
         while (buffer.hasRemaining()) {
             seekableByteChannel.write(buffer);
         }
