@@ -37,7 +37,11 @@ public class HdfObjectHeaderPrefixV1 {
     }
 
     // Factory method to read from a FileChannel
-    public static HdfObjectHeaderPrefixV1 readFromFileChannel(SeekableByteChannel fileChannel, short offsetSize, short lengthSize, HdfDataFile hdfDataFile
+    public static HdfObjectHeaderPrefixV1 readFromFileChannel(
+            SeekableByteChannel fileChannel,
+            short offsetSize,
+            short lengthSize,
+            HdfDataFile hdfDataFile
     ) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
         fileChannel.read(buffer);
@@ -117,10 +121,6 @@ public class HdfObjectHeaderPrefixV1 {
             int position = buffer.position();
             buffer.position((position + 7) & ~7);
 
-            // After writing 6 messages, jump to continuation offset if present
-//            if (i == 5 && optContinuationMessage.isPresent()) {
-//                buffer.position(optContinuationMessage.get().getContinuationOffset().getInstance(Long.class).intValue());
-//            }
             // assuming this doesn't happen.
             if (buffer.position() > buffer.capacity()) {
                 throw new IllegalStateException("Buffer overflow writing group header messages to byte channel.");
@@ -154,8 +154,6 @@ public class HdfObjectHeaderPrefixV1 {
         buffer.putInt(0);
 
         // Write messages, handling continuation as first message but splitting at 6
-//        Optional<ObjectHeaderContinuationMessage> optContinuationMessage = findMessageByType(ObjectHeaderContinuationMessage.class);
-
         for (HdfMessage hdfMessage : headerMessages) {
             hdfMessage.writeMessageToByteBuffer(buffer);
 
@@ -163,10 +161,6 @@ public class HdfObjectHeaderPrefixV1 {
             int position = buffer.position();
             buffer.position((position + 7) & ~7);
 
-            // After writing 6 messages, jump to continuation offset if present
-//            if (i == 5 && optContinuationMessage.isPresent()) {
-//                buffer.position(optContinuationMessage.get().getContinuationOffset().getInstance(Long.class).intValue());
-//            }
             if (buffer.position() >= buffer.capacity()) {
                 break;
             }
@@ -195,15 +189,6 @@ public class HdfObjectHeaderPrefixV1 {
 
     }
 
-//    public Optional<HdfFixedPoint> getDataAddress() {
-//        for (HdfMessage message : headerMessages) {
-//            if (message instanceof DataLayoutMessage layoutMessage) {
-//                return Optional.of(layoutMessage.getDataAddress());
-//            }
-//        }
-//        return Optional.empty();
-//    }
-
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -213,7 +198,6 @@ public class HdfObjectHeaderPrefixV1 {
                 .append(" Object Reference Count: ").append(objectReferenceCount)
                 .append(" Object Header Size: ").append(objectHeaderSize);
                 // Parse header messages
-//        dataObjectHeaderMessages.forEach(hm->builder.append("\r\n\t" + hm));
         for( HdfMessage message: headerMessages) {
             String ms = message.toString();
             builder.append("\r\n").append(ms);
@@ -231,6 +215,4 @@ public class HdfObjectHeaderPrefixV1 {
         }
         return Optional.empty();
     }
-
-
 }

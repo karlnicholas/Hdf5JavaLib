@@ -203,7 +203,6 @@ public class HdfSuperblock {
 
     public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-//        buffer.order(ByteOrder.LITTLE_ENDIAN); // Ensure little-endian ordering
         ByteBuffer buffer = ByteBuffer.allocate(Math.toIntExact(fileAllocation.getSuperblockSize())).order(ByteOrder.LITTLE_ENDIAN);
 
         // Step 1: Write the HDF5 file signature (8 bytes)

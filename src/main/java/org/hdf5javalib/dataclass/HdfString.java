@@ -33,14 +33,6 @@ public class HdfString implements HdfData {
     // Get the HDF byte[] representation for storage, always returns a copy
     public byte[] getBytes() {
         return datatype.getWorkingBytes(bytes);
-
-//        byte[] copy = new byte[datatype.getSize()];
-//        StringDatatype.PaddingType paddingType = datatype.getPaddingType();
-//        if ( paddingType == StringDatatype.PaddingType.SPACE_PAD) {
-//
-//        }
-//        System.arraycopy(bytes, 0, copy, 0, bytes.length);
-//        return copy;
     }
 
     // String representation for debugging and user-friendly output

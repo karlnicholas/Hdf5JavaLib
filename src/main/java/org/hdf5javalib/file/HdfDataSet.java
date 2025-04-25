@@ -29,7 +29,6 @@ import java.util.function.Supplier;
 @Getter
 @Slf4j
 public class HdfDataSet implements Closeable {
-//    private final HdfGroup hdfGroup;
     private final HdfDataFile hdfDataFile;
     private final String datasetName;
     private final HdfDatatype hdfDatatype;
@@ -73,7 +72,6 @@ public class HdfDataSet implements Closeable {
         headerMessages.add(dataSpaceMessage);
 
         // So, why, compoundMessageType size is OK but for fixed it needs + 8
-//        short dataTypeMessageSize = 8;
         short dataTypeMessageSize = 0;
         dataTypeMessageSize += hdfDatatype.getSizeMessageData();
         // to 8 byte boundary
@@ -164,7 +162,6 @@ public class HdfDataSet implements Closeable {
         // dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
         dataLayoutMessage.setDataAddress(HdfFixedPoint.of(allocationInfo.getDataOffset()));
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, objectReferenceCount, Math.max(objectHeaderSize, headerSize-16), headerMessages);
-//        hdfGroup.getHdfFile().recomputeGlobalHeapAddress(this);
         // check if a global heap needed
     }
 
@@ -331,7 +328,6 @@ public class HdfDataSet implements Closeable {
             updatedHeaderMessages.add(dataSpaceMessage);
             updatedHeaderMessages.addAll(attributes);
             attributes.clear();
-//            int continueSize = dataSpaceMessage.getSizeMessageData() + 8 + attributeSize;
             headerMessages.clear();
             headerMessages.addAll(updatedHeaderMessages);
 
@@ -347,11 +343,7 @@ public class HdfDataSet implements Closeable {
             headerMessages.add(new NilMessage((int) nilSize, (byte)0, (short)nilSize));
         }
         DataLayoutMessage dataLayoutMessage = dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class).orElseThrow();
-        // redo addresses already set.
-        // dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
         dataLayoutMessage.setDataAddress(HdfFixedPoint.of(allocationInfo.getDataOffset()));
-//        this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, headerMessages.size(), objectReferenceCount, Math.max(objectHeaderSize, headerSize), headerMessages);
-//        hdfGroup.getHdfFile().recomputeGlobalHeapAddress(this);
         // need to write the dataset
         writeToFileChannel(hdfDataFile.getSeekableByteChannel());
 
@@ -370,7 +362,6 @@ public class HdfDataSet implements Closeable {
             }
             // hdfGroup.getHdfFile().getBufferAllocation().setDataGroupAndContinuationStorageSize(headerSize, dataspaceMessage.getSizeMessageData() + 8 + attributeSize);
             // New code:
-//            long newStorageSize = headerSize;
             if ( allocationInfo.getHeaderSize() < headerSize ) {
                 fileAllocation.increaseHeaderAllocation(datasetName, headerSize);
             }
@@ -378,9 +369,6 @@ public class HdfDataSet implements Closeable {
             if ( allocationInfo.getContinuationSize() < newContinuationSize ) {
                 fileAllocation.allocateAndSetContinuationBlock(datasetName, newContinuationSize);
             }
-            // set the object header size.
-            // redo addresses already set.
-//            hdfGroup.getHdfFile().recomputeGlobalHeapAddress(this);
             return true;
         }
         return false;
@@ -404,23 +392,6 @@ public class HdfDataSet implements Closeable {
         return objectHeaderSize;
     }
 
-//    /**
-//     * For writing data to the dataset.
-//     * @param bufferSupplier
-//     * @throws IOException
-//     */
-//    public void write(Supplier<ByteBuffer> bufferSupplier) throws IOException {
-//        hdfDataFile.write(bufferSupplier, this);
-//    }
-//
-//    /**
-//     * For writing data to the dataset.
-//     * @param byteBuffer
-//     * @throws IOException
-//     */
-//    public void write(ByteBuffer byteBuffer) throws IOException {
-//        hdfDataFile.write(byteBuffer, this);
-//    }
     public void write(Supplier<ByteBuffer> bufferSupplier) throws IOException {
         HdfFileAllocation.DatasetAllocationInfo allocationInfo = hdfDataFile.getFileAllocation().getDatasetAllocationInfo(datasetName);
         hdfDataFile.getSeekableByteChannel().position(allocationInfo.getDataOffset());
@@ -473,5 +444,4 @@ public class HdfDataSet implements Closeable {
         }
 
     }
-
 }

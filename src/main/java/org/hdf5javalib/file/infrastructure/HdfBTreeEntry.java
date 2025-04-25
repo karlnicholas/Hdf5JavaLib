@@ -4,12 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 
-// These would be imports in a real scenario
-// Assuming HdfGroupSymbolTableNode and HdfBTreeV1 also have toString() methods
-// import org.hdf5javalib.file.infrastructure.HdfGroupSymbolTableNode;
-// import org.hdf5javalib.file.infrastructure.HdfBTreeV1;
-
-
 @Getter // Using Getter only
 public class HdfBTreeEntry {
     @Setter

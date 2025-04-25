@@ -57,11 +57,6 @@ public class HdfFileReader implements HdfDataFile {
         fileChannel.position(localHeapAddress);
         HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
 
-//        long dataSize = localHeap.getHeapContentsSize().getInstance(Long.class);
-//        long dataSegmentAddress = localHeap.getHeapContentsOffset().getInstance(Long.class);
-//        fileChannel.position(dataSegmentAddress);
-//        HdfLocalHeapContents localHeapContents = HdfLocalHeapContents.readFromFileChannel(fileChannel, (int) dataSize);
-
         long bTreeAddress = superblock.getRootGroupSymbolTableEntry().getBTreeOffset().getInstance(Long.class);
         fileChannel.position(bTreeAddress);
         HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
@@ -74,7 +69,6 @@ public class HdfFileReader implements HdfDataFile {
                 objectHeader,
                 bTree,
                 localHeap,
-//                localHeapContents,
                 datasetMap
         );
 

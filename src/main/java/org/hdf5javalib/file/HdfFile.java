@@ -68,31 +68,6 @@ public class HdfFile implements Closeable, HdfDataFile {
         return rootGroup.createDataSet(this, datasetName, hdfDatatype, dataSpaceMessage);
     }
 
-//    protected void recomputeGlobalHeapAddress(HdfDataSet dataSet) {
-//        HdfFixedPoint dimensionSize = dataSet.getDataObjectHeaderPrefix().findMessageByType(DataLayoutMessage.class).orElseThrow().getDimensionSizes()[0];
-//        // bufferAllocation.computeGlobalHeapAddress(dimensionSize.getInstance(Long.class));
-//        fileAllocation.computeGlobalHeapOffset(dimensionSize.getInstance(Long.class));
-//    }
-//
-//    public void write(Supplier<ByteBuffer> bufferSupplier, HdfDataSet hdfDataSet) throws IOException {
-//        DatasetAllocationInfo allocationInfo = hdfDataSet.getHdfDataFile().getFileAllocation().getDatasetAllocationInfo(hdfDataSet.getDatasetName());
-//        seekableByteChannel.position(allocationInfo.getDataOffset());
-//        ByteBuffer buffer;
-//        while ((buffer = bufferSupplier.get()).hasRemaining()) {
-//            while (buffer.hasRemaining()) {
-//                seekableByteChannel.write(buffer);
-//            }
-//        }
-//    }
-//
-//    public void write(ByteBuffer buffer, HdfDataSet hdfDataSet) throws IOException {
-//        DatasetAllocationInfo allocationInfo = hdfDataSet.getHdfDataFile().getFileAllocation().getDatasetAllocationInfo(hdfDataSet.getDatasetName());
-//        seekableByteChannel.position(allocationInfo.getDataOffset());
-//        while (buffer.hasRemaining()) {
-//            seekableByteChannel.write(buffer);
-//        }
-//    }
-
     @Override
     public void close() throws IOException {
         if (closed) {
@@ -101,55 +76,17 @@ public class HdfFile implements Closeable, HdfDataFile {
         rootGroup.close();
         // long endOfFileAddress = bufferAllocation.getDataAddress();
         long endOfFileAddress = fileAllocation.getEndOfFileOffset();
-//        HdfFixedPoint[] dimensionSizes = rootGroup.getDataSet().getDataObjectHeaderPrefix()
-//                .findMessageByType(DataLayoutMessage.class)
-//                .orElseThrow()
-//                .getDimensionSizes();
-//        for(HdfFixedPoint fixedPoint : dimensionSizes) {
-//            endOfFileAddress += fixedPoint.getInstance(Long.class);
-//        }
-//
-//        // some convoluted logic for adding globalHeap data if needed
-//        ByteBuffer globalHeapBuffer = null;
-//        long globalHeapAddress = -1;
-//        long globalHeapSize = globalHeap.getWriteBufferSize(-1);
-//        if ( globalHeapSize > 0 ) {
-//            globalHeapAddress = endOfFileAddress;
-//            endOfFileAddress += globalHeapSize;
-//            globalHeapBuffer = ByteBuffer.allocate((int) globalHeapSize);
-//            globalHeap.writeToByteBuffer(globalHeapBuffer);
-//            globalHeapBuffer.position(0);
-//        }
         superblock.setEndOfFileAddress(HdfFixedPoint.of(endOfFileAddress));
 
-//        Path path = Path.of(fileName);
-//        StandardOpenOption[] fileOptions = {StandardOpenOption.WRITE};
-//        if ( !Files.exists(path) ) {
-//            fileOptions =new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE};
-//        }
-//
-//        try (FileChannel fileChannel = FileChannel.open(path, fileOptions)) {
-            // write super block
-            log.debug("{}", superblock);
-            superblock.writeToFileChannel(seekableByteChannel);
+        // write super block
+        log.debug("{}", superblock);
+        superblock.writeToFileChannel(seekableByteChannel);
 
-            // write root group, writes all dataset and snod allocations as well.
-            log.debug("{}", rootGroup);
-            rootGroup.writeToFileChannel(seekableByteChannel);
+        // write root group, writes all dataset and snod allocations as well.
+        log.debug("{}", rootGroup);
+        rootGroup.writeToFileChannel(seekableByteChannel);
 
-//            getGlobalHeap().printDebug();
-
-            getGlobalHeap().writeToFileChannel(seekableByteChannel);
-
-//            // check here if global heap needs to be written
-//            if ( globalHeapAddress > 0 ) {
-//                fileChannel.position(globalHeapAddress);
-//                while (globalHeapBuffer.hasRemaining()) {
-//                    fileChannel.write(globalHeapBuffer);
-//                }
-//            }
-
-//        }
+        getGlobalHeap().writeToFileChannel(seekableByteChannel);
 
         closed = true;
     }

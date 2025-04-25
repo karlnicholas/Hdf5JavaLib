@@ -173,11 +173,4 @@ public class AttributeMessage extends HdfMessage {
         }
 
     }
-
-//    public void write(HdfFixedPoint attrType, String attributeValue) {
-//        value = new HdfString(attributeValue);
-//        int size = super.getSizeMessageData() + value.getSizeMessageData();
-//        size = (short) ((size + 7) & ~7);
-//        super.setSizeMessageData((short) size);
-//    }
 }
