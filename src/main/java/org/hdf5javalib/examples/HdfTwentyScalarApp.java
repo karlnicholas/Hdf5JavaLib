@@ -1,6 +1,5 @@
 package org.hdf5javalib.examples;
 
-import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
@@ -11,7 +10,6 @@ import org.hdf5javalib.utils.HdfDisplayUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

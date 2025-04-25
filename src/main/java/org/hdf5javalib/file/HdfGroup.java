@@ -10,13 +10,10 @@ import org.hdf5javalib.file.dataobject.message.SymbolTableMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.file.infrastructure.HdfBTreeV1;
-import org.hdf5javalib.file.infrastructure.HdfGroupSymbolTableNode;
 import org.hdf5javalib.file.infrastructure.HdfLocalHeap;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Collection;
 import java.util.Collections;

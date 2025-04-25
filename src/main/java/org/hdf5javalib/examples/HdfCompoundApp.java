@@ -3,7 +3,6 @@ package org.hdf5javalib.examples;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
-import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
