@@ -30,26 +30,56 @@ package org.hdf5javalib.examples;
 //import java.util.concurrent.atomic.AtomicInteger;
 //import java.util.function.Consumer;
 
+import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.file.HdfDataSet;
+import org.hdf5javalib.file.HdfFile;
+import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
+import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Hello world!
  *
  */
 public class HdfFixedPointApp {
-//    public static void main(String[] args) throws IOException {
-//        new HdfFixedPointApp().run();
-//    }
-//    private Path getResourcePath(String fileName) {
-//        String resourcePath = getClass().getClassLoader().getResource(fileName).getPath();
-//        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
-//            resourcePath = resourcePath.substring(1);
-//        }
-//        return Paths.get(resourcePath);
-//    }
-//
-//
-//    private void run() throws IOException {
+    public static void main(String[] args) throws IOException {
+        new HdfFixedPointApp().run();
+    }
+    private Path getResourcePath(String fileName) {
+        String resourcePath = getClass().getClassLoader().getResource(fileName).getPath();
+        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
+            resourcePath = resourcePath.substring(1);
+        }
+        return Paths.get(resourcePath);
+    }
+
+
+    private void run() throws IOException {
 ////        Path filePath = getResourcePath("twenty_datasets.h5");
 ////        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
 ////            HdfFileReader reader = new HdfFileReader(channel).readFile();
@@ -86,8 +116,8 @@ public class HdfFixedPointApp {
 ////        tryHdfApiInts("vector_each.h5", this::writeEach);
 //        tryHdfApiInts("vector_all.h5", this::writeAll);
 //        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);
-//        tryHdfApiMatrixInts("weatherdata_all.h5", this::writeAllMatrix);
-//    }
+        tryHdfApiMatrixInts("weatherdata_all.h5", this::writeAllMatrix);
+    }
 //
 //    private void tryScalarDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataSet dataSet) throws IOException {
 //        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, hdfDataFile, dataSet, BigInteger.class);
@@ -217,78 +247,78 @@ public class HdfFixedPointApp {
 //        pieces.forEach(entry -> System.out.printf("Coords %s → Value: %s%n", Arrays.toString(entry.coordinates), entry.value));
 //    }
 //
-//    private void tryHdfApiMatrixInts(String FILE_NAME, Consumer<MatrixWriterParams> writer) {
-//        String filePath = "/weatherdata.csv";
-//
-//        List<String> labels;
-//        List<List<BigDecimal>> data = new ArrayList<>();
-//        try (Reader reader = new InputStreamReader(Objects.requireNonNull(HdfFixedPointApp.class.getResourceAsStream(filePath)), StandardCharsets.UTF_8)) {
-//            // Updated approach to set header and skip the first record
-//            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
-//                    .setHeader()
-//                    .setSkipHeaderRecord(true)
-//                    .build();
-//
-//            CSVParser parser = new CSVParser(reader, csvFormat);
-//
-//            // Get column labels
-//            labels = new ArrayList<>(parser.getHeaderNames());
-////            System.out.println("Labels: " + labels);
-//
-//            // Read rows and convert values to BigDecimal
-//            for (CSVRecord record : parser) {
-//                List<BigDecimal> row = new ArrayList<>();
-//                for (String label : labels) {
-//                    String value = record.get(label);
-//                    if (value != null && !value.isEmpty()) {
-//                        row.add(new BigDecimal(value).setScale(2, RoundingMode.HALF_UP));
-//                    } else {
-//                        row.add(null); // Handle missing values
-//                    }
-//                }
-//                data.add(row);
-//            }
-//
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
-//        try (SeekableByteChannel channel = Files.newByteChannel(new File(FILE_NAME).toPath(), FILE_OPTIONS)) {
-////            final String FILE_NAME = "randomintseach.h5";
-//            final String DATASET_NAME = "weatherdata";
-//
-//            final int NUM_RECORDS = 4;
-//            final int NUM_DATAPOINTS = 17;
-//
-//            // Create a new HDF5 file
-//            HdfFile file = new HdfFile(channel);
-//
-//            // Create data space
-//            HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS), HdfFixedPoint.of(NUM_DATAPOINTS)};
-//
-//            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 2, DataspaceMessage.buildFlagSet(true, false), hdfDimensions, hdfDimensions, false, (byte)0, computeDataSpaceMessageSize(hdfDimensions));
-//
-//            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
-//                    FixedPointDatatype.createClassAndVersion(),
-//                    FixedPointDatatype.createClassBitField( false, false, false, false),
-//                    (short)4, (short)7, (short)25);
-//
-//            HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
-//
-//            writer.accept(new MatrixWriterParams(NUM_RECORDS, NUM_DATAPOINTS, fixedPointDatatype, dataset, data));
-//
-//            dataset.close();
-//            file.close();
-//
-//            // auto close
-//
-//            System.out.println("HDF5 file " + FILE_NAME + " created and written successfully!");
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-//
+    private void tryHdfApiMatrixInts(String FILE_NAME, Consumer<MatrixWriterParams> writer) {
+        String filePath = "/weatherdata.csv";
+
+        List<String> labels;
+        List<List<BigDecimal>> data = new ArrayList<>();
+        try (Reader reader = new InputStreamReader(Objects.requireNonNull(HdfFixedPointApp.class.getResourceAsStream(filePath)), StandardCharsets.UTF_8)) {
+            // Updated approach to set header and skip the first record
+            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
+                    .setHeader()
+                    .setSkipHeaderRecord(true)
+                    .build();
+
+            CSVParser parser = new CSVParser(reader, csvFormat);
+
+            // Get column labels
+            labels = new ArrayList<>(parser.getHeaderNames());
+//            System.out.println("Labels: " + labels);
+
+            // Read rows and convert values to BigDecimal
+            for (CSVRecord record : parser) {
+                List<BigDecimal> row = new ArrayList<>();
+                for (String label : labels) {
+                    String value = record.get(label);
+                    if (value != null && !value.isEmpty()) {
+                        row.add(new BigDecimal(value).setScale(2, RoundingMode.HALF_UP));
+                    } else {
+                        row.add(null); // Handle missing values
+                    }
+                }
+                data.add(row);
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
+        try (SeekableByteChannel channel = Files.newByteChannel(new File(FILE_NAME).toPath(), FILE_OPTIONS)) {
+//            final String FILE_NAME = "randomintseach.h5";
+            final String DATASET_NAME = "weatherdata";
+
+            final int NUM_RECORDS = 4;
+            final int NUM_DATAPOINTS = 17;
+
+            // Create a new HDF5 file
+            HdfFile file = new HdfFile(channel);
+
+            // Create data space
+            HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS), HdfFixedPoint.of(NUM_DATAPOINTS)};
+
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 2, DataspaceMessage.buildFlagSet(true, false), hdfDimensions, hdfDimensions, false, (byte)0, computeDataSpaceMessageSize(hdfDimensions));
+
+            FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
+                    FixedPointDatatype.createClassAndVersion(),
+                    FixedPointDatatype.createClassBitField( false, false, false, false),
+                    (short)4, (short)7, (short)25);
+
+            HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
+
+            writer.accept(new MatrixWriterParams(NUM_RECORDS, NUM_DATAPOINTS, fixedPointDatatype, dataset, file, data));
+
+            dataset.close();
+            file.close();
+
+            // auto close
+
+            System.out.println("HDF5 file " + FILE_NAME + " created and written successfully!");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static short computeDataSpaceMessageSize(HdfFixedPoint[] hdfDimensions) {
         short dataSpaceMessageSize = 8;
         if ( hdfDimensions != null ) {
@@ -395,27 +425,37 @@ public class HdfFixedPointApp {
 //        });
 //    }
 //
-//    @SneakyThrows
-//    private void writeAllMatrix(MatrixWriterParams writerParams) {
-//        ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS * writerParams.NUM_RECORDS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
-//        BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
-//        BigDecimal point5 = new BigDecimal("0.5");
-//        for(int r=0; r<writerParams.NUM_RECORDS; r++) {
-//            makeBitOffsetValues(writerParams, byteBuffer, twoShifted, point5, r);
-//        }
-//        byteBuffer.flip();
-//        // Write to dataset
-//        writerParams.dataset.write(byteBuffer);
-//    }
-//
-//    private void makeBitOffsetValues(MatrixWriterParams writerParams, ByteBuffer byteBuffer, BigDecimal twoShifted, BigDecimal point5, int r) {
-//        for(int c=0; c < writerParams.NUM_DATAPOINTS; ++c ) {
-//            BigDecimal rawValue = writerParams.values.get(r).get(c).multiply(twoShifted).add(point5);
-//            BigInteger rawValueShifted = rawValue.toBigInteger();
-//            new HdfFixedPoint(rawValueShifted, writerParams.fixedPointDatatype)
-//                    .writeValueToByteBuffer(byteBuffer);
-//        }
-//    }
+    @SneakyThrows
+    private void writeAllMatrix(MatrixWriterParams writerParams) {
+        HdfFixedPoint[] dimensionSizes= writerParams.dataset.getdimensionSizes();
+        writerParams.hdfDataFile.getFileAllocation().allocateAndSetDataBlock(writerParams.dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+        boolean requiresGlobalHeap = writerParams.dataset.getHdfDatatype().requiresGlobalHeap(false);
+        if (requiresGlobalHeap) {
+            if (!writerParams.hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                writerParams.hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+            }
+        }
+
+
+        ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS * writerParams.NUM_RECORDS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+        BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
+        BigDecimal point5 = new BigDecimal("0.5");
+        for(int r=0; r<writerParams.NUM_RECORDS; r++) {
+            makeBitOffsetValues(writerParams, byteBuffer, twoShifted, point5, r);
+        }
+        byteBuffer.flip();
+        // Write to dataset
+        writerParams.dataset.write(byteBuffer);
+    }
+
+    private void makeBitOffsetValues(MatrixWriterParams writerParams, ByteBuffer byteBuffer, BigDecimal twoShifted, BigDecimal point5, int r) {
+        for(int c=0; c < writerParams.NUM_DATAPOINTS; ++c ) {
+            BigDecimal rawValue = writerParams.values.get(r).get(c).multiply(twoShifted).add(point5);
+            BigInteger rawValueShifted = rawValue.toBigInteger();
+            new HdfFixedPoint(rawValueShifted, writerParams.fixedPointDatatype)
+                    .writeValueToByteBuffer(byteBuffer);
+        }
+    }
 //
 //    @SneakyThrows
 //    private void writeEach(WriterParams writerParams) {
@@ -451,12 +491,13 @@ public class HdfFixedPointApp {
 //        HdfDataSet dataset;
 //    }
 //
-//    @AllArgsConstructor
-//    static class MatrixWriterParams {
-//        int NUM_RECORDS;
-//        int NUM_DATAPOINTS;
-//        FixedPointDatatype fixedPointDatatype;
-//        HdfDataSet dataset;
-//        List<List<BigDecimal>> values;
-//    }
+    @AllArgsConstructor
+    static class MatrixWriterParams {
+        int NUM_RECORDS;
+        int NUM_DATAPOINTS;
+        FixedPointDatatype fixedPointDatatype;
+        HdfDataSet dataset;
+        HdfDataFile hdfDataFile;
+        List<List<BigDecimal>> values;
+    }
 }

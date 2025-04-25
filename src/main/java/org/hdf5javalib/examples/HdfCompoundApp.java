@@ -42,20 +42,20 @@ public class HdfCompoundApp {
     }
 
     private void run() {
-        try {
-            Path filePath = getResourcePath("compound_example.h5");
-            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-                try ( HdfDataSet dataSet = reader.getRootGroup().findDataset("CompoundData") ) {
-                    displayData(channel, dataSet, reader);
-                }
-//                reader.getGlobalHeap().printDebug();
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-//        tryHdfApiCompound();
+//        try {
+//            Path filePath = getResourcePath("compound_example.h5");
+//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+//                HdfFileReader reader = new HdfFileReader(channel).readFile();
+//                try ( HdfDataSet dataSet = reader.getRootGroup().findDataset("CompoundData") ) {
+//                    displayData(channel, dataSet, reader);
+//                }
+////                reader.getGlobalHeap().printDebug();
+//            }
+//
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+        tryHdfApiCompound();
     }
     private Path getResourcePath(String fileName) {
         String resourcePath = getClass().getClassLoader().getResource(fileName).getPath();

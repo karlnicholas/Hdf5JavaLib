@@ -89,17 +89,32 @@ public class HdfCompoundWriteComparisonTest {
             }
         }
 
+//        int numRecords = 1000;
+//        CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();
+//        int bufferSize = numRecords * compoundType.getSize();
+//        logger.debug("Writing bulk data with buffer size: {}", bufferSize);
+//        ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize).order(ByteOrder.LITTLE_ENDIAN);
+//        for (int count = 0; count < numRecords; count++) {
+//            CompoundExample instance = buildCompoundExample(count);
+//            HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, byteBuffer, CompoundExample.class);
+//        }
+//        byteBuffer.flip();
+//        dataset.write(byteBuffer);
         int numRecords = 1000;
         CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();
         int bufferSize = numRecords * compoundType.getSize();
-        logger.debug("Writing bulk data with buffer size: {}", bufferSize);
-        ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer fileBuffer = ByteBuffer.allocate(bufferSize).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(compoundType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
         for (int count = 0; count < numRecords; count++) {
             CompoundExample instance = buildCompoundExample(count);
+            byteBuffer.clear();
             HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, byteBuffer, CompoundExample.class);
+            byteBuffer.rewind();
+            fileBuffer.put(byteBuffer);
         }
-        byteBuffer.flip();
-        dataset.write(byteBuffer);
+        fileBuffer.rewind();
+        dataset.write(fileBuffer);
+
         logger.debug("Bulk write completed, bytes written: {}", byteBuffer.limit());
     }
 
@@ -126,7 +141,7 @@ public class HdfCompoundWriteComparisonTest {
             CompoundExample instance = buildCompoundExample(count);
             byteBuffer.clear();
             HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, byteBuffer, CompoundExample.class);
-            byteBuffer.flip();
+            byteBuffer.rewind();
             return byteBuffer;
         });
         logger.debug("Incremental write completed");
@@ -310,14 +325,16 @@ public class HdfCompoundWriteComparisonTest {
 
     private static final int CYCLE_LENGTH = 5;
 
+    // --- Signed Types ---
+
     public static byte getCycledInt8(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
         return switch (cycleIndex) {
-            case 0 -> Byte.MIN_VALUE;
-            case 1 -> (byte) (-(Byte.MAX_VALUE / 2) - 1);
-            case 2 -> 0;
-            case 3 -> (byte) (Byte.MAX_VALUE / 2);
-            default -> Byte.MAX_VALUE;
+            case 0 -> Byte.MIN_VALUE;                            // -128 (0x80)
+            case 1 -> (byte) (-(Byte.MAX_VALUE / 2) - 1);        //  -64 (0xC0) approx
+            case 2 -> 0;                                         //    0 (0x00)
+            case 3 -> (byte) (Byte.MAX_VALUE / 2);               //   63 (0x3F) approx
+            default -> Byte.MAX_VALUE;                   //  127 (0x7F)
         };
     }
 
@@ -354,44 +371,50 @@ public class HdfCompoundWriteComparisonTest {
         };
     }
 
-    public static short getCycledUint8(int index) {
+    // --- Unsigned Types (Return next larger signed type to hold value) ---
+    // --- Or return 'long' for uint64 and handle bit pattern ---
+
+    public static short getCycledUint8(int index) { // Returns short to hold 0-255
         int cycleIndex = index % CYCLE_LENGTH;
         return switch (cycleIndex) {
-            case 0 -> 0;
-            case 1 -> 63; // 255 / 4
-            case 2 -> 127; // 255 / 2
-            case 3 -> 189; // (255 / 4) * 3
-            default -> 255;
+            case 0 -> 0;                     // 0x00
+            case 1 -> 255 / 4;               // 63 (0x3F) approx
+            case 2 -> 255 / 2;               // 127 (0x7F) approx
+            case 3 -> (255 / 4) * 3;         // 189 (0xBD) approx
+            default -> 255;          // 255 (0xFF)
         };
     }
 
-    public static int getCycledUint16(int index) {
+    public static int getCycledUint16(int index) { // Returns int to hold 0-65535
         int cycleIndex = index % CYCLE_LENGTH;
-        int max_val = 65535;
+        int max_val = 65535; // 0xFFFF
         return switch (cycleIndex) {
             case 0 -> 0;
-            case 1 -> 16383; // max_val / 4
-            case 2 -> 32767; // max_val / 2
-            case 3 -> 49149; // (max_val / 4) * 3
+            case 1 -> max_val / 4;
+            case 2 -> max_val / 2;
+            case 3 -> (max_val / 4) * 3;
             default -> max_val;
         };
     }
 
-    public static long getCycledUint32(int index) {
+    public static long getCycledUint32(int index) { // Returns long to hold 0-(2^32-1)
         int cycleIndex = index % CYCLE_LENGTH;
-        long max_val = 0xFFFFFFFFL;
+        long max_val = 0xFFFFFFFFL; // (1L << 32) - 1;
         return switch (cycleIndex) {
             case 0 -> 0L;
-            case 1 -> 1073741823L; // max_val / 4
-            case 2 -> 2147483647L; // max_val / 2
-            case 3 -> 3221225469L; // (max_val / 4) * 3
+            case 1 -> max_val / 4L;
+            case 2 -> max_val / 2L;
+            case 3 -> (max_val / 4L) * 3L;
             default -> max_val;
         };
     }
 
-    public static BigInteger getCycledUint64(int index) {
+    // For uint64, we can return long and rely on the bit pattern being correct,
+    // or use BigInteger if the HDF5 library specifically needs that. Assuming primitive:
+    public static BigInteger getCycledUint64(int index) { // Returns long, bit pattern matches uint64
         int cycleIndex = index % CYCLE_LENGTH;
-        BigInteger MAX_U64 = new BigInteger("18446744073709551615");
+        // Use BigInteger for calculation constants to avoid signed long issues
+        BigInteger MAX_U64 = new BigInteger("18446744073709551615"); // 2^64 - 1
         BigInteger FOUR = BigInteger.valueOf(4);
         BigInteger TWO = BigInteger.valueOf(2);
         BigInteger THREE = BigInteger.valueOf(3);
@@ -401,7 +424,7 @@ public class HdfCompoundWriteComparisonTest {
             case 1 -> MAX_U64.divide(FOUR);
             case 2 -> MAX_U64.divide(TWO);
             case 3 -> MAX_U64.divide(FOUR).multiply(THREE);
-            default -> MAX_U64;
+            default -> MAX_U64; // Max unsigned 64 bit is -1L signed
         };
     }
 }

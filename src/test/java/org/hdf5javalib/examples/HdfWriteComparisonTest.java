@@ -51,7 +51,7 @@ public class HdfWriteComparisonTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideTestConfigurations")
-    void testWriteMatchesCpp(String testName, String refFile, String datasetName, int[] dimensions, FixedPointDatatype datatype, int[] timestampOffsets, BiConsumer<HdfDataSet, HdfFile> writer) throws IOException {
+    void testWriteMatchesCpp(String testName, boolean writeAttribute, String refFile, String datasetName, int[] dimensions, FixedPointDatatype datatype, int[] timestampOffsets, BiConsumer<HdfDataSet, HdfFile> writer) throws IOException {
         logger.info("Running test: {}", testName);
         int dataSize = dimensions[0] * (dimensions.length > 1 ? dimensions[1] : 1) * datatype.getSize();
         int headerSizeEstimate = 2048;
@@ -64,8 +64,10 @@ public class HdfWriteComparisonTest {
             DataspaceMessage dataSpaceMessage = new DataspaceMessage(
                     1, (byte) dimensions.length, DataspaceMessage.buildFlagSet(true, false),
                     hdfDimensions, hdfDimensions, false, (byte) 0, computeDataSpaceMessageSize(hdfDimensions));
+
             HdfDataSet dataset = file.createDataSet(datasetName, datatype, dataSpaceMessage);
-            HdfDisplayUtils.writeVersionAttribute(file, dataset);
+            if ( writeAttribute)
+                HdfDisplayUtils.writeVersionAttribute(file, dataset);
             writer.accept(dataset, file);
             dataset.close();
             file.close();
@@ -239,10 +241,10 @@ public class HdfWriteComparisonTest {
                 FixedPointDatatype.createClassBitField(false, false, false, false),
                 (short) 4, (short) 7, (short) 25);
         return Stream.of(
-                Arguments.of("BulkWrite_Vector_1000", "vector.h5", "vector", new int[]{1000}, vectorDatatype, new int[]{932}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeVectorAll),
-                Arguments.of("IncrementalWrite_Vector_1000", "vector.h5", "vector", new int[]{1000}, vectorDatatype, new int[]{932}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeVectorEach),
-                Arguments.of("BulkWrite_Matrix_4x17", "weatherdata.h5", "weatherdata", new int[]{4, 17}, matrixDatatype, new int[]{0x3B4}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeMatrixAll),
-                Arguments.of("IncrementalWrite_Matrix_4x17", "weatherdata.h5", "weatherdata", new int[]{4, 17}, matrixDatatype, new int[]{0x3B4}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeMatrixEach)
+                Arguments.of("BulkWrite_Vector_1000", true, "vector.h5", "vector", new int[]{1000}, vectorDatatype, new int[]{932}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeVectorAll),
+                Arguments.of("IncrementalWrite_Vector_1000", true, "vector.h5", "vector", new int[]{1000}, vectorDatatype, new int[]{932}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeVectorEach),
+                Arguments.of("BulkWrite_Matrix_4x17", false, "weatherdata.h5", "weatherdata", new int[]{4, 17}, matrixDatatype, new int[]{0x3B4}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeMatrixAll),
+                Arguments.of("IncrementalWrite_Matrix_4x17", false, "weatherdata.h5", "weatherdata", new int[]{4, 17}, matrixDatatype, new int[]{0x3B4}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeMatrixEach)
         );
     }
 }
