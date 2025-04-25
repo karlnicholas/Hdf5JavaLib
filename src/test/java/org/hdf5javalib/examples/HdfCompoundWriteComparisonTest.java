@@ -45,7 +45,7 @@ public class HdfCompoundWriteComparisonTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideTestConfigurations")
-    void testWriteMatchesReference(String testName, String refFile, String datasetName, int[] dimensions, CompoundDatatype datatype, int timestampOffset, BiConsumer<HdfDataSet, HdfFile> writer) throws IOException {
+    void testWriteMatchesReference(String testName, String refFile, String datasetName, int[] dimensions, CompoundDatatype datatype, int[] timestampOffsets, BiConsumer<HdfDataSet, HdfFile> writer) throws IOException {
         logger.info("Running test: {}", testName);
         int totalSize = 135096;
         logger.debug("Allocating MemorySeekableByteChannel with size: {}", totalSize);
@@ -70,7 +70,7 @@ public class HdfCompoundWriteComparisonTest {
             byte[] refBytes = Files.readAllBytes(refPath);
             logger.debug("Reference byte array length: {}", refBytes.length);
 
-            HdfTestWriteUtils.compareByteArraysWithTimestampExclusion(javaBytes, refBytes, timestampOffset);
+            HdfTestWriteUtils.compareByteArraysWithTimestampExclusion(javaBytes, refBytes, timestampOffsets);
             logger.info("Test {} passed", testName);
         } catch (Exception e) {
             logger.error("Test {} failed", testName, e);
@@ -266,7 +266,7 @@ public class HdfCompoundWriteComparisonTest {
                                 "CompoundData",
                                 new int[]{1000},
                                 compoundType,
-                                0x6F4, // Based on ObjectModificationTimeMessage position, may need adjustment
+                                new int[]{0x6F4}, // Based on ObjectModificationTimeMessage position, may need adjustment
                                 (BiConsumer<HdfDataSet, HdfFile>) HdfCompoundWriteComparisonTest::writeCompoundAll),
                         Arguments.of(
                                 "IncrementalWrite_Compound_1000",
@@ -274,7 +274,7 @@ public class HdfCompoundWriteComparisonTest {
                                 "CompoundData",
                                 new int[]{1000},
                                 compoundType,
-                                0x6F4, // Based on ObjectModificationTimeMessage position, may need adjustment
+                                new int[]{0x6F4}, // Based on ObjectModificationTimeMessage position, may need adjustment
                                 (BiConsumer<HdfDataSet, HdfFile>) HdfCompoundWriteComparisonTest::writeCompoundEach)
                 );
             } finally {
