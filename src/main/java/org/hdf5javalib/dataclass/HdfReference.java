@@ -9,10 +9,6 @@ public class HdfReference implements HdfData {
     private final ReferenceDatatype datatype;
 
     public HdfReference(byte[] bytes, ReferenceDatatype datatype) {
-        if (bytes.length != datatype.getSize()) {
-            throw new IllegalArgumentException("Byte array length (" + bytes.length +
-                    ") does not match datatype size (" + datatype.getSize() + ")");
-        }
         this.bytes = bytes.clone();
         this.datatype = datatype;
     }

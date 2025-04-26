@@ -8,8 +8,23 @@ public class HdfFloatPoint implements HdfData {
     private final byte[] bytes;
     private final FloatingPointDatatype datatype;
 
+    /**
+     * Constructs an HdfFloatPoint from a byte array and a specified FloatingPointDatatype.
+     * <p>
+     * This constructor initializes the HdfFloatPoint by storing a reference to the provided byte array
+     * and associating it with the given datatype. The byte array is expected to represent a floating-point
+     * number formatted according to the datatype's specifications, including precision and endianness.
+     * </p>
+     *
+     * @param bytes    the byte array containing the floating-point data
+     * @param datatype the FloatingPointDatatype defining the floating-point structure, size, and format
+     * @throws NullPointerException if either {@code bytes} or {@code datatype} is null
+     */
     public HdfFloatPoint(byte[] bytes, FloatingPointDatatype datatype) {
-        this.bytes = bytes;
+        if (bytes == null || datatype == null) {
+            throw new NullPointerException("Bytes and datatype must not be null");
+        }
+        this.bytes = bytes.clone();
         this.datatype = datatype;
     }
 

@@ -35,7 +35,7 @@ public class HdfSymbolTableEntry {
         this.localHeapOffset = null;
     }
 
-    public static HdfSymbolTableEntry fromFileChannel(SeekableByteChannel fileChannel, short offsetSize) throws IOException {
+    public static HdfSymbolTableEntry readFromFileChannel(SeekableByteChannel fileChannel, short offsetSize) throws IOException {
         BitSet emptyBitSet = new BitSet();
         // Read the fixed-point values for linkNameOffset and objectHeaderAddress
         HdfFixedPoint linkNameOffset = HdfFixedPoint.readFromFileChannel(fileChannel, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));

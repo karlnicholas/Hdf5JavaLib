@@ -16,9 +16,25 @@ public class HdfString implements HdfData {
     private final byte[] bytes;
     private final StringDatatype datatype;
 
-    // Constructor for HDF metadata-based initialization (comprehensive parameters)
+    /**
+     * Constructs an HdfString from a byte array and a specified StringDatatype.
+     * <p>
+     * This constructor initializes the HdfString by storing a reference to the provided byte array
+     * and associating it with the given datatype. The byte array is expected to contain string data
+     * formatted according to the datatype's specifications, such as character encoding and length.
+     * This constructor is typically used for HDF metadata-based initialization with comprehensive
+     * parameters.
+     * </p>
+     *
+     * @param bytes    the byte array containing the string data
+     * @param datatype the StringDatatype defining the string structure, encoding, and format
+     * @throws NullPointerException if either {@code bytes} or {@code datatype} is null
+     */
     public HdfString(byte[] bytes, StringDatatype datatype) {
-        this.bytes = bytes.clone();
+        if (bytes == null || datatype == null) {
+            throw new NullPointerException("Bytes and datatype must not be null");
+        }
+        this.bytes = bytes;
         this.datatype = datatype;
     }
 

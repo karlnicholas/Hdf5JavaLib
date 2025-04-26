@@ -50,7 +50,7 @@ public class HdfGroupSymbolTableNode {
         // Read Symbol Table Entries
         List<HdfSymbolTableEntry> symbolTableEntries = new ArrayList<>(numberOfSymbols);
         for (int i = 0; i < numberOfSymbols; i++) {
-            HdfSymbolTableEntry entry = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
+            HdfSymbolTableEntry entry = HdfSymbolTableEntry.readFromFileChannel(fileChannel, offsetSize);
             symbolTableEntries.add(entry);
         }
 

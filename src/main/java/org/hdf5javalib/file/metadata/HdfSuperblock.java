@@ -174,7 +174,7 @@ public class HdfSuperblock {
         int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
         buffer.getInt(); // Skip consistency flags
 
-        HdfSymbolTableEntry rootGroupSymbleTableEntry = HdfSymbolTableEntry.fromFileChannel(fileChannel, offsetSize);
+        HdfSymbolTableEntry rootGroupSymbleTableEntry = HdfSymbolTableEntry.readFromFileChannel(fileChannel, offsetSize);
 
         // Parse addresses using HdfFixedPoint
         BitSet emptyBitSet = new BitSet();
