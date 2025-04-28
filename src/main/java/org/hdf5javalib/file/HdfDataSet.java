@@ -13,6 +13,7 @@ import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.VariableLengthDatatype;
+import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -49,7 +50,7 @@ public class HdfDataSet implements Closeable {
         this.hdfDatatype = hdfDatatype;
         this.attributes = new ArrayList<>();
         closed = false;
-        createInitialMessages(dataSpaceMessage);
+        createInitialMessages(dataSpaceMessage, hdfDatatype);
     }
 
     public HdfDataSet(HdfDataFile hdfDataFile, String datasetName, HdfDatatype hdfDatatype, HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix) {
@@ -62,7 +63,7 @@ public class HdfDataSet implements Closeable {
         dataObjectHeaderPrefix.findMessageByType(AttributeMessage.class).ifPresent(attributes::add);
     }
 
-    private void createInitialMessages(DataspaceMessage dataSpaceMessage) {
+    private void createInitialMessages(DataspaceMessage dataSpaceMessage, HdfDatatype hdfDatatype) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         HdfFileAllocation.DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
 
@@ -116,7 +117,7 @@ public class HdfDataSet implements Closeable {
             dimensionSizes *= fixedPoint.getInstance(Long.class);
         }
         HdfFixedPoint[] hdfDimensionSizes = (HdfFixedPoint[]) Array.newInstance(HdfFixedPoint.class, 1);
-        hdfDimensionSizes[0] = HdfFixedPoint.of(dimensionSizes);
+        hdfDimensionSizes[0] = HdfWriteUtils.hdfFixedPointFromValue(dimensionSizes, hdfDataFile.getFixedPointDatatypeForOffset());
 
 
         short dataLayoutMessageSize = (short) 8;
@@ -137,9 +138,9 @@ public class HdfDataSet implements Closeable {
 
         DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1,
                 // HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()),
-                HdfFixedPoint.of(allocationInfo.getDataOffset()),
+                HdfWriteUtils.hdfFixedPointFromValue(allocationInfo.getDataOffset(), hdfDataFile.getFixedPointDatatypeForOffset()),
                 hdfDimensionSizes,
-                0, null, HdfFixedPoint.undefined((short)8), (byte)0, dataLayoutMessageSize);
+                0, null, hdfDataFile.getFixedPointDatatypeForOffset().undefined(), (byte)0, dataLayoutMessageSize);
         headerMessages.add(dataLayoutMessage);
 
         // add ObjectModification Time message
@@ -160,7 +161,7 @@ public class HdfDataSet implements Closeable {
         }
         // redo addresses already set.
         // dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
-        dataLayoutMessage.setDataAddress(HdfFixedPoint.of(allocationInfo.getDataOffset()));
+        dataLayoutMessage.setDataAddress(HdfWriteUtils.hdfFixedPointFromValue(allocationInfo.getDataOffset(), hdfDataFile.getFixedPointDatatypeForOffset()));
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, objectReferenceCount, Math.max(objectHeaderSize, headerSize-16), headerMessages);
         // check if a global heap needed
     }
@@ -314,7 +315,10 @@ public class HdfDataSet implements Closeable {
 
             // if you take out the dataSpaceMessage and replace it with
             // a objectHeaderContinuationMessage and NilMessage then the size is the same
-            ObjectHeaderContinuationMessage objectHeaderContinuationMessage = new ObjectHeaderContinuationMessage(HdfFixedPoint.of(0), HdfFixedPoint.of(0), (byte)0, (short)16);
+            ObjectHeaderContinuationMessage objectHeaderContinuationMessage = new ObjectHeaderContinuationMessage(
+                    HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFixedPointDatatypeForOffset()),
+                    HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFixedPointDatatypeForLength()),
+                    (byte)0, (short)16);
             updatedHeaderMessages.add(objectHeaderContinuationMessage);
             // NiLMessage is now 0 size because there is no extra space
             updatedHeaderMessages.add(new NilMessage(0, (byte)0, (short)0));
@@ -331,8 +335,8 @@ public class HdfDataSet implements Closeable {
             headerMessages.clear();
             headerMessages.addAll(updatedHeaderMessages);
 
-            objectHeaderContinuationMessage.setContinuationOffset(HdfFixedPoint.of(allocationInfo.getContinuationOffset()));
-            objectHeaderContinuationMessage.setContinuationSize(HdfFixedPoint.of(allocationInfo.getContinuationSize()));
+            objectHeaderContinuationMessage.setContinuationOffset(HdfWriteUtils.hdfFixedPointFromValue(allocationInfo.getContinuationOffset(), hdfDataFile.getFixedPointDatatypeForOffset()));
+            objectHeaderContinuationMessage.setContinuationSize(HdfWriteUtils.hdfFixedPointFromValue(allocationInfo.getContinuationSize(), hdfDataFile.getFixedPointDatatypeForOffset()));
             // set the object header size.
         } else if ( objectHeaderSize + attributeSize  < headerSize-16 ) {
             if ( !attributes.isEmpty() ) {
@@ -343,7 +347,7 @@ public class HdfDataSet implements Closeable {
             headerMessages.add(new NilMessage((int) nilSize, (byte)0, (short)nilSize));
         }
         DataLayoutMessage dataLayoutMessage = dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class).orElseThrow();
-        dataLayoutMessage.setDataAddress(HdfFixedPoint.of(allocationInfo.getDataOffset()));
+        dataLayoutMessage.setDataAddress(HdfWriteUtils.hdfFixedPointFromValue(allocationInfo.getDataOffset(), hdfDataFile.getFixedPointDatatypeForOffset()));
         // need to write the dataset
         writeToFileChannel(hdfDataFile.getSeekableByteChannel());
 

@@ -11,6 +11,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,6 +78,37 @@ public class FixedPointDatatype implements HdfDatatype {
     public static byte createClassAndVersion() {
         return 0x10;
     }
+
+    public HdfFixedPoint undefined() {
+        HdfReadUtils.validateSize(size);
+        byte[] undefinedBytes = new byte[size];
+        Arrays.fill(undefinedBytes, (byte) 0xFF);
+        return new HdfFixedPoint(undefinedBytes, this);
+    }
+
+    public HdfFixedPoint undefined(ByteBuffer buffer) {
+        HdfReadUtils.validateSize(size);
+        byte[] undefinedBytes = new byte[size];
+        buffer.get(undefinedBytes);
+        return new HdfFixedPoint(undefinedBytes, this);
+    }
+
+    /**
+     * Creates an HdfFixedPoint representing a 64-bit fixed-point number from a long value.
+     * <p>
+     * This static factory method constructs an HdfFixedPoint by converting the provided long value into an
+     * 8-byte array in little-endian order. It uses a FixedPointDatatype with 64-bit precision, no offset, and
+     * no special flags (e.g., signed, normalized, or reserved bits). The resulting HdfFixedPoint is suitable
+     * for representing standard 64-bit integer values.
+     * </p>
+     *
+     * @param value the long value to convert into a fixed-point representation
+     * @return a new HdfFixedPoint instance encapsulating the 64-bit fixed-point number
+     */
+//    public HdfFixedPoint of(long value) {
+//        byte[] bArray = ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN).putLong(value).array();
+//        return new HdfFixedPoint(bArray, this);
+//    }
 
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {

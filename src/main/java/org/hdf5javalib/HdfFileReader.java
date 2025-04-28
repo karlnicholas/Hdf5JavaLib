@@ -9,8 +9,10 @@ import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.HdfGroup;
 import org.hdf5javalib.file.dataobject.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
+import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.file.infrastructure.*;
 import org.hdf5javalib.file.metadata.HdfSuperblock;
+import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
@@ -36,7 +38,7 @@ public class HdfFileReader implements HdfDataFile {
     private void initializeGlobalHeap(long offset) {
         try {
             fileChannel.position(offset);
-            globalHeap.readFromFileChannel(fileChannel, (short)8);
+            globalHeap.readFromFileChannel(fileChannel, this);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -46,20 +48,17 @@ public class HdfFileReader implements HdfDataFile {
         superblock = HdfSuperblock.readFromFileChannel(fileChannel, this);
         log.debug("{}", superblock);
 
-        short offsetSize = superblock.getOffsetSize();
-        short lengthSize = superblock.getLengthSize();
-
         long objectHeaderAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeaderOffset().getInstance(Long.class);
         fileChannel.position(objectHeaderAddress);
-        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, offsetSize, lengthSize, this);
+        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, this);
 
         long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getLocalHeapOffset().getInstance(Long.class);
         fileChannel.position(localHeapAddress);
-        HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
+        HdfLocalHeap localHeap = HdfLocalHeap.readFromFileChannel(fileChannel, this);
 
         long bTreeAddress = superblock.getRootGroupSymbolTableEntry().getBTreeOffset().getInstance(Long.class);
         fileChannel.position(bTreeAddress);
-        HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
+        HdfBTreeV1 bTree = HdfBTreeV1.readFromFileChannel(fileChannel, this);
 
         Map<String, HdfGroup.DataSetInfo> datasetMap = collectDatasetsMap(fileChannel, bTree, localHeap);
 
@@ -96,10 +95,12 @@ public class HdfFileReader implements HdfDataFile {
                     long dataObjectHeaderAddress = ste.getObjectHeaderOffset().getInstance(Long.class);
                     long linkNameOffset = ste.getLinkNameOffset().getInstance(Long.class);
                     fileChannel.position(dataObjectHeaderAddress);
-                    HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, superblock.getOffsetSize(), superblock.getLengthSize(), this);
+                    HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromFileChannel(fileChannel, this);
                     DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
                     HdfDataSet dataset = new HdfDataSet(this, linkName.toString(), dataType.getHdfDatatype(), header);
-                    HdfGroup.DataSetInfo dataSetInfo = new HdfGroup.DataSetInfo(dataset, HdfFixedPoint.of(dataObjectHeaderAddress), linkNameOffset);
+                    HdfGroup.DataSetInfo dataSetInfo = new HdfGroup.DataSetInfo(dataset,
+                            HdfWriteUtils.hdfFixedPointFromValue(0, getFixedPointDatatypeForOffset()),
+                            linkNameOffset);
                     dataSets.put(linkName.toString(), dataSetInfo);
                 }
             } else if (entry.isInternalEntry()) {
@@ -123,4 +124,15 @@ public class HdfFileReader implements HdfDataFile {
     public SeekableByteChannel getSeekableByteChannel() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    @Override
+    public FixedPointDatatype getFixedPointDatatypeForOffset() {
+        return null;
+    }
+
+    @Override
+    public FixedPointDatatype getFixedPointDatatypeForLength() {
+        return null;
+    }
+
 }

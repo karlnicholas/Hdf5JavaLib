@@ -6,6 +6,8 @@ import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.HdfGroup;
+import org.hdf5javalib.utils.HdfReadUtils;
+import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -66,19 +68,17 @@ public class HdfBTreeV1 {
         this.entriesUsed = 0;
         this.leftSiblingAddress = leftSiblingAddress;
         this.rightSiblingAddress = rightSiblingAddress;
-        this.keyZero = HdfFixedPoint.of(0);
+        this.keyZero = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFixedPointDatatypeForLength());
         this.entries = new ArrayList<>();
     }
 
-    public static HdfBTreeV1 readFromFileChannel(SeekableByteChannel fileChannel, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) throws IOException {
+    public static HdfBTreeV1 readFromFileChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
         long initialAddress = fileChannel.position();
-        return readFromFileChannelRecursive(fileChannel, initialAddress, offsetSize, lengthSize, new HashMap<>(), hdfDataFile);
+        return readFromFileChannelRecursive(fileChannel, initialAddress, new HashMap<>(), hdfDataFile);
     }
 
     private static HdfBTreeV1 readFromFileChannelRecursive(SeekableByteChannel fileChannel,
                                                            long nodeAddress,
-                                                           short offsetSize,
-                                                           short lengthSize,
                                                            Map<Long, HdfBTreeV1> visitedNodes,
                                                            HdfDataFile hdfDataFile
     ) throws IOException {
@@ -90,7 +90,8 @@ public class HdfBTreeV1 {
         fileChannel.position(nodeAddress);
         long startPos = nodeAddress;
 
-        int headerSize = 8 + offsetSize + offsetSize;
+//        int headerSize = 8 + offsetSize + offsetSize;
+        int headerSize = 8 + hdfDataFile.getFixedPointDatatypeForOffset().getSize() + hdfDataFile.getFixedPointDatatypeForOffset().getSize();
         ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
         int headerBytesRead = fileChannel.read(headerBuffer);
         if (headerBytesRead != headerSize) {
@@ -110,11 +111,12 @@ public class HdfBTreeV1 {
         int entriesUsed = Short.toUnsignedInt(headerBuffer.getShort());
 
         BitSet emptyBitset = new BitSet();
-        HdfFixedPoint leftSiblingAddress = HdfFixedPoint.checkUndefined(headerBuffer, offsetSize) ? HdfFixedPoint.undefined(headerBuffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(headerBuffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
-        HdfFixedPoint rightSiblingAddress = HdfFixedPoint.checkUndefined(headerBuffer, offsetSize) ? HdfFixedPoint.undefined(headerBuffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(headerBuffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint leftSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), headerBuffer);
+        HdfFixedPoint rightSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), headerBuffer);
 
-        int entriesDataSize = lengthSize + (entriesUsed * (offsetSize + lengthSize));
-        if (entriesUsed < 0 || entriesDataSize < lengthSize) {
+        int entriesDataSize = hdfDataFile.getFixedPointDatatypeForLength().getSize()
+                + (entriesUsed * (hdfDataFile.getFixedPointDatatypeForOffset().getSize() + hdfDataFile.getFixedPointDatatypeForLength().getSize()));
+        if (entriesUsed < 0 || entriesDataSize < hdfDataFile.getFixedPointDatatypeForLength().getSize()) {
             throw new IOException("Invalid BTree node parameters at position " + startPos + ": entriesUsed=" + entriesUsed);
         }
         long currentPosBeforeEntries = fileChannel.position();
@@ -134,7 +136,7 @@ public class HdfBTreeV1 {
             throw new IOException("BTree node at " + startPos + " has entriesUsed=" + entriesUsed + " but entriesDataSize is 0.");
         }
 
-        HdfFixedPoint keyZero = HdfFixedPoint.readFromByteBuffer(entriesBuffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
+        HdfFixedPoint keyZero = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForLength(), entriesBuffer);
 
         List<HdfBTreeEntry> entries = new ArrayList<>(entriesUsed);
         long filePosAfterEntriesBlock = fileChannel.position();
@@ -143,8 +145,8 @@ public class HdfBTreeV1 {
         visitedNodes.put(nodeAddress, currentNode);
 
         for (int i = 0; i < entriesUsed; i++) {
-            HdfFixedPoint childPointer = HdfFixedPoint.readFromByteBuffer(entriesBuffer, offsetSize, emptyBitset, (short) 0, (short)(offsetSize*8));
-            HdfFixedPoint key = HdfFixedPoint.readFromByteBuffer(entriesBuffer, lengthSize, emptyBitset, (short) 0, (short)(lengthSize*8));
+            HdfFixedPoint childPointer = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), entriesBuffer);
+            HdfFixedPoint key = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForLength(), entriesBuffer);
             long childAddress = childPointer.getInstance(Long.class);
             HdfBTreeEntry entry;
 
@@ -156,7 +158,7 @@ public class HdfBTreeV1 {
             if (nodeLevel == 0) {
                 if (childAddress != -1L) {
                     fileChannel.position(childAddress);
-                    HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, offsetSize);
+                    HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromFileChannel(fileChannel, hdfDataFile);
                     entry = new HdfBTreeEntry(key, childPointer, snod);
                     fileChannel.position(filePosAfterEntriesBlock);
                 } else {
@@ -164,7 +166,7 @@ public class HdfBTreeV1 {
                 }
             } else {
                 if (childAddress != -1L) {
-                    HdfBTreeV1 childNode = readFromFileChannelRecursive(fileChannel, childAddress, offsetSize, lengthSize, visitedNodes, hdfDataFile);
+                    HdfBTreeV1 childNode = readFromFileChannelRecursive(fileChannel, childAddress, visitedNodes, hdfDataFile);
                     entry = new HdfBTreeEntry(key, childPointer, childNode);
                     fileChannel.position(filePosAfterEntriesBlock);
                 } else {
@@ -200,7 +202,9 @@ public class HdfBTreeV1 {
         if (entries.isEmpty()) {
             long snodOffset = fileAllocation.allocateNextSnodStorage();
             targetSnod = new HdfGroupSymbolTableNode("SNOD", 1, new ArrayList<>(MAX_SNOD_ENTRIES));
-            targetEntry = new HdfBTreeEntry(HdfFixedPoint.of(linkNameOffset), HdfFixedPoint.of(snodOffset), targetSnod);
+            targetEntry = new HdfBTreeEntry(
+                    HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getFixedPointDatatypeForOffset()),
+                    HdfWriteUtils.hdfFixedPointFromValue(snodOffset, hdfDataFile.getFixedPointDatatypeForOffset()), targetSnod);
             entries.add(targetEntry);
             entriesUsed++;
             targetSnodIndex = 0;
@@ -229,15 +233,15 @@ public class HdfBTreeV1 {
 
         // --- Step 3: Insert new dataset ---
         HdfSymbolTableEntry ste = new HdfSymbolTableEntry(
-                HdfFixedPoint.of(linkNameOffset),
-                HdfFixedPoint.of(datasetObjectHeaderAddress)
+            HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getFixedPointDatatypeForOffset()),
+            HdfWriteUtils.hdfFixedPointFromValue(datasetObjectHeaderAddress, hdfDataFile.getFixedPointDatatypeForOffset())
         );
         targetSnod.getSymbolTableEntries().add(insertIndex, ste);
 
         // --- Step 4: Update B-tree key with new max ---
         List<HdfSymbolTableEntry> symbolTableEntries = targetSnod.getSymbolTableEntries();
         long maxOffset = symbolTableEntries.get(symbolTableEntries.size() - 1).getLinkNameOffset().getInstance(Long.class);
-        targetEntry.setKey(HdfFixedPoint.of(maxOffset));
+        targetEntry.setKey(HdfWriteUtils.hdfFixedPointFromValue(maxOffset, hdfDataFile.getFixedPointDatatypeForOffset()));
 
         // --- Step 5: Split if SNOD too large ---
         if (symbolTableEntries.size() > MAX_SNOD_ENTRIES) {
@@ -298,7 +302,7 @@ public class HdfBTreeV1 {
                 .findFirst()
                 .map(e -> e.getLinkNameOffset().getInstance(Long.class))
                 .orElseThrow(() -> new IllegalStateException("Could not find linkNameOffset for max dataset name: " + targetMaxName));
-        targetEntry.setKey(HdfFixedPoint.of(targetMaxLinkNameOffset));
+        targetEntry.setKey(HdfWriteUtils.hdfFixedPointFromValue(targetMaxLinkNameOffset, hdfDataFile.getFixedPointDatatypeForOffset()));
 
         // Create new BTreeEntry
         String newMaxName = newSnodEntries.stream()
@@ -311,8 +315,8 @@ public class HdfBTreeV1 {
                 .findFirst()
                 .map(e -> e.getLinkNameOffset().getInstance(Long.class))
                 .orElseThrow(() -> new IllegalStateException("Could not find linkNameOffset for max dataset name: " + newMaxName));
-        HdfFixedPoint newKey = HdfFixedPoint.of(newMaxLinkNameOffset);
-        HdfFixedPoint newChildPointer = HdfFixedPoint.of(newSnodOffset);
+        HdfFixedPoint newKey = HdfWriteUtils.hdfFixedPointFromValue(newMaxLinkNameOffset, hdfDataFile.getFixedPointDatatypeForOffset());
+        HdfFixedPoint newChildPointer = HdfWriteUtils.hdfFixedPointFromValue(newSnodOffset, hdfDataFile.getFixedPointDatatypeForOffset());
         HdfBTreeEntry newEntry = new HdfBTreeEntry(newKey, newChildPointer, newSnod);
 
         // Insert new BTreeEntry in sorted order

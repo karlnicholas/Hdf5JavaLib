@@ -5,10 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
+import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import org.hdf5javalib.file.metadata.HdfSuperblock;
+import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -31,25 +33,34 @@ public class HdfFile implements Closeable, HdfDataFile {
         // this.globalHeap = new HdfGlobalHeap(bufferAllocation::getGlobalHeapAddress);
         this.fileAllocation = new HdfFileAllocation();
         this.globalHeap = new HdfGlobalHeap(this);
+        FixedPointDatatype fixedPointDatatypeForOffset = new FixedPointDatatype(
+                FixedPointDatatype.createClassAndVersion(),
+                FixedPointDatatype.createClassBitField(false, false, false, false),
+                8, (short) 0, (short) (8*8));
+        FixedPointDatatype fixedPointDatatypeForLength = new FixedPointDatatype(
+                FixedPointDatatype.createClassAndVersion(),
+                FixedPointDatatype.createClassBitField(false, false, false, false),
+                8, (short) 0, (short) (8*8));
+
 
         // 100320
         superblock = new HdfSuperblock(0, 0, 0, 0,
-                (short)8, (short)8,
                 4, 16,
-                HdfFixedPoint.of(0),
-                HdfFixedPoint.undefined((short)8),
+                HdfWriteUtils.hdfFixedPointFromValue(0, fixedPointDatatypeForOffset),
+                HdfWriteUtils.hdfFixedPointFromValue(8, fixedPointDatatypeForOffset),
                 // HdfFixedPoint.of(bufferAllocation.getDataAddress()),
                 // this offset of the end of the file. will need to be updated later.
-                HdfFixedPoint.of(0),
-                HdfFixedPoint.undefined((short)8),
+                HdfWriteUtils.hdfFixedPointFromValue(0, fixedPointDatatypeForOffset),
+                HdfWriteUtils.hdfFixedPointFromValue(8, fixedPointDatatypeForOffset),
                 new HdfSymbolTableEntry(
-                        HdfFixedPoint.of(0),
+                        HdfWriteUtils.hdfFixedPointFromValue(0, fixedPointDatatypeForOffset),
                         // HdfFixedPoint.of(bufferAllocation.getObjectHeaderPrefixAddress()),
-                        HdfFixedPoint.of(fileAllocation.getObjectHeaderPrefixOffset()),
+                        HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getObjectHeaderPrefixOffset(), fixedPointDatatypeForOffset),
                         // HdfFixedPoint.of(bufferAllocation.getBtreeAddress()),
-                        HdfFixedPoint.of(fileAllocation.getBtreeOffset()),
+                        HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getBtreeOffset(), fixedPointDatatypeForOffset),
                         // HdfFixedPoint.of(bufferAllocation.getLocalHeapAddress())));
-                        HdfFixedPoint.of(fileAllocation.getLocalHeapOffset())), this);
+                        HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getLocalHeapOffset(), fixedPointDatatypeForOffset)),
+                this, fixedPointDatatypeForOffset, fixedPointDatatypeForLength);
 
         // rootGroup = new HdfGroup(this, "", bufferAllocation.getBtreeAddress(), bufferAllocation.getLocalHeapAddress());
         rootGroup = new HdfGroup(this, "", fileAllocation.getBtreeOffset(), fileAllocation.getLocalHeapOffset());
@@ -76,7 +87,8 @@ public class HdfFile implements Closeable, HdfDataFile {
         rootGroup.close();
         // long endOfFileAddress = bufferAllocation.getDataAddress();
         long endOfFileAddress = fileAllocation.getEndOfFileOffset();
-        superblock.setEndOfFileAddress(HdfFixedPoint.of(endOfFileAddress));
+        superblock.setEndOfFileAddress(
+                HdfWriteUtils.hdfFixedPointFromValue(endOfFileAddress, getFixedPointDatatypeForOffset()));
 
         // write super block
         log.debug("{}", superblock);
@@ -89,5 +101,15 @@ public class HdfFile implements Closeable, HdfDataFile {
         getGlobalHeap().writeToFileChannel(seekableByteChannel);
 
         closed = true;
+    }
+
+    @Override
+    public FixedPointDatatype getFixedPointDatatypeForOffset() {
+        return superblock.getFixedPointDatatypeForOffset();
+    }
+
+    @Override
+    public FixedPointDatatype getFixedPointDatatypeForLength() {
+        return superblock.getFixedPointDatatypeForLength();
     }
 }

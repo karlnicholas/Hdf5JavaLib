@@ -81,11 +81,9 @@ public class DatatypeMessage extends HdfMessage {
 //     *
 //     * @param flags      Flags associated with the message (not used here).
 //     * @param data       Byte array containing the header message data.
-//     * @param ignoredoffsetSize Size of offsets in bytes (not used here).
-//     * @param ignoredlengthSize Size of lengths in bytes (not used here).
 //     * @return A fully constructed `DatatypeMessage` instance.
 //     */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int ignoredoffsetSize, int ignoredlengthSize, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
 //    public static HdfMessage parseHeaderMessage(byte[] data) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
@@ -95,11 +93,7 @@ public class DatatypeMessage extends HdfMessage {
 
     public static HdfDatatype getHdfDatatype(ByteBuffer buffer) {
         // Parse Version and Datatype Class (packed into a single byte)
-
         byte classAndVersion = buffer.get();
-//        byte version = (byte) ((classAndVersion >> 4) & 0x0F); // Top 4 bits
-//        byte dataTypeClass = (byte) (classAndVersion & 0x0F);  // Bottom 4 bits
-//        // Parse Class Bit Field (24 bits)
         byte[] classBits = new byte[3];
         buffer.get(classBits);
         BitSet classBitField = BitSet.valueOf(new long[]{

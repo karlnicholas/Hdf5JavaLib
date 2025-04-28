@@ -41,6 +41,7 @@ import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
+import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -295,7 +296,10 @@ public class HdfFixedPointApp {
             HdfFile file = new HdfFile(channel);
 
             // Create data space
-            HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS), HdfFixedPoint.of(NUM_DATAPOINTS)};
+            HdfFixedPoint[] hdfDimensions = {
+                    HdfWriteUtils.hdfFixedPointFromValue(NUM_RECORDS, file.getFixedPointDatatypeForLength()),
+                    HdfWriteUtils.hdfFixedPointFromValue(NUM_DATAPOINTS, file.getFixedPointDatatypeForLength())
+            };
 
             DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 2, DataspaceMessage.buildFlagSet(true, false), hdfDimensions, hdfDimensions, false, (byte)0, computeDataSpaceMessageSize(hdfDimensions));
 

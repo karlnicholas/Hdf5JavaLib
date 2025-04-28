@@ -84,12 +84,10 @@ public class FillValueMessage extends HdfMessage {
      *
      * @param flags             Flags associated with the message (not used here).
      * @param data              Byte array containing the header message data.
-     * @param ignoredOffsetSize Size of offsets in bytes (not used here).
-     * @param ignoredLengthSize Size of lengths in bytes (not used here).
      * @param hdfDataFile
      * @return A fully constructed `FillValueMessage` instance.
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int ignoredOffsetSize, int ignoredLengthSize, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Parse the first 4 bytes

@@ -1,6 +1,7 @@
 package org.hdf5javalib.file.infrastructure;
 
 import lombok.Getter;
+import org.hdf5javalib.HdfDataFile;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -22,7 +23,7 @@ public class HdfGroupSymbolTableNode {
         this.symbolTableEntries = symbolTableEntries;
     }
 
-    public static HdfGroupSymbolTableNode readFromFileChannel(SeekableByteChannel fileChannel, short offsetSize) throws IOException {
+    public static HdfGroupSymbolTableNode readFromFileChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();
@@ -50,7 +51,7 @@ public class HdfGroupSymbolTableNode {
         // Read Symbol Table Entries
         List<HdfSymbolTableEntry> symbolTableEntries = new ArrayList<>(numberOfSymbols);
         for (int i = 0; i < numberOfSymbols; i++) {
-            HdfSymbolTableEntry entry = HdfSymbolTableEntry.readFromFileChannel(fileChannel, offsetSize);
+            HdfSymbolTableEntry entry = HdfSymbolTableEntry.readFromFileChannel(fileChannel, hdfDataFile);
             symbolTableEntries.add(entry);
         }
 

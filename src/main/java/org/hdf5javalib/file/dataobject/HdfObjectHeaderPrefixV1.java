@@ -20,7 +20,6 @@ import static org.hdf5javalib.file.dataobject.message.HdfMessage.readMessagesFro
 @Getter
 public class HdfObjectHeaderPrefixV1 {
     private final int version;                // 1 byte
-//    private final int totalHeaderMessages;    // 2 bytes
     private final long objectReferenceCount;  // 4 bytes
     private final long objectHeaderSize;      // 4 bytes
     // level 2A1A
@@ -30,7 +29,6 @@ public class HdfObjectHeaderPrefixV1 {
     // Constructor for application-defined values
     public HdfObjectHeaderPrefixV1(int version, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> headerMessages) {
         this.version = version;
-//        this.totalHeaderMessages = totalHeaderMessages;
         this.objectReferenceCount = objectReferenceCount;
         this.objectHeaderSize = objectHeaderSize;
         this.headerMessages = headerMessages;
@@ -39,8 +37,6 @@ public class HdfObjectHeaderPrefixV1 {
     // Factory method to read from a FileChannel
     public static HdfObjectHeaderPrefixV1 readFromFileChannel(
             SeekableByteChannel fileChannel,
-            short offsetSize,
-            short lengthSize,
             HdfDataFile hdfDataFile
     ) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
@@ -70,10 +66,10 @@ public class HdfObjectHeaderPrefixV1 {
         if (reservedInt != 0) {
             throw new IllegalArgumentException("Reserved integer in Data Object Header Prefix is not zero.");
         }
-        List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>(readMessagesFromByteBuffer(fileChannel, objectHeaderSize, offsetSize, lengthSize, hdfDataFile));
+        List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>(readMessagesFromByteBuffer(fileChannel, objectHeaderSize, hdfDataFile));
         for ( HdfMessage hdfMessage: dataObjectHeaderMessages) {
             if (hdfMessage instanceof ObjectHeaderContinuationMessage) {
-                dataObjectHeaderMessages.addAll(parseContinuationMessage(fileChannel, (ObjectHeaderContinuationMessage)hdfMessage, offsetSize, lengthSize, hdfDataFile));
+                dataObjectHeaderMessages.addAll(parseContinuationMessage(fileChannel, (ObjectHeaderContinuationMessage)hdfMessage, hdfDataFile));
                 break;
             }
         }

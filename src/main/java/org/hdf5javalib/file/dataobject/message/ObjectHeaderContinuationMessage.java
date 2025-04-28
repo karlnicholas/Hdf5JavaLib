@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -61,12 +62,12 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
         this.continuationSize = continuationSize;
     }
 
-    public static ObjectHeaderContinuationMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) {
+    public static ObjectHeaderContinuationMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Parse the continuation offset and size
         BitSet emptyBitSet = new BitSet();
-        HdfFixedPoint continuationOffset = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-        HdfFixedPoint continuationSize = HdfFixedPoint.readFromByteBuffer(buffer, lengthSize, emptyBitSet, (short) 0, (short)(lengthSize*8));
+        HdfFixedPoint continuationOffset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint continuationSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForLength(), buffer);
         return new ObjectHeaderContinuationMessage(continuationOffset, continuationSize, flags, (short) data.length);
     }
 

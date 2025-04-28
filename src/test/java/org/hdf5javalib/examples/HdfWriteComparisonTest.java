@@ -59,7 +59,7 @@ public class HdfWriteComparisonTest {
             HdfFile file = new HdfFile(memoryChannel);
             HdfFixedPoint[] hdfDimensions = new HdfFixedPoint[dimensions.length];
             for (int i = 0; i < dimensions.length; i++) {
-                hdfDimensions[i] = HdfFixedPoint.of(dimensions[i]);
+                hdfDimensions[i] = HdfWriteUtils.hdfFixedPointFromValue(dimensions[i], file.getFixedPointDatatypeForLength());
             }
             DataspaceMessage dataSpaceMessage = new DataspaceMessage(
                     1, (byte) dimensions.length, DataspaceMessage.buildFlagSet(true, false),
@@ -98,7 +98,7 @@ public class HdfWriteComparisonTest {
         int numRecords = 1000;
         ByteBuffer byteBuffer = ByteBuffer.allocate(numRecords * 8).order(ByteOrder.LITTLE_ENDIAN);
         for (int i = 0; i < numRecords; i++) {
-            HdfWriteUtils.writeFixedPointToBuffer(byteBuffer, HdfFixedPoint.of(i + 1));
+            HdfWriteUtils.hdfFixedPointFromValue(i+1, hdfDataFile.getFixedPointDatatypeForLength()).writeValueToByteBuffer(byteBuffer);
         }
         byteBuffer.flip();
         dataset.write(byteBuffer);
@@ -122,7 +122,7 @@ public class HdfWriteComparisonTest {
             int count = countHolder.getAndIncrement();
             if (count >= numRecords) return ByteBuffer.allocate(0);
             byteBuffer.clear();
-            HdfWriteUtils.writeFixedPointToBuffer(byteBuffer, HdfFixedPoint.of(count + 1));
+            HdfWriteUtils.hdfFixedPointFromValue(count+1, hdfDataFile.getFixedPointDatatypeForLength()).writeValueToByteBuffer(byteBuffer);
             byteBuffer.flip();
             return byteBuffer;
         });

@@ -67,7 +67,7 @@ public class AttributeMessage extends HdfMessage {
         this.value = value;
     }
 
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Read the version (1 byte)
         int version = Byte.toUnsignedInt(buffer.get());
@@ -104,9 +104,9 @@ public class AttributeMessage extends HdfMessage {
         paddingBytes = new byte[padding];
         buffer.get(paddingBytes);
 
-        HdfMessage hdfDataObjectHeaderDt = createMessageInstance(MessageType.DatatypeMessage, (byte) 0, dtBytes, offsetSize, lengthSize, hdfDataFile);
+        HdfMessage hdfDataObjectHeaderDt = createMessageInstance(MessageType.DatatypeMessage, (byte) 0, dtBytes, hdfDataFile);
         DatatypeMessage dt = (DatatypeMessage) hdfDataObjectHeaderDt;
-        HdfMessage hdfDataObjectHeaderDs = createMessageInstance(MessageType.DataspaceMessage, (byte) 0, dsBytes, offsetSize, lengthSize, hdfDataFile);
+        HdfMessage hdfDataObjectHeaderDs = createMessageInstance(MessageType.DataspaceMessage, (byte) 0, dsBytes, hdfDataFile);
         DataspaceMessage ds = (DataspaceMessage) hdfDataObjectHeaderDs;
 
         int dtDataSize = dt.getHdfDatatype().getSize();

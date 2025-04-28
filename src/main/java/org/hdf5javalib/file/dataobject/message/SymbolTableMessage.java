@@ -3,10 +3,10 @@ package org.hdf5javalib.file.dataobject.message;
 import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.BitSet;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
@@ -60,10 +60,10 @@ public class SymbolTableMessage extends HdfMessage {
         this.localHeapAddress = localHeapAddress;
     }
 
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, short offsetSize, short lengthSize, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        HdfFixedPoint bTreeAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
-        HdfFixedPoint localHeapAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, new BitSet(), (short)0, (short)(offsetSize*8));
+        HdfFixedPoint bTreeAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint localHeapAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), buffer);
         return new SymbolTableMessage(bTreeAddress, localHeapAddress, flags, (short) data.length);
     }
 

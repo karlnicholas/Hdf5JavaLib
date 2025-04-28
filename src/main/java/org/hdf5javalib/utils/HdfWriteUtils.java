@@ -110,6 +110,16 @@ public class HdfWriteUtils {
             throw new RuntimeException(e);
         }
     }
+    public static HdfFixedPoint hdfFixedPointFromValue(long value, FixedPointDatatype fixedPointDatatype) {
+        Class fieldType = switch(fixedPointDatatype.getSize()) {
+            case 1 -> Byte.class;
+            case 2 -> Short.class;
+            case 4 -> Integer.class;
+            case 8 -> Long.class;
+            default -> throw new IllegalArgumentException("Unsupported size for FixedPointDatatype: " + fixedPointDatatype.getSize());
+        };
+        return new HdfFixedPoint(toFixedPointBytes(value, fixedPointDatatype, fieldType), fixedPointDatatype);
+    }
 
     // Convert field value to byte array for FixedPointDatatype
     private static byte[] toFixedPointBytes(Object value, FixedPointDatatype datatype, Class<?> fieldType) {

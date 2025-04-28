@@ -5,13 +5,14 @@ import lombok.Setter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfFileAllocation;
+import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
+import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
-import java.util.BitSet;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
@@ -75,8 +76,6 @@ public class HdfSuperblock {
     private final int freeSpaceVersion;
     private final int rootGroupVersion;
     private final int sharedHeaderVersion;
-    private final short offsetSize;
-    private final short lengthSize;
     private final int groupLeafNodeK;
     private final int groupInternalNodeK;
 
@@ -87,29 +86,31 @@ public class HdfSuperblock {
     private final HdfFixedPoint driverInformationAddress;
     private final HdfSymbolTableEntry rootGroupSymbolTableEntry;
 
+    // Working properties
     private final HdfDataFile hdfDataFile;
+    private final FixedPointDatatype fixedPointDatatypeForOffset;
+    private final FixedPointDatatype fixedPointDatatypeForLength;
 
     public HdfSuperblock(
             int version,
             int freeSpaceVersion,
             int rootGroupVersion,
             int sharedHeaderVersion,
-            short offsetSize,
-            short lengthSize,
             int groupLeafNodeK,
             int groupInternalNodeK,
             HdfFixedPoint baseAddress,
             HdfFixedPoint addressFileFreeSpaceInfo,
             HdfFixedPoint endOfFileAddress,
             HdfFixedPoint driverInformationAddress,
-            HdfSymbolTableEntry rootGroupSymbolTableEntry, HdfDataFile hdfDataFile
+            HdfSymbolTableEntry rootGroupSymbolTableEntry,
+            HdfDataFile hdfDataFile,
+            FixedPointDatatype fixedPointDatatypeForOffset,
+            FixedPointDatatype fixedPointDatatypeForLength
     ) {
         this.version = version;
         this.freeSpaceVersion = freeSpaceVersion;
         this.rootGroupVersion = rootGroupVersion;
         this.sharedHeaderVersion = sharedHeaderVersion;
-        this.offsetSize = offsetSize;
-        this.lengthSize = lengthSize;
         this.groupLeafNodeK = groupLeafNodeK;
         this.groupInternalNodeK = groupInternalNodeK;
         this.baseAddress = baseAddress;
@@ -118,6 +119,8 @@ public class HdfSuperblock {
         this.driverInformationAddress = driverInformationAddress;
         this.rootGroupSymbolTableEntry = rootGroupSymbolTableEntry;
         this.hdfDataFile = hdfDataFile;
+        this.fixedPointDatatypeForOffset = fixedPointDatatypeForOffset;
+        this.fixedPointDatatypeForLength = fixedPointDatatypeForLength;
     }
 
     public static HdfSuperblock readFromFileChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
@@ -170,26 +173,32 @@ public class HdfSuperblock {
         short lengthSize = (short) Byte.toUnsignedInt(buffer.get());
         buffer.get(); // Skip reserved
 
+        FixedPointDatatype fixedPointDatatypeForOffset = new FixedPointDatatype(
+                FixedPointDatatype.createClassAndVersion(),
+                FixedPointDatatype.createClassBitField(false, false, false, false),
+                offsetSize, (short) 0, (short) (8*offsetSize));
+        FixedPointDatatype fixedPointDatatypeForLength = new FixedPointDatatype(
+                FixedPointDatatype.createClassAndVersion(),
+                FixedPointDatatype.createClassBitField(false, false, false, false),
+                lengthSize, (short) 0, (short) (8*lengthSize));
+
         int groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
         int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
         buffer.getInt(); // Skip consistency flags
 
-        HdfSymbolTableEntry rootGroupSymbleTableEntry = HdfSymbolTableEntry.readFromFileChannel(fileChannel, offsetSize);
+        HdfSymbolTableEntry rootGroupSymbleTableEntry = HdfSymbolTableEntry.readFromFileChannel(fileChannel, hdfDataFile);
 
         // Parse addresses using HdfFixedPoint
-        BitSet emptyBitSet = new BitSet();
-        HdfFixedPoint baseAddress = HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-        HdfFixedPoint freeSpaceAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-        HdfFixedPoint endOfFileAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
-        HdfFixedPoint driverInformationAddress = HdfFixedPoint.checkUndefined(buffer, offsetSize) ? HdfFixedPoint.undefined(buffer, offsetSize) : HdfFixedPoint.readFromByteBuffer(buffer, offsetSize, emptyBitSet, (short) 0, (short)(offsetSize*8));
+        HdfFixedPoint baseAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+        HdfFixedPoint freeSpaceAddress = HdfReadUtils.checkUndefined(buffer, offsetSize) ? fixedPointDatatypeForOffset.undefined(buffer) : HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+        HdfFixedPoint endOfFileAddress = HdfReadUtils.checkUndefined(buffer, offsetSize) ? fixedPointDatatypeForOffset.undefined(buffer) : HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+        HdfFixedPoint driverInformationAddress = HdfReadUtils.checkUndefined(buffer, offsetSize) ? fixedPointDatatypeForOffset.undefined(buffer) : HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
 
         return new HdfSuperblock(
                 version,
                 freeSpaceVersion,
                 rootGroupVersion,
                 sharedHeaderVersion,
-                offsetSize,
-                lengthSize,
                 groupLeafNodeK,
                 groupInternalNodeK,
                 baseAddress,
@@ -197,7 +206,9 @@ public class HdfSuperblock {
                 endOfFileAddress,
                 driverInformationAddress,
                 rootGroupSymbleTableEntry,
-                hdfDataFile
+                hdfDataFile,
+                fixedPointDatatypeForOffset,
+                fixedPointDatatypeForLength
         );
     }
 
@@ -214,8 +225,8 @@ public class HdfSuperblock {
         buffer.put((byte) rootGroupVersion);     // Root group symbol table entry version (1 byte)
         buffer.put((byte) 0);                    // Reserved (must be 0) (1 byte)
         buffer.put((byte) sharedHeaderVersion);  // Shared object header format version (1 byte)
-        buffer.put((byte) offsetSize);        // Size of offsets (1 byte)
-        buffer.put((byte) lengthSize);        // Size of lengths (1 byte)
+        buffer.put((byte) getFixedPointDatatypeForOffset().getSize());        // Size of offsets (1 byte)
+        buffer.put((byte) getFixedPointDatatypeForLength().getSize());        // Size of lengths (1 byte)
         buffer.put((byte) 0);                    // Reserved (must be 0) (1 byte)
 
         // Step 3: B-tree settings & consistency flags
@@ -246,8 +257,8 @@ public class HdfSuperblock {
                 ", freeSpaceVersion=" + freeSpaceVersion +
                 ", rootGroupVersion=" + rootGroupVersion +
                 ", sharedHeaderVersion=" + sharedHeaderVersion +
-                ", sizeOfOffsets=" + offsetSize +
-                ", sizeOfLengths=" + lengthSize +
+                ", sizeOfOffsets=" + getFixedPointDatatypeForOffset().getSize() +
+                ", sizeOfLengths=" + getFixedPointDatatypeForLength().getSize() +
                 ", groupLeafNodeK=" + groupLeafNodeK +
                 ", groupInternalNodeK=" + groupInternalNodeK +
                 ", baseAddress=" + baseAddress +

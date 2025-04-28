@@ -11,6 +11,8 @@ import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.file.infrastructure.HdfBTreeV1;
 import org.hdf5javalib.file.infrastructure.HdfLocalHeap;
+import org.hdf5javalib.utils.HdfReadUtils;
+import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -102,17 +104,21 @@ public class HdfGroup implements Closeable {
         heapData[0] = (byte)0x1;
         heapData[8] = (byte)localHeapContentsSize;
 
-        localHeap = new HdfLocalHeap(HdfFixedPoint.of(localHeapContentsSize), HdfFixedPoint.of(fileAllocation.getCurrentLocalHeapContentsOffset()), hdfFile);
+        localHeap = new HdfLocalHeap(
+                HdfWriteUtils.hdfFixedPointFromValue(localHeapAddress, hdfFile.getFixedPointDatatypeForOffset()),
+                HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getCurrentLocalHeapContentsOffset(), hdfFile.getFixedPointDatatypeForOffset()),
+                hdfFile);
+
         localHeap.addToHeap(
                 new HdfString(new byte[0], new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0))        );
 
         bTree = new HdfBTreeV1("TREE", 0, 0,
-                HdfFixedPoint.undefined((short)8),
-                HdfFixedPoint.undefined((short)8),
+                hdfFile.getFixedPointDatatypeForOffset().undefined(),
+                hdfFile.getFixedPointDatatypeForOffset().undefined(),
                 hdfFile);
 
-        HdfFixedPoint btree = HdfFixedPoint.of(btreeAddress);
-        HdfFixedPoint localHeap = HdfFixedPoint.of(localHeapAddress);
+        HdfFixedPoint btree = HdfWriteUtils.hdfFixedPointFromValue(btreeAddress, hdfFile.getFixedPointDatatypeForOffset());
+        HdfFixedPoint localHeap = HdfWriteUtils.hdfFixedPointFromValue(localHeapAddress, hdfFile.getFixedPointDatatypeForOffset());
 
         objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 24,
                 Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte)0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))));
@@ -135,7 +141,10 @@ public class HdfGroup implements Closeable {
 
         HdfDataSet newDataSet = new HdfDataSet(hdfDataFile, datasetName, hdfDatatype, dataSpaceMessage);
 
-        DataSetInfo dataSetInfo = new DataSetInfo(newDataSet, HdfFixedPoint.of(allocationInfo.getHeaderOffset()), linkNameOffset);
+        DataSetInfo dataSetInfo = new DataSetInfo(
+                newDataSet,
+                HdfWriteUtils.hdfFixedPointFromValue(allocationInfo.getHeaderOffset(), hdfFile.getFixedPointDatatypeForOffset()),
+                linkNameOffset);
         dataSets.put(datasetName, dataSetInfo);
 
         bTree.addDataset(linkNameOffset, allocationInfo.getHeaderOffset(), datasetName, this);

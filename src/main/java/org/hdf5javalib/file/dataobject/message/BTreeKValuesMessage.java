@@ -60,7 +60,7 @@ public class BTreeKValuesMessage extends HdfMessage {
     }
     // ()-> (short) (1+2+2+2)
 
-    public static BTreeKValuesMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize, HdfDataFile hdfDataFile) {
+    public static BTreeKValuesMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Parse the message fields from the buffer
         int version = Byte.toUnsignedInt(buffer.get());

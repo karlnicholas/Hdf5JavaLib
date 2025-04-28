@@ -44,7 +44,7 @@ public class NilMessage extends HdfMessage {
         super(MessageType.NilMessage, sizeMessageData, flags);
     }
 
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, int offsetSize, int lengthSize, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
         // No data to parse for null message
         return new NilMessage(data.length, flags, (short) data.length);
     }

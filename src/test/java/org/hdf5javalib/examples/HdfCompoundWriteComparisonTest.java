@@ -53,7 +53,7 @@ public class HdfCompoundWriteComparisonTest {
             HdfFile file = new HdfFile(memoryChannel);
             HdfFixedPoint[] hdfDimensions = new HdfFixedPoint[dimensions.length];
             for (int i = 0; i < dimensions.length; i++) {
-                hdfDimensions[i] = HdfFixedPoint.of(dimensions[i]);
+                hdfDimensions[i] = HdfWriteUtils.hdfFixedPointFromValue(dimensions[i], file.getFixedPointDatatypeForLength());
             }
             DataspaceMessage dataSpaceMessage = new DataspaceMessage(
                     1, (byte) dimensions.length, DataspaceMessage.buildFlagSet(true, false),

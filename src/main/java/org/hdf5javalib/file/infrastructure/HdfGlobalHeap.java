@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfFileAllocation;
+import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -71,7 +72,7 @@ public class HdfGlobalHeap {
         return obj.getData();
     }
 
-    public void readFromFileChannel(SeekableByteChannel fileChannel, short ignoredOffsetSize) throws IOException {
+    public void readFromFileChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
         long startOffset = fileChannel.position();
         ByteBuffer headerBuffer = ByteBuffer.allocate(16);
         headerBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -94,7 +95,7 @@ public class HdfGlobalHeap {
         }
 
         headerBuffer.position(headerBuffer.position() + 3);
-        HdfFixedPoint localCollectionSize = HdfFixedPoint.readFromByteBuffer(headerBuffer, (short) 8, new BitSet(), (short) 0, (short) 64);
+        HdfFixedPoint localCollectionSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForLength(), headerBuffer);
         long declaredSize = localCollectionSize.getInstance(Long.class);
 
         if (declaredSize < 16 || (startOffset + declaredSize > fileChannel.size())) {
