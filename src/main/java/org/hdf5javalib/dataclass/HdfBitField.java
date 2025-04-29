@@ -104,10 +104,6 @@ public class HdfBitField implements HdfData {
         return bytes.clone();
     }
 
-    public BitSet getValue() {
-        return datatype.toBitSet(bytes);
-    }
-
     @Override
     public String toString() {
         return datatype.toString(bytes);

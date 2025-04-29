@@ -46,7 +46,7 @@ public class HdfCompound implements HdfData {
 
     @Override
     public String toString() {
-        return members.stream().map(m->m.getDatatype().getName() + "=" + m.getInstance(String.class)).toList().toString();
+        return datatype.getInstance(String.class, bytes);
     }
 
     @Override

@@ -53,13 +53,9 @@ public class HdfTime implements HdfData {
         return bytes.clone();
     }
 
-    public long getValue() {
-        return datatype.toLong(bytes);
-    }
-
     @Override
     public String toString() {
-        return Long.toString(getValue());
+        return datatype.getInstance(String.class, bytes);
     }
 
     @Override

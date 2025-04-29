@@ -57,53 +57,6 @@ public class HdfFixedPoint implements HdfData {
         this(toSizedByteArray(value, datatype.getSize(), datatype.isBigEndian()), datatype);
     }
 
-    public byte[] getBytes() {
-        return bytes.clone();
-    }
-
-//    public static HdfFixedPoint readFromFileChannel(SeekableByteChannel fileChannel, int size, BitSet classBitField, short bitOffset, short bitPrecision) throws IOException {
-//        validateSize(size);
-//        byte[] bytes = new byte[size];
-//        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(classBitField.get(0) ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
-//        fileChannel.read(buffer);
-//        FixedPointDatatype datatype = new FixedPointDatatype(
-//                FixedPointDatatype.createClassAndVersion(),
-//                classBitField,
-//                (short) size, bitOffset, bitPrecision
-//        );
-//        return new HdfFixedPoint(bytes, datatype);
-//    }
-//
-//    public static HdfFixedPoint readFromByteBuffer(ByteBuffer buffer, int size, BitSet classBitField, short bitOffset, short bitPrecision) {
-//        validateSize(size);
-//        byte[] bytes = getLittleEndianBytes(buffer, size);
-//        FixedPointDatatype datatype = new FixedPointDatatype(
-//                FixedPointDatatype.createClassAndVersion(),
-//                classBitField,
-//                (short) size, bitOffset, bitPrecision
-//        );
-//        return new HdfFixedPoint(bytes, datatype);
-//    }
-
-    private static byte[] getLittleEndianBytes(ByteBuffer buffer, int size) {
-//        validateSize(size);
-        byte[] bytes = new byte[size];
-        buffer.get(bytes);
-        if (buffer.order() == ByteOrder.BIG_ENDIAN) {
-            HdfReadUtils.reverseBytesInPlace(bytes);
-        }
-        return bytes;
-    }
-
-    public boolean isUndefined() {
-        for(byte b : bytes) {
-            if (b != (byte) 0xFF) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private static byte[] toSizedByteArray(BigInteger value, int byteSize, boolean bigEndian) {
         byte[] fullBytes = value.toByteArray();
         byte[] result = new byte[byteSize];
@@ -113,6 +66,19 @@ public class HdfFixedPoint implements HdfData {
             HdfReadUtils.reverseBytesInPlace(result);
         }
         return result;
+    }
+
+    public byte[] getBytes() {
+        return bytes.clone();
+    }
+
+    public boolean isUndefined() {
+        for(byte b : bytes) {
+            if (b != (byte) 0xFF) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
