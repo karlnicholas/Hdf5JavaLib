@@ -3,7 +3,6 @@ package org.hdf5javalib.file;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
-import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
@@ -48,7 +47,6 @@ public class HdfFile implements Closeable, HdfDataFile {
                 4, 16,
                 HdfWriteUtils.hdfFixedPointFromValue(0, fixedPointDatatypeForOffset),
                 fixedPointDatatypeForOffset.undefined(),
-                // HdfFixedPoint.of(bufferAllocation.getDataAddress()),
                 // this offset of the end of the file. will need to be updated later.
                 HdfWriteUtils.hdfFixedPointFromValue(0, fixedPointDatatypeForOffset),
                 fixedPointDatatypeForOffset.undefined(),
@@ -62,7 +60,6 @@ public class HdfFile implements Closeable, HdfDataFile {
                         HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getLocalHeapOffset(), fixedPointDatatypeForOffset)),
                 this, fixedPointDatatypeForOffset, fixedPointDatatypeForLength);
 
-        // rootGroup = new HdfGroup(this, "", bufferAllocation.getBtreeAddress(), bufferAllocation.getLocalHeapAddress());
         rootGroup = new HdfGroup(this, "", fileAllocation.getBtreeOffset(), fileAllocation.getLocalHeapOffset());
     }
 
@@ -75,7 +72,6 @@ public class HdfFile implements Closeable, HdfDataFile {
      */
     public HdfDataSet createDataSet(String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
         hdfDatatype.setGlobalHeap(globalHeap);
-        // return rootGroup.createDataSet(datasetName, hdfDatatype, dataSpaceMessage, bufferAllocation.getDataGroupAddress());
         return rootGroup.createDataSet(this, datasetName, hdfDatatype, dataSpaceMessage);
     }
 
@@ -85,7 +81,6 @@ public class HdfFile implements Closeable, HdfDataFile {
             return;
         }
         rootGroup.close();
-        // long endOfFileAddress = bufferAllocation.getDataAddress();
         long endOfFileAddress = fileAllocation.getEndOfFileOffset();
         superblock.setEndOfFileAddress(
                 HdfWriteUtils.hdfFixedPointFromValue(endOfFileAddress, getFixedPointDatatypeForOffset()));

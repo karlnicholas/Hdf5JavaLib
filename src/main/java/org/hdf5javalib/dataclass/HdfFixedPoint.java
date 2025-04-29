@@ -5,13 +5,8 @@ import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.channels.SeekableByteChannel;
-import java.util.Arrays;
-import java.util.BitSet;
 
 @Getter
 public class HdfFixedPoint implements HdfData {

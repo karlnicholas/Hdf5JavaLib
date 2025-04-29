@@ -2,7 +2,6 @@ package org.hdf5javalib;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFileAllocation;

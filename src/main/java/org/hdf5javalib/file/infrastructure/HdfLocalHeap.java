@@ -14,7 +14,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Arrays;
-import java.util.BitSet;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 

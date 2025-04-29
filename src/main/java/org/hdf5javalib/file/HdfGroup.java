@@ -11,7 +11,6 @@ import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import org.hdf5javalib.file.infrastructure.HdfBTreeV1;
 import org.hdf5javalib.file.infrastructure.HdfLocalHeap;
-import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.Closeable;
@@ -105,12 +104,16 @@ public class HdfGroup implements Closeable {
         heapData[8] = (byte)localHeapContentsSize;
 
         localHeap = new HdfLocalHeap(
-                HdfWriteUtils.hdfFixedPointFromValue(localHeapAddress, hdfFile.getFixedPointDatatypeForOffset()),
+                HdfWriteUtils.hdfFixedPointFromValue(localHeapContentsSize, hdfFile.getFixedPointDatatypeForLength()),
                 HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getCurrentLocalHeapContentsOffset(), hdfFile.getFixedPointDatatypeForOffset()),
                 hdfFile);
 
         localHeap.addToHeap(
-                new HdfString(new byte[0], new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0))        );
+                new HdfString(new byte[0],
+                        new StringDatatype(
+                                StringDatatype.createClassAndVersion(),
+                                StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0))
+        );
 
         bTree = new HdfBTreeV1("TREE", 0, 0,
                 hdfFile.getFixedPointDatatypeForOffset().undefined(),

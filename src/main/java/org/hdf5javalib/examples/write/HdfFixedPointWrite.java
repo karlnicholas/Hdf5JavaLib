@@ -5,11 +5,14 @@ import lombok.SneakyThrows;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
+import org.hdf5javalib.utils.HdfDisplayUtils;
+import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,18 +26,13 @@ import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-
-import org.hdf5javalib.HdfDataFile;
-import org.hdf5javalib.utils.HdfDisplayUtils;
-import org.hdf5javalib.utils.HdfWriteUtils;
-
-import java.nio.file.Paths;
 
 /**
  * Hello world!
@@ -46,8 +44,8 @@ public class HdfFixedPointWrite {
     }
 
     private void run() {
-        tryHdfApiScalar();
-//        tryHdfApiInts("vector_each.h5", this::writeEach);
+//        tryHdfApiScalar();
+        tryHdfApiInts("vector_each.h5", this::writeEach);
 //        tryHdfApiInts("vector_all.h5", this::writeAll);
 //        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);
 //        tryHdfApiMatrixInts("weatherdata_all.h5", this::writeAllMatrix);
@@ -213,6 +211,15 @@ public class HdfFixedPointWrite {
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
 
             HdfDisplayUtils.writeVersionAttribute(file, dataset);
+
+            HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+            file.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+            boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+            if (requiresGlobalHeap) {
+                if (!file.getFileAllocation().hasGlobalHeapAllocation()) {
+                    file.getFileAllocation().allocateFirstGlobalHeapBlock();
+                }
+            }
 
             writer.accept(new WriterParams(NUM_RECORDS, fixedPointDatatype, dataset));
 
