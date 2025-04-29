@@ -47,11 +47,11 @@ public class HdfFile implements Closeable, HdfDataFile {
         superblock = new HdfSuperblock(0, 0, 0, 0,
                 4, 16,
                 HdfWriteUtils.hdfFixedPointFromValue(0, fixedPointDatatypeForOffset),
-                HdfWriteUtils.hdfFixedPointFromValue(8, fixedPointDatatypeForOffset),
+                fixedPointDatatypeForOffset.undefined(),
                 // HdfFixedPoint.of(bufferAllocation.getDataAddress()),
                 // this offset of the end of the file. will need to be updated later.
                 HdfWriteUtils.hdfFixedPointFromValue(0, fixedPointDatatypeForOffset),
-                HdfWriteUtils.hdfFixedPointFromValue(8, fixedPointDatatypeForOffset),
+                fixedPointDatatypeForOffset.undefined(),
                 new HdfSymbolTableEntry(
                         HdfWriteUtils.hdfFixedPointFromValue(0, fixedPointDatatypeForOffset),
                         // HdfFixedPoint.of(bufferAllocation.getObjectHeaderPrefixAddress()),
