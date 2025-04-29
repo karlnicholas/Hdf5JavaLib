@@ -6,7 +6,7 @@ import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
-import org.hdf5javalib.examples.write.HdfFixedPointApp;
+import org.hdf5javalib.examples.write.HdfFixedPointWrite;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
@@ -36,9 +36,9 @@ import static org.hdf5javalib.utils.HdfDisplayUtils.writeVersionAttribute;
  * Hello world!
  */
 @Slf4j
-public class HdfCompoundApp {
+public class HdfCompoundRead {
     public static void main(String[] args) {
-        new HdfCompoundApp().run();
+        new HdfCompoundRead().run();
     }
 
     private void run() {
@@ -165,7 +165,7 @@ public class HdfCompoundApp {
 
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfWriteUtils.hdfFixedPointFromValue(NUM_RECORDS, file.getFixedPointDatatypeForLength())};
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointApp.computeDataSpaceMessageSize(hdfDimensions));
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointWrite.computeDataSpaceMessageSize(hdfDimensions));
 
             // Create dataset
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, compoundType, dataSpaceMessage);

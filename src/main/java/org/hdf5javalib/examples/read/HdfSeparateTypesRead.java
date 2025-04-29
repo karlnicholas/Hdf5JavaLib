@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
  * Hello world!
  *
  */
-public class HdfSeparateTypesApp {
+public class HdfSeparateTypesRead {
     public static void main(String[] args) {
-        new HdfSeparateTypesApp().run();
+        new HdfSeparateTypesRead().run();
     }
 
     private void run() {

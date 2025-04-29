@@ -1,4 +1,4 @@
-package org.hdf5javalib.examples.write;
+package org.hdf5javalib.examples.read;
 
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -20,14 +20,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Hello world!
  *
  */
-public class HdfStringApp {
+public class HdfStringRead {
     public static void main(String[] args) {
-        new HdfStringApp().run();
+        new HdfStringRead().run();
     }
 
     private void run() {
         try {
-            String filePath = Objects.requireNonNull(HdfStringApp.class.getResource("/ascii_dataset.h5")).getFile();
+            String filePath = Objects.requireNonNull(HdfStringRead.class.getResource("/ascii_dataset.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
@@ -39,7 +39,7 @@ public class HdfStringApp {
             throw new RuntimeException(e);
         }
         try {
-            String filePath = Objects.requireNonNull(HdfStringApp.class.getResource("/utf8_dataset.h5")).getFile();
+            String filePath = Objects.requireNonNull(HdfStringRead.class.getResource("/utf8_dataset.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
@@ -51,7 +51,7 @@ public class HdfStringApp {
             throw new RuntimeException(e);
         }
         try {
-            String filePath = Objects.requireNonNull(HdfStringApp.class.getResource("/string_ascii_all.h5")).getFile();
+            String filePath = Objects.requireNonNull(HdfStringRead.class.getResource("/string_ascii_all.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
@@ -63,7 +63,7 @@ public class HdfStringApp {
             throw new RuntimeException(e);
         }
         try {
-            String filePath = Objects.requireNonNull(HdfStringApp.class.getResource("/string_utf8_each.h5")).getFile();
+            String filePath = Objects.requireNonNull(HdfStringRead.class.getResource("/string_utf8_each.h5")).getFile();
             try (FileInputStream fis = new FileInputStream(filePath)) {
                 FileChannel channel = fis.getChannel();
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
@@ -89,7 +89,7 @@ public class HdfStringApp {
 //
 //            // Create data space
 //            HdfFixedPoint[] hdfDimensions = {HdfFixedPoint.of(NUM_RECORDS)};
-//            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointApp.computeDataSpaceMessageSize(hdfDimensions));
+//            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointWrite.computeDataSpaceMessageSize(hdfDimensions));
 //
 //            StringDatatype stringDatatype = new StringDatatype(
 //                    StringDatatype.createClassAndVersion(),
@@ -101,7 +101,7 @@ public class HdfStringApp {
 //
 //            HdfDisplayUtils.writeVersionAttribute(dataset);
 //
-//            writer.accept(new HdfStringApp.WriterParams(NUM_RECORDS, stringDatatype, dataset));
+//            writer.accept(new HdfStringRead.WriterParams(NUM_RECORDS, stringDatatype, dataset));
 //
 //            dataset.close();
 //            file.close();
@@ -114,7 +114,7 @@ public class HdfStringApp {
 //    }
 
     @SneakyThrows
-    private void writeEach(HdfStringApp.WriterParams writerParams) {
+    private void writeEach(WriterParams writerParams) {
         AtomicInteger countHolder = new AtomicInteger(0);
         ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.stringDatatype.getSize());
         // Write to dataset
@@ -131,7 +131,7 @@ public class HdfStringApp {
     }
 
     @SneakyThrows
-    private void writeAll(HdfStringApp.WriterParams writerParams) {
+    private void writeAll(WriterParams writerParams) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.stringDatatype.getSize() * writerParams.NUM_RECORDS);
         for(int i=0; i<writerParams.NUM_RECORDS; i++) {
             byte[] bytes = ("label " + (i + 1)).getBytes(StandardCharsets.US_ASCII);

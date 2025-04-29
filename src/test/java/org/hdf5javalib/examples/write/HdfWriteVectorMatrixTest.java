@@ -1,4 +1,4 @@
-package org.hdf5javalib.examples;
+package org.hdf5javalib.examples.write;
 
 import lombok.SneakyThrows;
 import org.apache.commons.csv.CSVFormat;
@@ -6,6 +6,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.examples.MemorySeekableByteChannel;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
@@ -38,11 +39,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
-public class HdfWriteComparisonTest {
-    private static final Logger logger = LoggerFactory.getLogger(HdfWriteComparisonTest.class);
+public class HdfWriteVectorMatrixTest {
+    private static final Logger logger = LoggerFactory.getLogger(HdfWriteVectorMatrixTest.class);
 
     private static Path getReferencePath(String fileName) {
-        String resourcePath = Objects.requireNonNull(HdfWriteComparisonTest.class.getClassLoader().getResource(fileName)).getPath();
+        String resourcePath = Objects.requireNonNull(HdfWriteVectorMatrixTest.class.getClassLoader().getResource(fileName)).getPath();
         if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
             resourcePath = resourcePath.substring(1);
         }
@@ -199,7 +200,7 @@ public class HdfWriteComparisonTest {
     private static List<List<BigDecimal>> loadCsvData(String filePath) throws IOException {
         List<String> labels;
         List<List<BigDecimal>> data = new ArrayList<>();
-        try (Reader reader = new InputStreamReader(Objects.requireNonNull(HdfWriteComparisonTest.class.getResourceAsStream(filePath)), StandardCharsets.UTF_8)) {
+        try (Reader reader = new InputStreamReader(Objects.requireNonNull(HdfWriteVectorMatrixTest.class.getResourceAsStream(filePath)), StandardCharsets.UTF_8)) {
             CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
                     .setHeader()
                     .setSkipHeaderRecord(true)
@@ -241,10 +242,10 @@ public class HdfWriteComparisonTest {
                 FixedPointDatatype.createClassBitField(false, false, false, false),
                 (short) 4, (short) 7, (short) 25);
         return Stream.of(
-                Arguments.of("BulkWrite_Vector_1000", true, "vector.h5", "vector", new int[]{1000}, vectorDatatype, new int[]{932}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeVectorAll),
-                Arguments.of("IncrementalWrite_Vector_1000", true, "vector.h5", "vector", new int[]{1000}, vectorDatatype, new int[]{932}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeVectorEach),
-                Arguments.of("BulkWrite_Matrix_4x17", false, "weatherdata.h5", "weatherdata", new int[]{4, 17}, matrixDatatype, new int[]{0x3B4}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeMatrixAll),
-                Arguments.of("IncrementalWrite_Matrix_4x17", false, "weatherdata.h5", "weatherdata", new int[]{4, 17}, matrixDatatype, new int[]{0x3B4}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteComparisonTest::writeMatrixEach)
+                Arguments.of("BulkWrite_Vector_1000", true, "vector.h5", "vector", new int[]{1000}, vectorDatatype, new int[]{932}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteVectorMatrixTest::writeVectorAll),
+                Arguments.of("IncrementalWrite_Vector_1000", true, "vector.h5", "vector", new int[]{1000}, vectorDatatype, new int[]{932}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteVectorMatrixTest::writeVectorEach),
+                Arguments.of("BulkWrite_Matrix_4x17", false, "weatherdata.h5", "weatherdata", new int[]{4, 17}, matrixDatatype, new int[]{0x3B4}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteVectorMatrixTest::writeMatrixAll),
+                Arguments.of("IncrementalWrite_Matrix_4x17", false, "weatherdata.h5", "weatherdata", new int[]{4, 17}, matrixDatatype, new int[]{0x3B4}, (BiConsumer<HdfDataSet, HdfFile>) HdfWriteVectorMatrixTest::writeMatrixEach)
         );
     }
 }

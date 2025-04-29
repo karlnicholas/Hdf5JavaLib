@@ -1,4 +1,4 @@
-package org.hdf5javalib.examples;
+package org.hdf5javalib.examples.read;
 
 import lombok.Builder;
 import lombok.Data;
@@ -28,9 +28,9 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HdfSeparateTypesAppTest {
+public class HdfSeparateTypesWriteTest {
     private static Path getResourcePath() {
-        String resourcePath = Objects.requireNonNull(HdfSeparateTypesAppTest.class.getClassLoader().getResource("all_types_separate.h5")).getPath();
+        String resourcePath = Objects.requireNonNull(HdfSeparateTypesWriteTest.class.getClassLoader().getResource("all_types_separate.h5")).getPath();
         if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
             resourcePath = resourcePath.substring(1);
         }

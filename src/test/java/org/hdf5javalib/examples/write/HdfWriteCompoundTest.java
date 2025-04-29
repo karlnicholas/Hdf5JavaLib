@@ -1,8 +1,9 @@
-package org.hdf5javalib.examples;
+package org.hdf5javalib.examples.write;
 
 import lombok.*;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.examples.MemorySeekableByteChannel;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
@@ -32,11 +33,11 @@ import java.util.stream.Stream;
 
 import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype.ClassBitField.MantissaNormalization.IMPLIED_SET;
 
-public class HdfCompoundWriteComparisonTest {
-    private static final Logger logger = LoggerFactory.getLogger(HdfCompoundWriteComparisonTest.class);
+public class HdfWriteCompoundTest {
+    private static final Logger logger = LoggerFactory.getLogger(HdfWriteCompoundTest.class);
 
     private static Path getReferencePath(String fileName) {
-        String resourcePath = Objects.requireNonNull(HdfCompoundWriteComparisonTest.class.getClassLoader().getResource(fileName)).getPath();
+        String resourcePath = Objects.requireNonNull(HdfWriteCompoundTest.class.getClassLoader().getResource(fileName)).getPath();
         if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
             resourcePath = resourcePath.substring(1);
         }
@@ -282,7 +283,7 @@ public class HdfCompoundWriteComparisonTest {
                                 new int[]{1000},
                                 compoundType,
                                 new int[]{0x6F4}, // Based on ObjectModificationTimeMessage position, may need adjustment
-                                (BiConsumer<HdfDataSet, HdfFile>) HdfCompoundWriteComparisonTest::writeCompoundAll),
+                                (BiConsumer<HdfDataSet, HdfFile>) HdfWriteCompoundTest::writeCompoundAll),
                         Arguments.of(
                                 "IncrementalWrite_Compound_1000",
                                 "compound_example.h5",
@@ -290,7 +291,7 @@ public class HdfCompoundWriteComparisonTest {
                                 new int[]{1000},
                                 compoundType,
                                 new int[]{0x6F4}, // Based on ObjectModificationTimeMessage position, may need adjustment
-                                (BiConsumer<HdfDataSet, HdfFile>) HdfCompoundWriteComparisonTest::writeCompoundEach)
+                                (BiConsumer<HdfDataSet, HdfFile>) HdfWriteCompoundTest::writeCompoundEach)
                 );
             } finally {
                 // Ensure channel is closed, avoid closing HdfFile to prevent NullPointerException

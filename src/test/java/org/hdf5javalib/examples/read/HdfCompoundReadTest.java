@@ -1,4 +1,4 @@
-package org.hdf5javalib.examples;
+package org.hdf5javalib.examples.read;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,7 +29,7 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HdfCompoundAppTest {
+public class HdfCompoundReadTest {
     private static final String FULL_RECORD_STRING = "1000, FixedData, varStr:1, 5.877472E-39, 1.1125369292536007E-308, -128, 0, -32768, 0, -2147483648, 0, -9223372036854775808, 0, 1.0000000";
     private static final List<BigDecimal> TEN_BIG_DECIMALS = List.of(
             new BigDecimal("1.0000000"), new BigDecimal("2.2500000"), new BigDecimal("3.5000000"),

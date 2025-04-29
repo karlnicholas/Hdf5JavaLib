@@ -1,4 +1,4 @@
-package org.hdf5javalib.examples;
+package org.hdf5javalib.examples.read;
 
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfData;
@@ -19,7 +19,7 @@ import java.nio.file.StandardOpenOption;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HdfVLenTypesAppTest {
+public class HdfVLenTypesReadTest {
 
     private Path getResourcePath(String fileName) {
         String resourcePath = getClass().getClassLoader().getResource(fileName).getPath();

@@ -1,7 +1,6 @@
-package org.hdf5javalib.examples.read;
+package org.hdf5javalib.examples.write;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.examples.write.HdfFixedPointApp;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
@@ -20,9 +19,9 @@ import java.nio.file.StandardOpenOption;
  * Hello world!
  *
  */
-public class HdfTwentyScalarApp {
+public class HdfTwentyScalarWrite {
     public static void main(String[] args) {
-        new HdfTwentyScalarApp().run();
+        new HdfTwentyScalarWrite().run();
     }
 
     private void run() {
@@ -56,7 +55,7 @@ public class HdfTwentyScalarApp {
         try (HdfFile hdfFile = new HdfFile(Files.newByteChannel(Path.of(FILE_NAME), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE))) {
             // Define scalar dataspace (rank 0).
             HdfFixedPoint[] hdfDimensions = {};
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(false, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointApp.computeDataSpaceMessageSize(hdfDimensions));
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(false, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointWrite.computeDataSpaceMessageSize(hdfDimensions));
             for( int i=1; i<=20; i++) {
                 writeInteger(i, "dataset_"+i, hdfFile, dataSpaceMessage);
                 hdfFile.getFileAllocation().printBlocks();
@@ -78,7 +77,7 @@ public class HdfTwentyScalarApp {
 //        try (HdfFile hdfFile = new HdfFile(Files.newByteChannel(Path.of(FILE_NAME), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE))) {
 //            // Define scalar dataspace (rank 0).
 //            HdfFixedPoint[] hdfDimensions = {};
-//            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(false, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointApp.computeDataSpaceMessageSize(hdfDimensions));
+//            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(false, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointWrite.computeDataSpaceMessageSize(hdfDimensions));
 //
 //            hdfFile.getFileAllocation().printBlocks();
 //            writeByte(hdfFile, dataSpaceMessage);

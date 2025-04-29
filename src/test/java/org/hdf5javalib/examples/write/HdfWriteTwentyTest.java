@@ -1,7 +1,7 @@
-package org.hdf5javalib.examples;
+package org.hdf5javalib.examples.write;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.examples.write.HdfFixedPointApp;
+import org.hdf5javalib.examples.MemorySeekableByteChannel;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
@@ -19,11 +19,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
-public class HdfWriteTwentyComparisonTest {
-    private static final Logger logger = LoggerFactory.getLogger(HdfWriteTwentyComparisonTest.class);
+public class HdfWriteTwentyTest {
+    private static final Logger logger = LoggerFactory.getLogger(HdfWriteTwentyTest.class);
 
     private static Path getReferencePath(String fileName) {
-        String resourcePath = Objects.requireNonNull(HdfWriteTwentyComparisonTest.class.getClassLoader().getResource(fileName)).getPath();
+        String resourcePath = Objects.requireNonNull(HdfWriteTwentyTest.class.getClassLoader().getResource(fileName)).getPath();
         if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
             resourcePath = resourcePath.substring(1);
         }
@@ -38,7 +38,7 @@ public class HdfWriteTwentyComparisonTest {
             HdfFile file = new HdfFile(memoryChannel);
             // Define scalar dataspace (rank 0).
             HdfFixedPoint[] hdfDimensions = {};
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(false, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointApp.computeDataSpaceMessageSize(hdfDimensions));
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 0, DataspaceMessage.buildFlagSet(false, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointWrite.computeDataSpaceMessageSize(hdfDimensions));
             for( int i=1; i<=20; i++) {
                 writeInteger(i, "dataset_"+i, file, dataSpaceMessage);
             }

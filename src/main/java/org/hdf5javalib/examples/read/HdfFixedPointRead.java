@@ -29,9 +29,9 @@ import java.util.stream.Stream;
  * Hello world!
  *
  */
-public class HdfFixedPointApp {
+public class HdfFixedPointRead {
     public static void main(String[] args) throws IOException {
-        new HdfFixedPointApp().run();
+        new HdfFixedPointRead().run();
     }
     Path getResourcePath(String fileName) {
         String resourcePath = Objects.requireNonNull(getClass().getClassLoader().getResource(fileName)).getPath();

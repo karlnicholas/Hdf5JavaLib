@@ -35,9 +35,9 @@ import static org.hdf5javalib.utils.HdfDisplayUtils.writeVersionAttribute;
  * Hello world!
  */
 @Slf4j
-public class HdfCompoundApp {
+public class HdfCompoundWrite {
     public static void main(String[] args) {
-        new HdfCompoundApp().run();
+        new HdfCompoundWrite().run();
     }
 
     private void run() {
@@ -164,7 +164,7 @@ public class HdfCompoundApp {
 
             // Create data space
             HdfFixedPoint[] hdfDimensions = {HdfWriteUtils.hdfFixedPointFromValue(NUM_RECORDS, file.getFixedPointDatatypeForLength())};
-            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointApp.computeDataSpaceMessageSize(hdfDimensions));
+            DataspaceMessage dataSpaceMessage = new DataspaceMessage(1, 1, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false), hdfDimensions, hdfDimensions, false, (byte)0, HdfFixedPointWrite.computeDataSpaceMessageSize(hdfDimensions));
 
             // Create dataset
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, compoundType, dataSpaceMessage);

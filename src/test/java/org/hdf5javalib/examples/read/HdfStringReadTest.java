@@ -1,4 +1,4 @@
-package org.hdf5javalib.examples;
+package org.hdf5javalib.examples.read;
 
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfData;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HdfStringAppTest {
+public class HdfStringReadTest {
     private static final String[] ASCII_EXPECTED = {"label 1 ", "label 2 ", "label 3 ", "label 4 ", "label 5 ",
             "label 6 ", "label 7 ", "label 8 ", "label 9 ", "label 10"};
     private static final String[] UTF8_EXPECTED = {"ꦠꦤ꧀ 1", "ꦠꦤ꧀ 2", "ꦠꦤ꧀ 3", "ꦠꦤ꧀ 4", "ꦠꦤ꧀ 5",

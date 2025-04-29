@@ -1,4 +1,4 @@
-package org.hdf5javalib.examples;
+package org.hdf5javalib.examples.read;
 
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfData;
@@ -25,7 +25,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class HdfFixedPointAppTest {
+public class HdfFixedPointReadTest {
     private static final BigInteger[] VECTOR_EXPECTED = IntStream.rangeClosed(1, 1000)
             .mapToObj(BigInteger::valueOf)
             .toArray(BigInteger[]::new);

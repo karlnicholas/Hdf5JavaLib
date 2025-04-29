@@ -16,9 +16,9 @@ import java.util.Objects;
  * Hello world!
  *
  */
-public class HdfVLenTypesApp {
+public class HdfVLenTypesRead {
     public static void main(String[] args) {
-        new HdfVLenTypesApp().run();
+        new HdfVLenTypesRead().run();
     }
 
     private void run() {
