@@ -127,12 +127,12 @@ public class HdfFileReader implements HdfDataFile {
 
     @Override
     public FixedPointDatatype getFixedPointDatatypeForOffset() {
-        return null;
+        return superblock.getFixedPointDatatypeForOffset();
     }
 
     @Override
     public FixedPointDatatype getFixedPointDatatypeForLength() {
-        return null;
+        return superblock.getFixedPointDatatypeForLength();
     }
 
 }

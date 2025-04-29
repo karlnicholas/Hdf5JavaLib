@@ -1,4 +1,4 @@
-package org.hdf5javalib.examples;
+package org.hdf5javalib.examples.write;
 
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;

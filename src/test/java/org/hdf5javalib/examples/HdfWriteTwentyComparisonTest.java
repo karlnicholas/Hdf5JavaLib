@@ -1,6 +1,7 @@
 package org.hdf5javalib.examples;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.examples.write.HdfFixedPointApp;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;

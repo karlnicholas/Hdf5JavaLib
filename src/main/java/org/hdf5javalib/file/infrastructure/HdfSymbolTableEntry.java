@@ -3,6 +3,7 @@ package org.hdf5javalib.file.infrastructure;
 import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.io.IOException;
@@ -36,11 +37,14 @@ public class HdfSymbolTableEntry {
         this.localHeapOffset = null;
     }
 
-    public static HdfSymbolTableEntry readFromFileChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
+    public static HdfSymbolTableEntry readFromFileChannel(
+            SeekableByteChannel fileChannel,
+            FixedPointDatatype fixedPointDatatypeForOffset
+            ) throws IOException {
         BitSet emptyBitSet = new BitSet();
         // Read the fixed-point values for linkNameOffset and objectHeaderAddress
-        HdfFixedPoint linkNameOffset = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getFixedPointDatatypeForOffset(), fileChannel);
-        HdfFixedPoint objectHeaderAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getFixedPointDatatypeForOffset(), fileChannel);
+        HdfFixedPoint linkNameOffset = HdfReadUtils.readHdfFixedPointFromFileChannel(fixedPointDatatypeForOffset, fileChannel);
+        HdfFixedPoint objectHeaderAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(fixedPointDatatypeForOffset, fileChannel);
 
         // Read cache type and skip reserved field
         int cacheType = HdfReadUtils.readIntFromFileChannel(fileChannel);
@@ -48,8 +52,8 @@ public class HdfSymbolTableEntry {
 
         // Initialize addresses for cacheType 1
         if (cacheType == 1) {
-            HdfFixedPoint bTreeAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getFixedPointDatatypeForOffset(), fileChannel);
-            HdfFixedPoint localHeapAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getFixedPointDatatypeForOffset(), fileChannel);
+            HdfFixedPoint bTreeAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(fixedPointDatatypeForOffset, fileChannel);
+            HdfFixedPoint localHeapAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(fixedPointDatatypeForOffset, fileChannel);
             return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress, bTreeAddress, localHeapAddress);
         } else {
             HdfReadUtils.skipBytes(fileChannel, 16); // Skip 16 bytes for scratch-pad

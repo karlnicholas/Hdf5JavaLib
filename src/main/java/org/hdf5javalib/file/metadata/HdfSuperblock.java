@@ -6,6 +6,7 @@ import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
+import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import org.hdf5javalib.utils.HdfReadUtils;
 
@@ -182,11 +183,12 @@ public class HdfSuperblock {
                 FixedPointDatatype.createClassBitField(false, false, false, false),
                 lengthSize, (short) 0, (short) (8*lengthSize));
 
+
         int groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
         int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
         buffer.getInt(); // Skip consistency flags
 
-        HdfSymbolTableEntry rootGroupSymbleTableEntry = HdfSymbolTableEntry.readFromFileChannel(fileChannel, hdfDataFile);
+        HdfSymbolTableEntry rootGroupSymbleTableEntry = HdfSymbolTableEntry.readFromFileChannel(fileChannel, fixedPointDatatypeForOffset);
 
         // Parse addresses using HdfFixedPoint
         HdfFixedPoint baseAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
