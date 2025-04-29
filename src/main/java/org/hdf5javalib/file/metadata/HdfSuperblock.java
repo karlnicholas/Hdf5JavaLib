@@ -6,7 +6,6 @@ import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry;
 import org.hdf5javalib.utils.HdfReadUtils;
 
