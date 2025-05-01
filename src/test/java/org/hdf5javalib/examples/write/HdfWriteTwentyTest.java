@@ -90,15 +90,6 @@ public class HdfWriteTwentyTest {
         HdfDataSet dataset = hdfFile.createDataSet(datasetName, fixedPointDatatype, dataSpaceMessage);
 //        HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
 
-        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-        hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!hdfFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                hdfFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            }
-        }
-
         ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
         byteBuffer.putInt(count);
         byteBuffer.flip();

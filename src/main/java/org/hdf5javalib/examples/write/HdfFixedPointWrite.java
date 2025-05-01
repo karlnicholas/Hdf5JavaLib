@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
@@ -44,11 +43,11 @@ public class HdfFixedPointWrite {
     }
 
     private void run() {
-//        tryHdfApiScalar();
+        tryHdfApiScalar();
         tryHdfApiInts("vector_each.h5", this::writeEach);
-//        tryHdfApiInts("vector_all.h5", this::writeAll);
-//        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);
-//        tryHdfApiMatrixInts("weatherdata_all.h5", this::writeAllMatrix);
+        tryHdfApiInts("vector_all.h5", this::writeAll);
+        tryHdfApiMatrixInts("weatherdata_each.h5", this::writeEachMatrix);
+        tryHdfApiMatrixInts("weatherdata_all.h5", this::writeAllMatrix);
     }
 
     private void tryHdfApiMatrixInts(String FILE_NAME, Consumer<MatrixWriterParams> writer) {
@@ -112,7 +111,7 @@ public class HdfFixedPointWrite {
 
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
 
-            writer.accept(new MatrixWriterParams(NUM_RECORDS, NUM_DATAPOINTS, fixedPointDatatype, dataset, file, data));
+            writer.accept(new MatrixWriterParams(NUM_RECORDS, NUM_DATAPOINTS, fixedPointDatatype, dataset, data));
 
             dataset.close();
             file.close();
@@ -162,17 +161,7 @@ public class HdfFixedPointWrite {
 
             HdfDisplayUtils.writeVersionAttribute(file, dataset);
 
-            HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-            file.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-            boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-            if (requiresGlobalHeap) {
-                if (!file.getFileAllocation().hasGlobalHeapAllocation()) {
-                    file.getFileAllocation().allocateFirstGlobalHeapBlock();
-                }
-            }
-
             ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
-//            HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) 42), fixedPointDatatype, byteBuffer);
             HdfWriteUtils.writeFixedPointToBuffer(byteBuffer, new HdfFixedPoint(BigInteger.valueOf(42), fixedPointDatatype));
             byteBuffer.flip();
             // Write to dataset
@@ -212,15 +201,6 @@ public class HdfFixedPointWrite {
 
             HdfDisplayUtils.writeVersionAttribute(file, dataset);
 
-            HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-            file.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-            boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-            if (requiresGlobalHeap) {
-                if (!file.getFileAllocation().hasGlobalHeapAllocation()) {
-                    file.getFileAllocation().allocateFirstGlobalHeapBlock();
-                }
-            }
-
             writer.accept(new WriterParams(NUM_RECORDS, fixedPointDatatype, dataset));
 
             dataset.close();
@@ -252,16 +232,6 @@ public class HdfFixedPointWrite {
 
     @SneakyThrows
     private void writeAllMatrix(MatrixWriterParams writerParams) {
-        HdfFixedPoint[] dimensionSizes= writerParams.dataset.getdimensionSizes();
-        writerParams.hdfDataFile.getFileAllocation().allocateAndSetDataBlock(writerParams.dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = writerParams.dataset.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!writerParams.hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                writerParams.hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            }
-        }
-
-
         ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS * writerParams.NUM_RECORDS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
         BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
         BigDecimal point5 = new BigDecimal("0.5");
@@ -324,7 +294,6 @@ public class HdfFixedPointWrite {
         int NUM_DATAPOINTS;
         FixedPointDatatype fixedPointDatatype;
         HdfDataSet dataset;
-        HdfDataFile hdfDataFile;
         List<List<BigDecimal>> values;
     }
 }

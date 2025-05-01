@@ -81,14 +81,14 @@ public class HdfWriteCompoundTest {
 
     @SneakyThrows
     private static void writeCompoundAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
-        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            }
-        }
+//        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+//        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+//        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+//        if (requiresGlobalHeap) {
+//            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
+//                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+//            }
+//        }
 
 //        int numRecords = 1000;
 //        CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();
@@ -121,14 +121,14 @@ public class HdfWriteCompoundTest {
 
     @SneakyThrows
     private static void writeCompoundEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
-        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            }
-        }
+//        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
+//        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
+//        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
+//        if (requiresGlobalHeap) {
+//            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
+//                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+//            }
+//        }
 
         int numRecords = 1000;
         CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();

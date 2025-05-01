@@ -41,29 +41,8 @@ public class HdfCompoundWrite {
     }
 
     private void run() {
-//        try {
-//            Path filePath = getResourcePath("compound_example.h5");
-//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-//                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                try ( HdfDataSet dataSet = reader.getRootGroup().findDataset("CompoundData") ) {
-//                    displayData(channel, dataSet, reader);
-//                }
-////                reader.getGlobalHeap().printDebug();
-//            }
-//
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
         tryHdfApiCompound();
     }
-    private Path getResourcePath(String fileName) {
-        String resourcePath = getClass().getClassLoader().getResource(fileName).getPath();
-        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
-            resourcePath = resourcePath.substring(1);
-        }
-        return Paths.get(resourcePath);
-    }
-
     public void tryHdfApiCompound() {
         final String FILE_NAME = "compound_example.h5";
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
@@ -174,34 +153,6 @@ public class HdfCompoundWrite {
             writeVersionAttribute(file, dataset);
             file.getFileAllocation().printBlocks();
             writeCompoundAll(dataset, file);
-//            AtomicInteger countHolder = new AtomicInteger(0);
-//            ByteBuffer buffer = ByteBuffer.allocate(compoundType.getSize()).order(ByteOrder.LITTLE_ENDIAN);
-//            // Write to dataset
-//            dataset.write(() -> {
-//                int count = countHolder.getAndIncrement();
-//                if (count >= NUM_RECORDS) return ByteBuffer.allocate(0);
-//                CompoundExample instance = CompoundExample.builder()
-//                        .recordId(count + 1000L)
-//                        .fixedStr("FixedData")
-//                        .varStr("varStr:" + (count + 1))
-//                        .floatVal(((float)count)*3.14F)
-//                        .doubleVal(((double)count)*2.718D)
-//                        .int8_Val(getCycledInt8(count))
-//                        .uint8_Val(getCycledUint8(count))
-//                        .int16_Val(getCycledInt16(count))
-//                        .uint16_Val(getCycledUint16(count))
-//                        .int32_Val(getCycledInt32(count))
-//                        .uint32_Val(getCycledUint32(count))
-//                        .int64_Val(getCycledInt64(count))
-//                        .uint64_Val(getCycledUint64(count))
-//                        .scaledUintVal(BigDecimal.valueOf(count + 1).add(BigDecimal.valueOf((count % 4) * 0.25)))
-//                        .build();
-//                buffer.clear();
-//                HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, buffer, CompoundExample.class);
-//                buffer.position(0);
-//                return buffer;
-//            });
-
             file.getFileAllocation().printBlocks();
             dataset.close();
             file.getFileAllocation().printBlocks();
@@ -217,15 +168,6 @@ public class HdfCompoundWrite {
     }
     @SneakyThrows
     private static void writeCompoundAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
-        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            }
-        }
-
         int numRecords = 1000;
         CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();
         int bufferSize = numRecords * compoundType.getSize();
@@ -244,7 +186,6 @@ public class HdfCompoundWrite {
 
     @SneakyThrows
     private static void writeCompoundEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
-
         int numRecords = 1000;
         CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();
         int bufferSize = compoundType.getSize();
@@ -307,58 +248,6 @@ public class HdfCompoundWrite {
         private Float airQualityIndex;
         private Double temperature;
         private Integer sampleCount;
-    }
-
-
-    public void displayData(SeekableByteChannel seekableByteChannel, HdfDataSet dataSet, HdfDataFile hdfDataFile) throws IOException {
-//        System.out.println("Count = " + new TypedDataSource<>(dataSet, fileChannel, HdfCompound.class).streamVector().count());
-
-        System.out.println("Ten Rows:");
-        new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class)
-                .streamVector()
-                .limit(10)
-                .forEach(c -> System.out.println("Row: " + c.getMembers()));
-
-        System.out.println("Ten BigDecimals = " + new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class).streamVector()
-                        .filter(c-> c.getMembers().get(0).getInstance(Long.class) < 1010 )
-                .map(c->c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
-
-        System.out.println("RecordId < 1010, custom class:");
-        new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, CompoundExample.class)
-                .streamVector()
-                .filter(c -> c.getRecordId() < 1010)
-                .forEach(c -> System.out.println("Row: " + c));
-        System.out.println("DONE");
-    }
-
-    public void tryCompoundSpliterator(FileChannel fileChannel, HdfDataSet dataSet, HdfDataFile hdfDataFile) throws IOException {
-        TypedDataSource<MonitoringData> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, MonitoringData.class);
-        MonitoringData[] allData = dataSource.readVector();
-        System.out.println("*** readAll: \r\n" + Arrays.asList(allData).stream().map(Object::toString).collect(Collectors.joining("\n")));
-        System.out.println("*** stream: \r\n" + dataSource.streamVector().map(Object::toString).collect(Collectors.joining("\n")));
-        System.out.println("\"*** parallelStream: \r\n" + dataSource.parallelStreamVector().map(Object::toString).collect(Collectors.joining("\n")));
-
-        new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, HdfCompound.class).streamVector().forEach(System.out::println);
-        new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, String.class).streamVector().forEach(System.out::println);
-    }
-
-
-    private void tryCustomSpliterator(FileChannel fileChannel, HdfDataSet dataSet, HdfDataFile hdfDataFile) {
-        CompoundDatatype.addConverter(MonitoringData.class, (bytes, datatype) -> {
-            MonitoringData monitoringData = new MonitoringData();
-            datatype.getMembers().forEach(member -> {
-                byte[] memberBytes = Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset() + member.getSize());
-                switch (member.getName()) {
-                    case "Site Name" -> monitoringData.setSiteName(member.getInstance(String.class, memberBytes));
-                    case "Air Quality Index" -> monitoringData.setAirQualityIndex(member.getInstance(Float.class, memberBytes));
-                    case "Temperature" -> monitoringData.setTemperature(member.getInstance(Double.class, memberBytes));
-                    case "Sample Count" -> monitoringData.setSampleCount(member.getInstance(Integer.class, memberBytes));
-                    default -> throw new RuntimeException("Error");
-                }
-            });
-            return monitoringData;
-        });
-        new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, MonitoringData.class).streamVector().forEach(System.out::println);
     }
 
     private static final int CYCLE_LENGTH = 5;

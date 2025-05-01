@@ -87,15 +87,6 @@ public class HdfWriteVectorMatrixTest {
 
     @SneakyThrows
     private static void writeVectorAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
-        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            }
-        }
-
         int numRecords = 1000;
         ByteBuffer byteBuffer = ByteBuffer.allocate(numRecords * 8).order(ByteOrder.LITTLE_ENDIAN);
         for (int i = 0; i < numRecords; i++) {
@@ -107,15 +98,6 @@ public class HdfWriteVectorMatrixTest {
 
     @SneakyThrows
     private static void writeVectorEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
-        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            }
-        }
-
         int numRecords = 1000;
         AtomicInteger countHolder = new AtomicInteger(0);
         ByteBuffer byteBuffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
@@ -131,15 +113,6 @@ public class HdfWriteVectorMatrixTest {
 
     @SneakyThrows
     private static void writeMatrixAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
-        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            }
-        }
-
         int numRecords = 4;
         int numDatapoints = 17;
         List<List<BigDecimal>> values = loadCsvData("/weatherdata.csv");
@@ -163,15 +136,6 @@ public class HdfWriteVectorMatrixTest {
 
     @SneakyThrows
     private static void writeMatrixEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
-        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-        hdfDataFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            }
-        }
-
         int numRecords = 4;
         int numDatapoints = 17;
         List<List<BigDecimal>> values = loadCsvData("/weatherdata.csv");

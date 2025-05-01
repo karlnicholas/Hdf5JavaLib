@@ -10,7 +10,8 @@ import java.nio.ByteBuffer;
 
 @Getter
 public class HdfFixedPoint implements HdfData {
-    private final byte[] bytes; // Stored in little-endian format by default unless specified otherwise
+    // Stored in little-endian format by default unless specified otherwise
+    private final byte[] bytes;
     private final FixedPointDatatype datatype;
 
     /**

@@ -164,6 +164,16 @@ public class HdfDataSet implements Closeable {
         dataLayoutMessage.setDataAddress(HdfWriteUtils.hdfFixedPointFromValue(allocationInfo.getDataOffset(), hdfDataFile.getFixedPointDatatypeForOffset()));
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, objectReferenceCount, Math.max(objectHeaderSize, headerSize-16), headerMessages);
         // check if a global heap needed
+        // This is probably going to need to change
+        if ( allocationInfo.getDataOffset() < 0 ) {
+            hdfDataFile.getFileAllocation().allocateAndSetDataBlock(datasetName, hdfDimensionSizes[0].getInstance(Long.class));
+            boolean requiresGlobalHeap = hdfDatatype.requiresGlobalHeap(false);
+            if (requiresGlobalHeap) {
+                if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
+                    hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+                }
+            }
+        }
     }
 
     public AttributeMessage createAttribute(String name, String value, HdfDataFile hdfDataFile) {
@@ -257,7 +267,7 @@ public class HdfDataSet implements Closeable {
                             VariableLengthDatatype.CharacterSet.ASCII),
                     (short) 16, attributeType
             );
-            hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
+//            hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
             variableLengthType.setGlobalHeap(hdfDataFile.getGlobalHeap());
             byte[] globalHeapBytes = hdfDataFile.getGlobalHeap().addToHeap(
                     value.getBytes(StandardCharsets.US_ASCII));
@@ -357,6 +367,7 @@ public class HdfDataSet implements Closeable {
     private boolean checkContinuationMessageNeeded(int objectHeaderSize, int attributeSize, List<HdfMessage> headerMessages, long headerSize) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         HdfFileAllocation.DatasetAllocationInfo allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
+
         if ( objectHeaderSize + attributeSize > headerSize
                 && (allocationInfo.getContinuationSize() <= 0 || !attributes.isEmpty())
         ) {
