@@ -8,6 +8,9 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+// Optional: Add static import to simplify AllocationType references
+// import static org.hdf5javalib.file.HdfFileAllocation.AllocationType.*;
+
 public class HdfFileAllocationTest {
 
     private HdfFileAllocation allocation;
