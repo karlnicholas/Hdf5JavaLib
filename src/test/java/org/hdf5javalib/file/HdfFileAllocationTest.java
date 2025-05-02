@@ -199,69 +199,69 @@ public class HdfFileAllocationTest {
         assertEquals(352, allocation.getCurrentLocalHeapContentsSize());
 
         // Verify allocationRecords
-        List<HdfFileAllocation.AllocationRecord> records = allocation.getAllocationRecords();
-        assertEquals(51, records.size(), "Expected 50 allocation records");
+        List<HdfFileAllocation.AllocationRecord> records = allocation.getAllAllocationRecords();
+        assertEquals(51, records.size(), "Expected 51 allocation records");
 
         // Fixed structures
-        assertRecord(records.get(0), "FIXED", "Superblock", 0, 96);
-        assertRecord(records.get(1), "FIXED", "Object Header Prefix", 96, 40);
-        assertRecord(records.get(2), "FIXED", "B-tree (Node + Storage)", 136, 544);
-        assertRecord(records.get(3), "FIXED", "Local Heap Header", 680, 32);
-        assertRecord(records.get(4), "FIXED", "Initial Local Heap Contents", 712, 88);
+        assertRecord(records.get(0), HdfFileAllocation.AllocationType.SUPERBLOCK, "Superblock", 0, 96);
+        assertRecord(records.get(1), HdfFileAllocation.AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", 96, 40);
+        assertRecord(records.get(2), HdfFileAllocation.AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", 136, 544);
+        assertRecord(records.get(3), HdfFileAllocation.AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", 680, 32);
+        assertRecord(records.get(4), HdfFileAllocation.AllocationType.LOCAL_HEAP_ABANDONED, "Abandoned Local Heap Contents (Offset 712)", 712, 88);
 
-        // Dataset headers
-        assertRecord(records.get(5), "HEADER", "Dataset Header (dataset_1)", 800, 272);
-        assertRecord(records.get(6), "SNOD", "SNOD Block 1", 1072, 328); // After dataset_1 header
-        assertRecord(records.get(7), "DATA", "Data Block (dataset_1)", 2048, 4);
-        assertRecord(records.get(8), "HEADER", "Dataset Header (dataset_2)", 1400, 272);
-        assertRecord(records.get(9), "DATA", "Data Block (dataset_2)", 2052, 4);
-        assertRecord(records.get(10), "HEADER", "Dataset Header (dataset_3)", 1672, 272);
-        assertRecord(records.get(11), "DATA", "Data Block (dataset_3)", 2056, 4);
-        assertRecord(records.get(12), "HEADER", "Dataset Header (dataset_4)", 4096, 272);
-        assertRecord(records.get(13), "DATA", "Data Block (dataset_4)", 2060, 4);
-        assertRecord(records.get(14), "HEADER", "Dataset Header (dataset_5)", 4368, 272);
-        assertRecord(records.get(15), "DATA", "Data Block (dataset_5)", 2064, 4);
-        assertRecord(records.get(16), "HEADER", "Dataset Header (dataset_6)", 4640, 272);
-        assertRecord(records.get(17), "LOCAL_HEAP", "Abandoned Local Heap Contents (Offset 4912)", 4912, 176); // After first expand
-        assertRecord(records.get(18), "DATA", "Data Block (dataset_6)", 2068, 4);
-        assertRecord(records.get(19), "HEADER", "Dataset Header (dataset_7)", 5088, 272);
-        assertRecord(records.get(20), "DATA", "Data Block (dataset_7)", 2072, 4);
-        assertRecord(records.get(21), "HEADER", "Dataset Header (dataset_8)", 5360, 272);
-        assertRecord(records.get(22), "DATA", "Data Block (dataset_8)", 2076, 4);
-        assertRecord(records.get(23), "HEADER", "Dataset Header (dataset_9)", 5632, 272);
-        assertRecord(records.get(24), "SNOD", "SNOD Block 2", 5904, 328);
-        assertRecord(records.get(25), "DATA", "Data Block (dataset_9)", 2080, 4);
-        assertRecord(records.get(26), "HEADER", "Dataset Header (dataset_10)", 6232, 272);
-        assertRecord(records.get(27), "LOCAL_HEAP", "Expanded Local Heap Contents", 6504, 352);
-        assertRecord(records.get(28), "DATA", "Data Block (dataset_10)", 2084, 4);
-        assertRecord(records.get(29), "HEADER", "Dataset Header (dataset_11)", 6856, 272);
-        assertRecord(records.get(30), "DATA", "Data Block (dataset_11)", 2088, 4);
-        assertRecord(records.get(31), "HEADER", "Dataset Header (dataset_12)", 7128, 272);
-        assertRecord(records.get(32), "DATA", "Data Block (dataset_12)", 2092, 4);
-        assertRecord(records.get(33), "HEADER", "Dataset Header (dataset_13)", 7400, 272);
-        assertRecord(records.get(34), "DATA", "Data Block (dataset_13)", 2096, 4);
-        assertRecord(records.get(35), "HEADER", "Dataset Header (dataset_14)", 7672, 272);
-        assertRecord(records.get(36), "SNOD", "SNOD Block 3", 7944, 328);
-        assertRecord(records.get(37), "DATA", "Data Block (dataset_14)", 2100, 4);
-        assertRecord(records.get(38), "HEADER", "Dataset Header (dataset_15)", 8272, 272);
-        assertRecord(records.get(39), "DATA", "Data Block (dataset_15)", 2104, 4);
-        assertRecord(records.get(40), "HEADER", "Dataset Header (dataset_16)", 8544, 272);
-        assertRecord(records.get(41), "DATA", "Data Block (dataset_16)", 2108, 4);
-        assertRecord(records.get(42), "HEADER", "Dataset Header (dataset_17)", 8816, 272);
-        assertRecord(records.get(43), "DATA", "Data Block (dataset_17)", 2112, 4);
-        assertRecord(records.get(44), "HEADER", "Dataset Header (dataset_18)", 9088, 272);
-        assertRecord(records.get(45), "SNOD", "SNOD Block 4", 9360, 328);
-        assertRecord(records.get(46), "DATA", "Data Block (dataset_18)", 2116, 4);
-        assertRecord(records.get(47), "HEADER", "Dataset Header (dataset_19)", 9688, 272);
-        assertRecord(records.get(48), "DATA", "Data Block (dataset_19)", 2120, 4);
-        assertRecord(records.get(49), "HEADER", "Dataset Header (dataset_20)", 9960, 272);
-        assertRecord(records.get(50), "DATA", "Data Block (dataset_20)", 2124, 4);
+        // Dataset headers and other records
+        assertRecord(records.get(5), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_1)", 800, 272);
+        assertRecord(records.get(6), HdfFileAllocation.AllocationType.SNOD, "SNOD Block 1", 1072, 328); // After dataset_1 header
+        assertRecord(records.get(7), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_1)", 2048, 4);
+        assertRecord(records.get(8), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_2)", 1400, 272);
+        assertRecord(records.get(9), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_2)", 2052, 4);
+        assertRecord(records.get(10), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_3)", 1672, 272);
+        assertRecord(records.get(11), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_3)", 2056, 4);
+        assertRecord(records.get(12), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_4)", 4096, 272);
+        assertRecord(records.get(13), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_4)", 2060, 4);
+        assertRecord(records.get(14), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_5)", 4368, 272);
+        assertRecord(records.get(15), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_5)", 2064, 4);
+        assertRecord(records.get(16), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_6)", 4640, 272);
+        assertRecord(records.get(17), HdfFileAllocation.AllocationType.LOCAL_HEAP_ABANDONED, "Abandoned Local Heap Contents (Offset 4912)", 4912, 176); // After first expand
+        assertRecord(records.get(18), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_6)", 2068, 4);
+        assertRecord(records.get(19), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_7)", 5088, 272);
+        assertRecord(records.get(20), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_7)", 2072, 4);
+        assertRecord(records.get(21), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_8)", 5360, 272);
+        assertRecord(records.get(22), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_8)", 2076, 4);
+        assertRecord(records.get(23), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_9)", 5632, 272);
+        assertRecord(records.get(24), HdfFileAllocation.AllocationType.SNOD, "SNOD Block 2", 5904, 328);
+        assertRecord(records.get(25), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_9)", 2080, 4);
+        assertRecord(records.get(26), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_10)", 6232, 272);
+        assertRecord(records.get(27), HdfFileAllocation.AllocationType.LOCAL_HEAP, "Expanded Local Heap Contents", 6504, 352); // After second expand
+        assertRecord(records.get(28), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_10)", 2084, 4);
+        assertRecord(records.get(29), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_11)", 6856, 272);
+        assertRecord(records.get(30), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_11)", 2088, 4);
+        assertRecord(records.get(31), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_12)", 7128, 272);
+        assertRecord(records.get(32), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_12)", 2092, 4);
+        assertRecord(records.get(33), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_13)", 7400, 272);
+        assertRecord(records.get(34), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_13)", 2096, 4);
+        assertRecord(records.get(35), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_14)", 7672, 272);
+        assertRecord(records.get(36), HdfFileAllocation.AllocationType.SNOD, "SNOD Block 3", 7944, 328);
+        assertRecord(records.get(37), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_14)", 2100, 4);
+        assertRecord(records.get(38), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_15)", 8272, 272);
+        assertRecord(records.get(39), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_15)", 2104, 4);
+        assertRecord(records.get(40), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_16)", 8544, 272);
+        assertRecord(records.get(41), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_16)", 2108, 4);
+        assertRecord(records.get(42), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_17)", 8816, 272);
+        assertRecord(records.get(43), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_17)", 2112, 4);
+        assertRecord(records.get(44), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_18)", 9088, 272);
+        assertRecord(records.get(45), HdfFileAllocation.AllocationType.SNOD, "SNOD Block 4", 9360, 328);
+        assertRecord(records.get(46), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_18)", 2116, 4);
+        assertRecord(records.get(47), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_19)", 9688, 272);
+        assertRecord(records.get(48), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_19)", 2120, 4);
+        assertRecord(records.get(49), HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (dataset_20)", 9960, 272);
+        assertRecord(records.get(50), HdfFileAllocation.AllocationType.DATASET_DATA, "Data Block (dataset_20)", 2124, 4);
 
         // Debug output
         allocation.printBlocks();
     }
 
-    private void assertRecord(HdfFileAllocation.AllocationRecord record, String expectedType, String expectedName, long expectedOffset, long expectedSize) {
+    private void assertRecord(HdfFileAllocation.AllocationRecord record, HdfFileAllocation.AllocationType expectedType, String expectedName, long expectedOffset, long expectedSize) {
         assertEquals(expectedType, record.getType(), "Record type mismatch for " + expectedName);
         assertEquals(expectedName, record.getName(), "Record name mismatch at offset " + expectedOffset);
         assertEquals(expectedOffset, record.getOffset(), "Record offset mismatch for " + expectedName);

@@ -12,6 +12,21 @@ import java.util.*;
 @Getter
 public class HdfFileAllocation {
 
+    // --- Allocation Types ---
+    public enum AllocationType {
+        SUPERBLOCK,          // Superblock (offset 0, size 96)
+        GROUP_OBJECT_HEADER, // Object header prefix for root group (offset 96, size 40)
+        BTREE_HEADER,        // B-tree node + storage (offset 136, size 544)
+        LOCAL_HEAP_HEADER,   // Local heap header (offset 680, size 32)
+        DATASET_OBJECT_HEADER, // Dataset header (metadata region)
+        DATASET_HEADER_CONTINUATION, // Dataset continuation block (metadata region)
+        DATASET_DATA,        // Dataset data block (data region)
+        LOCAL_HEAP,          // Active local heap contents (metadata region)
+        LOCAL_HEAP_ABANDONED, // Abandoned local heap contents (metadata region)
+        SNOD,                // Symbol table node (metadata region)
+        GLOBAL_HEAP          // Global heap block (data region)
+    }
+
     // --- Constants ---
     private static final long SUPERBLOCK_OFFSET = 0L;
     private static final long SUPERBLOCK_SIZE = 96L;
@@ -75,11 +90,11 @@ public class HdfFileAllocation {
         currentLocalHeapContentsOffset = initialLocalHeapContentsOffset;
 
         // Add fixed structures to allocationRecords
-        allocationRecords.add(new AllocationRecord("FIXED", "Superblock", superblockOffset, SUPERBLOCK_SIZE));
-        allocationRecords.add(new AllocationRecord("FIXED", "Object Header Prefix", objectHeaderPrefixOffset, OBJECT_HEADER_PREFIX_SIZE));
-        allocationRecords.add(new AllocationRecord("FIXED", "B-tree (Node + Storage)", btreeOffset, btreeTotalSize));
-        allocationRecords.add(new AllocationRecord("FIXED", "Local Heap Header", localHeapHeaderOffset, LOCAL_HEAP_HEADER_SIZE));
-        allocationRecords.add(new AllocationRecord("FIXED", "Initial Local Heap Contents", initialLocalHeapContentsOffset, initialLocalHeapContentsSize));
+        allocationRecords.add(new AllocationRecord(AllocationType.SUPERBLOCK, "Superblock", superblockOffset, SUPERBLOCK_SIZE));
+        allocationRecords.add(new AllocationRecord(AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", objectHeaderPrefixOffset, OBJECT_HEADER_PREFIX_SIZE));
+        allocationRecords.add(new AllocationRecord(AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", btreeOffset, btreeTotalSize));
+        allocationRecords.add(new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", localHeapHeaderOffset, LOCAL_HEAP_HEADER_SIZE));
+        allocationRecords.add(new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", initialLocalHeapContentsOffset, initialLocalHeapContentsSize));
     }
 
     // --- Allocation Methods ---
@@ -96,7 +111,7 @@ public class HdfFileAllocation {
         long headerOffset = metadataNextAvailableOffset;
         DatasetAllocationInfo info = new DatasetAllocationInfo(headerOffset, headerSize);
         datasetAllocations.put(datasetName, info);
-        allocationRecords.add(new AllocationRecord("HEADER", "Dataset Header (" + datasetName + ")", headerOffset, headerSize));
+        allocationRecords.add(new AllocationRecord(AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (" + datasetName + ")", headerOffset, headerSize));
         metadataNextAvailableOffset += headerSize;
         updateMetadataOffset(metadataNextAvailableOffset);
         return info;
@@ -114,7 +129,8 @@ public class HdfFileAllocation {
 
         // Update allocationRecords
         for (AllocationRecord record : allocationRecords) {
-            if (record.getType().equals("HEADER") && record.getName().equals("Dataset Header (" + datasetName + ")")) {
+            if (record.getType() == AllocationType.DATASET_OBJECT_HEADER &&
+                    record.getName().equals("Dataset Header (" + datasetName + ")")) {
                 record.setSize(newTotalHeaderSize);
                 break;
             }
@@ -125,13 +141,12 @@ public class HdfFileAllocation {
 
         // Update metadataNextAvailableOffset to reflect header expansion
         metadataNextAvailableOffset = Math.max(metadataNextAvailableOffset, info.getHeaderOffset() + newTotalHeaderSize);
-
         updateMetadataOffset(metadataNextAvailableOffset);
     }
 
     public long allocateNextSnodStorage() {
         if (checkForOverlap(metadataNextAvailableOffset, SNOD_STORAGE_SIZE)) {
-            if ( snodAllocationOffsets.isEmpty() ) {
+            if (snodAllocationOffsets.isEmpty()) {
                 // special case: first SNOD is allocated at the end of the metadata region
                 // but overlaps with the dataNextAvailableOffset.
                 long moveAmount = ((metadataNextAvailableOffset + SNOD_STORAGE_SIZE) - dataNextAvailableOffset);
@@ -143,7 +158,7 @@ public class HdfFileAllocation {
 
         long offset = metadataNextAvailableOffset;
         snodAllocationOffsets.add(offset);
-        allocationRecords.add(new AllocationRecord("SNOD", "SNOD Block " + snodAllocationOffsets.size(), offset, SNOD_STORAGE_SIZE));
+        allocationRecords.add(new AllocationRecord(AllocationType.SNOD, "SNOD Block " + snodAllocationOffsets.size(), offset, SNOD_STORAGE_SIZE));
         metadataNextAvailableOffset += SNOD_STORAGE_SIZE;
         updateMetadataOffset(metadataNextAvailableOffset);
         if (snodOffset == -1) {
@@ -166,7 +181,7 @@ public class HdfFileAllocation {
         long dataOffset = dataNextAvailableOffset;
         info.setDataOffset(dataOffset);
         info.setDataSize(dataSize);
-        allocationRecords.add(new AllocationRecord("DATA", "Data Block (" + datasetName + ")", dataOffset, dataSize));
+        allocationRecords.add(new AllocationRecord(AllocationType.DATASET_DATA, "Data Block (" + datasetName + ")", dataOffset, dataSize));
         dataNextAvailableOffset += dataSize;
         updateDataOffset(dataNextAvailableOffset);
         return dataOffset;
@@ -186,7 +201,7 @@ public class HdfFileAllocation {
         long continuationOffset = metadataNextAvailableOffset;
         info.setContinuationOffset(continuationOffset);
         info.setContinuationSize(continuationSize);
-        allocationRecords.add(new AllocationRecord("CONTINUATION", "Continuation (" + datasetName + ")", continuationOffset, continuationSize));
+        allocationRecords.add(new AllocationRecord(AllocationType.DATASET_HEADER_CONTINUATION, "Continuation (" + datasetName + ")", continuationOffset, continuationSize));
         metadataNextAvailableOffset += continuationSize;
         updateMetadataOffset(metadataNextAvailableOffset);
         return continuationOffset;
@@ -204,7 +219,7 @@ public class HdfFileAllocation {
         long offset = dataNextAvailableOffset;
         globalHeapBlockSizes.put(offset, size);
         globalHeapOffset = offset;
-        allocationRecords.add(new AllocationRecord("GLOBAL_HEAP", "Global Heap Block 1", offset, size));
+        allocationRecords.add(new AllocationRecord(AllocationType.GLOBAL_HEAP, "Global Heap Block 1", offset, size));
         dataNextAvailableOffset += size;
         updateDataOffset(dataNextAvailableOffset);
         return offset;
@@ -222,7 +237,7 @@ public class HdfFileAllocation {
         long offset = dataNextAvailableOffset;
         globalHeapBlockSizes.put(offset, size);
         secondGlobalHeapOffset = offset;
-        allocationRecords.add(new AllocationRecord("GLOBAL_HEAP", "Global Heap Block 2", offset, size));
+        allocationRecords.add(new AllocationRecord(AllocationType.GLOBAL_HEAP, "Global Heap Block 2", offset, size));
         dataNextAvailableOffset += size;
         updateDataOffset(dataNextAvailableOffset);
         return offset;
@@ -235,7 +250,8 @@ public class HdfFileAllocation {
 
         // Update allocationRecords
         for (AllocationRecord record : allocationRecords) {
-            if (record.getType().equals("GLOBAL_HEAP") && record.getName().equals("Global Heap Block 2")) {
+            if (record.getType() == AllocationType.GLOBAL_HEAP &&
+                    record.getName().equals("Global Heap Block 2")) {
                 record.setSize(newSize);
                 break;
             }
@@ -259,16 +275,18 @@ public class HdfFileAllocation {
         long newOffset = metadataNextAvailableOffset;
         long oldOffset = this.currentLocalHeapContentsOffset;
 
-        // Rename existing LOCAL_HEAP record to indicate abandonment
+        // Update existing LOCAL_HEAP record to indicate abandonment
         for (AllocationRecord record : allocationRecords) {
-            if (record.getType().equals("LOCAL_HEAP") && record.getOffset() == oldOffset) {
+            if (record.getType() == AllocationType.LOCAL_HEAP &&
+                    record.getOffset() == oldOffset) {
+                record.setType(AllocationType.LOCAL_HEAP_ABANDONED);
                 record.setName("Abandoned Local Heap Contents (Offset " + oldOffset + ")");
                 break;
             }
         }
 
         // Add new record
-        allocationRecords.add(new AllocationRecord("LOCAL_HEAP", "Expanded Local Heap Contents", newOffset, newSize));
+        allocationRecords.add(new AllocationRecord(AllocationType.LOCAL_HEAP, "Expanded Local Heap Contents", newOffset, newSize));
 
         this.currentLocalHeapContentsOffset = newOffset;
         this.currentLocalHeapContentsSize = newSize;
@@ -293,11 +311,11 @@ public class HdfFileAllocation {
         snodOffset = -1;
 
         // Reinitialize fixed structures
-        allocationRecords.add(new AllocationRecord("FIXED", "Superblock", superblockOffset, SUPERBLOCK_SIZE));
-        allocationRecords.add(new AllocationRecord("FIXED", "Object Header Prefix", objectHeaderPrefixOffset, OBJECT_HEADER_PREFIX_SIZE));
-        allocationRecords.add(new AllocationRecord("FIXED", "B-tree (Node + Storage)", btreeOffset, btreeTotalSize));
-        allocationRecords.add(new AllocationRecord("FIXED", "Local Heap Header", localHeapHeaderOffset, LOCAL_HEAP_HEADER_SIZE));
-        allocationRecords.add(new AllocationRecord("FIXED", "Initial Local Heap Contents", initialLocalHeapContentsOffset, initialLocalHeapContentsSize));
+        allocationRecords.add(new AllocationRecord(AllocationType.SUPERBLOCK, "Superblock", superblockOffset, SUPERBLOCK_SIZE));
+        allocationRecords.add(new AllocationRecord(AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", objectHeaderPrefixOffset, OBJECT_HEADER_PREFIX_SIZE));
+        allocationRecords.add(new AllocationRecord(AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", btreeOffset, btreeTotalSize));
+        allocationRecords.add(new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", localHeapHeaderOffset, LOCAL_HEAP_HEADER_SIZE));
+        allocationRecords.add(new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", initialLocalHeapContentsOffset, initialLocalHeapContentsSize));
     }
 
     // --- Global Heap Methods ---
@@ -380,7 +398,7 @@ public class HdfFileAllocation {
 
             // Update allocationRecords
             for (AllocationRecord record : allocationRecords) {
-                if (record.getType().equals("SNOD") && record.getOffset() == snodOffset) {
+                if (record.getType() == AllocationType.SNOD && record.getOffset() == snodOffset) {
                     record.setOffset(newSnodOffset);
                     break;
                 }
@@ -410,7 +428,7 @@ public class HdfFileAllocation {
         for (AllocationRecord block : sortedRecords) {
             String hexOffset = String.format("0x%08X", block.getOffset());
             System.out.printf("%-12d | %-12s | %-8d | %-10s | %s%n",
-                    block.getOffset(), hexOffset, block.getSize(), block.getType(), block.getName());
+                    block.getOffset(), hexOffset, block.getSize(), block.getType().name(), block.getName());
         }
 
         // Detect gaps
@@ -463,13 +481,12 @@ public class HdfFileAllocation {
         System.out.println("----------------------------------");
 
         System.out.println("Offset (Dec) | Offset (Hex) | Size     | Type       | Name");
-        // Create a sorted list of allocation records by offset
         List<AllocationRecord> sortedRecords = new ArrayList<>(allocationRecords);
         sortedRecords.sort(Comparator.comparingLong(AllocationRecord::getOffset));
         for (AllocationRecord block : sortedRecords) {
             String hexOffset = String.format("0x%08X", block.getOffset());
             System.out.printf("%-12d | %-12s | %-8d | %-10s | %s%n",
-                    block.getOffset(), hexOffset, block.getSize(), block.getType(), block.getName());
+                    block.getOffset(), hexOffset, block.getSize(), block.getType().name(), block.getName());
         }
 
         // Check for overlaps
@@ -485,7 +502,6 @@ public class HdfFileAllocation {
                 long start2 = record2.getOffset();
                 long end2 = start2 + record2.getSize() - 1;
 
-                // Check if record1 and record2 overlap
                 if (start1 <= end2 && start2 <= end1) {
                     hasOverlap = true;
                     System.out.printf("Overlap detected between:%n");
@@ -568,27 +584,25 @@ public class HdfFileAllocation {
     }
 
     public static class AllocationRecord {
-        private final String type; // FIXED, HEADER, SNOD, DATA, GLOBAL_HEAP, CONTINUATION, LOCAL_HEAP
+        private AllocationType type; // SUPERBLOCK, DATASET_OBJECT_HEADER, etc.
         private String name;
         private long offset;
         private long size;
 
-        public AllocationRecord(String type, String name, long offset, long size) {
+        public AllocationRecord(AllocationType type, String name, long offset, long size) {
             this.type = type;
             this.name = name;
             this.offset = offset;
             this.size = size;
         }
 
-        public String getType() { return type; }
+        public AllocationType getType() { return type; }
         public String getName() { return name; }
         public long getOffset() { return offset; }
         public long getSize() { return size; }
+        public void setType(AllocationType type) { this.type = type; }
+        public void setName(String name) { this.name = name; }
         public void setOffset(long offset) { this.offset = offset; }
         public void setSize(long size) { this.size = size; }
-
-        public void setName(String name) {
-            this.name = name;
-        }
     }
 }
