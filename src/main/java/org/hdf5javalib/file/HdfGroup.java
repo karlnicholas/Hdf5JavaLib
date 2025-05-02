@@ -133,7 +133,7 @@ public class HdfGroup implements Closeable {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length));
         int linkNameOffset;
-        HdfFileAllocation.DatasetAllocationInfo allocationInfo;
+        long allocationInfo;
         if ( localHeap.getFreeListOffset().getInstance(Long.class) != 1 ) {
             linkNameOffset = localHeap.addToHeap(hdfDatasetName);
             allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
@@ -146,11 +146,11 @@ public class HdfGroup implements Closeable {
 
         DataSetInfo dataSetInfo = new DataSetInfo(
                 newDataSet,
-                HdfWriteUtils.hdfFixedPointFromValue(allocationInfo.getHeaderOffset(), hdfFile.getFixedPointDatatypeForOffset()),
+                HdfWriteUtils.hdfFixedPointFromValue(allocationInfo, hdfFile.getFixedPointDatatypeForOffset()),
                 linkNameOffset);
         dataSets.put(datasetName, dataSetInfo);
 
-        bTree.addDataset(linkNameOffset, allocationInfo.getHeaderOffset(), datasetName, this);
+        bTree.addDataset(linkNameOffset, allocationInfo, datasetName, this);
         return newDataSet;
     }
 

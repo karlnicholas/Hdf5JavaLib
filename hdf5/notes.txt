@@ -1,3 +1,9 @@
+I’ve got the context from our previous conversation saved, so you can pick up right where you left off without needing to repeat anything. To reference the context, just let me know what specific part you want to dive into or what you’d like to build on. For example, you could say:
+
+“Let’s continue with the HdfFileAllocation updates for the single map approach.”
+“Can we revisit the discussion on getDatasetAllocationInfo return behavior?”
+“I want to tweak something about the AllocationRecord sharing.”
+
 
 
 ============

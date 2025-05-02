@@ -48,7 +48,7 @@ public class HdfFileAllocation {
     private static final long ALIGNMENT_BOUNDARY = 2048L;
 
     // --- Storage ---
-    private final Map<String, DatasetAllocationInfo> datasetAllocations = new LinkedHashMap<>();
+    private final Map<String, Map<AllocationType, AllocationRecord>> allocations = new LinkedHashMap<>();
     private final List<Long> snodAllocationOffsets = new ArrayList<>();
     private final Map<Long, Long> globalHeapBlockSizes = new HashMap<>();
     private final List<AllocationRecord> allocationRecords = new ArrayList<>();
@@ -98,10 +98,12 @@ public class HdfFileAllocation {
     }
 
     // --- Allocation Methods ---
-    public DatasetAllocationInfo allocateDatasetStorage(String datasetName) {
+    public long allocateDatasetStorage(String datasetName) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (datasetName.isEmpty()) throw new IllegalArgumentException("Dataset name cannot be empty");
-        if (datasetAllocations.containsKey(datasetName)) throw new IllegalStateException("Dataset '" + datasetName + "' already allocated");
+        if (allocations.containsKey(datasetName) && allocations.get(datasetName).containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
+            throw new IllegalStateException("Dataset '" + datasetName + "' already allocated");
+        }
 
         long headerSize = DEFAULT_DATASET_HEADER_SIZE;
         if (checkForOverlap(metadataNextAvailableOffset, headerSize)) {
@@ -109,38 +111,35 @@ public class HdfFileAllocation {
         }
 
         long headerOffset = metadataNextAvailableOffset;
-        DatasetAllocationInfo info = new DatasetAllocationInfo(headerOffset, headerSize);
-        datasetAllocations.put(datasetName, info);
-        allocationRecords.add(new AllocationRecord(AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (" + datasetName + ")", headerOffset, headerSize));
+        AllocationRecord record = new AllocationRecord(AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (" + datasetName + ")", headerOffset, headerSize);
+        allocations.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_OBJECT_HEADER, record);
+        allocationRecords.add(record);
         metadataNextAvailableOffset += headerSize;
         updateMetadataOffset(metadataNextAvailableOffset);
-        return info;
+        return headerOffset;
     }
 
     public void increaseHeaderAllocation(String datasetName, long newTotalHeaderSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
-        DatasetAllocationInfo info = datasetAllocations.get(datasetName);
-        if (info == null) throw new IllegalStateException("Dataset '" + datasetName + "' not found");
-        if (newTotalHeaderSize <= info.getHeaderSize()) throw new IllegalArgumentException("New size must be greater than current size");
-
-        // Update header size
-        long oldSize = info.getHeaderSize();
-        info.setHeaderSize(newTotalHeaderSize);
-
-        // Update allocationRecords
-        for (AllocationRecord record : allocationRecords) {
-            if (record.getType() == AllocationType.DATASET_OBJECT_HEADER &&
-                    record.getName().equals("Dataset Header (" + datasetName + ")")) {
-                record.setSize(newTotalHeaderSize);
-                break;
-            }
+        Map<AllocationType, AllocationRecord> datasetAllocs = allocations.get(datasetName);
+        if (datasetAllocs == null || !datasetAllocs.containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
+            throw new IllegalStateException("Dataset '" + datasetName + "' not found");
         }
 
-        // Check and move SNOD if overlapped
-        moveSnodIfOverlapped(info.getHeaderOffset(), newTotalHeaderSize);
+        AllocationRecord record = datasetAllocs.get(AllocationType.DATASET_OBJECT_HEADER);
+        long oldSize = record.getSize();
+        if (newTotalHeaderSize <= oldSize) {
+            throw new IllegalArgumentException("New size must be greater than current size");
+        }
 
-        // Update metadataNextAvailableOffset to reflect header expansion
-        metadataNextAvailableOffset = Math.max(metadataNextAvailableOffset, info.getHeaderOffset() + newTotalHeaderSize);
+        // Update size in shared AllocationRecord
+        record.setSize(newTotalHeaderSize);
+
+        // Check and move SNOD if overlapped
+        moveSnodIfOverlapped(record.getOffset(), newTotalHeaderSize);
+
+        // Update metadataNextAvailableOffset
+        metadataNextAvailableOffset = Math.max(metadataNextAvailableOffset, record.getOffset() + newTotalHeaderSize);
         updateMetadataOffset(metadataNextAvailableOffset);
     }
 
@@ -170,18 +169,22 @@ public class HdfFileAllocation {
     public long allocateAndSetDataBlock(String datasetName, long dataSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (dataSize < 0) throw new IllegalArgumentException("Data size cannot be negative");
-        DatasetAllocationInfo info = datasetAllocations.get(datasetName);
-        if (info == null) throw new IllegalStateException("Dataset '" + datasetName + "' not found");
-        if (info.getDataOffset() != -1) throw new IllegalStateException("Data block for '" + datasetName + "' already allocated");
+        Map<AllocationType, AllocationRecord> datasetAllocs = allocations.get(datasetName);
+        if (datasetAllocs == null) {
+            throw new IllegalStateException("Dataset '" + datasetName + "' not found");
+        }
+        if (datasetAllocs.containsKey(AllocationType.DATASET_DATA)) {
+            throw new IllegalStateException("Data block for '" + datasetName + "' already allocated");
+        }
 
         if (checkForOverlap(dataNextAvailableOffset, dataSize)) {
             moveDataNextAvailableOffset(dataNextAvailableOffset, dataSize);
         }
 
         long dataOffset = dataNextAvailableOffset;
-        info.setDataOffset(dataOffset);
-        info.setDataSize(dataSize);
-        allocationRecords.add(new AllocationRecord(AllocationType.DATASET_DATA, "Data Block (" + datasetName + ")", dataOffset, dataSize));
+        AllocationRecord record = new AllocationRecord(AllocationType.DATASET_DATA, "Data Block (" + datasetName + ")", dataOffset, dataSize);
+        allocations.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_DATA, record);
+        allocationRecords.add(record);
         dataNextAvailableOffset += dataSize;
         updateDataOffset(dataNextAvailableOffset);
         return dataOffset;
@@ -190,18 +193,22 @@ public class HdfFileAllocation {
     public long allocateAndSetContinuationBlock(String datasetName, long continuationSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (continuationSize <= 0) throw new IllegalArgumentException("Continuation size must be positive");
-        DatasetAllocationInfo info = datasetAllocations.get(datasetName);
-        if (info == null) throw new IllegalStateException("Dataset '" + datasetName + "' not found");
-        if (info.getContinuationSize() != -1) throw new IllegalStateException("Continuation block for '" + datasetName + "' already allocated");
+        Map<AllocationType, AllocationRecord> datasetAllocs = allocations.get(datasetName);
+        if (datasetAllocs == null) {
+            throw new IllegalStateException("Dataset '" + datasetName + "' not found");
+        }
+        if (datasetAllocs.containsKey(AllocationType.DATASET_HEADER_CONTINUATION)) {
+            throw new IllegalStateException("Continuation block for '" + datasetName + "' already allocated");
+        }
 
         if (checkForOverlap(metadataNextAvailableOffset, continuationSize)) {
             moveMetadataNextAvailableOffset(metadataNextAvailableOffset, continuationSize);
         }
 
         long continuationOffset = metadataNextAvailableOffset;
-        info.setContinuationOffset(continuationOffset);
-        info.setContinuationSize(continuationSize);
-        allocationRecords.add(new AllocationRecord(AllocationType.DATASET_HEADER_CONTINUATION, "Continuation (" + datasetName + ")", continuationOffset, continuationSize));
+        AllocationRecord record = new AllocationRecord(AllocationType.DATASET_HEADER_CONTINUATION, "Continuation (" + datasetName + ")", continuationOffset, continuationSize);
+        allocations.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_HEADER_CONTINUATION, record);
+        allocationRecords.add(record);
         metadataNextAvailableOffset += continuationSize;
         updateMetadataOffset(metadataNextAvailableOffset);
         return continuationOffset;
@@ -297,7 +304,7 @@ public class HdfFileAllocation {
     }
 
     public void reset() {
-        datasetAllocations.clear();
+        allocations.clear();
         snodAllocationOffsets.clear();
         globalHeapBlockSizes.clear();
         allocationRecords.clear();
@@ -330,9 +337,6 @@ public class HdfFileAllocation {
     // --- Offset and Overlap Management ---
     private void updateMetadataOffset(long newOffset) {
         metadataNextAvailableOffset = newOffset;
-        // the situation of metadataNextAvailableOffset has overlapped with dataNextAvailableOffset
-        // but there is no data allocations yet, so move dataNextAvailableOffset
-        // to metadataNextAvailableOffset
         if (metadataNextAvailableOffset >= dataNextAvailableOffset &&
                 !isDataBlocksAllocated() &&
                 globalHeapOffset == -1 &&
@@ -533,7 +537,8 @@ public class HdfFileAllocation {
     public long getCurrentLocalHeapContentsSize() { return currentLocalHeapContentsSize; }
 
     public boolean isDataBlocksAllocated() {
-        return datasetAllocations.values().stream().anyMatch(info -> info.getDataOffset() != -1);
+        return allocations.values().stream()
+                .anyMatch(datasetAllocs -> datasetAllocs.containsKey(AllocationType.DATASET_DATA));
     }
 
     public long getLocalHeapOffset() { return localHeapHeaderOffset; }
@@ -548,41 +553,17 @@ public class HdfFileAllocation {
 
     public List<Long> getAllSnodAllocationOffsets() { return Collections.unmodifiableList(snodAllocationOffsets); }
 
-    public DatasetAllocationInfo getDatasetAllocationInfo(String datasetName) { return datasetAllocations.get(datasetName); }
+    public Map<AllocationType, AllocationRecord> getDatasetAllocationInfo(String datasetName) {
+        return allocations.getOrDefault(datasetName, Collections.emptyMap());
+    }
 
-    public Map<String, DatasetAllocationInfo> getAllDatasetAllocations() { return Collections.unmodifiableMap(datasetAllocations); }
+    public Map<String, Map<AllocationType, AllocationRecord>> getAllDatasetAllocations() {
+        return Collections.unmodifiableMap(allocations);
+    }
 
     public List<AllocationRecord> getAllAllocationRecords() { return Collections.unmodifiableList(allocationRecords); }
 
     // --- Helper Classes ---
-    public static class DatasetAllocationInfo {
-        private long headerOffset;
-        private long headerSize;
-        private long dataOffset = -1;
-        private long dataSize = -1;
-        private long continuationOffset = -1;
-        private long continuationSize = -1;
-
-        public DatasetAllocationInfo(long headerOffset, long headerSize) {
-            this.headerOffset = headerOffset;
-            this.headerSize = headerSize;
-        }
-
-        public long getHeaderOffset() { return headerOffset; }
-        public long getHeaderSize() { return headerSize; }
-        public long getDataOffset() { return dataOffset; }
-        public long getDataSize() { return dataSize; }
-        public long getContinuationOffset() { return continuationOffset; }
-        public long getContinuationSize() { return continuationSize; }
-
-        public void setHeaderOffset(long offset) { this.headerOffset = offset; }
-        public void setHeaderSize(long size) { this.headerSize = size; }
-        public void setDataOffset(long offset) { this.dataOffset = offset; }
-        public void setDataSize(long size) { this.dataSize = size; }
-        public void setContinuationOffset(long offset) { this.continuationOffset = offset; }
-        public void setContinuationSize(long size) { this.continuationSize = size; }
-    }
-
     public static class AllocationRecord {
         private AllocationType type; // SUPERBLOCK, DATASET_OBJECT_HEADER, etc.
         private String name;
