@@ -24,7 +24,8 @@ public class HdfFileAllocation {
         LOCAL_HEAP,          // Active local heap contents (metadata region)
         LOCAL_HEAP_ABANDONED, // Abandoned local heap contents (metadata region)
         SNOD,                // Symbol table node (metadata region)
-        GLOBAL_HEAP          // Global heap block (data region)
+        GLOBAL_HEAP_1,       // First global heap block (data region, fixed size)
+        GLOBAL_HEAP_2        // Second global heap block (data region, expandable)
     }
 
     // --- Constants ---
@@ -50,9 +51,8 @@ public class HdfFileAllocation {
     // --- Storage ---
     private final Map<String, Map<AllocationType, AllocationRecord>> allocations = new LinkedHashMap<>();
     private final List<Long> snodAllocationOffsets = new ArrayList<>();
-    private final Map<Long, Long> globalHeapBlockSizes = new HashMap<>();
+    private final Map<AllocationType, AllocationRecord> globalHeapBlocks = new HashMap<>();
     private final List<AllocationRecord> allocationRecords = new ArrayList<>();
-    private int globalHeapBlockCount = 0;
 
     // --- Fixed Offsets ---
     private long superblockOffset;
@@ -68,8 +68,6 @@ public class HdfFileAllocation {
     // --- Dynamic Tracking ---
     private long currentLocalHeapContentsOffset;
     private long currentLocalHeapContentsSize;
-    private long globalHeapOffset = -1L;
-    private long secondGlobalHeapOffset = -1L;
     private long metadataNextAvailableOffset;
     private long dataNextAvailableOffset;
     private long snodOffset = -1L;
@@ -215,59 +213,55 @@ public class HdfFileAllocation {
     }
 
     public long allocateFirstGlobalHeapBlock() {
-        if (globalHeapOffset != -1) throw new IllegalStateException("First global heap already allocated");
+        if (globalHeapBlocks.containsKey(AllocationType.GLOBAL_HEAP_1)) {
+            throw new IllegalStateException("First global heap already allocated");
+        }
 
         if (checkForOverlap(dataNextAvailableOffset, GLOBAL_HEAP_BLOCK_SIZE)) {
             moveDataNextAvailableOffset(dataNextAvailableOffset, GLOBAL_HEAP_BLOCK_SIZE);
         }
 
-        globalHeapBlockCount = 1;
         long size = GLOBAL_HEAP_BLOCK_SIZE;
         long offset = dataNextAvailableOffset;
-        globalHeapBlockSizes.put(offset, size);
-        globalHeapOffset = offset;
-        allocationRecords.add(new AllocationRecord(AllocationType.GLOBAL_HEAP, "Global Heap Block 1", offset, size));
+        AllocationRecord record = new AllocationRecord(AllocationType.GLOBAL_HEAP_1, "Global Heap Block 1", offset, size);
+        globalHeapBlocks.put(AllocationType.GLOBAL_HEAP_1, record);
+        allocationRecords.add(record);
         dataNextAvailableOffset += size;
         updateDataOffset(dataNextAvailableOffset);
         return offset;
     }
 
     public long allocateNextGlobalHeapBlock() {
-        if (globalHeapBlockCount >= 2) throw new IllegalStateException("Only two global heap blocks allowed");
+        if (globalHeapBlocks.size() >= 2) {
+            throw new IllegalStateException("Only two global heap blocks allowed");
+        }
 
         if (checkForOverlap(dataNextAvailableOffset, GLOBAL_HEAP_BLOCK_SIZE)) {
             moveDataNextAvailableOffset(dataNextAvailableOffset, GLOBAL_HEAP_BLOCK_SIZE);
         }
 
-        globalHeapBlockCount = 2;
         long size = GLOBAL_HEAP_BLOCK_SIZE;
         long offset = dataNextAvailableOffset;
-        globalHeapBlockSizes.put(offset, size);
-        secondGlobalHeapOffset = offset;
-        allocationRecords.add(new AllocationRecord(AllocationType.GLOBAL_HEAP, "Global Heap Block 2", offset, size));
+        AllocationRecord record = new AllocationRecord(AllocationType.GLOBAL_HEAP_2, "Global Heap Block 2", offset, size);
+        globalHeapBlocks.put(AllocationType.GLOBAL_HEAP_2, record);
+        allocationRecords.add(record);
         dataNextAvailableOffset += size;
         updateDataOffset(dataNextAvailableOffset);
         return offset;
     }
 
     public long expandGlobalHeapBlock() {
-        if (secondGlobalHeapOffset == -1) throw new IllegalStateException("Second global heap block not yet allocated");
-        long oldSize = globalHeapBlockSizes.getOrDefault(secondGlobalHeapOffset, GLOBAL_HEAP_BLOCK_SIZE);
+        AllocationRecord record = globalHeapBlocks.get(AllocationType.GLOBAL_HEAP_2);
+        if (record == null) {
+            throw new IllegalStateException("Second global heap block not yet allocated");
+        }
+        long oldSize = record.getSize();
         long newSize = oldSize * 2;
 
-        // Update allocationRecords
-        for (AllocationRecord record : allocationRecords) {
-            if (record.getType() == AllocationType.GLOBAL_HEAP &&
-                    record.getName().equals("Global Heap Block 2")) {
-                record.setSize(newSize);
-                break;
-            }
-        }
-
-        globalHeapBlockSizes.put(secondGlobalHeapOffset, newSize);
-        dataNextAvailableOffset = secondGlobalHeapOffset + newSize;
+        record.setSize(newSize);
+        dataNextAvailableOffset = record.getOffset() + newSize;
         updateDataOffset(dataNextAvailableOffset);
-        return secondGlobalHeapOffset;
+        return record.getOffset();
     }
 
     public long expandLocalHeapContents() {
@@ -306,11 +300,8 @@ public class HdfFileAllocation {
     public void reset() {
         allocations.clear();
         snodAllocationOffsets.clear();
-        globalHeapBlockSizes.clear();
+        globalHeapBlocks.clear();
         allocationRecords.clear();
-        globalHeapBlockCount = 0;
-        globalHeapOffset = -1;
-        secondGlobalHeapOffset = -1;
         currentLocalHeapContentsOffset = initialLocalHeapContentsOffset;
         currentLocalHeapContentsSize = initialLocalHeapContentsSize;
         metadataNextAvailableOffset = METADATA_REGION_START;
@@ -327,11 +318,16 @@ public class HdfFileAllocation {
 
     // --- Global Heap Methods ---
     public boolean hasGlobalHeapAllocation() {
-        return globalHeapOffset != -1L;
+        return !globalHeapBlocks.isEmpty();
     }
 
     public long getGlobalHeapBlockSize(long offset) {
-        return globalHeapBlockSizes.getOrDefault(offset, GLOBAL_HEAP_BLOCK_SIZE);
+        for (AllocationRecord record : globalHeapBlocks.values()) {
+            if (record.getOffset() == offset) {
+                return record.getSize();
+            }
+        }
+        return GLOBAL_HEAP_BLOCK_SIZE;
     }
 
     // --- Offset and Overlap Management ---
@@ -339,8 +335,7 @@ public class HdfFileAllocation {
         metadataNextAvailableOffset = newOffset;
         if (metadataNextAvailableOffset >= dataNextAvailableOffset &&
                 !isDataBlocksAllocated() &&
-                globalHeapOffset == -1 &&
-                secondGlobalHeapOffset == -1) {
+                globalHeapBlocks.isEmpty()) {
             dataNextAvailableOffset = metadataNextAvailableOffset;
             updateDataOffset(dataNextAvailableOffset);
         }
@@ -530,7 +525,10 @@ public class HdfFileAllocation {
 
     public long getSuperblockSize() { return SUPERBLOCK_SIZE; }
 
-    public long getGlobalHeapOffset() { return globalHeapOffset; }
+    public long getGlobalHeapOffset() {
+        AllocationRecord record = globalHeapBlocks.get(AllocationType.GLOBAL_HEAP_1);
+        return record != null ? record.getOffset() : -1L;
+    }
 
     public long getCurrentLocalHeapContentsOffset() { return currentLocalHeapContentsOffset; }
 
