@@ -52,28 +52,25 @@ public class HdfFileAllocation {
     private final List<AllocationRecord> snodRecords = new ArrayList<>();
     private final Map<AllocationType, AllocationRecord> globalHeapBlocks = new HashMap<>();
     private final List<AllocationRecord> allocationRecords = new ArrayList<>();
+    private final List<AllocationRecord> localHeapRecords = new ArrayList<>();
 
     // --- Fixed Allocations ---
     private final AllocationRecord superblockRecord;
     private final AllocationRecord objectHeaderPrefixRecord;
     private final AllocationRecord btreeRecord;
     private final AllocationRecord localHeapHeaderRecord;
-    private long initialLocalHeapContentsOffset;
 
     // --- Fixed Sizes ---
     private final long btreeTotalSize;
     private final long initialLocalHeapContentsSize = INITIAL_LOCAL_HEAP_CONTENTS_SIZE;
 
     // --- Dynamic Tracking ---
-    private long currentLocalHeapContentsOffset;
-    private long currentLocalHeapContentsSize;
     private long metadataNextAvailableOffset;
     private long dataNextAvailableOffset;
 
     // --- Constructor ---
     public HdfFileAllocation() {
         this.btreeTotalSize = BTREE_NODE_SIZE + BTREE_STORAGE_SIZE;
-        this.currentLocalHeapContentsSize = initialLocalHeapContentsSize;
         this.metadataNextAvailableOffset = METADATA_REGION_START;
         this.dataNextAvailableOffset = MIN_DATA_OFFSET_THRESHOLD;
 
@@ -82,15 +79,17 @@ public class HdfFileAllocation {
         objectHeaderPrefixRecord = new AllocationRecord(AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE);
         btreeRecord = new AllocationRecord(AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", objectHeaderPrefixRecord.getOffset() + OBJECT_HEADER_PREFIX_SIZE, btreeTotalSize);
         localHeapHeaderRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", btreeRecord.getOffset() + btreeTotalSize, LOCAL_HEAP_HEADER_SIZE);
-        initialLocalHeapContentsOffset = localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE;
-        currentLocalHeapContentsOffset = initialLocalHeapContentsOffset;
+
+        // Initialize local heap
+        AllocationRecord initialLocalHeapRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE, initialLocalHeapContentsSize);
+        localHeapRecords.add(initialLocalHeapRecord);
 
         // Add fixed structures to allocationRecords
         allocationRecords.add(superblockRecord);
         allocationRecords.add(objectHeaderPrefixRecord);
         allocationRecords.add(btreeRecord);
         allocationRecords.add(localHeapHeaderRecord);
-        allocationRecords.add(new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", initialLocalHeapContentsOffset, initialLocalHeapContentsSize));
+        allocationRecords.add(initialLocalHeapRecord);
     }
 
     // --- Allocation Methods ---
@@ -261,7 +260,8 @@ public class HdfFileAllocation {
     }
 
     public long expandLocalHeapContents() {
-        long oldSize = this.currentLocalHeapContentsSize;
+        AllocationRecord activeRecord = localHeapRecords.get(localHeapRecords.size() - 1);
+        long oldSize = activeRecord.getSize();
         if (oldSize <= 0) throw new IllegalStateException("Cannot expand heap with non-positive current tracked size: " + oldSize);
         long newSize = oldSize * 2;
 
@@ -270,23 +270,15 @@ public class HdfFileAllocation {
         }
 
         long newOffset = metadataNextAvailableOffset;
-        long oldOffset = this.currentLocalHeapContentsOffset;
 
         // Update existing LOCAL_HEAP record to indicate abandonment
-        for (AllocationRecord record : allocationRecords) {
-            if (record.getType() == AllocationType.LOCAL_HEAP &&
-                    record.getOffset() == oldOffset) {
-                record.setType(AllocationType.LOCAL_HEAP_ABANDONED);
-                record.setName("Abandoned Local Heap Contents (Offset " + oldOffset + ")");
-                break;
-            }
-        }
+        activeRecord.setType(AllocationType.LOCAL_HEAP_ABANDONED);
+        activeRecord.setName("Abandoned Local Heap Contents (Offset " + activeRecord.getOffset() + ")");
 
         // Add new record
-        allocationRecords.add(new AllocationRecord(AllocationType.LOCAL_HEAP, "Expanded Local Heap Contents", newOffset, newSize));
-
-        this.currentLocalHeapContentsOffset = newOffset;
-        this.currentLocalHeapContentsSize = newSize;
+        AllocationRecord newRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Expanded Local Heap Contents", newOffset, newSize);
+        localHeapRecords.add(newRecord);
+        allocationRecords.add(newRecord);
 
         metadataNextAvailableOffset += newSize;
         updateMetadataOffset(metadataNextAvailableOffset);
@@ -298,8 +290,7 @@ public class HdfFileAllocation {
         snodRecords.clear();
         globalHeapBlocks.clear();
         allocationRecords.clear();
-        currentLocalHeapContentsOffset = initialLocalHeapContentsOffset;
-        currentLocalHeapContentsSize = initialLocalHeapContentsSize;
+        localHeapRecords.clear();
         metadataNextAvailableOffset = METADATA_REGION_START;
         dataNextAvailableOffset = MIN_DATA_OFFSET_THRESHOLD;
 
@@ -308,7 +299,11 @@ public class HdfFileAllocation {
         allocationRecords.add(objectHeaderPrefixRecord);
         allocationRecords.add(btreeRecord);
         allocationRecords.add(localHeapHeaderRecord);
-        allocationRecords.add(new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", initialLocalHeapContentsOffset, initialLocalHeapContentsSize));
+
+        // Reinitialize local heap
+        AllocationRecord initialLocalHeapRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE, initialLocalHeapContentsSize);
+        localHeapRecords.add(initialLocalHeapRecord);
+        allocationRecords.add(initialLocalHeapRecord);
     }
 
     // --- Global Heap Methods ---
@@ -515,9 +510,13 @@ public class HdfFileAllocation {
         return record != null ? record.getOffset() : -1L;
     }
 
-    public long getCurrentLocalHeapContentsOffset() { return currentLocalHeapContentsOffset; }
+    public long getCurrentLocalHeapContentsOffset() {
+        return localHeapRecords.get(localHeapRecords.size() - 1).getOffset();
+    }
 
-    public long getCurrentLocalHeapContentsSize() { return currentLocalHeapContentsSize; }
+    public long getCurrentLocalHeapContentsSize() {
+        return localHeapRecords.get(localHeapRecords.size() - 1).getSize();
+    }
 
     public boolean isDataBlocksAllocated() {
         return allocations.values().stream()
