@@ -49,7 +49,7 @@ public class HdfFileAllocation {
 
     // --- Storage ---
     private final Map<String, Map<AllocationType, AllocationRecord>> allocations = new LinkedHashMap<>();
-    private final List<Long> snodAllocationOffsets = new ArrayList<>();
+    private final List<AllocationRecord> snodRecords = new ArrayList<>();
     private final Map<AllocationType, AllocationRecord> globalHeapBlocks = new HashMap<>();
     private final List<AllocationRecord> allocationRecords = new ArrayList<>();
 
@@ -69,7 +69,6 @@ public class HdfFileAllocation {
     private long currentLocalHeapContentsSize;
     private long metadataNextAvailableOffset;
     private long dataNextAvailableOffset;
-    private long snodOffset = -1L;
 
     // --- Constructor ---
     public HdfFileAllocation() {
@@ -142,7 +141,7 @@ public class HdfFileAllocation {
 
     public long allocateNextSnodStorage() {
         if (checkForOverlap(metadataNextAvailableOffset, SNOD_STORAGE_SIZE)) {
-            if (snodAllocationOffsets.isEmpty()) {
+            if (snodRecords.isEmpty()) {
                 // special case: first SNOD is allocated at the end of the metadata region
                 // but overlaps with the dataNextAvailableOffset.
                 long moveAmount = ((metadataNextAvailableOffset + SNOD_STORAGE_SIZE) - dataNextAvailableOffset);
@@ -153,13 +152,11 @@ public class HdfFileAllocation {
         }
 
         long offset = metadataNextAvailableOffset;
-        snodAllocationOffsets.add(offset);
-        allocationRecords.add(new AllocationRecord(AllocationType.SNOD, "SNOD Block " + snodAllocationOffsets.size(), offset, SNOD_STORAGE_SIZE));
+        AllocationRecord record = new AllocationRecord(AllocationType.SNOD, "SNOD Block " + (snodRecords.size() + 1), offset, SNOD_STORAGE_SIZE);
+        snodRecords.add(record);
+        allocationRecords.add(record);
         metadataNextAvailableOffset += SNOD_STORAGE_SIZE;
         updateMetadataOffset(metadataNextAvailableOffset);
-        if (snodOffset == -1) {
-            snodOffset = offset;
-        }
         return offset;
     }
 
@@ -298,14 +295,13 @@ public class HdfFileAllocation {
 
     public void reset() {
         allocations.clear();
-        snodAllocationOffsets.clear();
+        snodRecords.clear();
         globalHeapBlocks.clear();
         allocationRecords.clear();
         currentLocalHeapContentsOffset = initialLocalHeapContentsOffset;
         currentLocalHeapContentsSize = initialLocalHeapContentsSize;
         metadataNextAvailableOffset = METADATA_REGION_START;
         dataNextAvailableOffset = MIN_DATA_OFFSET_THRESHOLD;
-        snodOffset = -1;
 
         // Reinitialize fixed structures
         allocationRecords.add(new AllocationRecord(AllocationType.SUPERBLOCK, "Superblock", superblockOffset, SUPERBLOCK_SIZE));
@@ -373,12 +369,13 @@ public class HdfFileAllocation {
     }
 
     private void moveSnodIfOverlapped(long headerOffset, long headerSize) {
-        if (snodAllocationOffsets.isEmpty()) {
+        if (snodRecords.isEmpty()) {
             return;
         }
 
         // Check the most recent SNOD
-        long snodOffset = snodAllocationOffsets.get(snodAllocationOffsets.size() - 1);
+        AllocationRecord snodRecord = snodRecords.get(snodRecords.size() - 1);
+        long snodOffset = snodRecord.getOffset();
         long snodEnd = snodOffset + SNOD_STORAGE_SIZE - 1;
         long headerEnd = headerOffset + headerSize - 1;
 
@@ -391,21 +388,8 @@ public class HdfFileAllocation {
                 metadataNextAvailableOffset += SNOD_STORAGE_SIZE;
             }
 
-            // Update snodAllocationOffsets
-            snodAllocationOffsets.set(snodAllocationOffsets.size() - 1, newSnodOffset);
-
-            // Update allocationRecords
-            for (AllocationRecord record : allocationRecords) {
-                if (record.getType() == AllocationType.SNOD && record.getOffset() == snodOffset) {
-                    record.setOffset(newSnodOffset);
-                    break;
-                }
-            }
-
-            // Update snodOffset if it was the first SNOD
-            if (snodOffset == this.snodOffset) {
-                this.snodOffset = newSnodOffset;
-            }
+            // Update SNOD record
+            snodRecord.setOffset(newSnodOffset);
 
             // Update metadataNextAvailableOffset if necessary
             metadataNextAvailableOffset = Math.max(metadataNextAvailableOffset, newSnodOffset + SNOD_STORAGE_SIZE);
@@ -498,7 +482,7 @@ public class HdfFileAllocation {
             for (int j = i + 1; j < sortedRecords.size(); j++) {
                 AllocationRecord record2 = sortedRecords.get(j);
                 long start2 = record2.getOffset();
-                long end2 = start2 + record2.getSize() - 1;
+                long end2 = record2.getSize() - 1;
 
                 if (start1 <= end2 && start2 <= end1) {
                     hasOverlap = true;
@@ -540,7 +524,9 @@ public class HdfFileAllocation {
 
     public long getLocalHeapOffset() { return localHeapHeaderOffset; }
 
-    public long getSnodOffset() { return snodOffset; }
+    public long getSnodOffset() {
+        return snodRecords.isEmpty() ? -1L : snodRecords.get(0).getOffset();
+    }
 
     public long getRootGroupSize() {
         return OBJECT_HEADER_PREFIX_SIZE + btreeTotalSize + LOCAL_HEAP_HEADER_SIZE + initialLocalHeapContentsSize;
@@ -548,7 +534,13 @@ public class HdfFileAllocation {
 
     public long getRootGroupOffset() { return objectHeaderPrefixOffset; }
 
-    public List<Long> getAllSnodAllocationOffsets() { return Collections.unmodifiableList(snodAllocationOffsets); }
+    public List<Long> getAllSnodAllocationOffsets() {
+        List<Long> offsets = new ArrayList<>();
+        for (AllocationRecord record : snodRecords) {
+            offsets.add(record.getOffset());
+        }
+        return Collections.unmodifiableList(offsets);
+    }
 
     public Map<AllocationType, AllocationRecord> getDatasetAllocationInfo(String datasetName) {
         return allocations.getOrDefault(datasetName, Collections.emptyMap());
