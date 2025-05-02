@@ -53,11 +53,11 @@ public class HdfFileAllocation {
     private final Map<AllocationType, AllocationRecord> globalHeapBlocks = new HashMap<>();
     private final List<AllocationRecord> allocationRecords = new ArrayList<>();
 
-    // --- Fixed Offsets ---
-    private long superblockOffset;
-    private long objectHeaderPrefixOffset;
-    private long btreeOffset;
-    private long localHeapHeaderOffset;
+    // --- Fixed Allocations ---
+    private final AllocationRecord superblockRecord;
+    private final AllocationRecord objectHeaderPrefixRecord;
+    private final AllocationRecord btreeRecord;
+    private final AllocationRecord localHeapHeaderRecord;
     private long initialLocalHeapContentsOffset;
 
     // --- Fixed Sizes ---
@@ -78,18 +78,18 @@ public class HdfFileAllocation {
         this.dataNextAvailableOffset = MIN_DATA_OFFSET_THRESHOLD;
 
         // Initialize fixed structures
-        superblockOffset = SUPERBLOCK_OFFSET;
-        objectHeaderPrefixOffset = SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE;
-        btreeOffset = objectHeaderPrefixOffset + OBJECT_HEADER_PREFIX_SIZE;
-        localHeapHeaderOffset = btreeOffset + btreeTotalSize;
-        initialLocalHeapContentsOffset = localHeapHeaderOffset + LOCAL_HEAP_HEADER_SIZE;
+        superblockRecord = new AllocationRecord(AllocationType.SUPERBLOCK, "Superblock", SUPERBLOCK_OFFSET, SUPERBLOCK_SIZE);
+        objectHeaderPrefixRecord = new AllocationRecord(AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE);
+        btreeRecord = new AllocationRecord(AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", objectHeaderPrefixRecord.getOffset() + OBJECT_HEADER_PREFIX_SIZE, btreeTotalSize);
+        localHeapHeaderRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", btreeRecord.getOffset() + btreeTotalSize, LOCAL_HEAP_HEADER_SIZE);
+        initialLocalHeapContentsOffset = localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE;
         currentLocalHeapContentsOffset = initialLocalHeapContentsOffset;
 
         // Add fixed structures to allocationRecords
-        allocationRecords.add(new AllocationRecord(AllocationType.SUPERBLOCK, "Superblock", superblockOffset, SUPERBLOCK_SIZE));
-        allocationRecords.add(new AllocationRecord(AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", objectHeaderPrefixOffset, OBJECT_HEADER_PREFIX_SIZE));
-        allocationRecords.add(new AllocationRecord(AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", btreeOffset, btreeTotalSize));
-        allocationRecords.add(new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", localHeapHeaderOffset, LOCAL_HEAP_HEADER_SIZE));
+        allocationRecords.add(superblockRecord);
+        allocationRecords.add(objectHeaderPrefixRecord);
+        allocationRecords.add(btreeRecord);
+        allocationRecords.add(localHeapHeaderRecord);
         allocationRecords.add(new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", initialLocalHeapContentsOffset, initialLocalHeapContentsSize));
     }
 
@@ -304,10 +304,10 @@ public class HdfFileAllocation {
         dataNextAvailableOffset = MIN_DATA_OFFSET_THRESHOLD;
 
         // Reinitialize fixed structures
-        allocationRecords.add(new AllocationRecord(AllocationType.SUPERBLOCK, "Superblock", superblockOffset, SUPERBLOCK_SIZE));
-        allocationRecords.add(new AllocationRecord(AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", objectHeaderPrefixOffset, OBJECT_HEADER_PREFIX_SIZE));
-        allocationRecords.add(new AllocationRecord(AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", btreeOffset, btreeTotalSize));
-        allocationRecords.add(new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", localHeapHeaderOffset, LOCAL_HEAP_HEADER_SIZE));
+        allocationRecords.add(superblockRecord);
+        allocationRecords.add(objectHeaderPrefixRecord);
+        allocationRecords.add(btreeRecord);
+        allocationRecords.add(localHeapHeaderRecord);
         allocationRecords.add(new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", initialLocalHeapContentsOffset, initialLocalHeapContentsSize));
     }
 
@@ -506,7 +506,9 @@ public class HdfFileAllocation {
         return Math.max(metadataNextAvailableOffset, dataNextAvailableOffset);
     }
 
-    public long getSuperblockSize() { return SUPERBLOCK_SIZE; }
+    public long getSuperblockSize() {
+        return superblockRecord.getSize();
+    }
 
     public long getGlobalHeapOffset() {
         AllocationRecord record = globalHeapBlocks.get(AllocationType.GLOBAL_HEAP_1);
@@ -522,17 +524,21 @@ public class HdfFileAllocation {
                 .anyMatch(datasetAllocs -> datasetAllocs.containsKey(AllocationType.DATASET_DATA));
     }
 
-    public long getLocalHeapOffset() { return localHeapHeaderOffset; }
+    public long getLocalHeapOffset() {
+        return localHeapHeaderRecord.getOffset();
+    }
 
     public long getSnodOffset() {
         return snodRecords.isEmpty() ? -1L : snodRecords.get(0).getOffset();
     }
 
     public long getRootGroupSize() {
-        return OBJECT_HEADER_PREFIX_SIZE + btreeTotalSize + LOCAL_HEAP_HEADER_SIZE + initialLocalHeapContentsSize;
+        return objectHeaderPrefixRecord.getSize() + btreeRecord.getSize() + localHeapHeaderRecord.getSize() + initialLocalHeapContentsSize;
     }
 
-    public long getRootGroupOffset() { return objectHeaderPrefixOffset; }
+    public long getRootGroupOffset() {
+        return objectHeaderPrefixRecord.getOffset();
+    }
 
     public List<Long> getAllSnodAllocationOffsets() {
         List<Long> offsets = new ArrayList<>();

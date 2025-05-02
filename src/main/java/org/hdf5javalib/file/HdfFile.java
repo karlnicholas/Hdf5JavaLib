@@ -53,14 +53,14 @@ public class HdfFile implements Closeable, HdfDataFile {
                 new HdfSymbolTableEntry(
                         HdfWriteUtils.hdfFixedPointFromValue(0, fixedPointDatatypeForOffset),
                         // HdfFixedPoint.of(bufferAllocation.getObjectHeaderPrefixAddress()),
-                        HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getObjectHeaderPrefixOffset(), fixedPointDatatypeForOffset),
+                        HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getObjectHeaderPrefixRecord().getOffset(), fixedPointDatatypeForOffset),
                         // HdfFixedPoint.of(bufferAllocation.getBtreeAddress()),
-                        HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getBtreeOffset(), fixedPointDatatypeForOffset),
+                        HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getBtreeRecord().getOffset(), fixedPointDatatypeForOffset),
                         // HdfFixedPoint.of(bufferAllocation.getLocalHeapAddress())));
                         HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getLocalHeapOffset(), fixedPointDatatypeForOffset)),
                 this, fixedPointDatatypeForOffset, fixedPointDatatypeForLength);
 
-        rootGroup = new HdfGroup(this, "", fileAllocation.getBtreeOffset(), fileAllocation.getLocalHeapOffset());
+        rootGroup = new HdfGroup(this, "", fileAllocation.getBtreeRecord().getOffset(), fileAllocation.getLocalHeapOffset());
     }
 
     /**

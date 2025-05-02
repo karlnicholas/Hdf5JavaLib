@@ -22,10 +22,10 @@ public class HdfFileAllocationTest {
 
     @Test
     void testInitialLayout() {
-        assertEquals(0, allocation.getSuperblockOffset());
+        assertEquals(0, allocation.getSuperblockRecord().getOffset());
         assertEquals(96, allocation.getSuperblockSize());
-        assertEquals(96, allocation.getObjectHeaderPrefixOffset());
-        assertEquals(136, allocation.getBtreeOffset());
+        assertEquals(96, allocation.getObjectHeaderPrefixRecord().getOffset());
+        assertEquals(136, allocation.getBtreeRecord().getOffset());
         assertEquals(680, allocation.getLocalHeapOffset());
         assertEquals(712, allocation.getCurrentLocalHeapContentsOffset());
         assertEquals(88, allocation.getCurrentLocalHeapContentsSize());

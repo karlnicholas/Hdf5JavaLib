@@ -245,7 +245,7 @@ public class HdfSuperblock {
 
         buffer.flip();
 
-        fileChannel.position(fileAllocation.getSuperblockOffset());
+        fileChannel.position(fileAllocation.getSuperblockRecord().getOffset());
         while (buffer.hasRemaining()) {
             fileChannel.write(buffer);
         }

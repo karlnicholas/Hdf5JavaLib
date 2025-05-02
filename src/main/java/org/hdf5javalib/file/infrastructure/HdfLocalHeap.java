@@ -225,7 +225,7 @@ public class HdfLocalHeap {
         writeFixedPointToBuffer(buffer, heapContentsOffset);
 
         buffer.rewind();
-        seekableByteChannel.position(fileAllocation.getLocalHeapHeaderOffset());
+        seekableByteChannel.position(fileAllocation.getLocalHeapHeaderRecord().getOffset());
         while (buffer.hasRemaining()) {
             seekableByteChannel.write(buffer);
         }

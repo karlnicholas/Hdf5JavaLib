@@ -357,7 +357,7 @@ public class HdfBTreeV1 {
             }
         }
         buffer.rewind();
-        long bTreeOffset = fileAllocation.getBtreeOffset();
+        long bTreeOffset = fileAllocation.getBtreeRecord().getOffset();
         seekableByteChannel.position(bTreeOffset);
         while (buffer.hasRemaining()) {
             seekableByteChannel.write(buffer);
