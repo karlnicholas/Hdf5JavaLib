@@ -162,11 +162,12 @@ public class HdfDataSet implements Closeable {
             // update
             allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
             headerSize = allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER).getSize();
-            dataLayoutMessage.setDataAddress(HdfWriteUtils.hdfFixedPointFromValue(allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_DATA).getOffset(), hdfDataFile.getFixedPointDatatypeForOffset()));
         }
         // redo addresses already set.
         // dataLayoutMessage.setDataAddress(HdfFixedPoint.of(hdfGroup.getHdfFile().getBufferAllocation().getDataAddress()));
         // .get(HdfFileAllocation.AllocationType.DATASET_DATA).getOffset()
+// seems like this is not needed anymore.
+//        dataLayoutMessage.setDataAddress(HdfWriteUtils.hdfFixedPointFromValue(allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_DATA).getOffset(), hdfDataFile.getFixedPointDatatypeForOffset()));
         this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(1, objectReferenceCount, Math.max(objectHeaderSize, headerSize-16), headerMessages);
         // check if a global heap needed
         // This is probably going to need to change

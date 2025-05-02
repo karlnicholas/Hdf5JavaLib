@@ -44,7 +44,6 @@ public class HdfFileAllocation {
     private static final long DEFAULT_DATASET_HEADER_SIZE = DATA_OBJECT_HEADER_MESSAGE_SIZE + 256L;
     private static final long MIN_DATA_OFFSET_THRESHOLD = 2048L;
     private static final long METADATA_REGION_START = 800L;
-    private static final long METADATA_REGION_SIZE = 1248L; // 800–2047
     private static final long SNOD_STORAGE_SIZE = SNOD_V1_HEADER_SIZE + (DEFAULT_SNOD_ENTRY_COUNT * SNOD_V1_ENTRY_SIZE);
     private static final long ALIGNMENT_BOUNDARY = 2048L;
 

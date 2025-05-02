@@ -117,6 +117,7 @@ public class HdfFixedPointWrite {
             file.close();
 
             // auto close
+            file.getFileAllocation().printBlocks();
 
             System.out.println("HDF5 file " + FILE_NAME + " created and written successfully!");
         } catch (Exception e) {
@@ -169,6 +170,7 @@ public class HdfFixedPointWrite {
 
             dataset.close();
             file.close();
+            file.getFileAllocation().printBlocks();
 
             // auto close
             System.out.println("HDF5 file scalar.h5 created and written successfully!");
@@ -205,6 +207,7 @@ public class HdfFixedPointWrite {
 
             dataset.close();
             file.close();
+            file.getFileAllocation().printBlocks();
 
             // auto close
             System.out.println("HDF5 file " + FILE_NAME + " created and written successfully!");

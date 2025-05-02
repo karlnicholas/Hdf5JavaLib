@@ -107,15 +107,6 @@ public class HdfTwentyScalarWrite {
         HdfDataSet dataset = hdfFile.createDataSet("byte", fixedPointDatatype, dataSpaceMessage);
         HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
 
-        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-        hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!hdfFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                hdfFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            }
-        }
-
         ByteBuffer byteBuffer = ByteBuffer.allocate(1).order(ByteOrder.LITTLE_ENDIAN);
         byteBuffer.put((byte) 42);
         byteBuffer.flip();
@@ -131,15 +122,6 @@ public class HdfTwentyScalarWrite {
         // Create dataset
         HdfDataSet dataset = hdfFile.createDataSet("short", fixedPointDatatype, dataSpaceMessage);
         HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
-
-        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-        hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!hdfFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                hdfFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            }
-        }
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN);
         byteBuffer.putShort((short) 42);
@@ -157,15 +139,6 @@ public class HdfTwentyScalarWrite {
         HdfDataSet dataset = hdfFile.createDataSet(datasetName, fixedPointDatatype, dataSpaceMessage);
 //        HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
 
-        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-        hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!hdfFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                hdfFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            }
-        }
-
         ByteBuffer byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
         byteBuffer.putInt(count);
         byteBuffer.flip();
@@ -181,15 +154,6 @@ public class HdfTwentyScalarWrite {
         // Create dataset
         HdfDataSet dataset = hdfFile.createDataSet("long", fixedPointDatatype, dataSpaceMessage);
         HdfDisplayUtils.writeVersionAttribute(hdfFile, dataset);
-
-        HdfFixedPoint[] dimensionSizes= dataset.getdimensionSizes();
-        hdfFile.getFileAllocation().allocateAndSetDataBlock(dataset.getDatasetName(), dimensionSizes[0].getInstance(Long.class));
-        boolean requiresGlobalHeap = dataset.getHdfDatatype().requiresGlobalHeap(false);
-        if (requiresGlobalHeap) {
-            if (!hdfFile.getFileAllocation().hasGlobalHeapAllocation()) {
-                hdfFile.getFileAllocation().allocateFirstGlobalHeapBlock();
-            }
-        }
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         byteBuffer.putLong(42);
