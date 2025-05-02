@@ -60,28 +60,23 @@ public class HdfFileAllocation {
     private final AllocationRecord btreeRecord;
     private final AllocationRecord localHeapHeaderRecord;
 
-    // --- Fixed Sizes ---
-    private final long btreeTotalSize;
-    private final long initialLocalHeapContentsSize = INITIAL_LOCAL_HEAP_CONTENTS_SIZE;
-
     // --- Dynamic Tracking ---
     private long metadataNextAvailableOffset;
     private long dataNextAvailableOffset;
 
     // --- Constructor ---
     public HdfFileAllocation() {
-        this.btreeTotalSize = BTREE_NODE_SIZE + BTREE_STORAGE_SIZE;
         this.metadataNextAvailableOffset = METADATA_REGION_START;
         this.dataNextAvailableOffset = MIN_DATA_OFFSET_THRESHOLD;
 
         // Initialize fixed structures
         superblockRecord = new AllocationRecord(AllocationType.SUPERBLOCK, "Superblock", SUPERBLOCK_OFFSET, SUPERBLOCK_SIZE);
         objectHeaderPrefixRecord = new AllocationRecord(AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE);
-        btreeRecord = new AllocationRecord(AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", objectHeaderPrefixRecord.getOffset() + OBJECT_HEADER_PREFIX_SIZE, btreeTotalSize);
-        localHeapHeaderRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", btreeRecord.getOffset() + btreeTotalSize, LOCAL_HEAP_HEADER_SIZE);
+        btreeRecord = new AllocationRecord(AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", objectHeaderPrefixRecord.getOffset() + OBJECT_HEADER_PREFIX_SIZE, BTREE_NODE_SIZE + BTREE_STORAGE_SIZE);
+        localHeapHeaderRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", btreeRecord.getOffset() + (BTREE_NODE_SIZE + BTREE_STORAGE_SIZE), LOCAL_HEAP_HEADER_SIZE);
 
         // Initialize local heap
-        AllocationRecord initialLocalHeapRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE, initialLocalHeapContentsSize);
+        AllocationRecord initialLocalHeapRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE, INITIAL_LOCAL_HEAP_CONTENTS_SIZE);
         localHeapRecords.add(initialLocalHeapRecord);
 
         // Add fixed structures to allocationRecords
@@ -301,7 +296,7 @@ public class HdfFileAllocation {
         allocationRecords.add(localHeapHeaderRecord);
 
         // Reinitialize local heap
-        AllocationRecord initialLocalHeapRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE, initialLocalHeapContentsSize);
+        AllocationRecord initialLocalHeapRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE, INITIAL_LOCAL_HEAP_CONTENTS_SIZE);
         localHeapRecords.add(initialLocalHeapRecord);
         allocationRecords.add(initialLocalHeapRecord);
     }
@@ -360,7 +355,7 @@ public class HdfFileAllocation {
     }
 
     private void moveDataNextAvailableOffset(long currentOffset, long size) {
-        throw new UnsupportedOperationException("Data offset movement logic not yet implemented");
+        throw new IllegalStateException("Data offset movement logic not yet implemented");
     }
 
     private void moveSnodIfOverlapped(long headerOffset, long headerSize) {
@@ -505,6 +500,10 @@ public class HdfFileAllocation {
         return superblockRecord.getSize();
     }
 
+    public long getBtreeTotalSize() {
+        return btreeRecord.getSize();
+    }
+
     public long getGlobalHeapOffset() {
         AllocationRecord record = globalHeapBlocks.get(AllocationType.GLOBAL_HEAP_1);
         return record != null ? record.getOffset() : -1L;
@@ -532,7 +531,7 @@ public class HdfFileAllocation {
     }
 
     public long getRootGroupSize() {
-        return objectHeaderPrefixRecord.getSize() + btreeRecord.getSize() + localHeapHeaderRecord.getSize() + initialLocalHeapContentsSize;
+        return objectHeaderPrefixRecord.getSize() + btreeRecord.getSize() + localHeapHeaderRecord.getSize() + localHeapRecords.get(0).getSize();
     }
 
     public long getRootGroupOffset() {
