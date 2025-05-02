@@ -48,7 +48,7 @@ public class HdfFileAllocation {
     private static final long ALIGNMENT_BOUNDARY = 2048L;
 
     // --- Storage ---
-    private final Map<String, Map<AllocationType, AllocationRecord>> allocations = new LinkedHashMap<>();
+    private final Map<String, Map<AllocationType, AllocationRecord>> datasetRecordsByName = new LinkedHashMap<>();
     private final List<AllocationRecord> snodRecords = new ArrayList<>();
     private final Map<AllocationType, AllocationRecord> globalHeapBlocks = new HashMap<>();
     private final List<AllocationRecord> allocationRecords = new ArrayList<>();
@@ -96,7 +96,7 @@ public class HdfFileAllocation {
     public long allocateDatasetStorage(String datasetName) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (datasetName.isEmpty()) throw new IllegalArgumentException("Dataset name cannot be empty");
-        if (allocations.containsKey(datasetName) && allocations.get(datasetName).containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
+        if (datasetRecordsByName.containsKey(datasetName) && datasetRecordsByName.get(datasetName).containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
             throw new IllegalStateException("Dataset '" + datasetName + "' already allocated");
         }
 
@@ -107,7 +107,7 @@ public class HdfFileAllocation {
 
         long headerOffset = metadataNextAvailableOffset;
         AllocationRecord record = new AllocationRecord(AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (" + datasetName + ")", headerOffset, headerSize);
-        allocations.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_OBJECT_HEADER, record);
+        datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_OBJECT_HEADER, record);
         allocationRecords.add(record);
         metadataNextAvailableOffset += headerSize;
         updateMetadataOffset(metadataNextAvailableOffset);
@@ -116,7 +116,7 @@ public class HdfFileAllocation {
 
     public void increaseHeaderAllocation(String datasetName, long newTotalHeaderSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
-        Map<AllocationType, AllocationRecord> datasetAllocs = allocations.get(datasetName);
+        Map<AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
         if (datasetAllocs == null || !datasetAllocs.containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
             throw new IllegalStateException("Dataset '" + datasetName + "' not found");
         }
@@ -162,7 +162,7 @@ public class HdfFileAllocation {
     public long allocateAndSetDataBlock(String datasetName, long dataSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (dataSize < 0) throw new IllegalArgumentException("Data size cannot be negative");
-        Map<AllocationType, AllocationRecord> datasetAllocs = allocations.get(datasetName);
+        Map<AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
         if (datasetAllocs == null) {
             throw new IllegalStateException("Dataset '" + datasetName + "' not found");
         }
@@ -176,7 +176,7 @@ public class HdfFileAllocation {
 
         long dataOffset = dataNextAvailableOffset;
         AllocationRecord record = new AllocationRecord(AllocationType.DATASET_DATA, "Data Block (" + datasetName + ")", dataOffset, dataSize);
-        allocations.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_DATA, record);
+        datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_DATA, record);
         allocationRecords.add(record);
         dataNextAvailableOffset += dataSize;
         updateDataOffset(dataNextAvailableOffset);
@@ -186,7 +186,7 @@ public class HdfFileAllocation {
     public long allocateAndSetContinuationBlock(String datasetName, long continuationSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (continuationSize <= 0) throw new IllegalArgumentException("Continuation size must be positive");
-        Map<AllocationType, AllocationRecord> datasetAllocs = allocations.get(datasetName);
+        Map<AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
         if (datasetAllocs == null) {
             throw new IllegalStateException("Dataset '" + datasetName + "' not found");
         }
@@ -200,7 +200,7 @@ public class HdfFileAllocation {
 
         long continuationOffset = metadataNextAvailableOffset;
         AllocationRecord record = new AllocationRecord(AllocationType.DATASET_HEADER_CONTINUATION, "Continuation (" + datasetName + ")", continuationOffset, continuationSize);
-        allocations.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_HEADER_CONTINUATION, record);
+        datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_HEADER_CONTINUATION, record);
         allocationRecords.add(record);
         metadataNextAvailableOffset += continuationSize;
         updateMetadataOffset(metadataNextAvailableOffset);
@@ -286,7 +286,7 @@ public class HdfFileAllocation {
     }
 
     public void reset() {
-        allocations.clear();
+        datasetRecordsByName.clear();
         snodRecords.clear();
         globalHeapBlocks.clear();
         allocationRecords.clear();
@@ -519,7 +519,7 @@ public class HdfFileAllocation {
     }
 
     public boolean isDataBlocksAllocated() {
-        return allocations.values().stream()
+        return datasetRecordsByName.values().stream()
                 .anyMatch(datasetAllocs -> datasetAllocs.containsKey(AllocationType.DATASET_DATA));
     }
 
@@ -548,11 +548,11 @@ public class HdfFileAllocation {
     }
 
     public Map<AllocationType, AllocationRecord> getDatasetAllocationInfo(String datasetName) {
-        return allocations.getOrDefault(datasetName, Collections.emptyMap());
+        return datasetRecordsByName.getOrDefault(datasetName, Collections.emptyMap());
     }
 
     public Map<String, Map<AllocationType, AllocationRecord>> getAllDatasetAllocations() {
-        return Collections.unmodifiableMap(allocations);
+        return Collections.unmodifiableMap(datasetRecordsByName);
     }
 
     public List<AllocationRecord> getAllAllocationRecords() { return Collections.unmodifiableList(allocationRecords); }
