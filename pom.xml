@@ -4,7 +4,7 @@
 
   <groupId>com.github.karlnicholas.hdf5javalib</groupId>
   <artifactId>hdf5javalib</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>HDF5JavaLib</name>
