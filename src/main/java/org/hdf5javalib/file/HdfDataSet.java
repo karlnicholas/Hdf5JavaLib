@@ -172,13 +172,13 @@ public class HdfDataSet implements Closeable {
         // check if a global heap needed
         // This is probably going to need to change
         if ( allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_DATA) == null ) {
-            hdfDataFile.getFileAllocation().allocateAndSetDataBlock(datasetName, hdfDimensionSizes[0].getInstance(Long.class));
             boolean requiresGlobalHeap = hdfDatatype.requiresGlobalHeap(false);
             if (requiresGlobalHeap) {
                 if (!hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
                     hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
                 }
             }
+            hdfDataFile.getFileAllocation().allocateAndSetDataBlock(datasetName, hdfDimensionSizes[0].getInstance(Long.class));
         }
     }
 
@@ -314,7 +314,7 @@ public class HdfDataSet implements Closeable {
     @Override
     public void close() throws IOException {
         if (closed) return;
-        if (hdfDataFile.getFileAllocation().getDatasetAllocationInfo(datasetName) == null) return;
+        if (hdfDataFile.getFileAllocation().getDatasetAllocationInfo(datasetName).size() == 0) return;
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         Map<HdfFileAllocation.AllocationType, HdfFileAllocation.AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
         // int headerSize = hdfGroup.getHdfFile().getBufferAllocation().getDataGroupStorageSize();
@@ -375,7 +375,7 @@ public class HdfDataSet implements Closeable {
         Map<HdfFileAllocation.AllocationType, HdfFileAllocation.AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
 
         if ( objectHeaderSize + attributeSize > headerSize
-                && (allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_HEADER_CONTINUATION).getSize() <= 0 || !attributes.isEmpty())
+                && (allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_HEADER_CONTINUATION) == null || !attributes.isEmpty())
         ) {
             HdfMessage dataspaceMessage = headerMessages.get(0);
             if ( !(dataspaceMessage instanceof DataspaceMessage)) {
@@ -388,7 +388,7 @@ public class HdfDataSet implements Closeable {
                 fileAllocation.increaseHeaderAllocation(datasetName, headerSize);
             }
             int newContinuationSize = dataspaceMessage.getSizeMessageData() + 8 + attributeSize; // Calculate size first for clarity
-            if ( allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_HEADER_CONTINUATION).getSize() < newContinuationSize ) {
+            if ( allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_HEADER_CONTINUATION) == null || (allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_HEADER_CONTINUATION).getSize() < newContinuationSize) ) {
                 fileAllocation.allocateAndSetContinuationBlock(datasetName, newContinuationSize);
             }
             return true;

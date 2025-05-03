@@ -138,8 +138,8 @@ public class HdfFileAllocation {
             if (snodRecords.isEmpty()) {
                 // special case: first SNOD is allocated at the end of the metadata region
                 // but overlaps with the dataNextAvailableOffset.
-                long moveAmount = ((metadataNextAvailableOffset + SNOD_STORAGE_SIZE) - dataNextAvailableOffset);
-                moveDataNextAvailableOffset(dataNextAvailableOffset, moveAmount);
+                long metadataNewOffset = metadataNextAvailableOffset + SNOD_STORAGE_SIZE;
+                moveDataNextAvailableOffset(metadataNewOffset);
             } else {
                 moveMetadataNextAvailableOffset(metadataNextAvailableOffset, SNOD_STORAGE_SIZE);
             }
@@ -165,10 +165,6 @@ public class HdfFileAllocation {
             throw new IllegalStateException("Data block for '" + datasetName + "' already allocated");
         }
 
-        if (checkForOverlap(dataNextAvailableOffset, dataSize)) {
-            moveDataNextAvailableOffset(dataNextAvailableOffset, dataSize);
-        }
-
         long dataOffset = dataNextAvailableOffset;
         AllocationRecord record = new AllocationRecord(AllocationType.DATASET_DATA, "Data Block (" + datasetName + ")", dataOffset, dataSize);
         datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_DATA, record);
@@ -190,7 +186,7 @@ public class HdfFileAllocation {
         }
 
         if (checkForOverlap(metadataNextAvailableOffset, continuationSize)) {
-            moveMetadataNextAvailableOffset(metadataNextAvailableOffset, continuationSize);
+            moveDataNextAvailableOffset(metadataNextAvailableOffset + continuationSize);
         }
 
         long continuationOffset = metadataNextAvailableOffset;
@@ -207,10 +203,6 @@ public class HdfFileAllocation {
             throw new IllegalStateException("First global heap already allocated");
         }
 
-        if (checkForOverlap(dataNextAvailableOffset, GLOBAL_HEAP_BLOCK_SIZE)) {
-            moveDataNextAvailableOffset(dataNextAvailableOffset, GLOBAL_HEAP_BLOCK_SIZE);
-        }
-
         long size = GLOBAL_HEAP_BLOCK_SIZE;
         long offset = dataNextAvailableOffset;
         AllocationRecord record = new AllocationRecord(AllocationType.GLOBAL_HEAP_1, "Global Heap Block 1", offset, size);
@@ -224,10 +216,6 @@ public class HdfFileAllocation {
     public long allocateNextGlobalHeapBlock() {
         if (globalHeapBlocks.size() >= 2) {
             throw new IllegalStateException("Only two global heap blocks allowed");
-        }
-
-        if (checkForOverlap(dataNextAvailableOffset, GLOBAL_HEAP_BLOCK_SIZE)) {
-            moveDataNextAvailableOffset(dataNextAvailableOffset, GLOBAL_HEAP_BLOCK_SIZE);
         }
 
         long size = GLOBAL_HEAP_BLOCK_SIZE;
@@ -354,8 +342,22 @@ public class HdfFileAllocation {
         metadataNextAvailableOffset = newOffset;
     }
 
-    private void moveDataNextAvailableOffset(long currentOffset, long size) {
-        throw new IllegalStateException("Data offset movement logic not yet implemented");
+    private void moveDataNextAvailableOffset(long newMetadataOffset) {
+        int diff = 0;
+        for ( AllocationRecord record: allocationRecords) {
+            if ( record.getType() == AllocationType.DATASET_DATA ) {
+                if ( diff == 0 ) {
+                    diff = (int) (newMetadataOffset - record.getOffset());
+                }
+                record.setOffset(record.getOffset() + diff);
+            } else if ( record.getType() == AllocationType.GLOBAL_HEAP_1 ) {
+                if ( diff == 0 ) {
+                    diff = (int) (newMetadataOffset - record.getOffset());
+                }
+                record.setOffset(record.getOffset() + diff);
+            }
+        }
+        dataNextAvailableOffset += diff;
     }
 
     private void moveSnodIfOverlapped(long headerOffset, long headerSize) {
