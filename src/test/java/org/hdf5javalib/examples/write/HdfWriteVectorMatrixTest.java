@@ -1,9 +1,6 @@
 package org.hdf5javalib.examples.write;
 
 import lombok.SneakyThrows;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.examples.MemorySeekableByteChannel;
@@ -11,6 +8,7 @@ import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
+import org.hdf5javalib.utils.CsvReader;
 import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.hdf5javalib.utils.HdfTestWriteUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
@@ -115,7 +113,7 @@ public class HdfWriteVectorMatrixTest {
     private static void writeMatrixAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
         int numRecords = 4;
         int numDatapoints = 17;
-        List<List<BigDecimal>> values = loadCsvData("/weatherdata.csv");
+        List<List<BigDecimal>> values = CsvReader.readCsvFromFile("weatherdata.csv");
         ByteBuffer byteBuffer = ByteBuffer.allocate(numRecords * numDatapoints * 4).order(ByteOrder.LITTLE_ENDIAN);
         BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(7));
         BigDecimal point5 = new BigDecimal("0.5");
@@ -138,7 +136,7 @@ public class HdfWriteVectorMatrixTest {
     private static void writeMatrixEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
         int numRecords = 4;
         int numDatapoints = 17;
-        List<List<BigDecimal>> values = loadCsvData("/weatherdata.csv");
+        List<List<BigDecimal>> values = CsvReader.readCsvFromFile("weatherdata.csv");
         AtomicInteger countHolder = new AtomicInteger(0);
         ByteBuffer byteBuffer = ByteBuffer.allocate(numDatapoints * 4).order(ByteOrder.LITTLE_ENDIAN);
         BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(7));
@@ -159,28 +157,6 @@ public class HdfWriteVectorMatrixTest {
             byteBuffer.flip();
             return byteBuffer;
         });
-    }
-
-    private static List<List<BigDecimal>> loadCsvData(String filePath) throws IOException {
-        List<String> labels;
-        List<List<BigDecimal>> data = new ArrayList<>();
-        try (Reader reader = new InputStreamReader(Objects.requireNonNull(HdfWriteVectorMatrixTest.class.getResourceAsStream(filePath)), StandardCharsets.UTF_8)) {
-            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
-                    .setHeader()
-                    .setSkipHeaderRecord(true)
-                    .build();
-            CSVParser parser = new CSVParser(reader, csvFormat);
-            labels = new ArrayList<>(parser.getHeaderNames());
-            for (CSVRecord record : parser) {
-                List<BigDecimal> row = new ArrayList<>();
-                for (String label : labels) {
-                    String value = record.get(label);
-                    row.add(value != null && !value.isEmpty() ? new BigDecimal(value).setScale(2, RoundingMode.HALF_UP) : null);
-                }
-                data.add(row);
-            }
-        }
-        return data;
     }
 
     public static short computeDataSpaceMessageSize(HdfFixedPoint[] hdfDimensions) {

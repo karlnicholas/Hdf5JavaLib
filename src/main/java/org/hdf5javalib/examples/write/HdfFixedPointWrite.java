@@ -2,14 +2,12 @@ package org.hdf5javalib.examples.write;
 
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
+import org.hdf5javalib.utils.CsvReader;
 import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
@@ -57,7 +55,7 @@ public class HdfFixedPointWrite {
     /**
      * Executes the main logic of writing fixed-point datasets to HDF5 files.
      */
-    private void run() {
+    private void run() throws IOException {
         tryHdfApiScalar();
         tryHdfApiInts("vector_each.h5", this::writeEach);
         tryHdfApiInts("vector_all.h5", this::writeAll);
@@ -71,41 +69,8 @@ public class HdfFixedPointWrite {
      * @param FILE_NAME the name of the output HDF5 file
      * @param writer    the consumer function to write the matrix data
      */
-    private void tryHdfApiMatrixInts(String FILE_NAME, Consumer<MatrixWriterParams> writer) {
-        String filePath = "/weatherdata.csv";
-
-        List<String> labels;
-        List<List<BigDecimal>> data = new ArrayList<>();
-        try (Reader reader = new InputStreamReader(Objects.requireNonNull(HdfFixedPointWrite.class.getResourceAsStream(filePath)), StandardCharsets.UTF_8)) {
-            // Updated approach to set header and skip the first record
-            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
-                    .setHeader()
-                    .setSkipHeaderRecord(true)
-                    .build();
-
-            CSVParser parser = new CSVParser(reader, csvFormat);
-
-            // Get column labels
-            labels = new ArrayList<>(parser.getHeaderNames());
-
-            // Read rows and convert values to BigDecimal
-            for (CSVRecord record : parser) {
-                List<BigDecimal> row = new ArrayList<>();
-                for (String label : labels) {
-                    String value = record.get(label);
-                    if (value != null && !value.isEmpty()) {
-                        row.add(new BigDecimal(value).setScale(2, RoundingMode.HALF_UP));
-                    } else {
-                        row.add(null); // Handle missing values
-                    }
-                }
-                data.add(row);
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+    private void tryHdfApiMatrixInts(String FILE_NAME, Consumer<MatrixWriterParams> writer) throws IOException {
+        List<List<BigDecimal>> data = CsvReader.readCsvFromFile("weatherdata.csv");
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         try (SeekableByteChannel channel = Files.newByteChannel(new File(FILE_NAME).toPath(), FILE_OPTIONS)) {
             final String DATASET_NAME = "weatherdata";
