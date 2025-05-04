@@ -21,14 +21,28 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 /**
- * Hello world!
+ * Demonstrates reading and processing compound data from an HDF5 file.
+ * <p>
+ * The {@code HdfCompoundRead} class serves as an example application that reads
+ * a compound dataset from an HDF5 file, processes it using a {@link TypedDataSource},
+ * and displays the results. It showcases filtering and mapping operations on the
+ * dataset, as well as conversion to a custom Java class.
+ * </p>
  */
 @Slf4j
 public class HdfCompoundRead {
+    /**
+     * Entry point for the application.
+     *
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         new HdfCompoundRead().run();
     }
 
+    /**
+     * Executes the main logic of reading and displaying compound data from an HDF5 file.
+     */
     private void run() {
         try {
             Path filePath = getResourcePath("compound_example.h5");
@@ -37,7 +51,6 @@ public class HdfCompoundRead {
                 try (HdfDataSet dataSet = reader.getRootGroup().findDataset("CompoundData")) {
                     displayData(channel, dataSet, reader);
                 }
-//                reader.getGlobalHeap().printDebug();
             }
 
         } catch (IOException e) {
@@ -45,6 +58,12 @@ public class HdfCompoundRead {
         }
     }
 
+    /**
+     * Retrieves the file path for a resource.
+     *
+     * @param fileName the name of the resource file
+     * @return the Path to the resource file
+     */
     private Path getResourcePath(String fileName) {
         String resourcePath = getClass().getClassLoader().getResource(fileName).getPath();
         if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
@@ -53,30 +72,57 @@ public class HdfCompoundRead {
         return Paths.get(resourcePath);
     }
 
+    /**
+     * A data class representing a compound dataset record.
+     */
     @Data
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CompoundExample {
+        /** The record ID. */
         private Long recordId;
+        /** A fixed-length string. */
         private String fixedStr;
+        /** A variable-length string. */
         private String varStr;
+        /** A float value. */
         private Float floatVal;
+        /** A double value. */
         private Double doubleVal;
+        /** An 8-bit integer value. */
         private Byte int8_Val;
+        /** A 16-bit integer value. */
         private Short int16_Val;
+        /** A 32-bit integer value. */
         private Integer int32_Val;
+        /** A 64-bit integer value. */
         private Long int64_Val;
+        /** An unsigned 8-bit integer value. */
         private Short uint8_Val;
+        /** An unsigned 16-bit integer value. */
         private Integer uint16_Val;
+        /** An unsigned 32-bit integer value. */
         private Long uint32_Val;
+        /** An unsigned 64-bit integer value. */
         private BigInteger uint64_Val;
+        /** A scaled unsigned integer value as a BigDecimal. */
         private BigDecimal scaledUintVal;
     }
 
+    /**
+     * Displays data from a compound dataset using a TypedDataSource.
+     * <p>
+     * Reads the dataset, processes it as both raw HdfCompound and custom CompoundExample
+     * objects, and prints selected rows and filtered values.
+     * </p>
+     *
+     * @param seekableByteChannel the file channel for reading the HDF5 file
+     * @param dataSet             the compound dataset to process
+     * @param hdfDataFile         the HDF5 file context
+     * @throws IOException if an I/O error occurs
+     */
     public void displayData(SeekableByteChannel seekableByteChannel, HdfDataSet dataSet, HdfDataFile hdfDataFile) throws IOException {
-//        System.out.println("Count = " + new TypedDataSource<>(dataSet, fileChannel, HdfCompound.class).streamVector().count());
-
         System.out.println("Ten Rows:");
         new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class)
                 .streamVector()

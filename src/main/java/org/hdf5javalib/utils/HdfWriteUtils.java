@@ -20,10 +20,25 @@ import java.util.stream.Collectors;
 
 import static org.hdf5javalib.utils.HdfReadUtils.reverseBytesInPlace;
 
+/**
+ * Utility class for writing data to HDF5 files.
+ * <p>
+ * The {@code HdfWriteUtils} class provides methods to write fixed-point, floating-point,
+ * string, and compound data types to a {@link ByteBuffer}, handling endianness, scaling,
+ * and global heap interactions as required by the HDF5 file format. It supports various
+ * Java types and ensures compatibility with HDF5 datatypes.
+ * </p>
+ */
 public class HdfWriteUtils {
     /**
-     * Writes an `HdfFixedPoint` value to the `ByteBuffer' accounting for endian-ness.
-     * If undefined, fills with 0xFF.
+     * Writes an {@link HdfFixedPoint} value to a {@link ByteBuffer}, accounting for endianness.
+     * <p>
+     * If the value is undefined, the buffer is filled with 0xFF. Otherwise, the value is written
+     * in the appropriate endianness as specified by the datatype and buffer order.
+     * </p>
+     *
+     * @param buffer the ByteBuffer to write to
+     * @param value  the HdfFixedPoint value to write
      */
     public static void writeFixedPointToBuffer(ByteBuffer buffer, HdfFixedPoint value) {
         int size = value.getDatatype().getSize();
@@ -35,9 +50,8 @@ public class HdfWriteUtils {
             byte[] valueBytes = value.getBytes();
             int copySize = Math.min(valueBytes.length, size);
 
-            // Store in **little-endian format** by reversing byte order
-            if ( value.getDatatype().isBigEndian() && buffer.order() == ByteOrder.BIG_ENDIAN
-            || !value.getDatatype().isBigEndian() && buffer.order() == ByteOrder.LITTLE_ENDIAN) {
+            // Store in matching endianness
+            if (value.getDatatype().isBigEndian() == (buffer.order() == ByteOrder.BIG_ENDIAN)) {
                 System.arraycopy(valueBytes, 0, bytesToWrite, 0, copySize);
             } else {
                 for (int i = 0; i < copySize; i++) {
@@ -48,6 +62,22 @@ public class HdfWriteUtils {
 
         buffer.put(bytesToWrite);
     }
+
+    /**
+     * Writes a compound type instance to a {@link ByteBuffer}.
+     * <p>
+     * Maps fields of the provided instance to the members of the compound datatype and
+     * writes their values to the buffer at the appropriate offsets, handling strings,
+     * variable-length strings, fixed-point, and floating-point types.
+     * </p>
+     *
+     * @param instance     the instance to write
+     * @param compoundType the compound datatype defining the structure
+     * @param buffer       the ByteBuffer to write to
+     * @param dataClass    the class of the instance
+     * @param <T>          the type of the instance
+     * @throws RuntimeException if reflection or datatype errors occur
+     */
     public static <T> void writeCompoundTypeToBuffer(T instance, CompoundDatatype compoundType, ByteBuffer buffer, Class<T> dataClass) {
         Map<String, Field> nameToFieldMap = Arrays.stream(dataClass.getDeclaredFields())
                 .collect(Collectors.toMap(Field::getName, f -> f));
@@ -110,8 +140,17 @@ public class HdfWriteUtils {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * Creates an {@link HdfFixedPoint} from a long value using the specified datatype.
+     *
+     * @param value             the long value to convert
+     * @param fixedPointDatatype the fixed-point datatype defining the format
+     * @return the created HdfFixedPoint
+     * @throws IllegalArgumentException if the datatype size is unsupported
+     */
     public static HdfFixedPoint hdfFixedPointFromValue(long value, FixedPointDatatype fixedPointDatatype) {
-        Class fieldType = switch(fixedPointDatatype.getSize()) {
+        Class<?> fieldType = switch (fixedPointDatatype.getSize()) {
             case 1 -> Byte.class;
             case 2 -> Short.class;
             case 4 -> Integer.class;
@@ -121,7 +160,15 @@ public class HdfWriteUtils {
         return new HdfFixedPoint(toFixedPointBytes(value, fixedPointDatatype, fieldType), fixedPointDatatype);
     }
 
-    // Convert field value to byte array for FixedPointDatatype
+    /**
+     * Converts a field value to a byte array for a FixedPointDatatype.
+     *
+     * @param value      the value to convert
+     * @param datatype   the fixed-point datatype
+     * @param fieldType  the Java type of the field
+     * @return the byte array representing the value
+     * @throws IllegalArgumentException if the field type or value is unsupported
+     */
     private static byte[] toFixedPointBytes(Object value, FixedPointDatatype datatype, Class<?> fieldType) {
         int size = datatype.getSize();
         ByteBuffer temp = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
@@ -176,8 +223,15 @@ public class HdfWriteUtils {
         return result;
     }
 
-
-    // Convert field value to byte array for FloatingPointDatatype
+    /**
+     * Converts a field value to a byte array for a FloatingPointDatatype.
+     *
+     * @param value      the value to convert
+     * @param datatype   the floating-point datatype
+     * @param fieldType  the Java type of the field
+     * @return the byte array representing the value
+     * @throws IllegalArgumentException if the field type or size is unsupported
+     */
     private static byte[] toFloatPointBytes(Object value, FloatingPointDatatype datatype, Class<?> fieldType) {
         int size = datatype.getSize();
         ByteBuffer temp = ByteBuffer.allocate(size).order(datatype.getByteOrder());
@@ -195,6 +249,12 @@ public class HdfWriteUtils {
         return temp.array();
     }
 
+    /**
+     * Trims trailing zeros from a byte array.
+     *
+     * @param bytes the byte array to trim
+     * @return the trimmed byte array, or a single zero byte if all zeros
+     */
     public static byte[] trimTrailingZeros(byte[] bytes) {
         if (bytes == null || bytes.length == 0) return bytes;
 
@@ -208,5 +268,4 @@ public class HdfWriteUtils {
         System.arraycopy(bytes, 0, result, 0, result.length);
         return result;
     }
-
 }

@@ -17,16 +17,37 @@ import java.util.Optional;
 import static org.hdf5javalib.file.dataobject.message.HdfMessage.parseContinuationMessage;
 import static org.hdf5javalib.file.dataobject.message.HdfMessage.readMessagesFromByteBuffer;
 
+/**
+ * Represents the version 1 object header prefix for an HDF5 data object.
+ * <p>
+ * The {@code HdfObjectHeaderPrefixV1} class encapsulates the metadata for an HDF5 data object's
+ * header, including version, reference count, header size, and a list of header messages. It provides
+ * methods to read the header from a file channel, write it to a byte channel or buffer, and manage
+ * continuation messages for large headers.
+ * </p>
+ */
 @Getter
 public class HdfObjectHeaderPrefixV1 {
-    private final int version;                // 1 byte
-    private final long objectReferenceCount;  // 4 bytes
-    private final long objectHeaderSize;      // 4 bytes
-    // level 2A1A
-    @Getter
+    /** The version of the object header (1 byte). */
+    private final int version;
+
+    /** The reference count for the object (4 bytes). */
+    private final long objectReferenceCount;
+
+    /** The size of the object header (4 bytes). */
+    private final long objectHeaderSize;
+
+    /** The list of header messages associated with the object. */
     private final List<HdfMessage> headerMessages;
 
-    // Constructor for application-defined values
+    /**
+     * Constructs an HdfObjectHeaderPrefixV1 with application-defined values.
+     *
+     * @param version             the version of the object header
+     * @param objectReferenceCount the reference count for the object
+     * @param objectHeaderSize    the size of the object header
+     * @param headerMessages      the list of header messages
+     */
     public HdfObjectHeaderPrefixV1(int version, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> headerMessages) {
         this.version = version;
         this.objectReferenceCount = objectReferenceCount;
@@ -34,7 +55,19 @@ public class HdfObjectHeaderPrefixV1 {
         this.headerMessages = headerMessages;
     }
 
-    // Factory method to read from a FileChannel
+    /**
+     * Reads an HdfObjectHeaderPrefixV1 from a file channel.
+     * <p>
+     * Parses the fixed-size header (version, reference count, header size) and header messages,
+     * including any continuation messages, from the specified file channel.
+     * </p>
+     *
+     * @param fileChannel the seekable byte channel to read from
+     * @param hdfDataFile the HDF5 file context
+     * @return the constructed HdfObjectHeaderPrefixV1 instance
+     * @throws IOException if an I/O error occurs
+     * @throws IllegalArgumentException if reserved fields are non-zero
+     */
     public static HdfObjectHeaderPrefixV1 readFromFileChannel(
             SeekableByteChannel fileChannel,
             HdfDataFile hdfDataFile
@@ -67,9 +100,9 @@ public class HdfObjectHeaderPrefixV1 {
             throw new IllegalArgumentException("Reserved integer in Data Object Header Prefix is not zero.");
         }
         List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>(readMessagesFromByteBuffer(fileChannel, objectHeaderSize, hdfDataFile));
-        for ( HdfMessage hdfMessage: dataObjectHeaderMessages) {
+        for (HdfMessage hdfMessage : dataObjectHeaderMessages) {
             if (hdfMessage instanceof ObjectHeaderContinuationMessage) {
-                dataObjectHeaderMessages.addAll(parseContinuationMessage(fileChannel, (ObjectHeaderContinuationMessage)hdfMessage, hdfDataFile));
+                dataObjectHeaderMessages.addAll(parseContinuationMessage(fileChannel, (ObjectHeaderContinuationMessage) hdfMessage, hdfDataFile));
                 break;
             }
         }
@@ -78,13 +111,26 @@ public class HdfObjectHeaderPrefixV1 {
         return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages);
     }
 
+    /**
+     * Writes the object header as a group header to a byte channel.
+     * <p>
+     * Serializes the header fields (version, reference count, header size) and all header
+     * messages to the specified byte channel, ensuring proper alignment and handling of
+     * continuation messages.
+     * </p>
+     *
+     * @param seekableByteChannel the byte channel to write to
+     * @param fileAllocation      the file allocation manager
+     * @throws IOException if an I/O error occurs
+     * @throws IllegalStateException if the buffer overflows
+     */
     public void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
         int currentSize = 16;
-        int i=0;
+        int i = 0;
         while (i < headerMessages.size()) {
             HdfMessage hdfMessage = headerMessages.get(i);
             currentSize += hdfMessage.getSizeMessageData() + 8;
-            currentSize  = (currentSize + 7) & ~7;
+            currentSize = (currentSize + 7) & ~7;
             i++;
         }
         ByteBuffer buffer = ByteBuffer.allocate(currentSize).order(ByteOrder.LITTLE_ENDIAN);
@@ -108,8 +154,6 @@ public class HdfObjectHeaderPrefixV1 {
         buffer.putInt(0);
 
         // Write messages, handling continuation as first message but splitting at 6
-//        Optional<ObjectHeaderContinuationMessage> optContinuationMessage = findMessageByType(ObjectHeaderContinuationMessage.class);
-
         for (HdfMessage hdfMessage : headerMessages) {
             hdfMessage.writeMessageToByteBuffer(buffer);
 
@@ -130,6 +174,16 @@ public class HdfObjectHeaderPrefixV1 {
             seekableByteChannel.write(buffer);
         }
     }
+
+    /**
+     * Writes the initial message block of the object header to a buffer.
+     * <p>
+     * Serializes the header fields (version, reference count, header size) and the initial
+     * set of header messages to the specified buffer, padding to an 8-byte boundary.
+     * </p>
+     *
+     * @param buffer the ByteBuffer to write to
+     */
     public void writeInitialMessageBlockToBuffer(ByteBuffer buffer) {
         // Write version (1 byte)
         buffer.put((byte) version);
@@ -163,17 +217,27 @@ public class HdfObjectHeaderPrefixV1 {
         }
     }
 
+    /**
+     * Writes the continuation message block of the object header to a buffer.
+     * <p>
+     * Serializes the remaining header messages that did not fit in the initial block,
+     * starting after the specified initial size, to the provided buffer.
+     * </p>
+     *
+     * @param initialSize the size of the initial message block
+     * @param buffer      the ByteBuffer to write to
+     */
     public void writeContinuationMessageBlockToBuffer(int initialSize, ByteBuffer buffer) {
-        // simulate object header data.
+        // Simulate object header data.
         int currentSize = 16;
-        int i=0;
+        int i = 0;
         while (i < headerMessages.size()) {
             HdfMessage hdfMessage = headerMessages.get(i);
             currentSize += hdfMessage.getSizeMessageData() + 8;
-            currentSize  = (currentSize + 7) & ~7;
+            currentSize = (currentSize + 7) & ~7;
             i++;
 
-            if ( currentSize >= initialSize) {
+            if (currentSize >= initialSize) {
                 break;
             }
         }
@@ -182,9 +246,17 @@ public class HdfObjectHeaderPrefixV1 {
             hdfMessage.writeMessageToByteBuffer(buffer);
             i++;
         }
-
     }
 
+    /**
+     * Returns a string representation of the object header.
+     * <p>
+     * Includes the version, total number of header messages, reference count, header size,
+     * and a detailed listing of all header messages.
+     * </p>
+     *
+     * @return a string describing the object header
+     */
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -193,8 +265,8 @@ public class HdfObjectHeaderPrefixV1 {
                 .append(" Total Header Messages: ").append(headerMessages.size())
                 .append(" Object Reference Count: ").append(objectReferenceCount)
                 .append(" Object Header Size: ").append(objectHeaderSize);
-                // Parse header messages
-        for( HdfMessage message: headerMessages) {
+        // Parse header messages
+        for (HdfMessage message : headerMessages) {
             String ms = message.toString();
             builder.append("\r\n").append(ms);
         }
@@ -203,6 +275,13 @@ public class HdfObjectHeaderPrefixV1 {
         return builder.toString();
     }
 
+    /**
+     * Finds a header message of the specified type.
+     *
+     * @param messageClass the class of the message to find
+     * @param <T>          the type of the message
+     * @return an Optional containing the message if found, or empty if not found
+     */
     public <T extends HdfMessage> Optional<T> findMessageByType(Class<T> messageClass) {
         for (HdfMessage message : headerMessages) {
             if (messageClass.isInstance(message)) {

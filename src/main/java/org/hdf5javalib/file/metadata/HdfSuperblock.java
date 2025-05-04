@@ -18,12 +18,13 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 /**
  * Represents the Superblock in the HDF5 file format.
- *
- * <p>The Superblock is the root metadata structure in an HDF5 file. It contains
+ * <p>
+ * The Superblock is the root metadata structure in an HDF5 file. It contains
  * essential information about the file layout, including pointers to key data
  * structures such as the root group, free space management, and driver
  * information. The Superblock is always located at a known file offset,
- * allowing quick access to file metadata.</p>
+ * allowing quick access to file metadata.
+ * </p>
  *
  * <h2>Structure</h2>
  * <p>The HDF5 Superblock consists of the following components:</p>
@@ -60,13 +61,11 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * <h2>Processing</h2>
  * <p>When reading an HDF5 file, the Superblock is the first structure examined to
  * determine the file format version, address size settings, and location of key
- * metadata structures. It is vital for properly interpreting the file’s contents.</p>
+ * metadata structures. It is vital for properly interpreting the file’s contents.
+ * </p>
  *
  * <p>This class provides methods to parse and interpret the HDF5 Superblock
  * based on the HDF5 file specification.</p>
- *
- * @see <a href="https://docs.hdfgroup.org/hdf5/develop/group___s_u_p_e_r_b_l_o_c_k.html">
- *      HDF5 Superblock Documentation</a>
  */
 @Getter
 public class HdfSuperblock {
@@ -91,6 +90,24 @@ public class HdfSuperblock {
     private final FixedPointDatatype fixedPointDatatypeForOffset;
     private final FixedPointDatatype fixedPointDatatypeForLength;
 
+    /**
+     * Constructs a Superblock with the specified metadata.
+     *
+     * @param version                    the superblock version
+     * @param freeSpaceVersion           the free space storage version
+     * @param rootGroupVersion           the root group symbol table entry version
+     * @param sharedHeaderVersion        the shared object header format version
+     * @param groupLeafNodeK             the B-tree group leaf node K value
+     * @param groupInternalNodeK         the B-tree group internal node K value
+     * @param baseAddress                the base address for relative addressing
+     * @param addressFileFreeSpaceInfo   the address of the free space manager
+     * @param endOfFileAddress           the end-of-file address
+     * @param driverInformationAddress   the address of the driver information block
+     * @param rootGroupSymbolTableEntry  the root group symbol table entry
+     * @param hdfDataFile                the HDF5 file context
+     * @param fixedPointDatatypeForOffset the fixed-point datatype for offsets
+     * @param fixedPointDatatypeForLength the fixed-point datatype for lengths
+     */
     public HdfSuperblock(
             int version,
             int freeSpaceVersion,
@@ -123,6 +140,20 @@ public class HdfSuperblock {
         this.fixedPointDatatypeForLength = fixedPointDatatypeForLength;
     }
 
+    /**
+     * Reads a Superblock from a file channel.
+     * <p>
+     * Parses the superblock metadata, including the file signature, version, offset and length sizes,
+     * B-tree settings, and address fields, from the specified file channel. Validates the signature
+     * and version, and constructs a Superblock instance with the parsed data.
+     * </p>
+     *
+     * @param fileChannel the seekable byte channel to read from
+     * @param hdfDataFile the HDF5 file context
+     * @return the constructed HdfSuperblock instance
+     * @throws IOException if an I/O error occurs
+     * @throws IllegalArgumentException if the file signature is invalid or the version is unsupported
+     */
     public static HdfSuperblock readFromFileChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
         // Step 1: Allocate the minimum buffer size to determine the version
         ByteBuffer buffer = ByteBuffer.allocate(8 + 1); // File signature (8 bytes) + version (1 byte)
@@ -182,12 +213,11 @@ public class HdfSuperblock {
                 FixedPointDatatype.createClassBitField(false, false, false, false),
                 lengthSize, (short) 0, (short) (8*lengthSize));
 
-
         int groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
         int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
         buffer.getInt(); // Skip consistency flags
 
-        HdfSymbolTableEntry rootGroupSymbleTableEntry = HdfSymbolTableEntry.readFromFileChannel(fileChannel, fixedPointDatatypeForOffset);
+        HdfSymbolTableEntry rootGroupSymbolTableEntry = HdfSymbolTableEntry.readFromFileChannel(fileChannel, fixedPointDatatypeForOffset);
 
         // Parse addresses using HdfFixedPoint
         HdfFixedPoint baseAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
@@ -206,13 +236,24 @@ public class HdfSuperblock {
                 freeSpaceAddress,
                 endOfFileAddress,
                 driverInformationAddress,
-                rootGroupSymbleTableEntry,
+                rootGroupSymbolTableEntry,
                 hdfDataFile,
                 fixedPointDatatypeForOffset,
                 fixedPointDatatypeForLength
         );
     }
 
+    /**
+     * Writes the Superblock to a file channel.
+     * <p>
+     * Serializes the superblock metadata, including the file signature, version, offset and length
+     * sizes, B-tree settings, address fields, and root group symbol table entry, to the specified
+     * file channel at the superblock's allocated offset.
+     * </p>
+     *
+     * @param fileChannel the seekable byte channel to write to
+     * @throws IOException if an I/O error occurs
+     */
     public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         ByteBuffer buffer = ByteBuffer.allocate(Math.toIntExact(fileAllocation.getSuperblockSize())).order(ByteOrder.LITTLE_ENDIAN);
@@ -251,6 +292,11 @@ public class HdfSuperblock {
         }
     }
 
+    /**
+     * Returns a string representation of the Superblock.
+     *
+     * @return a string describing the superblock's metadata
+     */
     @Override
     public String toString() {
         return "HdfSuperblock{" +

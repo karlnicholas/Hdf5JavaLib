@@ -25,17 +25,40 @@ import static org.hdf5javalib.file.dataobject.message.datatype.FloatingPointData
 import static org.hdf5javalib.utils.HdfDisplayUtils.writeVersionAttribute;
 
 /**
- * Hello world!
+ * Demonstrates writing a compound dataset to an HDF5 file.
+ * <p>
+ * The {@code HdfCompoundWrite} class is an example application that creates an HDF5 file
+ * containing a compound dataset with various data types, including fixed-point, floating-point,
+ * strings, and scaled integers. It defines a custom compound type, writes data using both
+ * bulk and individual record methods, and adds a version attribute.
+ * </p>
  */
 @Slf4j
 public class HdfCompoundWrite {
+    /**
+     * Entry point for the application.
+     *
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         new HdfCompoundWrite().run();
     }
 
+    /**
+     * Executes the main logic of writing a compound dataset to an HDF5 file.
+     */
     private void run() {
         tryHdfApiCompound();
     }
+
+    /**
+     * Creates and writes a compound dataset to an HDF5 file.
+     * <p>
+     * Defines a compound datatype with multiple fields, creates a dataset with
+     * 1000 records, and writes data using both bulk and individual record methods.
+     * Adds a version attribute to the dataset and manages file allocation.
+     * </p>
+     */
     public void tryHdfApiCompound() {
         final String FILE_NAME = "compound_example.h5";
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
@@ -124,8 +147,6 @@ public class HdfCompoundWrite {
                                     (short) 8, (short) 7, (short) 57))
             );
             short compoundSize = (short) compoundData.stream().mapToInt(c -> c.getType().getSize()).sum();
-            // for varLen string.
-//            compoundSize += (40 - 16) + 6 + 4 + 2;
             compoundSize += 12;
 
             // Define Compound DataType correctly
@@ -152,13 +173,19 @@ public class HdfCompoundWrite {
             file.close();
             file.getFileAllocation().printBlocks();
 
-            // auto close
-
             System.out.println("HDF5 file created and written successfully!");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * Writes all compound records to the dataset in bulk.
+     *
+     * @param dataset    the dataset to write to
+     * @param hdfDataFile the HDF5 file context
+     * @throws IOException if an I/O error occurs
+     */
     @SneakyThrows
     private static void writeCompoundAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
         int numRecords = 1000;
@@ -177,6 +204,13 @@ public class HdfCompoundWrite {
         dataset.write(fileBuffer);
     }
 
+    /**
+     * Writes compound records to the dataset individually.
+     *
+     * @param dataset    the dataset to write to
+     * @param hdfDataFile the HDF5 file context
+     * @throws IOException if an I/O error occurs
+     */
     @SneakyThrows
     private static void writeCompoundEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
         int numRecords = 1000;
@@ -195,6 +229,12 @@ public class HdfCompoundWrite {
         });
     }
 
+    /**
+     * Builds a sample compound record for a given index.
+     *
+     * @param count the index for generating the record
+     * @return a populated CompoundExample instance
+     */
     private static CompoundExample buildCompoundExample(int count) {
         return CompoundExample.builder()
                 .recordId(count + 1000L)
@@ -214,39 +254,67 @@ public class HdfCompoundWrite {
                 .build();
     }
 
+    /**
+     * A data class representing a compound dataset record.
+     */
     @Data
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CompoundExample {
+        /** The record ID. */
         private Long recordId;
+        /** A fixed-length string. */
         private String fixedStr;
+        /** A variable-length string. */
         private String varStr;
+        /** A float value. */
         private Float floatVal;
+        /** A double value. */
         private Double doubleVal;
+        /** An 8-bit signed integer value. */
         private Byte int8_Val;
-        private Short int16_Val;
-        private Integer int32_Val;
-        private Long int64_Val;
+        /** An 8-bit unsigned integer value. */
         private Short uint8_Val;
+        /** A 16-bit signed integer value. */
+        private Short int16_Val;
+        /** A 16-bit unsigned integer value. */
         private Integer uint16_Val;
+        /** A 32-bit signed integer value. */
+        private Integer int32_Val;
+        /** A 32-bit unsigned integer value. */
         private Long uint32_Val;
+        /** A 64-bit signed integer value. */
+        private Long int64_Val;
+        /** A 64-bit unsigned integer value. */
         private BigInteger uint64_Val;
+        /** A scaled unsigned integer value as a BigDecimal. */
         private BigDecimal scaledUintVal;
     }
 
+    /**
+     * A data class for monitoring data (not used in this example).
+     */
     @Data
     public static class MonitoringData {
+        /** The site name. */
         private String siteName;
+        /** The air quality index. */
         private Float airQualityIndex;
+        /** The temperature. */
         private Double temperature;
+        /** The sample count. */
         private Integer sampleCount;
     }
 
     private static final int CYCLE_LENGTH = 5;
 
-    // --- Signed Types ---
-
+    /**
+     * Returns a cycled 8-bit signed integer value.
+     *
+     * @param index the index for cycling
+     * @return the cycled value
+     */
     public static byte getCycledInt8(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
         return switch (cycleIndex) {
@@ -258,6 +326,12 @@ public class HdfCompoundWrite {
         };
     }
 
+    /**
+     * Returns a cycled 16-bit signed integer value.
+     *
+     * @param index the index for cycling
+     * @return the cycled value
+     */
     public static short getCycledInt16(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
         return switch (cycleIndex) {
@@ -269,6 +343,12 @@ public class HdfCompoundWrite {
         };
     }
 
+    /**
+     * Returns a cycled 32-bit signed integer value.
+     *
+     * @param index the index for cycling
+     * @return the cycled value
+     */
     public static int getCycledInt32(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
         return switch (cycleIndex) {
@@ -280,6 +360,12 @@ public class HdfCompoundWrite {
         };
     }
 
+    /**
+     * Returns a cycled 64-bit signed integer value.
+     *
+     * @param index the index for cycling
+     * @return the cycled value
+     */
     public static long getCycledInt64(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
         return switch (cycleIndex) {
@@ -291,10 +377,13 @@ public class HdfCompoundWrite {
         };
     }
 
-    // --- Unsigned Types (Return next larger signed type to hold value) ---
-    // --- Or return 'long' for uint64 and handle bit pattern ---
-
-    public static short getCycledUint8(int index) { // Returns short to hold 0-255
+    /**
+     * Returns a cycled 8-bit unsigned integer value.
+     *
+     * @param index the index for cycling
+     * @return the cycled value as a short
+     */
+    public static short getCycledUint8(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
         return switch (cycleIndex) {
             case 0 -> 0;                     // 0x00
@@ -305,7 +394,13 @@ public class HdfCompoundWrite {
         };
     }
 
-    public static int getCycledUint16(int index) { // Returns int to hold 0-65535
+    /**
+     * Returns a cycled 16-bit unsigned integer value.
+     *
+     * @param index the index for cycling
+     * @return the cycled value as an int
+     */
+    public static int getCycledUint16(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
         int max_val = 65535; // 0xFFFF
         return switch (cycleIndex) {
@@ -317,7 +412,13 @@ public class HdfCompoundWrite {
         };
     }
 
-    public static long getCycledUint32(int index) { // Returns long to hold 0-(2^32-1)
+    /**
+     * Returns a cycled 32-bit unsigned integer value.
+     *
+     * @param index the index for cycling
+     * @return the cycled value as a long
+     */
+    public static long getCycledUint32(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
         long max_val = 0xFFFFFFFFL; // (1L << 32) - 1;
         return switch (cycleIndex) {
@@ -329,11 +430,14 @@ public class HdfCompoundWrite {
         };
     }
 
-    // For uint64, we can return long and rely on the bit pattern being correct,
-    // or use BigInteger if the HDF5 library specifically needs that. Assuming primitive:
-    public static BigInteger getCycledUint64(int index) { // Returns long, bit pattern matches uint64
+    /**
+     * Returns a cycled 64-bit unsigned integer value.
+     *
+     * @param index the index for cycling
+     * @return the cycled value as a BigInteger
+     */
+    public static BigInteger getCycledUint64(int index) {
         int cycleIndex = index % CYCLE_LENGTH;
-        // Use BigInteger for calculation constants to avoid signed long issues
         BigInteger MAX_U64 = new BigInteger("18446744073709551615"); // 2^64 - 1
         BigInteger FOUR = BigInteger.valueOf(4);
         BigInteger TWO = BigInteger.valueOf(2);
@@ -344,7 +448,7 @@ public class HdfCompoundWrite {
             case 1 -> MAX_U64.divide(FOUR);
             case 2 -> MAX_U64.divide(TWO);
             case 3 -> MAX_U64.divide(FOUR).multiply(THREE);
-            default -> MAX_U64; // Max unsigned 64 bit is -1L signed
+            default -> MAX_U64;
         };
     }
 }

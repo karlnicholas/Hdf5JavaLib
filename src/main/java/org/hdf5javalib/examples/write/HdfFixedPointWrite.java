@@ -34,14 +34,29 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
- * Hello world!
- *
+ * Demonstrates writing fixed-point datasets to HDF5 files.
+ * <p>
+ * The {@code HdfFixedPointWrite} class is an example application that creates HDF5 files
+ * containing fixed-point datasets of various dimensionalities (scalar, vector, and matrix).
+ * It supports writing data both individually and in bulk, including data read from a CSV file
+ * for matrix datasets. It uses {@link HdfWriteUtils} for writing fixed-point values and
+ * manages file allocation.
+ * </p>
  */
 public class HdfFixedPointWrite {
+    /**
+     * Entry point for the application.
+     *
+     * @param args command-line arguments (not used)
+     * @throws IOException if an I/O error occurs
+     */
     public static void main(String[] args) throws IOException {
         new HdfFixedPointWrite().run();
     }
 
+    /**
+     * Executes the main logic of writing fixed-point datasets to HDF5 files.
+     */
     private void run() {
         tryHdfApiScalar();
         tryHdfApiInts("vector_each.h5", this::writeEach);
@@ -50,6 +65,12 @@ public class HdfFixedPointWrite {
         tryHdfApiMatrixInts("weatherdata_all.h5", this::writeAllMatrix);
     }
 
+    /**
+     * Creates and writes a matrix dataset from CSV data to an HDF5 file.
+     *
+     * @param FILE_NAME the name of the output HDF5 file
+     * @param writer    the consumer function to write the matrix data
+     */
     private void tryHdfApiMatrixInts(String FILE_NAME, Consumer<MatrixWriterParams> writer) {
         String filePath = "/weatherdata.csv";
 
@@ -66,7 +87,6 @@ public class HdfFixedPointWrite {
 
             // Get column labels
             labels = new ArrayList<>(parser.getHeaderNames());
-//            System.out.println("Labels: " + labels);
 
             // Read rows and convert values to BigDecimal
             for (CSVRecord record : parser) {
@@ -106,7 +126,7 @@ public class HdfFixedPointWrite {
 
             FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
-                    FixedPointDatatype.createClassBitField( false, false, false, false),
+                    FixedPointDatatype.createClassBitField(false, false, false, false),
                     (short)4, (short)7, (short)25);
 
             HdfDataSet dataset = file.createDataSet(DATASET_NAME, fixedPointDatatype, dataSpaceMessage);
@@ -125,14 +145,20 @@ public class HdfFixedPointWrite {
         }
     }
 
+    /**
+     * Computes the size of a data space message based on dimensions.
+     *
+     * @param hdfDimensions the dimensions of the data space
+     * @return the size of the data space message in bytes
+     */
     public static short computeDataSpaceMessageSize(HdfFixedPoint[] hdfDimensions) {
         short dataSpaceMessageSize = 8;
-        if ( hdfDimensions != null ) {
+        if (hdfDimensions != null) {
             for (HdfFixedPoint dimension : hdfDimensions) {
                 dataSpaceMessageSize += (short) dimension.getDatatype().getSize();
             }
         }
-        if ( hdfDimensions != null ) {
+        if (hdfDimensions != null) {
             for (HdfFixedPoint maxDimension : hdfDimensions) {
                 dataSpaceMessageSize += (short) maxDimension.getDatatype().getSize();
             }
@@ -140,6 +166,9 @@ public class HdfFixedPointWrite {
         return dataSpaceMessageSize;
     }
 
+    /**
+     * Creates and writes a scalar fixed-point dataset to an HDF5 file.
+     */
     private void tryHdfApiScalar() {
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "FixedPointValue";
@@ -154,7 +183,7 @@ public class HdfFixedPointWrite {
 
             FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
-                    FixedPointDatatype.createClassBitField( false, false, false, true),
+                    FixedPointDatatype.createClassBitField(false, false, false, true),
                     (short)4, (short)0, (short)32);
 
             // Create dataset
@@ -172,13 +201,18 @@ public class HdfFixedPointWrite {
             file.close();
             file.getFileAllocation().printBlocks();
 
-            // auto close
             System.out.println("HDF5 file scalar.h5 created and written successfully!");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Creates and writes a vector fixed-point dataset to an HDF5 file.
+     *
+     * @param FILE_NAME the name of the output HDF5 file
+     * @param writer    the consumer function to write the vector data
+     */
     private void tryHdfApiInts(String FILE_NAME, Consumer<WriterParams> writer) {
         final StandardOpenOption[] FILE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
         final String DATASET_NAME = "vector";
@@ -195,7 +229,7 @@ public class HdfFixedPointWrite {
 
             FixedPointDatatype fixedPointDatatype = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
-                    FixedPointDatatype.createClassBitField( false, false, false, true),
+                    FixedPointDatatype.createClassBitField(false, false, false, true),
                     (short)8, (short)0, (short)64);
 
             // Create dataset
@@ -209,13 +243,17 @@ public class HdfFixedPointWrite {
             file.close();
             file.getFileAllocation().printBlocks();
 
-            // auto close
             System.out.println("HDF5 file " + FILE_NAME + " created and written successfully!");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Writes matrix data to the dataset row by row.
+     *
+     * @param writerParams the parameters for writing the matrix
+     */
     @SneakyThrows
     private void writeEachMatrix(MatrixWriterParams writerParams) {
         AtomicInteger countHolder = new AtomicInteger(0);
@@ -233,12 +271,17 @@ public class HdfFixedPointWrite {
         });
     }
 
+    /**
+     * Writes all matrix data to the dataset in bulk.
+     *
+     * @param writerParams the parameters for writing the matrix
+     */
     @SneakyThrows
     private void writeAllMatrix(MatrixWriterParams writerParams) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS * writerParams.NUM_RECORDS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
         BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
         BigDecimal point5 = new BigDecimal("0.5");
-        for(int r=0; r<writerParams.NUM_RECORDS; r++) {
+        for (int r = 0; r < writerParams.NUM_RECORDS; r++) {
             makeBitOffsetValues(writerParams, byteBuffer, twoShifted, point5, r);
         }
         byteBuffer.flip();
@@ -246,8 +289,17 @@ public class HdfFixedPointWrite {
         writerParams.dataset.write(byteBuffer);
     }
 
+    /**
+     * Writes bit-offset adjusted values to a ByteBuffer for a matrix row.
+     *
+     * @param writerParams the parameters for writing the matrix
+     * @param byteBuffer   the buffer to write to
+     * @param twoShifted   the scaling factor for bit offset
+     * @param point5       the rounding adjustment
+     * @param r            the row index
+     */
     private void makeBitOffsetValues(MatrixWriterParams writerParams, ByteBuffer byteBuffer, BigDecimal twoShifted, BigDecimal point5, int r) {
-        for(int c=0; c < writerParams.NUM_DATAPOINTS; ++c ) {
+        for (int c = 0; c < writerParams.NUM_DATAPOINTS; ++c) {
             BigDecimal rawValue = writerParams.values.get(r).get(c).multiply(twoShifted).add(point5);
             BigInteger rawValueShifted = rawValue.toBigInteger();
             new HdfFixedPoint(rawValueShifted, writerParams.fixedPointDatatype)
@@ -255,6 +307,11 @@ public class HdfFixedPointWrite {
         }
     }
 
+    /**
+     * Writes vector data to the dataset record by record.
+     *
+     * @param writerParams the parameters for writing the vector
+     */
     @SneakyThrows
     private void writeEach(WriterParams writerParams) {
         AtomicInteger countHolder = new AtomicInteger(0);
@@ -264,39 +321,55 @@ public class HdfFixedPointWrite {
             int count = countHolder.getAndIncrement();
             if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
             byteBuffer.clear();
-//            HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) (Math.random() *40.0 + 10.0)), writerParams.fixedPointDatatype, byteBuffer);
-            HdfWriteUtils.writeFixedPointToBuffer(byteBuffer, new HdfFixedPoint(BigInteger.valueOf((long)(Math.random() *40.0 + 10.0)), writerParams.fixedPointDatatype));
+            HdfWriteUtils.writeFixedPointToBuffer(byteBuffer, new HdfFixedPoint(BigInteger.valueOf((long)(Math.random() * 40.0 + 10.0)), writerParams.fixedPointDatatype));
             byteBuffer.flip();
             return byteBuffer;
         });
     }
 
+    /**
+     * Writes all vector data to the dataset in bulk.
+     *
+     * @param writerParams the parameters for writing the vector
+     */
     @SneakyThrows
     private void writeAll(WriterParams writerParams) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_RECORDS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
-        for(int i=0; i<writerParams.NUM_RECORDS; i++) {
-//            HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(BigInteger.valueOf((long) (Math.random() *40.0 + 10.0)), writerParams.fixedPointDatatype, byteBuffer);
-//            HdfWriteUtils.writeBigIntegerAsHdfFixedPoint(, writerParams.fixedPointDatatype, byteBuffer);
-            HdfWriteUtils.writeFixedPointToBuffer(byteBuffer, new HdfFixedPoint(BigInteger.valueOf(i+1), writerParams.fixedPointDatatype));
+        for (int i = 0; i < writerParams.NUM_RECORDS; i++) {
+            HdfWriteUtils.writeFixedPointToBuffer(byteBuffer, new HdfFixedPoint(BigInteger.valueOf(i + 1), writerParams.fixedPointDatatype));
         }
         byteBuffer.flip();
         // Write to dataset
         writerParams.dataset.write(byteBuffer);
     }
 
+    /**
+     * Parameters for writing vector data.
+     */
     @AllArgsConstructor
     static class WriterParams {
+        /** The number of records to write. */
         int NUM_RECORDS;
+        /** The fixed-point datatype. */
         FixedPointDatatype fixedPointDatatype;
+        /** The dataset to write to. */
         HdfDataSet dataset;
     }
 
+    /**
+     * Parameters for writing matrix data.
+     */
     @AllArgsConstructor
     static class MatrixWriterParams {
+        /** The number of records (rows). */
         int NUM_RECORDS;
+        /** The number of data points per record (columns). */
         int NUM_DATAPOINTS;
+        /** The fixed-point datatype. */
         FixedPointDatatype fixedPointDatatype;
+        /** The dataset to write to. */
         HdfDataSet dataset;
+        /** The matrix data values. */
         List<List<BigDecimal>> values;
     }
 }
