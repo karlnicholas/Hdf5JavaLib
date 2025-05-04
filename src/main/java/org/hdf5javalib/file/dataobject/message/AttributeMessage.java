@@ -14,50 +14,57 @@ import java.util.BitSet;
 
 /**
  * Represents an Attribute Message in the HDF5 file format.
- *
- * <p>The Attribute Message stores metadata about an HDF5 object, such as a dataset,
- * group, or named datatype. Attributes provide additional descriptive information,
- * such as units, labels, or other user-defined metadata, without affecting the
- * dataset's primary data.</p>
+ * <p>
+ * The {@code AttributeMessage} class stores metadata about an HDF5 object, such as a dataset,
+ * group, or named datatype. Attributes provide additional descriptive information, such as units,
+ * labels, or other user-defined metadata, without affecting the primary data of the dataset.
+ * </p>
  *
  * <h2>Structure</h2>
- * <p>The Attribute Message consists of the following components:</p>
  * <ul>
- *   <li><b>Version (1 byte)</b>: Identifies the version of the attribute message format.</li>
- *   <li><b>Name (variable-length)</b>: Specifies the name of the attribute.</li>
- *   <li><b>Datatype Message</b>: Defines the datatype of the attribute's value.</li>
- *   <li><b>Dataspace Message</b>: Defines the dimensionality (rank) and size of the attribute's value.</li>
- *   <li><b>Raw Data (variable-length)</b>: Stores the actual attribute value(s).</li>
+ *   <li><b>Version (1 byte)</b>: The version of the attribute message format.</li>
+ *   <li><b>Name (variable-length)</b>: The name of the attribute.</li>
+ *   <li><b>Datatype Message</b>: The datatype of the attribute's value.</li>
+ *   <li><b>Dataspace Message</b>: The dimensionality (rank) and size of the attribute's value.</li>
+ *   <li><b>Raw Data (variable-length)</b>: The actual attribute value(s).</li>
  * </ul>
  *
  * <h2>Purpose</h2>
- * <p>Attribute Messages are used for:</p>
  * <ul>
  *   <li>Adding metadata to datasets, groups, or named datatypes.</li>
  *   <li>Storing small amounts of auxiliary data efficiently.</li>
  *   <li>Providing descriptive labels, units, or other contextual information.</li>
  * </ul>
  *
- * <h2>Processing</h2>
- * <p>Attributes in HDF5 are stored similarly to datasets but are not intended for
- * large-scale data storage. They are typically read and written via the attribute
- * interface in HDF5 libraries.</p>
- *
- * <p>This class provides methods to parse and interpret Attribute Messages
- * based on the HDF5 file specification.</p>
- *
- * @see <a href="https://docs.hdfgroup.org/hdf5/develop/group___a_t_t_r_i_b_u_t_e.html">
- *      HDF5 Attribute Documentation</a>
+ * @see org.hdf5javalib.file.dataobject.message.HdfMessage
+ * @see org.hdf5javalib.file.dataobject.message.DatatypeMessage
+ * @see org.hdf5javalib.file.dataobject.message.DataspaceMessage
  */
 @Getter
 public class AttributeMessage extends HdfMessage {
+    /** The version of the attribute message format. */
     private final int version;
+    /** The name of the attribute. */
     private final HdfString name;
+    /** The datatype of the attribute's value. */
     private final DatatypeMessage datatypeMessage;
+    /** The dataspace defining the dimensionality and size of the attribute's value. */
     private final DataspaceMessage dataspaceMessage;
+    /** The actual value of the attribute. */
     @Setter
     private HdfData value;
 
+    /**
+     * Constructs an AttributeMessage with the specified components.
+     *
+     * @param version           the version of the attribute message format
+     * @param name              the name of the attribute
+     * @param datatypeMessage   the datatype of the attribute's value
+     * @param dataspaceMessage  the dataspace defining the attribute's value dimensions
+     * @param value             the actual attribute value
+     * @param flags             message flags
+     * @param sizeMessageData   the size of the message data in bytes
+     */
     public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfData value, byte flags, short sizeMessageData) {
         super(MessageType.AttributeMessage, sizeMessageData, flags);
         this.version = version;
@@ -67,6 +74,14 @@ public class AttributeMessage extends HdfMessage {
         this.value = value;
     }
 
+    /**
+     * Parses an AttributeMessage from the provided data and file context.
+     *
+     * @param flags         message flags
+     * @param data          the byte array containing the message data
+     * @param hdfDataFile   the HDF5 file context for global heap and other resources
+     * @return a new AttributeMessage instance parsed from the data
+     */
     public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Read the version (1 byte)
@@ -113,11 +128,16 @@ public class AttributeMessage extends HdfMessage {
         dt.getHdfDatatype().setGlobalHeap(hdfDataFile.getGlobalHeap());
         byte[] dataBytes = new byte[dtDataSize];
         buffer.get(dataBytes);
-        HdfData value = dt.getHdfDatatype().getInstance(HdfData.class, dataBytes); // new HdfString(dataBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, dataBytes.length));
+        HdfData value = dt.getHdfDatatype().getInstance(HdfData.class, dataBytes);
 
         return new AttributeMessage(version, name, dt, ds, value, flags, (short)data.length);
     }
 
+    /**
+     * Returns a string representation of this AttributeMessage.
+     *
+     * @return a string describing the message size, version, name, and value
+     */
     @Override
     public String toString() {
         return "AttributeMessage("+(getSizeMessageData()+8)+"){" +
@@ -127,6 +147,11 @@ public class AttributeMessage extends HdfMessage {
                 '}';
     }
 
+    /**
+     * Writes the attribute message data to the provided ByteBuffer.
+     *
+     * @param buffer the ByteBuffer to write the message data to
+     */
     @Override
     public void writeMessageToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
@@ -141,14 +166,11 @@ public class AttributeMessage extends HdfMessage {
         buffer.putShort((short) nameSize);
         buffer.putShort(datatypeMessage.getSizeMessageData());
         buffer.putShort(dataspaceMessage.getSizeMessageData());
-        //TODO: 8 ?
-//        buffer.putShort((short) 8);
-//        buffer.putShort((short) 8);
 
-        // Read the name (variable size)
+        // Write the name (variable size)
         buffer.put(nameBytes);
 
-        // padding bytes
+        // Padding bytes
         byte[] paddingBytes = new byte[(8 - (nameSize % 8)) % 8];
         buffer.put(paddingBytes);
 
@@ -162,7 +184,6 @@ public class AttributeMessage extends HdfMessage {
         // Pad to 8-byte boundary
         position = buffer.position();
         buffer.position((position + 7) & ~7);
-        // better
 
         if ( value instanceof HdfVariableLength) {
             value.writeValueToByteBuffer(buffer);
@@ -171,6 +192,5 @@ public class AttributeMessage extends HdfMessage {
         } else {
             throw new RuntimeException("Unsupported datatype");
         }
-
     }
 }

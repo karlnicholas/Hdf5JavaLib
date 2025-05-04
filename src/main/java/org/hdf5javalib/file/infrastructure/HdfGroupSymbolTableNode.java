@@ -11,23 +11,54 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents an HDF5 Symbol Table Node (SNOD) as defined in the HDF5 specification.
+ * <p>
+ * The {@code HdfGroupSymbolTableNode} class models a symbol table node, which stores
+ * a list of symbol table entries for objects (such as datasets or groups) within an
+ * HDF5 group. It supports reading from a file channel, writing to a buffer, and
+ * managing symbol table entries.
+ * </p>
+ *
+ * @see org.hdf5javalib.HdfDataFile
+ * @see org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry
+ */
 @Getter
 public class HdfGroupSymbolTableNode {
-    private final String signature; // Should be "SNOD"
+    /** The signature of the symbol table node ("SNOD"). */
+    private final String signature;
+    /** The version of the symbol table node format. */
     private final int version;
+    /** The list of symbol table entries. */
     private final List<HdfSymbolTableEntry> symbolTableEntries;
 
+    /**
+     * Constructs an HdfGroupSymbolTableNode with the specified fields.
+     *
+     * @param signature          the signature of the node ("SNOD")
+     * @param version            the version of the node format
+     * @param symbolTableEntries the list of symbol table entries
+     */
     public HdfGroupSymbolTableNode(String signature, int version, List<HdfSymbolTableEntry> symbolTableEntries) {
         this.signature = signature;
         this.version = version;
         this.symbolTableEntries = symbolTableEntries;
     }
 
+    /**
+     * Reads an HdfGroupSymbolTableNode from a file channel.
+     *
+     * @param fileChannel the file channel to read from
+     * @param hdfDataFile the HDF5 file context
+     * @return the constructed HdfGroupSymbolTableNode
+     * @throws IOException if an I/O error occurs or the SNOD signature is invalid
+     * @throws IllegalArgumentException if the SNOD signature is invalid
+     */
     public static HdfGroupSymbolTableNode readFromFileChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();
-        String signature; // Should be "SNOD"
+        String signature;
         int version;
         int numberOfSymbols;
 
@@ -58,6 +89,11 @@ public class HdfGroupSymbolTableNode {
         return new HdfGroupSymbolTableNode(signature, version, symbolTableEntries);
     }
 
+    /**
+     * Writes the symbol table node to a ByteBuffer.
+     *
+     * @param buffer the ByteBuffer to write to
+     */
     public void writeToBuffer(ByteBuffer buffer) {
         buffer.put(signature.getBytes(StandardCharsets.US_ASCII));
         buffer.put((byte) version);
@@ -68,6 +104,11 @@ public class HdfGroupSymbolTableNode {
         }
     }
 
+    /**
+     * Returns a string representation of the HdfGroupSymbolTableNode.
+     *
+     * @return a string describing the node's signature, version, number of symbols, and entries
+     */
     @Override
     public String toString() {
         return "HdfGroupSymbolTableNode{" +
@@ -78,10 +119,20 @@ public class HdfGroupSymbolTableNode {
                 "\r\n}";
     }
 
+    /**
+     * Adds a symbol table entry to the node.
+     *
+     * @param hdfSymbolTableEntry the symbol table entry to add
+     */
     public void addEntry(HdfSymbolTableEntry hdfSymbolTableEntry) {
         symbolTableEntries.add(hdfSymbolTableEntry);
     }
 
+    /**
+     * Returns the number of symbols in the node.
+     *
+     * @return the number of symbol table entries
+     */
     public int getNumberOfSymbols() {
         return symbolTableEntries.size();
     }

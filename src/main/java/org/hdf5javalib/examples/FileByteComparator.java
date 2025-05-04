@@ -4,7 +4,29 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+/**
+ * A utility class for comparing two files byte-by-byte.
+ * <p>
+ * The {@code FileByteComparator} class reads two files specified as command-line
+ * arguments and compares their contents byte-by-byte. It outputs any differences
+ * found, including byte values at differing offsets and differences in file lengths.
+ * This tool is useful for verifying the integrity or equivalence of binary files,
+ * such as HDF5 files.
+ * </p>
+ */
 public class FileByteComparator {
+    /**
+     * Compares two files byte-by-byte and prints differences.
+     * <p>
+     * Expects two command-line arguments specifying the paths to the files to compare.
+     * Outputs a table of differing bytes with their offsets and values in hexadecimal,
+     * along with any length differences. If no differences are found, a message
+     * indicates the files are identical.
+     * </p>
+     *
+     * @param args command-line arguments: {@code args[0]} is the path to the first file,
+     *             {@code args[1]} is the path to the second file
+     */
     public static void main(String[] args) {
         // Check if two file paths are provided as command-line arguments
         if (args.length != 2) {

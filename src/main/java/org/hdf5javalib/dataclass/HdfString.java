@@ -5,25 +5,39 @@ import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
 import java.nio.ByteBuffer;
 
 /**
- * HDFString. Stored bytes are not null terminated even if null termination is set in classBitField.
- * The length in the StringDatatype message needs to be length + 1 if the string is defined as
- * null-terminated and the string is not null terminated. There is not a lot of fancy logic here, the app
- * needs to sort out what it expects. Probably need some utils or factory for this.
- * Stored bytes only hold bytes, encoded if needed. Null termination is added if needed when bytes are retrieved.
- * Java Strings are not null terminated and are UTF-8 encoded.
+ * Represents an HDF5 string data structure.
+ * <p>
+ * The {@code HdfString} class encapsulates a string in an HDF5 file, associating raw
+ * byte data with a {@link StringDatatype} that defines the string's encoding, padding,
+ * and length. It implements the {@link HdfData} interface to provide methods for
+ * accessing the data and converting it to various Java types. Stored bytes are not
+ * null-terminated, even if null termination is specified in the datatype's classBitField.
+ * If the datatype specifies null termination, the length in the {@code StringDatatype}
+ * message should be the string length plus one, but the stored bytes only hold the
+ * encoded string data. Null termination or padding is applied when retrieving bytes
+ * via {@link #getBytes()}. Java Strings are UTF-8 encoded and not null-terminated.
+ * Applications are responsible for handling encoding and padding expectations, possibly
+ * using utility methods or factories.
+ * </p>
+ *
+ * @see org.hdf5javalib.dataclass.HdfData
+ * @see org.hdf5javalib.file.dataobject.message.datatype.StringDatatype
  */
 public class HdfString implements HdfData {
+    /** The raw byte array containing the string data, without null termination. */
     private final byte[] bytes;
+    /** The StringDatatype defining the string structure, encoding, and format. */
     private final StringDatatype datatype;
 
     /**
      * Constructs an HdfString from a byte array and a specified StringDatatype.
      * <p>
-     * This constructor initializes the HdfString by storing a reference to the provided byte array
-     * and associating it with the given datatype. The byte array is expected to contain string data
-     * formatted according to the datatype's specifications, such as character encoding and length.
-     * This constructor is typically used for HDF metadata-based initialization with comprehensive
-     * parameters.
+     * This constructor initializes the HdfString by storing a reference to the provided
+     * byte array and associating it with the given datatype. The byte array is expected
+     * to contain string data formatted according to the datatype's specifications, such
+     * as character encoding (ASCII or UTF-8) and length, without null termination. This
+     * constructor is typically used for HDF metadata-based initialization with
+     * comprehensive parameters.
      * </p>
      *
      * @param bytes    the byte array containing the string data
@@ -39,32 +53,83 @@ public class HdfString implements HdfData {
     }
 
     /**
-     * nul-padded UTF8 encoded from Java String
-     * @param value String
+     * Constructs an HdfString from a Java String and a specified StringDatatype.
+     * <p>
+     * This constructor converts the provided Java String to a UTF-8 encoded byte array
+     * and delegates to the byte array constructor. The resulting bytes are not
+     * null-terminated, and padding or termination is handled by the datatype when
+     * retrieving bytes via {@link #getBytes()}.
+     * </p>
+     *
+     * @param value    the Java String to encode
+     * @param datatype the StringDatatype defining the string structure, encoding, and format
+     * @throws NullPointerException if either {@code value} or {@code datatype} is null
      */
     public HdfString(String value, StringDatatype datatype) {
         this(value.getBytes(), datatype);
     }
 
-    // Get the HDF byte[] representation for storage, always returns a copy
+    /**
+     * Returns a copy of the byte array containing the string data, with padding or null
+     * termination applied as needed.
+     * <p>
+     * This method delegates to the associated {@code StringDatatype}'s
+     * {@link StringDatatype#getWorkingBytes(byte[])} method, which applies padding
+     * (e.g., null or space padding) or null termination according to the datatype's
+     * specifications. The returned array is a copy to prevent external modification.
+     * </p>
+     *
+     * @return a cloned byte array with appropriate padding or termination
+     */
     public byte[] getBytes() {
         return datatype.getWorkingBytes(bytes);
     }
 
-    // String representation for debugging and user-friendly output
+    /**
+     * Returns a string representation of the string data.
+     * <p>
+     * The string representation is generated by delegating to the associated
+     * {@code StringDatatype}, which decodes the byte data according to its encoding
+     * (ASCII or UTF-8) and removes any padding or null termination.
+     * </p>
+     *
+     * @return a Java String representation of the data
+     */
     @Override
     public String toString() {
         return datatype.getInstance(String.class, bytes);
     }
 
+    /**
+     * Writes the string data to the provided ByteBuffer.
+     * <p>
+     * This method writes the byte data with padding or null termination applied by
+     * calling {@link #getBytes()}, ensuring the output matches the datatype's
+     * specifications.
+     * </p>
+     *
+     * @param buffer the ByteBuffer to write the byte data to
+     */
     @Override
     public void writeValueToByteBuffer(ByteBuffer buffer) {
         buffer.put(getBytes());
     }
 
+    /**
+     * Converts the string data to an instance of the specified Java class.
+     * <p>
+     * This method delegates to the associated {@code StringDatatype} to perform the
+     * conversion, allowing the data to be interpreted as the requested type
+     * (e.g., {@link String}, {@code byte[]}, or other supported types).
+     * </p>
+     *
+     * @param <T>   the type of the instance to be created
+     * @param clazz the Class object representing the target type
+     * @return an instance of type T created from the byte data
+     * @throws UnsupportedOperationException if the datatype cannot convert to the requested type
+     */
     @Override
     public <T> T getInstance(Class<T> clazz) {
         return datatype.getInstance(clazz, bytes);
     }
-
 }

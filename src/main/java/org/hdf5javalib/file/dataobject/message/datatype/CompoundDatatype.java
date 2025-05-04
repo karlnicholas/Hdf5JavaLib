@@ -11,13 +11,31 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Represents an HDF5 Compound Datatype as defined in the HDF5 specification.
+ * <p>
+ * The {@code CompoundDatatype} class models a compound datatype in HDF5, consisting of multiple member datatypes.
+ * It supports parsing from a {@link java.nio.ByteBuffer}, conversion to Java types such as {@link HdfCompound},
+ * {@code HdfData[]}, or {@code String}, and mapping to POJOs using registered converters or reflection, as per
+ * the HDF5 compound datatype (class 6).
+ * </p>
+ *
+ * @see org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype
+ * @see org.hdf5javalib.file.infrastructure.HdfGlobalHeap
+ * @see org.hdf5javalib.file.dataobject.message.DatatypeMessage
+ */
 @Getter
 public class CompoundDatatype implements HdfDatatype {
+    /** The class and version information for the datatype (class 6, version 1). */
     private final byte classAndVersion;
-    private final BitSet classBitField; // Number of members in the compound datatype
+    /** A BitSet indicating the number of members in the compound datatype. */
+    private final BitSet classBitField;
+    /** The total size of the compound datatype in bytes. */
     private final int size;
-    private List<CompoundMemberDatatype> members;     // Member definitions
+    /** The list of member datatypes defining the compound structure. */
+    private List<CompoundMemberDatatype> members;
 
+    /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<CompoundDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
@@ -25,9 +43,17 @@ public class CompoundDatatype implements HdfDatatype {
         CONVERTERS.put(HdfData.class, HdfCompound::new);
         CONVERTERS.put(byte[][].class, (bytes, dt) -> dt.toByteArrayArray(bytes));
         CONVERTERS.put(HdfData[].class, (bytes, dt) -> dt.toHdfDataArray(bytes));
+        CONVERTERS.put(byte[].class, (bytes, dt) -> bytes);
     }
 
-    // New application-level constructor
+    /**
+     * Constructs a CompoundDatatype with specified members.
+     *
+     * @param classAndVersion the class and version information for the datatype
+     * @param classBitField   a BitSet indicating the number of members
+     * @param size            the total size of the compound datatype in bytes
+     * @param members         the list of member datatypes
+     */
     public CompoundDatatype(byte classAndVersion, BitSet classBitField, int size, List<CompoundMemberDatatype> members) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
@@ -35,6 +61,14 @@ public class CompoundDatatype implements HdfDatatype {
         this.members = new ArrayList<>(members); // Deep copy to avoid external modification
     }
 
+    /**
+     * Constructs a CompoundDatatype by parsing from a ByteBuffer.
+     *
+     * @param classAndVersion the class and version information for the datatype
+     * @param classBitField   a BitSet indicating the number of members
+     * @param size            the total size of the compound datatype in bytes
+     * @param buffer          the ByteBuffer containing the datatype definition
+     */
     public CompoundDatatype(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
@@ -42,6 +76,12 @@ public class CompoundDatatype implements HdfDatatype {
         readFromByteBuffer(buffer);
     }
 
+    /**
+     * Creates a BitSet representing the class bit field for an HDF5 compound datatype.
+     *
+     * @param numberOfMembers the number of members in the compound datatype
+     * @return a 16-bit BitSet encoding the number of members
+     */
     public static BitSet createClassBitField(short numberOfMembers) {
         // Create a BitSet with capacity for 16 bits (0-15)
         BitSet bitSet = new BitSet(16);
@@ -56,6 +96,11 @@ public class CompoundDatatype implements HdfDatatype {
         return bitSet;
     }
 
+    /**
+     * Creates a fixed class and version byte for an HDF5 compound datatype.
+     *
+     * @return a byte representing class 6 and version 1, as defined by the HDF5 specification
+     */
     @SuppressWarnings("SameReturnValue")
     public static byte createClassAndVersion() {
         return 0x16;
@@ -137,6 +182,11 @@ public class CompoundDatatype implements HdfDatatype {
         return result;
     }
 
+    /**
+     * Writes the datatype definition to the provided ByteBuffer.
+     *
+     * @param buffer the ByteBuffer to write the datatype definition to
+     */
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
         for (CompoundMemberDatatype member : members) {
@@ -144,11 +194,21 @@ public class CompoundDatatype implements HdfDatatype {
         }
     }
 
+    /**
+     * Returns the datatype class for this compound datatype.
+     *
+     * @return DatatypeClass.COMPOUND, indicating an HDF5 compound datatype
+     */
     @Override
     public HdfDatatype.DatatypeClass getDatatypeClass() {
         return DatatypeClass.COMPOUND;
     }
 
+    /**
+     * Returns a string representation of this CompoundDatatype.
+     *
+     * @return a string describing the datatype's bit field, size, and members
+     */
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -163,6 +223,11 @@ public class CompoundDatatype implements HdfDatatype {
         return builder.toString();
     }
 
+    /**
+     * Returns the size of the datatype message data.
+     *
+     * @return the size of the message data in bytes, as a short
+     */
     @Override
     public short getSizeMessageData() {
         short size = 8; // confused here for 0 and 8
@@ -172,11 +237,27 @@ public class CompoundDatatype implements HdfDatatype {
         return size;
     }
 
-    // Public method to add user-defined converters
+    /**
+     * Registers a converter for transforming CompoundDatatype data to a specific Java type.
+     *
+     * @param <T>       the type of the class to be converted
+     * @param clazz     the Class object representing the target type
+     * @param converter the HdfConverter for converting between CompoundDatatype and the target type
+     */
     public static <T> void addConverter(Class<T> clazz, HdfConverter<CompoundDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
+    /**
+     * Converts byte data to an instance of the specified class using registered converters or POJO mapping.
+     *
+     * @param <T>   the type of the instance to be created
+     * @param clazz the Class object representing the target type
+     * @param bytes the byte array containing the data
+     * @return an instance of type T created from the byte array
+     * @throws UnsupportedOperationException if no suitable converter is found and POJO conversion is not applicable
+     * @throws IllegalArgumentException if POJO conversion fails
+     */
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         // Check CONVERTERS first
@@ -203,6 +284,12 @@ public class CompoundDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
+    /**
+     * Indicates whether a global heap is required for this datatype.
+     *
+     * @param required true if the global heap is required for any member, false otherwise
+     * @return true if any member requires a global heap, false otherwise
+     */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
         for (CompoundMemberDatatype member : members) {
@@ -211,6 +298,15 @@ public class CompoundDatatype implements HdfDatatype {
         return required;
     }
 
+    /**
+     * Converts byte data to a POJO instance of the specified class using reflection.
+     *
+     * @param <T>   the type of the POJO to be created
+     * @param clazz the Class object representing the POJO type
+     * @param bytes the byte array containing the data
+     * @return an instance of type T populated with data from the byte array
+     * @throws RuntimeException if reflection fails or a field is not found
+     */
     public <T> T toPOJO(Class<T> clazz, byte[] bytes) {
         Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));
         Map<String, CompoundMemberDatatype> nameToMemberMap = members.stream().collect(Collectors.toMap(CompoundMemberDatatype::getName, compoundMember -> compoundMember));
@@ -233,6 +329,11 @@ public class CompoundDatatype implements HdfDatatype {
         }
     }
 
+    /**
+     * Sets the global heap for this datatype and its members.
+     *
+     * @param globalHeap the HdfGlobalHeap to set
+     */
     @Override
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {
         for (CompoundMemberDatatype member : members) {
@@ -240,10 +341,46 @@ public class CompoundDatatype implements HdfDatatype {
         }
     }
 
+    /**
+     * Converts the byte array to a string representation of the compound datatype's members.
+     *
+     * @param bytes the byte array to convert
+     * @return a string representation of the members' values
+     */
     @Override
     public String toString(byte[] bytes) {
         return members.stream().map(m ->
                 m.toString(Arrays.copyOfRange(bytes, m.getOffset(), m.getOffset() + m.getSize()))
         ).collect(Collectors.joining(", "));
+    }
+
+    /**
+     * Returns the class and version byte for this datatype.
+     *
+     * @return the class and version byte
+     */
+    @Override
+    public byte getClassAndVersion() {
+        return classAndVersion;
+    }
+
+    /**
+     * Returns the total size of the compound datatype in bytes.
+     *
+     * @return the total size in bytes
+     */
+    @Override
+    public int getSize() {
+        return size;
+    }
+
+    /**
+     * Returns the class bit field for this datatype.
+     *
+     * @return the BitSet indicating the number of members
+     */
+    @Override
+    public BitSet getClassBitField() {
+        return classBitField;
     }
 }

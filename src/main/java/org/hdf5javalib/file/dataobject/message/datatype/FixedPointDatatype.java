@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
-
 import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
@@ -16,14 +15,32 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Represents an HDF5 Fixed-Point Datatype as defined in the HDF5 specification.
+ * <p>
+ * The {@code FixedPointDatatype} class models a fixed-point number in HDF5, supporting parsing from a
+ * {@link java.nio.ByteBuffer} and conversion to Java types such as {@link BigDecimal}, {@link BigInteger},
+ * {@code Long}, or {@link HdfFixedPoint}. It handles byte order, padding, and signedness as per the HDF5
+ * fixed-point datatype (class 0).
+ * </p>
+ *
+ * @see org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype
+ * @see org.hdf5javalib.utils.HdfReadUtils
+ */
 @Getter
 public class FixedPointDatatype implements HdfDatatype {
+    /** The class and version information for the datatype (class 0, version 1). */
     private final byte classAndVersion;
+    /** A BitSet containing class-specific bit field information (byte order, padding, signedness). */
     private final BitSet classBitField;
+    /** The total size of the fixed-point datatype in bytes. */
     private final int size;
+    /** The bit offset of the first significant bit. */
     private final short bitOffset;
+    /** The number of bits of precision. */
     private final short bitPrecision;
-    // In your HdfDataType/FixedPointDatatype class
+
+    /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<FixedPointDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
         CONVERTERS.put(BigDecimal.class, (bytes, dt) -> dt.toBigDecimal(bytes));
@@ -38,8 +55,16 @@ public class FixedPointDatatype implements HdfDatatype {
         CONVERTERS.put(byte[].class, (bytes, dt) -> bytes);
     }
 
+    /**
+     * Constructs a FixedPointDatatype representing an HDF5 fixed-point datatype.
+     *
+     * @param classAndVersion the class and version information for the datatype
+     * @param classBitField   a BitSet containing class-specific bit field information
+     * @param size            the total size of the datatype in bytes
+     * @param bitOffset       the bit offset of the first significant bit
+     * @param bitPrecision    the number of bits of precision
+     */
     public FixedPointDatatype(byte classAndVersion, BitSet classBitField, int size, short bitOffset, short bitPrecision) {
-
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
@@ -47,23 +72,30 @@ public class FixedPointDatatype implements HdfDatatype {
         this.bitPrecision = bitPrecision;
     }
 
+    /**
+     * Parses an HDF5 fixed-point datatype from a ByteBuffer as per the HDF5 specification.
+     *
+     * @param classAndVersion the class and version byte of the datatype
+     * @param classBitField   the BitSet containing class-specific bit field information
+     * @param size            the total size of the datatype in bytes
+     * @param buffer          the ByteBuffer containing the datatype definition
+     * @return a new FixedPointDatatype instance parsed from the buffer
+     */
     public static FixedPointDatatype parseFixedPointType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
-
         short bitOffset = buffer.getShort();
         short bitPrecision = buffer.getShort();
-
-//        short messageDataSize;
-//        if ( name.length() > 0 ) {
-//            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-//            messageDataSize = (short) (name.length()+1 + padding + 44);
-//        } else {
-//            messageDataSize = 44;
-//        }
-//        short messageDataSize = 8;
-
         return new FixedPointDatatype(classAndVersion, classBitField, size, bitOffset, bitPrecision);
     }
 
+    /**
+     * Creates a BitSet representing the class bit field for an HDF5 fixed-point datatype.
+     *
+     * @param bigEndian true for big-endian byte order, false for little-endian
+     * @param loPad     true for low padding, false otherwise
+     * @param hiPad     true for high padding, false otherwise
+     * @param signed    true if the number is signed, false if unsigned
+     * @return a BitSet encoding byte order, padding, and signedness
+     */
     public static BitSet createClassBitField(boolean bigEndian, boolean loPad, boolean hiPad, boolean signed) {
         BitSet classBitField = new BitSet();
         if (bigEndian) classBitField.set(0);
@@ -73,11 +105,21 @@ public class FixedPointDatatype implements HdfDatatype {
         return classBitField;
     }
 
+    /**
+     * Creates a fixed class and version byte for an HDF5 fixed-point datatype.
+     *
+     * @return a byte representing class 0 and version 1, as defined by the HDF5 specification
+     */
     @SuppressWarnings("SameReturnValue")
     public static byte createClassAndVersion() {
         return 0x10;
     }
 
+    /**
+     * Creates an undefined HdfFixedPoint instance with all bits set to 1.
+     *
+     * @return an HdfFixedPoint instance representing an undefined value
+     */
     public HdfFixedPoint undefined() {
         HdfReadUtils.validateSize(size);
         byte[] undefinedBytes = new byte[size];
@@ -85,6 +127,12 @@ public class FixedPointDatatype implements HdfDatatype {
         return new HdfFixedPoint(undefinedBytes, this);
     }
 
+    /**
+     * Creates an undefined HdfFixedPoint instance from a ByteBuffer.
+     *
+     * @param buffer the ByteBuffer containing the undefined value data
+     * @return an HdfFixedPoint instance representing an undefined value
+     */
     public HdfFixedPoint undefined(ByteBuffer buffer) {
         HdfReadUtils.validateSize(size);
         byte[] undefinedBytes = new byte[size];
@@ -93,39 +141,41 @@ public class FixedPointDatatype implements HdfDatatype {
     }
 
     /**
-     * Creates an HdfFixedPoint representing a 64-bit fixed-point number from a long value.
-     * <p>
-     * This static factory method constructs an HdfFixedPoint by converting the provided long value into an
-     * 8-byte array in little-endian order. It uses a FixedPointDatatype with 64-bit precision, no offset, and
-     * no special flags (e.g., signed, normalized, or reserved bits). The resulting HdfFixedPoint is suitable
-     * for representing standard 64-bit integer values.
-     * </p>
+     * Writes the datatype definition to the provided ByteBuffer.
      *
-     * @param value the long value to convert into a fixed-point representation
-     * @return a new HdfFixedPoint instance encapsulating the 64-bit fixed-point number
+     * @param buffer the ByteBuffer to write the datatype definition to
      */
-//    public HdfFixedPoint of(long value) {
-//        byte[] bArray = ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN).putLong(value).array();
-//        return new HdfFixedPoint(bArray, this);
-//    }
-
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
         buffer.putShort(bitOffset);         // 2
         buffer.putShort(bitPrecision);      // 2
     }
 
+    /**
+     * Returns the datatype class for this fixed-point datatype.
+     *
+     * @return DatatypeClass.FIXED, indicating an HDF5 fixed-point datatype
+     */
     @Override
     public DatatypeClass getDatatypeClass() {
-            return DatatypeClass.FIXED;
+        return DatatypeClass.FIXED;
     }
 
+    /**
+     * Returns the size of the datatype message data.
+     *
+     * @return the size of the message data in bytes, as a short
+     */
     @Override
     public short getSizeMessageData() {
         return (short) (8 + 8);
-//        return (short) 4;
     }
 
+    /**
+     * Returns a string representation of this FixedPointDatatype.
+     *
+     * @return a string describing the datatype's class, version, byte order, padding, signedness, size, bit offset, and precision
+     */
     @Override
     public String toString() {
         return "FixedPointDatatype{" +
@@ -140,30 +190,54 @@ public class FixedPointDatatype implements HdfDatatype {
                 '}';
     }
 
+    /**
+     * Checks if the fixed-point number uses big-endian byte order.
+     *
+     * @return true if big-endian, false if little-endian
+     */
     public boolean isBigEndian() {
         return classBitField.get(0);
     }
 
+    /**
+     * Checks if low padding is enabled.
+     *
+     * @return true if low padding is enabled, false otherwise
+     */
     public boolean isLoPad() {
         return classBitField.get(1);
     }
 
+    /**
+     * Checks if high padding is enabled.
+     *
+     * @return true if high padding is enabled, false otherwise
+     */
     public boolean isHiPad() {
         return classBitField.get(2);
     }
 
+    /**
+     * Checks if the fixed-point number is signed.
+     *
+     * @return true if signed, false if unsigned
+     */
     public boolean isSigned() {
         return classBitField.get(3);
     }
 
-    // Conversion methods
+    /**
+     * Converts the byte array to a Long value.
+     *
+     * @param bytes the byte array to convert
+     * @return the Long value
+     * @throws IllegalStateException if bitOffset is not zero
+     * @throws IllegalArgumentException if the byte array length or size is invalid for Long
+     */
     public long toLong(byte[] bytes) {
         if (bitOffset != 0) {
             throw new IllegalStateException("Cannot convert to Long: bitOffset must be 0, got " + bitOffset);
         }
-//        if (size != 8) {
-//            throw new IllegalStateException("Cannot convert to Long: size must be 8, got " + size);
-//        }
         if (bytes.length > 8 || size > 8 || bytes.length != size) {
             throw new IllegalArgumentException("Bytes or size wrong for Long, got " + bytes.length+":"+size);
         }
@@ -178,20 +252,21 @@ public class FixedPointDatatype implements HdfDatatype {
                 value = (value << 8) | (bytes[i] & 0xFF);
             }
         }
-
-//        if (!isSigned() && value < 0) {
-//            throw new ArithmeticException("Unsigned value out of range for signed Long: " + value);
-//        }
         return value;
     }
 
+    /**
+     * Converts the byte array to an Integer value.
+     *
+     * @param bytes the byte array to convert
+     * @return the Integer value
+     * @throws IllegalStateException if bitOffset is not zero
+     * @throws IllegalArgumentException if the byte array length or size is invalid for Integer
+     */
     public int toInteger(byte[] bytes) {
         if (bitOffset != 0) {
             throw new IllegalStateException("Cannot convert to Integer: bitOffset must be 0, got " + bitOffset);
         }
-//        if (size != 4) {
-//            throw new IllegalStateException("Cannot convert to Integer: size must be 4, got " + size);
-//        }
         if (bytes.length > 4 || size > 4 || bytes.length != size) {
             throw new IllegalArgumentException("Bytes or size wrong for Integer, got " + bytes.length+":"+size);
         }
@@ -207,19 +282,21 @@ public class FixedPointDatatype implements HdfDatatype {
             }
         }
 
-//        if (!isSigned() && value < 0) {
-//            throw new ArithmeticException("Unsigned value out of range for signed Integer: " + value);
-//        }
         return value;
     }
 
+    /**
+     * Converts the byte array to a Short value.
+     *
+     * @param bytes the byte array to convert
+     * @return the Short value
+     * @throws IllegalStateException if bitOffset is not zero
+     * @throws IllegalArgumentException if the byte array length or size is invalid for Short
+     */
     public short toShort(byte[] bytes) {
         if (bitOffset != 0) {
             throw new IllegalStateException("Cannot convert to Short: bitOffset must be 0, got " + bitOffset);
         }
-//        if (size != 2) {
-//            throw new IllegalStateException("Cannot convert to Short: size must be 2, got " + size);
-//        }
         if (bytes.length > 2 || size > 2 || bytes.length != size) {
             throw new IllegalArgumentException("Bytes or size wrong for Short, got " + bytes.length+":"+size);
         }
@@ -234,30 +311,35 @@ public class FixedPointDatatype implements HdfDatatype {
                 value = (short) ((value << 8) | (bytes[i] & 0xFF));
             }
         }
-
-//        if (!isSigned() && value < 0) {
-//            throw new ArithmeticException("Unsigned value out of range for signed Short: " + value);
-//        }
         return value;
     }
 
+    /**
+     * Converts the byte array to a Byte value.
+     *
+     * @param bytes the byte array to convert
+     * @return the Byte value
+     * @throws IllegalStateException if bitOffset is not zero
+     * @throws IllegalArgumentException if the byte array length or size is invalid for Byte
+     */
     public byte toByte(byte[] bytes) {
         if (bitOffset != 0) {
             throw new IllegalStateException("Cannot convert to Byte: bitOffset must be 0, got " + bitOffset);
         }
-//        if (size != 1) {
-//            throw new IllegalStateException("Cannot convert to Byte: size must be 1, got " + size);
-//        }
         if (bytes.length > 1 || size > 1 || bytes.length != size) {
             throw new IllegalArgumentException("Bytes or size wrong for Byte, got " + bytes.length+":"+size);
         }
 
-        //        if (!isSigned() && value < 0) {
-//            throw new ArithmeticException("Unsigned value out of range for signed Byte: " + value);
-//        }
         return bytes[0];
     }
 
+    /**
+     * Converts the byte array to a BigInteger value, handling byte order, padding, and signedness.
+     *
+     * @param bytes the byte array to convert
+     * @return the BigInteger value
+     * @throws IllegalArgumentException if the byte array size, bit offset, or bit precision is invalid
+     */
     public BigInteger toBigInteger(byte[] bytes) {
         if (bytes.length < size) {
             throw new IllegalArgumentException("Byte array too small for specified size");
@@ -323,6 +405,12 @@ public class FixedPointDatatype implements HdfDatatype {
         return value;
     }
 
+    /**
+     * Converts the byte array to a BigDecimal value, adjusting for bit offset.
+     *
+     * @param bytes the byte array to convert
+     * @return the BigDecimal value
+     */
     public BigDecimal toBigDecimal(byte[] bytes) {
         boolean isBigEndian = isBigEndian();
         boolean isSigned = isSigned();
@@ -346,11 +434,26 @@ public class FixedPointDatatype implements HdfDatatype {
                 .divide(new BigDecimal(BigInteger.ONE.shiftLeft(bitOffset)), bitOffset, RoundingMode.HALF_UP);
     }
 
-    // Public method to add user-defined converters
+    /**
+     * Registers a converter for transforming FixedPointDatatype data to a specific Java type.
+     *
+     * @param <T>       the type of the class to be converted
+     * @param clazz     the Class object representing the target type
+     * @param converter the HdfConverter for converting between FixedPointDatatype and the target type
+     */
     public static <T> void addConverter(Class<T> clazz, HdfConverter<FixedPointDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
+    /**
+     * Converts byte data to an instance of the specified class using registered converters.
+     *
+     * @param <T>   the type of the instance to be created
+     * @param clazz the Class object representing the target type
+     * @param bytes the byte array containing the data
+     * @return an instance of type T created from the byte array
+     * @throws UnsupportedOperationException if no suitable converter is found
+     */
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         @SuppressWarnings("unchecked")
@@ -366,17 +469,63 @@ public class FixedPointDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
+    /**
+     * Indicates whether a global heap is required for this datatype.
+     *
+     * @param required true if the global heap is required, false otherwise
+     * @return false, as FixedPointDatatype does not require a global heap
+     */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
         return required | false;
     }
 
+    /**
+     * Sets the global heap for this datatype (no-op for FixedPointDatatype).
+     *
+     * @param grok the HdfGlobalHeap to set
+     */
     @Override
     public void setGlobalHeap(HdfGlobalHeap grok) {}
 
+    /**
+     * Converts the byte array to a string representation using BigDecimal.
+     *
+     * @param bytes the byte array to convert
+     * @return a string representation of the fixed-point value
+     */
     @Override
     public String toString(byte[] bytes) {
         return toBigDecimal(bytes).toString();
     }
-}
 
+    /**
+     * Returns the class and version byte for this datatype.
+     *
+     * @return the class and version byte
+     */
+    @Override
+    public byte getClassAndVersion() {
+        return classAndVersion;
+    }
+
+    /**
+     * Returns the total size of the fixed-point datatype in bytes.
+     *
+     * @return the size in bytes
+     */
+    @Override
+    public int getSize() {
+        return size;
+    }
+
+    /**
+     * Returns the class bit field for this datatype.
+     *
+     * @return the BitSet containing class-specific bit field information
+     */
+    @Override
+    public BitSet getClassBitField() {
+        return classBitField;
+    }
+}

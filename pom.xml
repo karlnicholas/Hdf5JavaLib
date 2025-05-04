@@ -8,7 +8,7 @@
   <packaging>jar</packaging>
 
   <name>HDF5JavaLib</name>
-  <url>https:///maven.apache.org</url>
+  <url>http://hdf5javalib.org</url>
 
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
@@ -64,5 +64,22 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.11.2</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

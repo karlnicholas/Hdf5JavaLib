@@ -15,18 +15,43 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Manages HDF5 global heap collections as defined in the HDF5 specification.
+ * <p>
+ * The {@code HdfGlobalHeap} class handles the storage and retrieval of global heap objects
+ * in an HDF5 file. It supports reading and writing heap collections, adding new objects,
+ * and managing object IDs and sizes. Each heap collection is identified by its file offset
+ * and contains objects with unique IDs and associated data.
+ * </p>
+ *
+ * @see org.hdf5javalib.HdfDataFile
+ * @see org.hdf5javalib.dataclass.HdfFixedPoint
+ * @see org.hdf5javalib.file.HdfFileAllocation
+ */
 @Slf4j
 public class HdfGlobalHeap {
     private static final String SIGNATURE = "GCOL";
     private static final int VERSION = 1;
 
+    /** Map of heap offsets to collections of global heap objects. */
     private final Map<Long, LinkedHashMap<Integer, GlobalHeapObject>> heapCollections;
+    /** Map of heap offsets to their declared sizes. */
     private final Map<Long, HdfFixedPoint> collectionSizes;
+    /** Map of heap offsets to the next available object ID. */
     private final Map<Long, Integer> nextObjectIds;
+    /** The current heap offset for writing new objects. */
     private long currentWriteHeapOffset = -1L;
+    /** Optional initializer for lazy loading heap collections. */
     private final GlobalHeapInitialize initialize;
+    /** The HDF5 file context. */
     private final HdfDataFile dataFile;
 
+    /**
+     * Constructs an HdfGlobalHeap with an initializer and file context.
+     *
+     * @param initialize the initializer for lazy loading heap collections
+     * @param dataFile   the HDF5 file context
+     */
     public HdfGlobalHeap(GlobalHeapInitialize initialize, HdfDataFile dataFile) {
         this.initialize = initialize;
         this.dataFile = dataFile;
@@ -36,6 +61,11 @@ public class HdfGlobalHeap {
         this.currentWriteHeapOffset = -1L;
     }
 
+    /**
+     * Constructs an HdfGlobalHeap without an initializer.
+     *
+     * @param dataFile the HDF5 file context
+     */
     public HdfGlobalHeap(HdfDataFile dataFile) {
         this.dataFile = dataFile;
         this.initialize = null;
@@ -45,6 +75,15 @@ public class HdfGlobalHeap {
         this.currentWriteHeapOffset = -1L;
     }
 
+    /**
+     * Retrieves the data bytes for a specific global heap object.
+     *
+     * @param heapOffset the offset of the heap collection
+     * @param objectId   the ID of the object
+     * @return the data bytes of the object
+     * @throws IllegalArgumentException if the object ID is 0 or invalid
+     * @throws IllegalStateException if the heap or object is not found
+     */
     public byte[] getDataBytes(long heapOffset, int objectId) {
         if (objectId == 0) {
             throw new IllegalArgumentException("Cannot request data bytes for Global Heap Object ID 0 (null terminator)");
@@ -71,6 +110,13 @@ public class HdfGlobalHeap {
         return obj.getData();
     }
 
+    /**
+     * Reads a global heap collection from a file channel.
+     *
+     * @param fileChannel the file channel to read from
+     * @param hdfDataFile the HDF5 file context
+     * @throws IOException if an I/O error occurs or the heap data is invalid
+     */
     public void readFromFileChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
         long startOffset = fileChannel.position();
         ByteBuffer headerBuffer = ByteBuffer.allocate(16);
@@ -158,6 +204,14 @@ public class HdfGlobalHeap {
         this.nextObjectIds.put(startOffset, localNextObjectId);
     }
 
+    /**
+     * Adds a byte array to the global heap and returns a reference to it.
+     *
+     * @param bytes the byte array to add
+     * @return a byte array containing the heap offset and object ID
+     * @throws IllegalArgumentException if the input byte array is null
+     * @throws IllegalStateException if the heap block is not allocated or full
+     */
     public byte[] addToHeap(byte[] bytes) {
         if (bytes == null) {
             throw new IllegalArgumentException("Input byte array cannot be null.");
@@ -233,6 +287,12 @@ public class HdfGlobalHeap {
         return buffer.array();
     }
 
+    /**
+     * Writes all global heap collections to a file channel.
+     *
+     * @param fileChannel the file channel to write to
+     * @throws IOException if an I/O error occurs
+     */
     public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
         if (heapCollections.isEmpty()) {
             return;
@@ -244,7 +304,6 @@ public class HdfGlobalHeap {
 
             long heapSize = this.dataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
             fileChannel.position(heapOffset);
-//            ByteBuffer buffer = ByteBuffer.allocate((int) getWriteBufferSize(heapOffset));
             int size1 = (int) getWriteBufferSize(heapOffset);
             ByteBuffer buffer = ByteBuffer.allocate((int)heapSize);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -275,12 +334,18 @@ public class HdfGlobalHeap {
                 buffer.putLong(remainingSize);
             }
 
-//            buffer.flip();
             buffer.rewind();
             fileChannel.write(buffer);
         }
     }
 
+    /**
+     * Calculates the aligned total size of a heap collection.
+     *
+     * @param heapOffset the offset of the heap collection
+     * @return the aligned total size in bytes
+     * @throws IllegalStateException if the heap collection is not found
+     */
     private long calculateAlignedTotalSize(long heapOffset) {
         LinkedHashMap<Integer, GlobalHeapObject> objects = heapCollections.get(heapOffset);
         if (objects == null) {
@@ -301,10 +366,24 @@ public class HdfGlobalHeap {
         return alignTo(totalSize, (int) blockSize);
     }
 
+    /**
+     * Returns the size of the write buffer needed for a heap collection.
+     *
+     * @param heapOffset the offset of the heap collection
+     * @return the buffer size in bytes
+     */
     public long getWriteBufferSize(long heapOffset) {
         return calculateAlignedTotalSize(heapOffset);
     }
 
+    /**
+     * Aligns a size to the specified alignment boundary.
+     *
+     * @param size      the size to align
+     * @param alignment the alignment boundary (must be a power of 2)
+     * @return the aligned size
+     * @throws IllegalArgumentException if the alignment is not a positive power of 2
+     */
     private static long alignTo(long size, int alignment) {
         if (alignment <= 0 || (alignment & (alignment - 1)) != 0) {
             throw new IllegalArgumentException("Alignment must be a positive power of 2. Got: " + alignment);
@@ -312,31 +391,72 @@ public class HdfGlobalHeap {
         return (size + alignment - 1) & ~((long) alignment - 1);
     }
 
+    /**
+     * Calculates the padding needed for a data size to align to an 8-byte boundary.
+     *
+     * @param size the data size
+     * @return the padding size in bytes
+     */
     private static int getPadding(int size) {
         if (size < 0) return 0;
         return (8 - (size % 8)) % 8;
     }
 
+    /**
+     * Aligns a size to an 8-byte boundary.
+     *
+     * @param size the size to align
+     * @return the aligned size
+     */
     private static int alignToEightBytes(int size) {
         return (size + 7) & ~7;
     }
 
+    /**
+     * Returns a string representation of the HdfGlobalHeap.
+     *
+     * @return a string describing the number of loaded heaps and their offsets
+     */
     @Override
     public String toString() {
         return "HdfGlobalHeap{" + "loadedHeapCount=" + heapCollections.size() + ", knownOffsets=" + heapCollections.keySet() + '}';
     }
 
+    /**
+     * Interface for initializing global heap collections lazily.
+     */
     public interface GlobalHeapInitialize {
+        /**
+         * Callback to initialize a heap collection at the specified offset.
+         *
+         * @param heapOffset the offset of the heap collection
+         */
         void initializeCallback(long heapOffset);
     }
 
+    /**
+     * Represents a single object in a global heap collection.
+     */
     @Getter
     private static class GlobalHeapObject {
+        /** The unique ID of the object (0 for null terminator). */
         private final int objectId;
+        /** The reference count of the object. */
         private final int referenceCount;
+        /** The size of the object data or free space (for null terminator). */
         private final long objectSize;
+        /** The data bytes of the object (null for null terminator). */
         private final byte[] data;
 
+        /**
+         * Constructs a GlobalHeapObject.
+         *
+         * @param objectId      the object ID
+         * @param referenceCount the reference count
+         * @param sizeOrFreeSpace the size of the data or free space
+         * @param data          the data bytes (null for ID 0)
+         * @throws IllegalArgumentException if data constraints are violated
+         */
         private GlobalHeapObject(int objectId, int referenceCount, long sizeOrFreeSpace, byte[] data) {
             this.objectId = objectId;
             this.referenceCount = referenceCount;
@@ -357,6 +477,13 @@ public class HdfGlobalHeap {
             }
         }
 
+        /**
+         * Reads a GlobalHeapObject from a ByteBuffer.
+         *
+         * @param buffer the ByteBuffer to read from
+         * @return the constructed GlobalHeapObject
+         * @throws RuntimeException if the buffer data is insufficient or invalid
+         */
         public static GlobalHeapObject readFromByteBuffer(ByteBuffer buffer) {
             if (buffer.remaining() < 16) { throw new RuntimeException("Buffer underflow: insufficient data for Global Heap Object header (needs 16 bytes, found " + buffer.remaining() + ")"); }
             int objectId = Short.toUnsignedInt(buffer.getShort());
@@ -390,6 +517,12 @@ public class HdfGlobalHeap {
             }
         }
 
+        /**
+         * Writes the GlobalHeapObject to a ByteBuffer.
+         *
+         * @param buffer the ByteBuffer to write to
+         * @throws IllegalStateException if the object data is inconsistent
+         */
         public void writeToByteBuffer(ByteBuffer buffer) {
             buffer.putShort((short) objectId);
             buffer.putShort((short) referenceCount);

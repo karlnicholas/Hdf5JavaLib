@@ -10,15 +10,34 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+/**
+ * Represents an HDF5 Enumerated Datatype as defined in the HDF5 specification.
+ * <p>
+ * The {@code EnumDatatype} class models an enumerated datatype in HDF5, mapping integer values to string names.
+ * It supports parsing from a {@link java.nio.ByteBuffer}, conversion to Java types such as {@link HdfEnum},
+ * {@code String}, or {@code byte[]}, and is defined by a base integer type and a set of name-value pairs,
+ * as per the HDF5 enumerated datatype (class 8).
+ * </p>
+ *
+ * @see org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype
+ * @see org.hdf5javalib.file.dataobject.message.DatatypeMessage
+ */
 @Getter
 public class EnumDatatype implements HdfDatatype {
+    /** The class and version information for the datatype (class 8, version 1 or 2). */
     private final byte classAndVersion;
+    /** A BitSet indicating the number of enumeration members. */
     private final BitSet classBitField;
-    private final int size;            // Size of each value (matches base type)
-    private final HdfDatatype baseType;// Parent/base datatype (usually integer)
-    private final String[] names;      // Array of enumeration names
-    private final byte[] values;       // Packed values matching the base type size
+    /** The size of each enumeration value in bytes, matching the base type. */
+    private final int size;
+    /** The base integer datatype for enumeration values. */
+    private final HdfDatatype baseType;
+    /** The array of enumeration names. */
+    private final String[] names;
+    /** The packed array of enumeration values. */
+    private final byte[] values;
 
+    /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<EnumDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
@@ -27,6 +46,17 @@ public class EnumDatatype implements HdfDatatype {
         CONVERTERS.put(byte[].class, (bytes, dt) -> bytes);
     }
 
+    /**
+     * Constructs an EnumDatatype representing an HDF5 enumerated datatype.
+     *
+     * @param classAndVersion the class and version information for the datatype
+     * @param classBitField   a BitSet indicating the number of members
+     * @param size            the size of each enumeration value in bytes
+     * @param baseType        the base integer datatype for values
+     * @param names           the array of enumeration names
+     * @param values          the packed array of enumeration values
+     * @throws IllegalArgumentException if the number of names or values does not match the specification
+     */
     public EnumDatatype(byte classAndVersion, BitSet classBitField, int size,
                         HdfDatatype baseType, String[] names, byte[] values) {
         if (names.length != getNumberOfMembers(classBitField)) {
@@ -43,6 +73,15 @@ public class EnumDatatype implements HdfDatatype {
         this.values = values.clone();
     }
 
+    /**
+     * Parses an HDF5 enumerated datatype from a ByteBuffer as per the HDF5 specification.
+     *
+     * @param classAndVersion the class and version byte of the datatype
+     * @param classBitField   the BitSet indicating the number of members
+     * @param size            the size of each enumeration value in bytes
+     * @param buffer          the ByteBuffer containing the datatype definition
+     * @return a new EnumDatatype instance parsed from the buffer
+     */
     public static EnumDatatype parseEnumDatatype(byte classAndVersion, BitSet classBitField,
                                                  int size, ByteBuffer buffer) {
         // Base type is parsed from the buffer first, after size
@@ -80,6 +119,13 @@ public class EnumDatatype implements HdfDatatype {
         return new EnumDatatype(classAndVersion, classBitField, size, baseType, names, values);
     }
 
+    /**
+     * Creates a BitSet representing the class bit field for an HDF5 enumerated datatype.
+     *
+     * @param numberOfMembers the number of enumeration members
+     * @return a 24-bit BitSet encoding the number of members
+     * @throws IllegalArgumentException if the number of members is not between 0 and 65535
+     */
     public static BitSet createClassBitField(int numberOfMembers) {
         if (numberOfMembers < 0 || numberOfMembers > 65535) {
             throw new IllegalArgumentException("Number of members must be between 0 and 65535");
@@ -93,6 +139,13 @@ public class EnumDatatype implements HdfDatatype {
         return bits;
     }
 
+    /**
+     * Creates a class and version byte for an HDF5 enumerated datatype.
+     *
+     * @param version the version number (1 or 2)
+     * @return a byte representing class 8 and the specified version
+     * @throws IllegalArgumentException if the version is not 1 or 2
+     */
     public static byte createClassAndVersion(int version) {
         if (version != 1 && version != 2) {
             throw new IllegalArgumentException("Enum Datatype only supports versions 1 and 2");
@@ -100,6 +153,12 @@ public class EnumDatatype implements HdfDatatype {
         return (byte) ((8 << 4) | version); // Class 8, specified version
     }
 
+    /**
+     * Retrieves the number of members from the class bit field.
+     *
+     * @param classBitField the BitSet indicating the number of members
+     * @return the number of enumeration members
+     */
     public static int getNumberOfMembers(BitSet classBitField) {
         int num = 0;
         for (int i = 0; i < 16; i++) {
@@ -110,10 +169,26 @@ public class EnumDatatype implements HdfDatatype {
         return num;
     }
 
+    /**
+     * Registers a converter for transforming EnumDatatype data to a specific Java type.
+     *
+     * @param <T>       the type of the class to be converted
+     * @param clazz     the Class object representing the target type
+     * @param converter the HdfConverter for converting between EnumDatatype and the target type
+     */
     public static <T> void addConverter(Class<T> clazz, HdfConverter<EnumDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
+    /**
+     * Converts byte data to an instance of the specified class using registered converters.
+     *
+     * @param <T>   the type of the instance to be created
+     * @param clazz the Class object representing the target type
+     * @param bytes the byte array containing the data
+     * @return an instance of type T created from the byte array
+     * @throws UnsupportedOperationException if no suitable converter is found
+     */
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         @SuppressWarnings("unchecked")
@@ -129,11 +204,24 @@ public class EnumDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
+    /**
+     * Indicates whether a global heap is required for this datatype.
+     *
+     * @param required true if the global heap is required, false otherwise
+     * @return false, as EnumDatatype does not require a global heap
+     */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
         return required | false;
     }
 
+    /**
+     * Converts the byte array to the corresponding enumeration name.
+     *
+     * @param bytes the byte array to convert
+     * @return the enumeration name matching the byte value, or "undefined" if no match
+     * @throws IllegalArgumentException if the byte array length does not match the datatype size
+     */
     public String toString(byte[] bytes) {
         int valueIndex = findValueIndex(bytes);
         return valueIndex >= 0 ? names[valueIndex] : "undefined";
@@ -152,16 +240,31 @@ public class EnumDatatype implements HdfDatatype {
         return -1;
     }
 
+    /**
+     * Returns the datatype class for this enumerated datatype.
+     *
+     * @return DatatypeClass.ENUM, indicating an HDF5 enumerated datatype
+     */
     @Override
     public DatatypeClass getDatatypeClass() {
         return DatatypeClass.ENUM;
     }
 
+    /**
+     * Returns the class bit field for this datatype.
+     *
+     * @return the BitSet indicating the number of members
+     */
     @Override
     public BitSet getClassBitField() {
         return classBitField;
     }
 
+    /**
+     * Returns the size of the datatype message data.
+     *
+     * @return the size of the message data in bytes, as a short
+     */
     @Override
     public short getSizeMessageData() {
         int totalNameBytes = 0;
@@ -172,6 +275,11 @@ public class EnumDatatype implements HdfDatatype {
         return (short) (totalNameBytes + values.length + baseType.getSize());
     }
 
+    /**
+     * Writes the datatype definition to the provided ByteBuffer.
+     *
+     * @param buffer the ByteBuffer to write the datatype definition to
+     */
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
         // Write base type definition first
@@ -190,11 +298,21 @@ public class EnumDatatype implements HdfDatatype {
         buffer.put(values);
     }
 
+    /**
+     * Sets the global heap for this datatype (no-op for EnumDatatype).
+     *
+     * @param globalHeap the HdfGlobalHeap to set
+     */
     @Override
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {
         // Empty implementation to satisfy interface
     }
 
+    /**
+     * Returns a string representation of this EnumDatatype.
+     *
+     * @return a string describing the datatype's size, number of members, and base type
+     */
     @Override
     public String toString() {
         return "EnumDatatype{" +
@@ -202,5 +320,25 @@ public class EnumDatatype implements HdfDatatype {
                 ", numMembers=" + names.length +
                 ", baseType=" + baseType +
                 '}';
+    }
+
+    /**
+     * Returns the class and version byte for this datatype.
+     *
+     * @return the class and version byte
+     */
+    @Override
+    public byte getClassAndVersion() {
+        return classAndVersion;
+    }
+
+    /**
+     * Returns the size of each enumeration value in bytes.
+     *
+     * @return the size in bytes
+     */
+    @Override
+    public int getSize() {
+        return size;
     }
 }

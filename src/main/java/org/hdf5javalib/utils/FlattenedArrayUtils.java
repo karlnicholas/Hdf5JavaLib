@@ -9,6 +9,15 @@ import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+/**
+ * Utility class for manipulating and processing multi-dimensional arrays in a flattened format.
+ * <p>
+ * The {@code FlattenedArrayUtils} class provides methods for handling multi-dimensional
+ * arrays, including computing total sizes, validating shapes, accessing and setting elements,
+ * computing strides, and performing operations like slicing, reduction, and filtering on
+ * flattened streams. It supports operations similar to NumPy for HDF5 data processing.
+ * </p>
+ */
 public class FlattenedArrayUtils {
 
     /**
@@ -28,6 +37,7 @@ public class FlattenedArrayUtils {
     /**
      * Validates if the flattened array matches the shape.
      *
+     * @param <T>   the type of elements in the array
      * @param data  the flattened array
      * @param shape the shape of the array
      * @return true if the array size matches the shape, false otherwise
@@ -52,10 +62,10 @@ public class FlattenedArrayUtils {
         return strides;
     }
 
-
     /**
      * Retrieves an element from the flattened array using multi-dimensional indices.
      *
+     * @param <T>     the type of elements in the array
      * @param data    the flattened array
      * @param shape   the shape of the array
      * @param indices the multi-dimensional indices
@@ -86,6 +96,7 @@ public class FlattenedArrayUtils {
     /**
      * Sets an element in the flattened array using multi-dimensional indices.
      *
+     * @param <T>     the type of elements in the array
      * @param data    the flattened array
      * @param shape   the shape of the array
      * @param value   the value to set
@@ -101,6 +112,7 @@ public class FlattenedArrayUtils {
     /**
      * Creates a flattened array with the given shape.
      *
+     * @param <T>   the type of elements in the array
      * @param clazz the class of the array elements
      * @param shape the shape of the array
      * @return the flattened array
@@ -111,12 +123,19 @@ public class FlattenedArrayUtils {
         T[] array = (T[]) Array.newInstance(clazz, totalSize);
         return array;
     }
+
     /**
-     * Generic method to convert a Stream<T> to an N-D array. Converts a streamed flattened N-D array into an N-dimensional primitive int array.
+     * Converts a Stream of elements to an N-dimensional array.
+     * <p>
+     * Converts a streamed flattened N-D array into an N-dimensional array of the
+     * specified type.
+     * </p>
      *
-     * @param stream The stream of integers representing the flattened data.
-     * @param shape An array of integers defining the dimensions [d1, d2, ..., dN].
-     * @return An Object representing the N-D array (e.g., int[] for N=1, int[][] for N=2, etc.).
+     * @param <T>     the type of elements in the stream and the resulting array
+     * @param stream  the Stream of elements representing the flattened data
+     * @param shape   an array of integers defining the dimensions [d1, d2, ..., dN]
+     * @param clazz   the Class object representing the type of elements in the array
+     * @return an Object representing the N-D array (e.g., int[] for N=1, int[][] for N=2, etc.)
      */
     public static <T> Object streamToNDArray(Stream<T> stream, int[] shape, Class<T> clazz) {
         int totalSize = Arrays.stream(shape).reduce(1, (a, b) -> a * b);
@@ -133,6 +152,14 @@ public class FlattenedArrayUtils {
         return ndArray;
     }
 
+    /**
+     * Converts a flat index to multi-dimensional coordinates.
+     *
+     * @param index   the flat index
+     * @param strides the strides of the array
+     * @param shape   the shape of the array
+     * @return the multi-dimensional coordinates
+     */
     public static int[] unflattenIndex(int index, int[] strides, int[] shape) {
         int[] coord = new int[shape.length];
         for (int i = 0; i < shape.length; i++) {
@@ -141,6 +168,14 @@ public class FlattenedArrayUtils {
         return coord;
     }
 
+    /**
+     * Sets a value in a multi-dimensional array at the specified coordinates.
+     *
+     * @param <T>    the type of the value to set
+     * @param array  the multi-dimensional array
+     * @param coord  the coordinates
+     * @param value  the value to set
+     */
     public static <T> void setValue(Object array, int[] coord, T value) {
         Object current = array;
         for (int i = 0; i < coord.length - 1; i++) {
@@ -149,6 +184,18 @@ public class FlattenedArrayUtils {
         Array.set(current, coord[coord.length - 1], value);
     }
 
+    /**
+     * Reduces a multi-dimensional array along a specified axis using a binary operator.
+     *
+     * @param <T>     the type of elements in the stream and the resulting array
+     * @param stream  the input stream of flattened values
+     * @param shape   the shape of the array
+     * @param axis    the axis to reduce along
+     * @param reducer the binary operator for reduction
+     * @param clazz   the class of the array elements
+     * @return the reduced array (N-1 dimensions) or scalar if 1D
+     * @throws IllegalArgumentException if the axis is invalid
+     */
     @SuppressWarnings("unchecked")
     public static <T> Object reduceAlongAxis(
             Stream<T> stream, int[] shape, int axis, BinaryOperator<T> reducer, Class<T> clazz) {
@@ -157,7 +204,7 @@ public class FlattenedArrayUtils {
             throw new IllegalArgumentException("Invalid axis for reduction: " + axis);
         }
 
-        // ✅ Handle 1D → scalar reduction
+        // Handle 1D → scalar reduction
         if (shape.length == 1) {
             return stream.limit(shape[0]).reduce(reducer).orElse(null);
         }
@@ -208,8 +255,9 @@ public class FlattenedArrayUtils {
      * as a properly shaped multi-dimensional Java array (e.g., {@code T[][]...}).
      * <p>
      * This method performs slicing similar to NumPy syntax using a descriptor for each axis.
-     * It avoids storing intermediate collections by directly writing matched values into the output array
-     * in row-major order.
+     * It avoids storing intermediate collections by directly writing matched values into the
+     * output array in row-major order.
+     * </p>
      *
      * <p><b>Slicing Descriptor Format:</b></p>
      * The slicing descriptor is an {@code int[][]} where each inner array corresponds to one axis:
@@ -219,27 +267,13 @@ public class FlattenedArrayUtils {
      *     <li>{@code [start, end]} → range slice (inclusive start, exclusive end)</li>
      * </ul>
      *
-     * <p><b>Example:</b></p>
-     * <pre>{@code
-     * Stream<Integer> stream = IntStream.range(0, 3 * 3 * 3 * 5).boxed();
-     * int[] shape = {3, 3, 3, 5};
-     * int[][] slice = {
-     *     {0},    // fix x = 0
-     *     {},     // full y
-     *     {},     // full z
-     *     {1, 4}  // time 1 through 3
-     * };
-     * Object result = sliceStream(stream, shape, slice, Integer.class);
-     * }</pre>
-     *
-     * @param data              A {@code Stream<T>} representing a flattened N-dimensional array in row-major order.
-     * @param shape             The shape of the original N-dimensional array.
-     * @param slicingDescriptor A {@code int[][]} where each entry specifies slicing behavior per dimension.
-     * @param clazz             The class of the element type {@code T} (e.g., {@code Integer.class}).
-     * @param <T>               The type of elements in the dataset.
-     * @return A multi-dimensional Java array (e.g., {@code T[][]...}) representing the sliced data,
-     *         or a scalar {@code T} if all axes are fixed.
-     * @throws IllegalArgumentException if shape and descriptor lengths mismatch, or if slicing indices are invalid.
+     * @param <T>               the type of elements in the dataset
+     * @param data              the Stream of flattened array elements
+     * @param shape             the shape of the original N-dimensional array
+     * @param slicingDescriptor the slicing specifications for each dimension
+     * @param clazz             the Class object representing the element type
+     * @return a multi-dimensional Java array or scalar representing the sliced data
+     * @throws IllegalArgumentException if shape and descriptor lengths mismatch or slicing indices are invalid
      */
     public static <T> Object sliceStream(
             Stream<T> data,
@@ -355,8 +389,9 @@ public class FlattenedArrayUtils {
 
         return outputArray;
     }
+
     /**
-     * Computes the shape of a multi-dimensional Java array (e.g. T[][][]).
+     * Computes the shape of a multi-dimensional Java array (e.g., T[][][]).
      *
      * @param array the multi-dimensional array
      * @return an int[] where each entry is the length of the array at that dimension
@@ -373,15 +408,18 @@ public class FlattenedArrayUtils {
     }
 
     /**
-     * Streams a flattened array and writes non-null or non-zero values directly
-     * into a new N-dimensional output array, where all positions not matching the predicate are null.
-     * No intermediate list is used.
+     * Filters a flattened stream and writes non-null or non-zero values directly into a new
+     * N-dimensional array.
+     * <p>
+     * Only values matching the predicate are included; unmatched positions are null.
+     * </p>
      *
+     * @param <T>    the type of elements in the stream and the resulting array
      * @param stream the input stream of flattened values in row-major order
-     * @param shape the original N-dimensional shape of the dataset
-     * @param clazz the class of T
-     * @param filter predicate to test which values to include (e.g., v -> v != 0)
-     * @return a new Object (T[][]...) array of the same shape with only matching values set
+     * @param shape  the shape of the original N-dimensional array
+     * @param clazz  the class of the element type
+     * @param filter predicate to test which values to include
+     * @return a new N-dimensional array with only matching values set
      */
     public static <T> Object filterToNDArray(
             Stream<T> stream, int[] shape, Class<T> clazz, Predicate<T> filter
@@ -400,16 +438,18 @@ public class FlattenedArrayUtils {
 
         return ndArray;
     }
+
     /**
      * Scans a flattened stream and collects matching values into a list of coordinate/value/flatIndex records.
      *
-     * @param stream the input stream of values
-     * @param shape the shape of the array (used to compute coordinates)
-     * @param filter predicate to match values
-     * @return a list of MatchingEntry<T> with coordinates, flat index, and value
+     * @param <T>     the type of elements in the stream
+     * @param stream  the input stream of values
+     * @param shape   the shape of the array (used to compute coordinates)
+     * @param filter  predicate to match values
+     * @return a list of MatchingEntry objects with coordinates, flat index, and value
      */
     public static <T> List<MatchingEntry<T>> filterToCoordinateList(
-            Stream<T> stream, int[] shape, java.util.function.Predicate<T> filter
+            Stream<T> stream, int[] shape, Predicate<T> filter
     ) {
         int[] strides = computeStrides(shape);
         AtomicInteger index = new AtomicInteger(0);
@@ -427,13 +467,23 @@ public class FlattenedArrayUtils {
     }
 
     /**
-     * Simple record to hold the results of coordinate-wise matching.
+     * Record to hold the results of coordinate-wise matching.
      */
     public static class MatchingEntry<T> {
+        /** The multi-dimensional coordinates of the matched value. */
         public final int[] coordinates;
+        /** The flat index in the array. */
         public final int flatIndex;
+        /** The matched value. */
         public final T value;
 
+        /**
+         * Constructs a MatchingEntry.
+         *
+         * @param coordinates the coordinates of the value
+         * @param flatIndex   the flat index in the array
+         * @param value       the matched value
+         */
         public MatchingEntry(int[] coordinates, int flatIndex, T value) {
             this.coordinates = coordinates;
             this.flatIndex = flatIndex;

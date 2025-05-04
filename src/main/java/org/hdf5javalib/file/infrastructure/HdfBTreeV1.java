@@ -18,19 +18,55 @@ import java.util.function.Function;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
+/**
+ * Represents an HDF5 B-Tree (version 1) as defined in the HDF5 specification.
+ * <p>
+ * The {@code HdfBTreeV1} class models a B-Tree used for indexing group entries in HDF5 files.
+ * It supports both leaf nodes (containing symbol table nodes) and internal nodes (containing
+ * child B-Trees). This class provides methods for reading from a file channel, adding datasets,
+ * splitting symbol table nodes, and writing the B-Tree structure back to a file.
+ * </p>
+ *
+ * @see org.hdf5javalib.HdfDataFile
+ * @see org.hdf5javalib.dataclass.HdfFixedPoint
+ * @see org.hdf5javalib.file.HdfGroup
+ * @see org.hdf5javalib.file.infrastructure.HdfBTreeEntry
+ */
 @Getter
 @Slf4j
 public class HdfBTreeV1 {
+    /** The signature of the B-Tree node ("TREE"). */
     private final String signature;
+    /** The type of the node (0 for group B-Tree). */
     private final int nodeType;
+    /** The level of the node (0 for leaf, >0 for internal). */
     private final int nodeLevel;
+    /** The number of entries used in the node. */
     private int entriesUsed;
+    /** The address of the left sibling node. */
     private final HdfFixedPoint leftSiblingAddress;
+    /** The address of the right sibling node. */
     private final HdfFixedPoint rightSiblingAddress;
+    /** The first key (key zero) of the node. */
     private final HdfFixedPoint keyZero;
+    /** The list of B-Tree entries. */
     private final List<HdfBTreeEntry> entries;
+    /** The HDF5 file context. */
     private final HdfDataFile hdfDataFile;
 
+    /**
+     * Constructs an HdfBTreeV1 with all fields specified.
+     *
+     * @param signature         the signature of the B-Tree node ("TREE")
+     * @param nodeType          the type of the node (0 for group B-Tree)
+     * @param nodeLevel         the level of the node (0 for leaf, >0 for internal)
+     * @param entriesUsed       the number of entries used in the node
+     * @param leftSiblingAddress the address of the left sibling node
+     * @param rightSiblingAddress the address of the right sibling node
+     * @param keyZero           the first key of the node
+     * @param entries           the list of B-Tree entries
+     * @param hdfDataFile       the HDF5 file context
+     */
     public HdfBTreeV1(
             String signature,
             int nodeType,
@@ -53,6 +89,16 @@ public class HdfBTreeV1 {
         this.hdfDataFile = hdfDataFile;
     }
 
+    /**
+     * Constructs an HdfBTreeV1 with minimal fields for a new node.
+     *
+     * @param signature         the signature of the B-Tree node ("TREE")
+     * @param nodeType          the type of the node (0 for group B-Tree)
+     * @param nodeLevel         the level of the node (0 for leaf, >0 for internal)
+     * @param leftSiblingAddress the address of the left sibling node
+     * @param rightSiblingAddress the address of the right sibling node
+     * @param hdfDataFile       the HDF5 file context
+     */
     public HdfBTreeV1(
             String signature,
             int nodeType,
@@ -72,11 +118,29 @@ public class HdfBTreeV1 {
         this.entries = new ArrayList<>();
     }
 
+    /**
+     * Reads an HdfBTreeV1 from a file channel.
+     *
+     * @param fileChannel the file channel to read from
+     * @param hdfDataFile the HDF5 file context
+     * @return the constructed HdfBTreeV1 instance
+     * @throws IOException if an I/O error occurs or the B-Tree data is invalid
+     */
     public static HdfBTreeV1 readFromFileChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
         long initialAddress = fileChannel.position();
         return readFromFileChannelRecursive(fileChannel, initialAddress, new HashMap<>(), hdfDataFile);
     }
 
+    /**
+     * Recursively reads an HdfBTreeV1 from a file channel, handling cycles.
+     *
+     * @param fileChannel the file channel to read from
+     * @param nodeAddress the address of the current node
+     * @param visitedNodes a map of visited node addresses to detect cycles
+     * @param hdfDataFile  the HDF5 file context
+     * @return the constructed HdfBTreeV1 instance
+     * @throws IOException if an I/O error occurs or the B-Tree data is invalid
+     */
     private static HdfBTreeV1 readFromFileChannelRecursive(SeekableByteChannel fileChannel,
                                                            long nodeAddress,
                                                            Map<Long, HdfBTreeV1> visitedNodes,
@@ -90,7 +154,6 @@ public class HdfBTreeV1 {
         fileChannel.position(nodeAddress);
         long startPos = nodeAddress;
 
-//        int headerSize = 8 + offsetSize + offsetSize;
         int headerSize = 8 + hdfDataFile.getFixedPointDatatypeForOffset().getSize() + hdfDataFile.getFixedPointDatatypeForOffset().getSize();
         ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
         int headerBytesRead = fileChannel.read(headerBuffer);
@@ -178,6 +241,16 @@ public class HdfBTreeV1 {
         return currentNode;
     }
 
+    /**
+     * Adds a dataset to the B-Tree, inserting it into the appropriate symbol table node.
+     *
+     * @param linkNameOffset           the offset of the link name in the local heap
+     * @param datasetObjectHeaderAddress the address of the dataset's object header
+     * @param datasetName              the name of the dataset
+     * @param group                    the parent group containing the dataset
+     * @throws IllegalStateException if called on a non-leaf node
+     * @throws IllegalArgumentException if the dataset name is null or empty
+     */
     public void addDataset(
             long linkNameOffset,
             long datasetObjectHeaderAddress,
@@ -233,8 +306,8 @@ public class HdfBTreeV1 {
 
         // --- Step 3: Insert new dataset ---
         HdfSymbolTableEntry ste = new HdfSymbolTableEntry(
-            HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getFixedPointDatatypeForOffset()),
-            HdfWriteUtils.hdfFixedPointFromValue(datasetObjectHeaderAddress, hdfDataFile.getFixedPointDatatypeForOffset())
+                HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getFixedPointDatatypeForOffset()),
+                HdfWriteUtils.hdfFixedPointFromValue(datasetObjectHeaderAddress, hdfDataFile.getFixedPointDatatypeForOffset())
         );
         targetSnod.getSymbolTableEntries().add(insertIndex, ste);
 
@@ -249,6 +322,13 @@ public class HdfBTreeV1 {
         }
     }
 
+    /**
+     * Performs a binary search to find the insertion point for a dataset name.
+     *
+     * @param size        the size of the list to search
+     * @param compareNames a function to compare dataset names
+     * @return the insertion point index
+     */
     private int binarySearchDatasetName(
             int size,
             Function<Integer, Integer> compareNames
@@ -269,6 +349,13 @@ public class HdfBTreeV1 {
         return insertionPoint;
     }
 
+    /**
+     * Splits a symbol table node if it exceeds the maximum entry limit.
+     *
+     * @param targetEntryIndex the index of the entry to split
+     * @param fileAllocation   the file allocation manager
+     * @param group            the parent group
+     */
     private void splitSnod(int targetEntryIndex, HdfFileAllocation fileAllocation, HdfGroup group) {
         final int MAX_SNOD_ENTRIES = 8;
         HdfBTreeEntry targetEntry = entries.get(targetEntryIndex);
@@ -335,9 +422,31 @@ public class HdfBTreeV1 {
         entriesUsed++;
     }
 
-    public boolean isLeafLevelNode() { return this.nodeLevel == 0; }
-    public boolean isInternalLevelNode() { return this.nodeLevel > 0; }
+    /**
+     * Checks if this is a leaf-level node (nodeLevel == 0).
+     *
+     * @return true if the node is a leaf node, false otherwise
+     */
+    public boolean isLeafLevelNode() {
+        return this.nodeLevel == 0;
+    }
 
+    /**
+     * Checks if this is an internal-level node (nodeLevel > 0).
+     *
+     * @return true if the node is an internal node, false otherwise
+     */
+    public boolean isInternalLevelNode() {
+        return this.nodeLevel > 0;
+    }
+
+    /**
+     * Writes the B-Tree and its symbol table nodes to a file channel.
+     *
+     * @param seekableByteChannel the file channel to write to
+     * @param fileAllocation      the file allocation manager
+     * @throws IOException if an I/O error occurs
+     */
     public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate((int) fileAllocation.getBtreeTotalSize()).order(ByteOrder.LITTLE_ENDIAN);
         buffer.put(signature.getBytes());
@@ -374,15 +483,27 @@ public class HdfBTreeV1 {
                 seekableByteChannel.write(snodBuffer);
             }
             Arrays.fill(snodBuffer.array(), (byte) 0);
-            snodBuffer.clear();        }
+            snodBuffer.clear();
+        }
     }
 
+    /**
+     * Maps offsets to symbol table nodes in the B-Tree.
+     *
+     * @return a map of offsets to symbol table nodes
+     */
     public Map<Long, HdfGroupSymbolTableNode> mapOffsetToSnod() {
         Map<Long, HdfGroupSymbolTableNode> offsetToSnodMap = new HashMap<>();
         collectSnodsRecursively(this, offsetToSnodMap);
         return offsetToSnodMap;
     }
 
+    /**
+     * Recursively collects symbol table nodes and their offsets.
+     *
+     * @param node the current B-Tree node
+     * @param map  the map to store offset-to-SNOD mappings
+     */
     private void collectSnodsRecursively(HdfBTreeV1 node, Map<Long, HdfGroupSymbolTableNode> map) {
         if (node == null || node.getEntries() == null) {
             return;
@@ -408,6 +529,11 @@ public class HdfBTreeV1 {
         }
     }
 
+    /**
+     * Returns a string representation of the HdfBTreeV1.
+     *
+     * @return a string describing the node's signature, type, level, entries, and structure
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

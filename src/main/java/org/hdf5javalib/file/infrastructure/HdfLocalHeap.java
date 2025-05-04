@@ -17,30 +17,72 @@ import java.util.Arrays;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
+/**
+ * Represents an HDF5 Local Heap as defined in the HDF5 specification.
+ * <p>
+ * The {@code HdfLocalHeap} class manages a local heap, which stores variable-length data
+ * such as strings for a specific group in an HDF5 file. It supports reading from a file
+ * channel, writing to a file channel, adding strings to the heap, and parsing strings
+ * from the heap data.
+ * </p>
+ *
+ * @see org.hdf5javalib.HdfDataFile
+ * @see org.hdf5javalib.dataclass.HdfFixedPoint
+ * @see org.hdf5javalib.dataclass.HdfString
+ * @see org.hdf5javalib.file.HdfFileAllocation
+ */
 @Getter
 public class HdfLocalHeap {
+    /** The signature of the local heap ("HEAP"). */
     private final String signature;
+    /** The version of the local heap format. */
     private final int version;
+    /** The size of the heap's data segment. */
     private HdfFixedPoint heapContentsSize;
+    /** The offset to the free list within the heap. */
     private HdfFixedPoint freeListOffset;
+    /** The offset to the heap's data segment in the file. */
     private HdfFixedPoint heapContentsOffset;
+    /** The HDF5 file context. */
     private final HdfDataFile hdfDataFile;
+    /** The raw byte array containing the heap's data. */
     private byte[] heapData;
 
-
+    /**
+     * A utility class to hold a pair of values.
+     *
+     * @param <T> the type of the first value
+     * @param <U> the type of the second value
+     */
     public static class Pair<T, U> {
         private final T first;
         private final U second;
 
+        /**
+         * Constructs a Pair with the specified values.
+         *
+         * @param first  the first value
+         * @param second the second value
+         */
         public Pair(T first, U second) {
             this.first = first;
             this.second = second;
         }
 
+        /**
+         * Returns the first value of the pair.
+         *
+         * @return the first value
+         */
         public T getFirst() {
             return first;
         }
 
+        /**
+         * Returns the second value of the pair.
+         *
+         * @return the second value
+         */
         public U getSecond() {
             return second;
         }
@@ -51,13 +93,13 @@ public class HdfLocalHeap {
      * Initializes the local heap with the provided signature, version, and heap properties,
      * associating it with the given HDF5 data file and heap data buffer.
      *
-     * @param signature the signature of the local heap (e.g., "HEAP")
-     * @param version the version of the local heap format
-     * @param heapContentsSize the size of the heap's data segment
-     * @param freeListOffset the offset to the free list within the heap
+     * @param signature          the signature of the local heap (e.g., "HEAP")
+     * @param version            the version of the local heap format
+     * @param heapContentsSize   the size of the heap's data segment
+     * @param freeListOffset     the offset to the free list within the heap
      * @param heapContentsOffset the offset to the heap's data segment in the file
-     * @param hdfDataFile the HDF5 data file containing the local heap
-     * @param heapData the raw byte array containing the heap's data
+     * @param hdfDataFile        the HDF5 data file containing the local heap
+     * @param heapData           the raw byte array containing the heap's data
      */
     public HdfLocalHeap(String signature, int version, HdfFixedPoint heapContentsSize,
                         HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, byte[] heapData) {
@@ -77,9 +119,9 @@ public class HdfLocalHeap {
      * Allocates a heap data buffer based on the file allocation's current local heap size,
      * initializing it with specific byte values.
      *
-     * @param heapContentsSize the size of the heap's data segment
+     * @param heapContentsSize   the size of the heap's data segment
      * @param heapContentsOffset the offset to the heap's data segment in the file
-     * @param hdfDataFile the HDF5 data file to which the local heap will be written
+     * @param hdfDataFile        the HDF5 data file to which the local heap will be written
      */
     public HdfLocalHeap(HdfFixedPoint heapContentsSize, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile) {
         this.signature = "HEAP";
@@ -94,6 +136,12 @@ public class HdfLocalHeap {
         heapData[8] = (byte)localHeapContentsSize;
     }
 
+    /**
+     * Adds a string to the local heap and returns its offset.
+     *
+     * @param objectName the string to add to the heap
+     * @return the offset in the heap where the string is stored
+     */
     public int addToHeap(HdfString objectName) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         byte[] objectNameBytes = objectName.getBytes();
@@ -155,6 +203,15 @@ public class HdfLocalHeap {
         return currentOffset;
     }
 
+    /**
+     * Reads an HdfLocalHeap from a file channel.
+     *
+     * @param fileChannel the file channel to read from
+     * @param hdfDataFile the HDF5 file context
+     * @return the constructed HdfLocalHeap
+     * @throws IOException if an I/O error occurs
+     * @throws IllegalArgumentException if the heap signature or reserved bytes are invalid
+     */
     public static HdfLocalHeap readFromFileChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(32);
         buffer.order(java.nio.ByteOrder.LITTLE_ENDIAN);
@@ -191,6 +248,12 @@ public class HdfLocalHeap {
         return new HdfLocalHeap(signature, version, dataSegmentSize, freeListOffset, dataSegmentAddress, hdfDataFile, heapData);
     }
 
+    /**
+     * Checks if all bytes in an array are zero.
+     *
+     * @param bytes the byte array to check
+     * @return true if all bytes are zero, false otherwise
+     */
     private static boolean allBytesZero(byte[] bytes) {
         for (byte b : bytes) {
             if (b != 0) {
@@ -200,6 +263,11 @@ public class HdfLocalHeap {
         return true;
     }
 
+    /**
+     * Returns a string representation of the HdfLocalHeap.
+     *
+     * @return a string describing the heap's signature, version, sizes, offsets, and data
+     */
     @Override
     public String toString() {
         return "HdfLocalHeap{" +
@@ -214,6 +282,13 @@ public class HdfLocalHeap {
                 '}';
     }
 
+    /**
+     * Writes the local heap to a file channel.
+     *
+     * @param seekableByteChannel the file channel to write to
+     * @param fileAllocation      the file allocation manager
+     * @throws IOException if an I/O error occurs
+     */
     public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(32).order(java.nio.ByteOrder.LITTLE_ENDIAN);
 
@@ -238,9 +313,10 @@ public class HdfLocalHeap {
     }
 
     /**
-     * Parses the next null-terminated string from the heap data.
+     * Parses the next null-terminated string from the heap data at the specified offset.
      *
-     * @return The next string, or null if no more strings are available.
+     * @param offset the offset in the heap data to start parsing
+     * @return the parsed HdfString, or null if no valid string is found
      */
     public HdfString parseStringAtOffset(HdfFixedPoint offset) {
         long iOffset = offset.getInstance(Long.class);
@@ -256,8 +332,6 @@ public class HdfLocalHeap {
         }
 
         // Extract the string
-
         return new HdfString(Arrays.copyOfRange(heapData, (int) start, (int) iOffset), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), (int) (iOffset - start)));
     }
-
 }

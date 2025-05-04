@@ -10,14 +10,31 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Represents an HDF5 Bitfield Datatype as defined in the HDF5 specification.
+ * <p>
+ * The {@code BitFieldDatatype} class models a bitfield in HDF5, supporting parsing from a {@link java.nio.ByteBuffer},
+ * conversion to Java types such as {@link java.util.BitSet}, {@code String}, or {@link HdfBitField}, and configuration
+ * of byte order and padding as per the HDF5 bitfield datatype (class 4).
+ * </p>
+ *
+ * @see org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype
+ * @see org.hdf5javalib.file.infrastructure.HdfGlobalHeap
+ */
 @Getter
 public class BitFieldDatatype implements HdfDatatype {
+    /** The class and version information for the datatype (class 4, version 1). */
     private final byte classAndVersion;
+    /** A BitSet containing class-specific bit field information (byte order and padding). */
     private final BitSet classBitField;
+    /** The total size of the bitfield datatype in bytes. */
     private final int size;
-    private final short bitOffset;    // Bit offset of the first significant bit
-    private final short bitPrecision; // Number of bits of precision
+    /** The bit offset of the first significant bit. */
+    private final short bitOffset;
+    /** The number of bits of precision. */
+    private final short bitPrecision;
 
+    /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<BitFieldDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
         CONVERTERS.put(BitSet.class, (bytes, dt) -> dt.toBitSet(bytes));
@@ -27,6 +44,15 @@ public class BitFieldDatatype implements HdfDatatype {
         CONVERTERS.put(byte[].class, (bytes, dt) -> bytes);
     }
 
+    /**
+     * Constructs a BitFieldDatatype representing an HDF5 bitfield datatype.
+     *
+     * @param classAndVersion the class and version information for the datatype
+     * @param classBitField   a BitSet containing class-specific bit field information
+     * @param size            the total size of the bitfield datatype in bytes
+     * @param bitOffset       the bit offset of the first significant bit
+     * @param bitPrecision    the number of bits of precision
+     */
     public BitFieldDatatype(byte classAndVersion, BitSet classBitField, int size, short bitOffset, short bitPrecision) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
@@ -35,12 +61,30 @@ public class BitFieldDatatype implements HdfDatatype {
         this.bitPrecision = bitPrecision;
     }
 
+    /**
+     * Parses an HDF5 bitfield datatype from a ByteBuffer as per the HDF5 specification.
+     *
+     * @param classAndVersion the class and version byte of the datatype
+     * @param classBitField   the BitSet containing class-specific bit field information
+     * @param size            the total size of the bitfield datatype in bytes
+     * @param buffer          the ByteBuffer containing the datatype definition
+     * @return a new BitFieldDatatype instance parsed from the buffer
+     */
     public static BitFieldDatatype parseBitFieldType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
         short bitOffset = buffer.getShort();
         short bitPrecision = buffer.getShort();
         return new BitFieldDatatype(classAndVersion, classBitField, size, bitOffset, bitPrecision);
     }
 
+    /**
+     * Creates a BitSet representing the class bit field for an HDF5 bitfield datatype.
+     *
+     * @param bigEndian   true for big-endian byte order, false for little-endian
+     * @param loPadValue  the low padding value (0 or 1)
+     * @param hiPadValue  the high padding value (0 or 1)
+     * @return a 24-bit BitSet with byte order and padding settings
+     * @throws IllegalArgumentException if loPadValue or hiPadValue is not 0 or 1
+     */
     public static BitSet createClassBitField(boolean bigEndian, int loPadValue, int hiPadValue) {
         if (loPadValue != 0 && loPadValue != 1) throw new IllegalArgumentException("loPadValue must be 0 or 1");
         if (hiPadValue != 0 && hiPadValue != 1) throw new IllegalArgumentException("hiPadValue must be 0 or 1");
@@ -52,14 +96,35 @@ public class BitFieldDatatype implements HdfDatatype {
         return bits;
     }
 
+    /**
+     * Creates a fixed class and version byte for an HDF5 bitfield datatype.
+     *
+     * @return a byte representing class 4 and version 1, as defined by the HDF5 specification
+     */
     public static byte createClassAndVersion() {
         return 0x14; // Version 1, Class 4 for BitField
     }
 
+    /**
+     * Registers a converter for transforming BitFieldDatatype data to a specific Java type.
+     *
+     * @param <T>       the type of the class to be converted
+     * @param clazz     the Class object representing the target type
+     * @param converter the HdfConverter for converting between BitFieldDatatype and the target type
+     */
     public static <T> void addConverter(Class<T> clazz, HdfConverter<BitFieldDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
+    /**
+     * Converts byte data to an instance of the specified class using registered converters.
+     *
+     * @param <T>   the type of the instance to be created
+     * @param clazz the Class object representing the target type
+     * @param bytes the byte array containing the data
+     * @return an instance of type T created from the byte array
+     * @throws UnsupportedOperationException if no suitable converter is found for the specified class
+     */
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         @SuppressWarnings("unchecked")
@@ -75,23 +140,51 @@ public class BitFieldDatatype implements HdfDatatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
+    /**
+     * Indicates whether a global heap is required for this datatype.
+     *
+     * @param required true if the global heap is required, false otherwise
+     * @return false, as BitFieldDatatype does not require a global heap
+     */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
         return required | false;
     }
 
+    /**
+     * Checks if the bitfield uses big-endian byte order.
+     *
+     * @return true if big-endian, false if little-endian
+     */
     public boolean isBigEndian() {
         return classBitField.get(0);
     }
 
+    /**
+     * Returns the low padding value for the bitfield.
+     *
+     * @return the low padding value (0 or 1)
+     */
     public int getLoPadValue() {
         return classBitField.get(1) ? 1 : 0; // Return the padding value (0 or 1)
     }
 
+    /**
+     * Returns the high padding value for the bitfield.
+     *
+     * @return the high padding value (0 or 1)
+     */
     public int getHiPadValue() {
         return classBitField.get(2) ? 1 : 0; // Return the padding value (0 or 1)
     }
 
+    /**
+     * Converts the byte array to a BitSet representing the bitfield's significant bits.
+     *
+     * @param bytes the byte array to convert
+     * @return a BitSet containing the significant bits with padding applied
+     * @throws IllegalArgumentException if the byte array length does not match the datatype size
+     */
     public BitSet toBitSet(byte[] bytes) {
         if (bytes.length != size) {
             throw new IllegalArgumentException("Byte array length (" + bytes.length + ") does not match datatype size (" + size + ")");
@@ -131,6 +224,12 @@ public class BitFieldDatatype implements HdfDatatype {
         return reversed;
     }
 
+    /**
+     * Converts the byte array to a string representation of the bitfield's bits.
+     *
+     * @param bytes the byte array to convert
+     * @return a string of '0' and '1' characters representing the bitfield
+     */
     public String toString(byte[] bytes) {
         BitSet bitSet = toBitSet(bytes);
         StringBuilder sb = new StringBuilder();
@@ -140,30 +239,60 @@ public class BitFieldDatatype implements HdfDatatype {
         return sb.toString();
     }
 
+    /**
+     * Returns the datatype class for this bitfield datatype.
+     *
+     * @return DatatypeClass.BITFIELD, indicating an HDF5 bitfield datatype
+     */
     @Override
     public DatatypeClass getDatatypeClass() {
         return DatatypeClass.BITFIELD;
     }
 
+    /**
+     * Returns the class bit field for this datatype.
+     *
+     * @return the BitSet containing class-specific bit field information
+     */
     @Override
     public BitSet getClassBitField() {
         return classBitField;
     }
 
+    /**
+     * Returns the size of the datatype message data.
+     *
+     * @return the size of the message data in bytes, as a short
+     */
     @Override
     public short getSizeMessageData() {
         return 4; // 2 bytes for bitOffset + 2 bytes for bitPrecision
     }
 
+    /**
+     * Writes the datatype definition to the provided ByteBuffer.
+     *
+     * @param buffer the ByteBuffer to write the datatype definition to
+     */
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
         buffer.putShort(bitOffset);
         buffer.putShort(bitPrecision);
     }
 
+    /**
+     * Sets the global heap for this datatype (no-op for BitFieldDatatype).
+     *
+     * @param grok the HdfGlobalHeap to set
+     */
     @Override
     public void setGlobalHeap(HdfGlobalHeap grok) {}
 
+    /**
+     * Returns a string representation of this BitFieldDatatype.
+     *
+     * @return a string describing the datatype's size, bit offset, precision, byte order, and padding
+     */
     @Override
     public String toString() {
         return "BitFieldDatatype{" +
@@ -174,5 +303,25 @@ public class BitFieldDatatype implements HdfDatatype {
                 ", loPadValue=" + getLoPadValue() +
                 ", hiPadValue=" + getHiPadValue() +
                 '}';
+    }
+
+    /**
+     * Returns the class and version byte for this datatype.
+     *
+     * @return the class and version byte
+     */
+    @Override
+    public byte getClassAndVersion() {
+        return classAndVersion;
+    }
+
+    /**
+     * Returns the total size of the bitfield datatype in bytes.
+     *
+     * @return the total size in bytes
+     */
+    @Override
+    public int getSize() {
+        return size;
     }
 }

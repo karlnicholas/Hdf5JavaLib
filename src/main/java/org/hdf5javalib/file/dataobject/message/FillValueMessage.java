@@ -8,58 +8,63 @@ import java.nio.ByteOrder;
 
 /**
  * Represents a Fill Value Message in the HDF5 file format.
- *
- * <p>The Fill Value Message defines the default value used to initialize
- * unallocated or uninitialized elements of a dataset. This ensures that
- * datasets have a consistent default value when accessed before explicit
- * data is written.</p>
+ * <p>
+ * The {@code FillValueMessage} class defines the default value used to initialize
+ * unallocated or uninitialized elements of a dataset. This ensures that datasets
+ * have a consistent default value when accessed before explicit data is written.
+ * </p>
  *
  * <h2>Structure</h2>
- * <p>The Fill Value Message consists of the following components:</p>
  * <ul>
- *   <li><b>Version (1 byte)</b>: Identifies the version of the fill value format.</li>
- *   <li><b>Space Allocation Time (1 byte, version-dependent)</b>: Determines when
- *       space for fill values is allocated. Options include:
- *       <ul>
- *         <li>Early (allocated when the dataset is created).</li>
- *         <li>Late (allocated when data is written).</li>
- *         <li>Incremental (allocated gradually as chunks are written).</li>
- *       </ul>
- *   </li>
- *   <li><b>Fill Value Write Time (1 byte, version-dependent)</b>: Specifies when
- *       the fill value is written (on dataset creation or first data write).</li>
- *   <li><b>Fill Value Defined Flag (1 byte)</b>: Indicates whether a user-defined
- *       fill value is provided.</li>
- *   <li><b>Fill Value Size (variable)</b>: Specifies the size of the fill value in bytes.</li>
- *   <li><b>Fill Value Data (variable, optional)</b>: Contains the actual fill value,
- *       matching the dataset's datatype.</li>
+ *   <li><b>Version (1 byte)</b>: The version of the fill value format.</li>
+ *   <li><b>Space Allocation Time (1 byte, version-dependent)</b>: When space for
+ *       fill values is allocated (Early, Late, or Incremental).</li>
+ *   <li><b>Fill Value Write Time (1 byte, version-dependent)</b>: When the fill
+ *       value is written (on creation or first write).</li>
+ *   <li><b>Fill Value Defined Flag (1 byte)</b>: Indicates if a user-defined fill
+ *       value is provided.</li>
+ *   <li><b>Fill Value Size (4 bytes, optional)</b>: The size of the fill value in bytes.</li>
+ *   <li><b>Fill Value Data (variable, optional)</b>: The actual fill value, matching
+ *       the dataset's datatype.</li>
  * </ul>
  *
  * <h2>Usage</h2>
- * <p>Fill values are used to ensure that uninitialized regions of a dataset have
- * predictable content. They are particularly useful for:</p>
  * <ul>
  *   <li>Defining default values for missing or newly allocated data.</li>
  *   <li>Ensuring consistency when reading uninitialized portions of a dataset.</li>
  *   <li>Improving dataset integrity in applications requiring structured default data.</li>
  * </ul>
  *
- * <p>This class provides methods to parse and interpret Fill Value Messages based
- * on the HDF5 file specification.</p>
- *
- * @see <a href="https://docs.hdfgroup.org/hdf5/develop/group___f_i_l_l_v_a_l_u_e.html">
- *      HDF5 Fill Value Documentation</a>
+ * @see org.hdf5javalib.file.dataobject.message.HdfMessage
+ * @see org.hdf5javalib.HdfDataFile
  */
 @Getter
 public class FillValueMessage extends HdfMessage {
-    private final int version;              // 1 byte
-    private final int spaceAllocationTime;  // 1 byte
-    private final int fillValueWriteTime;   // 1 byte
-    private final int fillValueDefined;     // 1 byte
-    private final int size;       // Size of the Fill Value field (optional, unsigned 4 bytes)
-    private final byte[] fillValue;         // Fill Value field (optional)
+    /** The version of the fill value message format. */
+    private final int version;
+    /** The time when space for fill values is allocated (Early, Late, Incremental). */
+    private final int spaceAllocationTime;
+    /** The time when the fill value is written (on creation or first write). */
+    private final int fillValueWriteTime;
+    /** Indicates if a user-defined fill value is provided (0: undefined, 1: defined). */
+    private final int fillValueDefined;
+    /** The size of the fill value in bytes (if defined). */
+    private final int size;
+    /** The actual fill value data (if defined). */
+    private final byte[] fillValue;
 
-    // Constructor to initialize all fields
+    /**
+     * Constructs a FillValueMessage with the specified components.
+     *
+     * @param version             the version of the fill value message format
+     * @param spaceAllocationTime the time when space for fill values is allocated
+     * @param fillValueWriteTime  the time when the fill value is written
+     * @param fillValueDefined    indicates if a user-defined fill value is provided
+     * @param size                the size of the fill value in bytes
+     * @param fillValue           the actual fill value data
+     * @param flags               message flags
+     * @param sizeMessageData     the size of the message data in bytes
+     */
     public FillValueMessage(
             int version,
             int spaceAllocationTime,
@@ -80,12 +85,12 @@ public class FillValueMessage extends HdfMessage {
     }
 
     /**
-     * Parses the header message and returns a constructed instance.
+     * Parses a FillValueMessage from the provided data and file context.
      *
-     * @param flags             Flags associated with the message (not used here).
-     * @param data              Byte array containing the header message data.
-     * @param hdfDataFile
-     * @return A fully constructed `FillValueMessage` instance.
+     * @param flags       message flags
+     * @param data        the byte array containing the message data
+     * @param hdfDataFile the HDF5 file context for additional resources
+     * @return a new FillValueMessage instance parsed from the data
      */
     public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
@@ -102,8 +107,8 @@ public class FillValueMessage extends HdfMessage {
 
         // Handle Version 2+ behavior and fillValueDefined flag
         if (version >= 2 && fillValueDefined == 1) {
-            // Parse Size (unsigned 4 bytes, using HdfFixedPoint)
-            size =buffer.getInt();
+            // Parse Size (unsigned 4 bytes)
+            size = buffer.getInt();
 
             // Parse Fill Value
             fillValue = new byte[size];
@@ -114,6 +119,11 @@ public class FillValueMessage extends HdfMessage {
         return new FillValueMessage(version, spaceAllocationTime, fillValueWriteTime, fillValueDefined, size, fillValue, flags, (short) data.length);
     }
 
+    /**
+     * Returns a string representation of this FillValueMessage.
+     *
+     * @return a string describing the message size, version, allocation times, and fill value details
+     */
     @Override
     public String toString() {
         return "FillValueMessage("+(getSizeMessageData()+8)+"){" +
@@ -126,10 +136,15 @@ public class FillValueMessage extends HdfMessage {
                 '}';
     }
 
+    /**
+     * Writes the fill value message data to the provided ByteBuffer.
+     *
+     * @param buffer the ByteBuffer to write the message data to
+     */
     @Override
     public void writeMessageToByteBuffer(ByteBuffer buffer) {
         writeMessageData(buffer);
-        // Parse the first 4 bytes
+        // Write the first 4 bytes
         buffer.put((byte) version);
         buffer.put((byte) spaceAllocationTime);
         buffer.put((byte) fillValueWriteTime);
@@ -137,7 +152,7 @@ public class FillValueMessage extends HdfMessage {
 
         // Handle Version 2+ behavior and fillValueDefined flag
         if (version >= 2 && fillValueDefined == 1) {
-            // Parse Size (unsigned 4 bytes, using HdfFixedPoint)
+            // Write Size (unsigned 4 bytes)
             buffer.putInt(size);
             buffer.put(fillValue);
         }
