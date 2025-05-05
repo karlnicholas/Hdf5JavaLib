@@ -3,7 +3,7 @@
 
   <groupId>org.hdf5javalib</groupId>
   <artifactId>hdf5javalib</artifactId>
-  <version>0.1.2-SNAPSHOT</version>
+  <version>0.1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>HDF5JavaLib</name>
@@ -121,6 +121,11 @@
                 <exclude>logback.xml</exclude>
               </excludes>
             </resource>
+            <testResources>
+              <testResource>
+                <directory>src/test/resources</directory>
+              </testResource>
+            </testResources>
           </resources>
         </configuration>
       </plugin>
@@ -171,18 +176,6 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
-      <!-- Nexus Staging Plugin for deploying to OSSRH/Maven Central -->
-      <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.7.0</version>
-        <extensions>true</extensions>
-        <configuration>
-          <serverId>ossrh</serverId>
-          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-          <autoReleaseAfterClose>true</autoReleaseAfterClose>
-        </configuration>
       </plugin>
       <!-- Release Plugin for managing versioning -->
       <plugin>
