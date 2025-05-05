@@ -30,7 +30,6 @@
     <connection>scm:git:git://github.com/karlnicholas/hdf5javalib.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/karlnicholas/hdf5javalib.git</developerConnection>
     <url>https://github.com/karlnicholas/hdf5javalib</url>
-    <tag>hdf5javalib-0.1.0</tag>
   </scm>
 
   <issueManagement>
