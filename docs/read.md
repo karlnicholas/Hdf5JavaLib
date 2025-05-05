@@ -177,4 +177,4 @@ Help improve Hdf5JavaLib by reporting issues at [GitHub Issues](https://github.c
 - Expected outputs or error messages.
 - Suggestions for new features (e.g., subgroup support, chunking).
 
-Visit [www.hdf5javalib.org](https://www.hdf5javalib.org) for updates and resources.
+Visit [hdf5javalib.org](https://hdf5javalib.org) for updates and resources.
