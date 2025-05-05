@@ -37,4 +37,4 @@ For detailed usage and examples, see the [Read Capabilities Documentation](docs/
 
 Help improve Hdf5JavaLib by reporting issues at [GitHub Issues](https://github.com/karlnicholas/Hdf5JavaLib/issues). Include sample HDF5 files and expected outputs.
 
-Visit [hdf5javalib.org](https://hdf5javalib.org) for more information.
+Visit [www.hdf5javalib.org](https://www.hdf5javalib.org) for more information.
