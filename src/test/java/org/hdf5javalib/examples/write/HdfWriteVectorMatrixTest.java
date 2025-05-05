@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.examples.MemorySeekableByteChannel;
+import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
@@ -19,34 +20,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 public class HdfWriteVectorMatrixTest {
     private static final Logger logger = LoggerFactory.getLogger(HdfWriteVectorMatrixTest.class);
-
-    private static Path getReferencePath(String fileName) {
-        String resourcePath = Objects.requireNonNull(HdfWriteVectorMatrixTest.class.getClassLoader().getResource(fileName)).getPath();
-        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
-            resourcePath = resourcePath.substring(1);
-        }
-        return Paths.get(resourcePath);
-    }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideTestConfigurations")
@@ -72,8 +57,14 @@ public class HdfWriteVectorMatrixTest {
             file.close();
 
             byte[] javaBytes = memoryChannel.toByteArray();
-            Path refPath = getReferencePath(refFile);
-            byte[] cppBytes = Files.readAllBytes(refPath);
+            byte[] cppBytes;
+            try (InputStream inputStream = ResourceLoader.class.getClassLoader().getResourceAsStream(refFile)) {
+                if (inputStream == null) {
+                    throw new IOException("Resource not found: " + refFile);
+                }
+                // Read the resource into a byte array
+                cppBytes = inputStream.readAllBytes();
+            }
 
             HdfTestWriteUtils.compareByteArraysWithTimestampExclusion(javaBytes, cppBytes, timestampOffsets);
             logger.info("Test {} passed", testName);

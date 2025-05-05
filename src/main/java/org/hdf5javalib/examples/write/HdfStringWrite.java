@@ -2,7 +2,6 @@ package org.hdf5javalib.examples.write;
 
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfDataSet;
@@ -13,16 +12,12 @@ import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.BitSet;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 

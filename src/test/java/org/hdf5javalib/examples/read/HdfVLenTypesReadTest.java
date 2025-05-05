@@ -4,6 +4,7 @@ import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.datasource.TypedDataSource;
+import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.file.HdfDataSet;
 import org.junit.jupiter.api.Test;
 
@@ -11,28 +12,15 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HdfVLenTypesReadTest {
 
-    private Path getResourcePath(String fileName) {
-        String resourcePath = getClass().getClassLoader().getResource(fileName).getPath();
-        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
-            resourcePath = resourcePath.substring(1);
-        }
-        return Paths.get(resourcePath);
-    }
-
     @Test
     public void testVlenDouble() throws IOException {
-        Path filePath = getResourcePath("vlen_types_example.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("vlen_types_example.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet doubleDs = reader.getRootGroup().findDataset("vlen_double");
             double[] expectedDoubles = {1.234, 5.678, 9.101};
@@ -61,8 +49,7 @@ public class HdfVLenTypesReadTest {
 
     @Test
     public void testVlenFloat() throws IOException {
-        Path filePath = getResourcePath("vlen_types_example.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("vlen_types_example.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet floatDs = reader.getRootGroup().findDataset("vlen_float");
             float[] expectedFloats = {1.1f, 2.2f, 3.3f};
@@ -91,8 +78,7 @@ public class HdfVLenTypesReadTest {
 
     @Test
     public void testVlenInt() throws IOException {
-        Path filePath = getResourcePath("vlen_types_example.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("vlen_types_example.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet intDs = reader.getRootGroup().findDataset("vlen_int");
             int[] expectedInts = {1, 2, 3, 4, 5};
@@ -113,8 +99,7 @@ public class HdfVLenTypesReadTest {
 
     @Test
     public void testVlenShort() throws IOException {
-        Path filePath = getResourcePath("vlen_types_example.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("vlen_types_example.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet shortDs = reader.getRootGroup().findDataset("vlen_short");
             short[] expectedShorts = {10, 20, 30};
@@ -135,8 +120,7 @@ public class HdfVLenTypesReadTest {
 
     @Test
     public void testVlenString() throws IOException {
-        Path filePath = getResourcePath("vlen_types_example.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("vlen_types_example.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet stringDs = reader.getRootGroup().findDataset("vlen_string");
             String expectedString = "Hello, Variable Length String!";

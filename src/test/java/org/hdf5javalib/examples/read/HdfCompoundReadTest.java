@@ -8,6 +8,7 @@ import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.datasource.TypedDataSource;
+import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,13 +20,8 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -36,14 +32,6 @@ public class HdfCompoundReadTest {
             new BigDecimal("4.7500000"), new BigDecimal("5.0000000"), new BigDecimal("6.2500000"),
             new BigDecimal("7.5000000"), new BigDecimal("8.7500000"), new BigDecimal("9.0000000"),
             new BigDecimal("10.2500000"));
-
-    private Path getResourcePath() {
-        String resourcePath = Objects.requireNonNull(getClass().getClassLoader().getResource("compound_example.h5")).getPath();
-        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
-            resourcePath = resourcePath.substring(1);
-        }
-        return Paths.get(resourcePath);
-    }
 
     @Data
     @Builder
@@ -97,8 +85,7 @@ public class HdfCompoundReadTest {
 
     @Test
     void testCompoundExampleH5() throws IOException {
-        Path filePath = getResourcePath();
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("compound_example.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet dataSet = reader.getRootGroup().findDataset("CompoundData");
 
@@ -176,8 +163,7 @@ public class HdfCompoundReadTest {
 
     @Test
     void testCustomConverter() throws IOException {
-        Path filePath = getResourcePath();
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("compound_example.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet dataSet = reader.getRootGroup().findDataset("CompoundData");
 

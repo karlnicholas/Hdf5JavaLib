@@ -5,6 +5,7 @@ import lombok.Data;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.*;
 import org.hdf5javalib.datasource.TypedDataSource;
+import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,27 +17,14 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.BitSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HdfSeparateTypesWriteTest {
-    private static Path getResourcePath() {
-        String resourcePath = Objects.requireNonNull(HdfSeparateTypesWriteTest.class.getClassLoader().getResource("all_types_separate.h5")).getPath();
-        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
-            resourcePath = resourcePath.substring(1);
-        }
-        return Paths.get(resourcePath);
-    }
-
     @Data
     public static class Compound {
         private Short a;
@@ -68,8 +56,7 @@ public class HdfSeparateTypesWriteTest {
 
     @Test
     void testAllTypesSeparateH5() throws IOException {
-        Path filePath = getResourcePath();
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("all_types_separate.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
 
             // Fixed Point (8-bit signed, 42)

@@ -2,6 +2,7 @@ package org.hdf5javalib.examples.write;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.examples.MemorySeekableByteChannel;
+import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
@@ -12,23 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Objects;
 
 public class HdfWriteTwentyTest {
     private static final Logger logger = LoggerFactory.getLogger(HdfWriteTwentyTest.class);
-
-    private static Path getReferencePath(String fileName) {
-        String resourcePath = Objects.requireNonNull(HdfWriteTwentyTest.class.getClassLoader().getResource(fileName)).getPath();
-        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
-            resourcePath = resourcePath.substring(1);
-        }
-        return Paths.get(resourcePath);
-    }
 
     @Test
     void testWriteTwentyDatasets() throws IOException {
@@ -47,8 +37,14 @@ public class HdfWriteTwentyTest {
             file.getFileAllocation().printBlocksSorted();
 
             byte[] javaBytes = memoryChannel.toByteArray();
-            Path refPath = getReferencePath("twenty_datasets.h5");
-            byte[] cppBytes = Files.readAllBytes(refPath);
+            byte[] cppBytes;
+            try (InputStream inputStream = ResourceLoader.class.getClassLoader().getResourceAsStream("twenty_datasets.h5")) {
+                if (inputStream == null) {
+                    throw new IOException("Resource not found: twenty_datasets.h5");
+                }
+                // Read the resource into a byte array
+                cppBytes = inputStream.readAllBytes();
+            }
 
             // Placeholder: 20 timestamp offsets
             int[] timestampOffsets = new int[20];

@@ -8,10 +8,11 @@ import java.nio.channels.SeekableByteChannel;
  * An in-memory implementation of {@link SeekableByteChannel}.
  * <p>
  * The {@code MemorySeekableByteChannel} class provides a seekable byte channel that
- * stores data in a dynamically resizable {@link ByteBuffer}. It supports reading,
- * writing, positioning, truncating, and closing operations, making it suitable for
- * testing or scenarios where in-memory data manipulation is needed, such as simulating
- * file I/O for HDF5 data processing.
+ * stores data in a fixed-size {@link ByteBuffer}. It supports reading, writing,
+ * positioning, truncating, and closing operations, making it suitable for testing
+ * or scenarios where in-memory data manipulation is needed, such as simulating
+ * file I/O for HDF5 data processing. The buffer is allocated with a fixed capacity
+ * that is assumed to be sufficient for all operations.
  * </p>
  */
 public class MemorySeekableByteChannel implements SeekableByteChannel {
@@ -21,20 +22,13 @@ public class MemorySeekableByteChannel implements SeekableByteChannel {
     private boolean open;
 
     /**
-     * Constructs a MemorySeekableByteChannel with the specified initial capacity.
+     * Constructs a MemorySeekableByteChannel with the specified fixed capacity.
      *
-     * @param initialCapacity the initial capacity of the internal ByteBuffer
+     * @param initialCapacity the fixed capacity of the internal ByteBuffer
      */
     public MemorySeekableByteChannel(int initialCapacity) {
         this.buffer = ByteBuffer.allocate(initialCapacity);
         this.open = true;
-    }
-
-    /**
-     * Constructs a MemorySeekableByteChannel with a default initial capacity of 1024 bytes.
-     */
-    public MemorySeekableByteChannel() {
-        this(1024);
     }
 
     /**
@@ -81,15 +75,16 @@ public class MemorySeekableByteChannel implements SeekableByteChannel {
      *
      * @param src the source ByteBuffer to write from
      * @return the number of bytes written
-     * @throws IOException if the channel is closed
+     * @throws IOException if the channel is closed or if the write exceeds the buffer's capacity
      */
     @Override
     public int write(ByteBuffer src) throws IOException {
         if (!isOpen()) throw new IOException("Channel is closed");
+        if (src.remaining() > buffer.remaining()) {
+            throw new IOException("Write exceeds buffer capacity");
+        }
 
         int bytesToWrite = src.remaining();
-        ensureCapacity(buffer.position() + bytesToWrite);
-
         buffer.put(src);
         return bytesToWrite;
     }
@@ -125,15 +120,15 @@ public class MemorySeekableByteChannel implements SeekableByteChannel {
     }
 
     /**
-     * Returns the size of the data in the channel.
+     * Returns the size of the channel, which is the buffer's fixed capacity.
      *
-     * @return the size of the data (current position)
+     * @return the fixed capacity of the buffer
      * @throws IOException if the channel is closed
      */
     @Override
     public long size() throws IOException {
         if (!isOpen()) throw new IOException("Channel is closed");
-        return buffer.position(); // Size is current written length, not capacity
+        return buffer.capacity();
     }
 
     /**
@@ -141,54 +136,38 @@ public class MemorySeekableByteChannel implements SeekableByteChannel {
      *
      * @param size the new size
      * @return this channel
-     * @throws IOException if the channel is closed
+     * @throws IOException if the channel is closed or if the size exceeds the buffer's capacity
      * @throws IllegalArgumentException if the size is negative
      */
     @Override
     public SeekableByteChannel truncate(long size) throws IOException {
         if (!isOpen()) throw new IOException("Channel is closed");
         if (size < 0) throw new IllegalArgumentException("Size cannot be negative");
-        if (size < buffer.position()) buffer.position((int) size);
-        if (size < buffer.capacity()) {
-            ByteBuffer newBuffer = ByteBuffer.allocate((int) size);
-            buffer.flip();
-            newBuffer.put(buffer);
-            buffer = newBuffer;
+        if (size > buffer.capacity()) {
+            throw new IOException("Truncate size exceeds buffer capacity: " + size);
+        }
+        if (size < buffer.position()) {
+            buffer.position((int) size);
         }
         return this;
-    }
-
-    /**
-     * Ensures the internal buffer has sufficient capacity.
-     *
-     * @param requiredCapacity the required capacity
-     */
-    private void ensureCapacity(int requiredCapacity) {
-        if (requiredCapacity > buffer.capacity()) {
-            int newCapacity = Math.max(requiredCapacity, buffer.capacity() * 2);
-            ByteBuffer newBuffer = ByteBuffer.allocate(newCapacity);
-            buffer.flip();
-            newBuffer.put(buffer);
-            buffer = newBuffer;
-        }
     }
 
     /**
      * Returns a copy of the channel's data as a byte array.
      * <p>
      * The buffer's position is rewound to the beginning, and all data up to the
-     * current position is copied into a new byte array. The buffer's position is
-     * then restored to the end of the written data.
+     * buffer's capacity is copied into a new byte array. The buffer's position is
+     * then restored.
      * </p>
      *
      * @return a byte array containing the channel's data
      */
     public byte[] toByteArray() {
+        int originalPosition = buffer.position();
         buffer.rewind();
-        byte[] data = new byte[buffer.remaining()];
+        byte[] data = new byte[buffer.capacity()];
         buffer.get(data);
-        buffer.position(buffer.limit());
-        buffer.limit(buffer.capacity());
+        buffer.position(originalPosition);
         return data;
     }
 }

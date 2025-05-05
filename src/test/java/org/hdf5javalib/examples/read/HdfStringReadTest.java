@@ -4,16 +4,13 @@ import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.TypedDataSource;
+import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.file.HdfDataSet;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,18 +28,9 @@ public class HdfStringReadTest {
     // UTF-8 expected bytes padded with null terminator to match dataset size=12
     private static final byte[] UTF8_FIRST_ENTRY_BYTES = Arrays.copyOf("ꦠꦤ꧀ 1".getBytes(StandardCharsets.UTF_8), 12);
 
-    private Path getResourcePath(String fileName) {
-        String resourcePath = getClass().getClassLoader().getResource(fileName).getPath();
-        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
-            resourcePath = resourcePath.substring(1);
-        }
-        return Paths.get(resourcePath);
-    }
-
     @Test
     void testAsciiDataset() throws IOException {
-        Path filePath = getResourcePath("ascii_dataset.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("ascii_dataset.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet dataSet = reader.getRootGroup().findDataset("strings");
 
@@ -81,8 +69,7 @@ public class HdfStringReadTest {
 
     @Test
     void testUtf8Dataset() throws IOException {
-        Path filePath = getResourcePath("utf8_dataset.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("utf8_dataset.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet dataSet = reader.getRootGroup().findDataset("strings");
 
