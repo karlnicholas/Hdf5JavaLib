@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject.message;
 
-import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.utils.HdfReadUtils;
@@ -34,7 +33,6 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see org.hdf5javalib.file.dataobject.message.HdfMessage
  * @see org.hdf5javalib.HdfDataFile
  */
-@Getter
 public class SymbolTableMessage extends HdfMessage {
     /** The file offset of the B-Tree indexing the group’s entries. */
     private final HdfFixedPoint bTreeAddress;

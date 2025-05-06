@@ -1,7 +1,5 @@
 package org.hdf5javalib.file;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
@@ -25,9 +23,8 @@ import java.nio.channels.SeekableByteChannel;
  * for interacting with an HDF5 file.
  * </p>
  */
-@Getter
-@Slf4j
 public class HdfFile implements Closeable, HdfDataFile {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfFile.class);
     /** The superblock containing metadata about the HDF5 file. */
     private final HdfSuperblock superblock;
     /** The root group of the HDF5 file. */
@@ -141,5 +138,20 @@ public class HdfFile implements Closeable, HdfDataFile {
     @Override
     public FixedPointDatatype getFixedPointDatatypeForLength() {
         return superblock.getFixedPointDatatypeForLength();
+    }
+
+    @Override
+    public HdfFileAllocation getFileAllocation() {
+        return fileAllocation;
+    }
+
+    @Override
+    public SeekableByteChannel getSeekableByteChannel() {
+        return seekableByteChannel;
+    }
+
+    @Override
+    public HdfGlobalHeap getGlobalHeap() {
+        return globalHeap;
     }
 }

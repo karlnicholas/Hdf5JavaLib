@@ -1,6 +1,5 @@
 package org.hdf5javalib.examples.write;
 
-import lombok.*;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.examples.MemorySeekableByteChannel;
@@ -78,7 +77,6 @@ public class HdfWriteCompoundTest {
         }
     }
 
-    @SneakyThrows
     private static void writeCompoundAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
         int numRecords = 1000;
         CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();
@@ -93,12 +91,15 @@ public class HdfWriteCompoundTest {
             fileBuffer.put(byteBuffer);
         }
         fileBuffer.rewind();
-        dataset.write(fileBuffer);
+        try {
+            dataset.write(fileBuffer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         logger.debug("Bulk write completed, bytes written: {}", byteBuffer.limit());
     }
 
-    @SneakyThrows
     private static void writeCompoundEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
         int numRecords = 1000;
         CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();
@@ -106,15 +107,19 @@ public class HdfWriteCompoundTest {
         logger.debug("Writing incremental data with buffer size: {}", bufferSize);
         AtomicInteger countHolder = new AtomicInteger(0);
         ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize).order(ByteOrder.LITTLE_ENDIAN);
-        dataset.write(() -> {
-            int count = countHolder.getAndIncrement();
-            if (count >= numRecords) return ByteBuffer.allocate(0);
-            CompoundExample instance = buildCompoundExample(count);
-            byteBuffer.clear();
-            HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, byteBuffer, CompoundExample.class);
-            byteBuffer.rewind();
-            return byteBuffer;
-        });
+        try {
+            dataset.write(() -> {
+                int count = countHolder.getAndIncrement();
+                if (count >= numRecords) return ByteBuffer.allocate(0);
+                CompoundExample instance = buildCompoundExample(count);
+                byteBuffer.clear();
+                HdfWriteUtils.writeCompoundTypeToBuffer(instance, compoundType, byteBuffer, CompoundExample.class);
+                byteBuffer.rewind();
+                return byteBuffer;
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         logger.debug("Incremental write completed");
     }
 
@@ -273,25 +278,136 @@ public class HdfWriteCompoundTest {
         }
     }
 
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
     public static class CompoundExample {
-        private Long recordId;
-        private String fixedStr;
-        private String varStr;
-        private Float floatVal;
-        private Double doubleVal;
-        private Byte int8_Val;
-        private Short int16_Val;
-        private Integer int32_Val;
-        private Long int64_Val;
-        private Short uint8_Val;
-        private Integer uint16_Val;
-        private Long uint32_Val;
-        private BigInteger uint64_Val;
-        private BigDecimal scaledUintVal;
+        private final Long recordId;
+        private final String fixedStr;
+        private final String varStr;
+        private final Float floatVal;
+        private final Double doubleVal;
+        private final Byte int8_Val;
+        private final Short int16_Val;
+        private final Integer int32_Val;
+        private final Long int64_Val;
+        private final Short uint8_Val;
+        private final Integer uint16_Val;
+        private final Long uint32_Val;
+        private final BigInteger uint64_Val;
+        private final BigDecimal scaledUintVal;
+
+        private CompoundExample(Long recordId, String fixedStr, String varStr, Float floatVal, Double doubleVal,
+                                Byte int8_Val, Short int16_Val, Integer int32_Val, Long int64_Val, Short uint8_Val,
+                                Integer uint16_Val, Long uint32_Val, BigInteger uint64_Val, BigDecimal scaledUintVal) {
+            this.recordId = recordId;
+            this.fixedStr = fixedStr;
+            this.varStr = varStr;
+            this.floatVal = floatVal;
+            this.doubleVal = doubleVal;
+            this.int8_Val = int8_Val;
+            this.int16_Val = int16_Val;
+            this.int32_Val = int32_Val;
+            this.int64_Val = int64_Val;
+            this.uint8_Val = uint8_Val;
+            this.uint16_Val = uint16_Val;
+            this.uint32_Val = uint32_Val;
+            this.uint64_Val = uint64_Val;
+            this.scaledUintVal = scaledUintVal;
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public static class Builder {
+            private Long recordId;
+            private String fixedStr;
+            private String varStr;
+            private Float floatVal;
+            private Double doubleVal;
+            private Byte int8_Val;
+            private Short int16_Val;
+            private Integer int32_Val;
+            private Long int64_Val;
+            private Short uint8_Val;
+            private Integer uint16_Val;
+            private Long uint32_Val;
+            private BigInteger uint64_Val;
+            private BigDecimal scaledUintVal;
+
+            public Builder recordId(Long recordId) {
+                this.recordId = recordId;
+                return this;
+            }
+
+            public Builder fixedStr(String fixedStr) {
+                this.fixedStr = fixedStr;
+                return this;
+            }
+
+            public Builder varStr(String varStr) {
+                this.varStr = varStr;
+                return this;
+            }
+
+            public Builder floatVal(Float floatVal) {
+                this.floatVal = floatVal;
+                return this;
+            }
+
+            public Builder doubleVal(Double doubleVal) {
+                this.doubleVal = doubleVal;
+                return this;
+            }
+
+            public Builder int8_Val(Byte int8_Val) {
+                this.int8_Val = int8_Val;
+                return this;
+            }
+
+            public Builder int16_Val(Short int16_Val) {
+                this.int16_Val = int16_Val;
+                return this;
+            }
+
+            public Builder int32_Val(Integer int32_Val) {
+                this.int32_Val = int32_Val;
+                return this;
+            }
+
+            public Builder int64_Val(Long int64_Val) {
+                this.int64_Val = int64_Val;
+                return this;
+            }
+
+            public Builder uint8_Val(Short uint8_Val) {
+                this.uint8_Val = uint8_Val;
+                return this;
+            }
+
+            public Builder uint16_Val(Integer uint16_Val) {
+                this.uint16_Val = uint16_Val;
+                return this;
+            }
+
+            public Builder uint32_Val(Long uint32_Val) {
+                this.uint32_Val = uint32_Val;
+                return this;
+            }
+
+            public Builder uint64_Val(BigInteger uint64_Val) {
+                this.uint64_Val = uint64_Val;
+                return this;
+            }
+
+            public Builder scaledUintVal(BigDecimal scaledUintVal) {
+                this.scaledUintVal = scaledUintVal;
+                return this;
+            }
+
+            public CompoundExample build() {
+                return new CompoundExample(recordId, fixedStr, varStr, floatVal, doubleVal, int8_Val, int16_Val,
+                        int32_Val, int64_Val, uint8_Val, uint16_Val, uint32_Val, uint64_Val, scaledUintVal);
+            }
+        }
     }
 
     private static final int CYCLE_LENGTH = 5;

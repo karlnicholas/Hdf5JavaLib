@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
-import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfBitField;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
@@ -21,7 +20,6 @@ import java.util.Map;
  * @see org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype
  * @see org.hdf5javalib.file.infrastructure.HdfGlobalHeap
  */
-@Getter
 public class BitFieldDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 4, version 1). */
     private final byte classAndVersion;
@@ -323,5 +321,13 @@ public class BitFieldDatatype implements HdfDatatype {
     @Override
     public int getSize() {
         return size;
+    }
+
+    public short getBitOffset() {
+        return bitOffset;
+    }
+
+    public short getBitPrecision() {
+        return bitPrecision;
     }
 }

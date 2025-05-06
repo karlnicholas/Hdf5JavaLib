@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
-import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
@@ -24,7 +23,6 @@ import java.util.Map;
  * @see org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype
  * @see org.hdf5javalib.file.infrastructure.HdfGlobalHeap
  */
-@Getter
 public class StringDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 3, version 1). */
     private final byte classAndVersion;
@@ -239,7 +237,6 @@ public class StringDatatype implements HdfDatatype {
     /**
      * Enum representing padding types for HDF5 strings.
      */
-    @Getter
     public enum PaddingType {
         /**
          * Null-terminated string, padded with nulls for longer strings.
@@ -329,7 +326,6 @@ public class StringDatatype implements HdfDatatype {
     /**
      * Enum representing character sets for HDF5 strings.
      */
-    @Getter
     public enum CharacterSet {
         /**
          * ASCII character set.

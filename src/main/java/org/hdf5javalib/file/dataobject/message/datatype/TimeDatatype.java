@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
-import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfTime;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
@@ -23,7 +22,6 @@ import java.util.Map;
  * @see org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype
  * @see org.hdf5javalib.file.infrastructure.HdfGlobalHeap
  */
-@Getter
 public class TimeDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 2, version 1). */
     private final byte classAndVersion;

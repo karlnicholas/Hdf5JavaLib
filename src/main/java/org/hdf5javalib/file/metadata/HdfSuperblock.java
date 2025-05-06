@@ -1,7 +1,5 @@
 package org.hdf5javalib.file.metadata;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfFileAllocation;
@@ -67,7 +65,6 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * <p>This class provides methods to parse and interpret the HDF5 Superblock
  * based on the HDF5 file specification.</p>
  */
-@Getter
 public class HdfSuperblock {
     private static final byte[] FILE_SIGNATURE = new byte[]{(byte) 0x89, 0x48, 0x44, 0x46, 0x0d, 0x0a, 0x1a, 0x0a};
 
@@ -80,7 +77,6 @@ public class HdfSuperblock {
 
     private final HdfFixedPoint baseAddress;
     private final HdfFixedPoint addressFileFreeSpaceInfo;
-    @Setter
     private HdfFixedPoint endOfFileAddress;
     private final HdfFixedPoint driverInformationAddress;
     private final HdfSymbolTableEntry rootGroupSymbolTableEntry;
@@ -314,5 +310,21 @@ public class HdfSuperblock {
                 ", driverInformationAddress=" + driverInformationAddress +
                 "\r\nrootGroupSymbolTableEntry=" + rootGroupSymbolTableEntry +
                 '}';
+    }
+
+    public void setEndOfFileAddress(HdfFixedPoint endOfFileAddress) {
+        this.endOfFileAddress = endOfFileAddress;
+    }
+
+    public FixedPointDatatype getFixedPointDatatypeForOffset() {
+        return fixedPointDatatypeForOffset;
+    }
+
+    public FixedPointDatatype getFixedPointDatatypeForLength() {
+        return fixedPointDatatypeForLength;
+    }
+
+    public HdfSymbolTableEntry getRootGroupSymbolTableEntry() {
+        return rootGroupSymbolTableEntry;
     }
 }

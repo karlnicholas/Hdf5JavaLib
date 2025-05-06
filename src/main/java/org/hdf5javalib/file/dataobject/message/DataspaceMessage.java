@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject.message;
 
-import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.utils.HdfReadUtils;
@@ -32,7 +31,6 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see org.hdf5javalib.file.dataobject.message.HdfMessage
  * @see org.hdf5javalib.HdfDataFile
  */
-@Getter
 public class DataspaceMessage extends HdfMessage {
     /** The version of the dataspace message format. */
     private final int version;
@@ -195,6 +193,10 @@ public class DataspaceMessage extends HdfMessage {
             bits.set(DataspaceFlag.PERMUTATION_INDICES_PRESENT.getBitIndex());
         }
         return bits;
+    }
+
+    public HdfFixedPoint[] getDimensions() {
+        return dimensions;
     }
 
     /**

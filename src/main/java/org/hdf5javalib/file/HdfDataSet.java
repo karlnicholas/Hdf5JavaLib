@@ -1,7 +1,5 @@
 package org.hdf5javalib.file;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
@@ -38,9 +36,8 @@ import java.util.function.Supplier;
  * This class implements {@link Closeable} to ensure proper resource management.
  * </p>
  */
-@Getter
-@Slf4j
 public class HdfDataSet implements Closeable {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfDataSet.class);
     /** The HDF5 file context. */
     private final HdfDataFile hdfDataFile;
     /** The name of the dataset. */
@@ -515,5 +512,17 @@ public class HdfDataSet implements Closeable {
                 fileChannel.write(buffer);
             }
         }
+    }
+
+    public HdfDatatype getHdfDatatype() {
+        return hdfDatatype;
+    }
+
+    public String getDatasetName() {
+        return datasetName;
+    }
+
+    public HdfObjectHeaderPrefixV1 getDataObjectHeaderPrefix() {
+        return dataObjectHeaderPrefix;
     }
 }

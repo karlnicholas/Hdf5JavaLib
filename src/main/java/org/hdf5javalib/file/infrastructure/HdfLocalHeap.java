@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.infrastructure;
 
-import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
@@ -31,7 +30,6 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see org.hdf5javalib.dataclass.HdfString
  * @see org.hdf5javalib.file.HdfFileAllocation
  */
-@Getter
 public class HdfLocalHeap {
     /** The signature of the local heap ("HEAP"). */
     private final String signature;
@@ -47,6 +45,10 @@ public class HdfLocalHeap {
     private final HdfDataFile hdfDataFile;
     /** The raw byte array containing the heap's data. */
     private byte[] heapData;
+
+    public HdfFixedPoint getFreeListOffset() {
+        return freeListOffset;
+    }
 
     /**
      * A utility class to hold a pair of values.

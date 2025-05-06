@@ -1,7 +1,5 @@
 package org.hdf5javalib.examples.read;
 
-import lombok.Builder;
-import lombok.Data;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.*;
 import org.hdf5javalib.datasource.TypedDataSource;
@@ -25,18 +23,90 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HdfSeparateTypesWriteTest {
-    @Data
     public static class Compound {
         private Short a;
         private Double b;
+
+        public Short getA() {
+            return a;
+        }
+
+        public void setA(Short a) {
+            this.a = a;
+        }
+
+        public Double getB() {
+            return b;
+        }
+
+        public void setB(Double b) {
+            this.b = b;
+        }
     }
 
-    @Data
-    @Builder
     public static class CustomCompound {
         private String name;
         private Short someShort;
         private Double someDouble;
+
+        private CustomCompound(Builder builder) {
+            this.name = builder.name;
+            this.someShort = builder.someShort;
+            this.someDouble = builder.someDouble;
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Short getSomeShort() {
+            return someShort;
+        }
+
+        public void setSomeShort(Short someShort) {
+            this.someShort = someShort;
+        }
+
+        public Double getSomeDouble() {
+            return someDouble;
+        }
+
+        public void setSomeDouble(Double someDouble) {
+            this.someDouble = someDouble;
+        }
+
+        public static class Builder {
+            private String name;
+            private Short someShort;
+            private Double someDouble;
+
+            public Builder name(String name) {
+                this.name = name;
+                return this;
+            }
+
+            public Builder someShort(Short someShort) {
+                this.someShort = someShort;
+                return this;
+            }
+
+            public Builder someDouble(Double someDouble) {
+                this.someDouble = someDouble;
+                return this;
+            }
+
+            public CustomCompound build() {
+                return new CustomCompound(this);
+            }
+        }
     }
 
     @BeforeAll

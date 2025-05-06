@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject.message;
 
-import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 import org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype;
@@ -59,7 +58,6 @@ import static org.hdf5javalib.file.dataobject.message.datatype.VariableLengthDat
  * @see org.hdf5javalib.file.dataobject.message.HdfMessage
  * @see org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype
  */
-@Getter
 public class DatatypeMessage extends HdfMessage {
     /** The HDF5 datatype describing the data. */
     private final HdfDatatype hdfDatatype;
@@ -174,5 +172,9 @@ public class DatatypeMessage extends HdfMessage {
         buffer.put(result);         // 3
         buffer.putInt(hdfDatatype.getSize());        // 4
         hdfDatatype.writeDefinitionToByteBuffer(buffer);
+    }
+
+    public HdfDatatype getHdfDatatype() {
+        return hdfDatatype;
     }
 }

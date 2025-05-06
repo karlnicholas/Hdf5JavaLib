@@ -1,8 +1,5 @@
 package org.hdf5javalib.file.dataobject.message;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
 
 import java.io.IOException;
@@ -56,13 +53,11 @@ import java.util.List;
  *
  * @see org.hdf5javalib.HdfDataFile
  */
-@Getter
-@Slf4j
 public abstract class HdfMessage {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfMessage.class);
     /** The type of the message. */
     private final MessageType messageType;
     /** The size of the message data in bytes, including padding. */
-    @Setter
     private short sizeMessageData;
     /** The message flags indicating properties like constancy or shareability. */
     private final byte messageFlags;
@@ -182,10 +177,17 @@ public abstract class HdfMessage {
         return new ArrayList<>(readMessagesFromByteBuffer(fileChannel, continuationSize, hdfDataFile));
     }
 
+    public short getSizeMessageData() {
+        return sizeMessageData;
+    }
+
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
     /**
      * Enum representing various HDF5 message types.
      */
-    @Getter
     public enum MessageType {
         /**
          * NIL Message (0x0000): A placeholder message to be ignored.
@@ -329,6 +331,14 @@ public abstract class HdfMessage {
                 }
             }
             throw new IllegalArgumentException("Unknown MessageType value: " + value);
+        }
+
+        /**
+         * Returns the numeric value of the message type.
+         * @return short of value
+         */
+        public short getValue() {
+            return value;
         }
     }
 }

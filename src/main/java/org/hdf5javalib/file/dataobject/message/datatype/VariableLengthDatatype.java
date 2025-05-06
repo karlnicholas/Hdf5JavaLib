@@ -1,8 +1,5 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
@@ -30,8 +27,6 @@ import java.util.Map;
  * @see org.hdf5javalib.file.dataobject.message.DatatypeMessage
  * @see org.hdf5javalib.file.infrastructure.HdfGlobalHeap
  */
-@Getter
-@Slf4j
 public class VariableLengthDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 9, version 1). */
     private final byte classAndVersion;
@@ -40,7 +35,6 @@ public class VariableLengthDatatype implements HdfDatatype {
     /** The fixed size of the variable-length descriptor in bytes. */
     private final int size;
     /** The global heap for accessing variable-length data. */
-    @Setter
     private HdfGlobalHeap globalHeap;
     /** The underlying datatype for the variable-length elements. */
     private final HdfDatatype hdfDatatype;
@@ -314,10 +308,18 @@ public class VariableLengthDatatype implements HdfDatatype {
         return size;
     }
 
+    @Override
+    public void setGlobalHeap(HdfGlobalHeap globalHeap) {
+        this.globalHeap = globalHeap;
+    }
+
+    public HdfGlobalHeap getGlobalHeap() {
+        return globalHeap;
+    }
+
     /**
      * Enum representing variable-length types for HDF5 variable-length datatypes.
      */
-    @Getter
     public enum Type {
         /**
          * A variable-length sequence of any datatype.
@@ -398,7 +400,6 @@ public class VariableLengthDatatype implements HdfDatatype {
     /**
      * Enum representing padding types for HDF5 variable-length strings.
      */
-    @Getter
     public enum PaddingType {
         /**
          * Null-terminated string.
@@ -482,7 +483,6 @@ public class VariableLengthDatatype implements HdfDatatype {
     /**
      * Enum representing character sets for HDF5 variable-length strings.
      */
-    @Getter
     public enum CharacterSet {
         /**
          * ASCII character set.

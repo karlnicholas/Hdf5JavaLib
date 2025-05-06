@@ -1,7 +1,5 @@
 package org.hdf5javalib.examples.write;
 
-import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFile;
@@ -213,21 +211,24 @@ public class HdfFixedPointWrite {
      *
      * @param writerParams the parameters for writing the matrix
      */
-    @SneakyThrows
     private void writeEachMatrix(MatrixWriterParams writerParams) {
         AtomicInteger countHolder = new AtomicInteger(0);
         ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
         BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
         BigDecimal point5 = new BigDecimal("0.5");
         // Write to dataset
-        writerParams.dataset.write(() -> {
-            int count = countHolder.getAndIncrement();
-            if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
-            byteBuffer.clear();
-            makeBitOffsetValues(writerParams, byteBuffer, twoShifted, point5, count);
-            byteBuffer.flip();
-            return byteBuffer;
-        });
+        try {
+            writerParams.dataset.write(() -> {
+                int count = countHolder.getAndIncrement();
+                if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
+                byteBuffer.clear();
+                makeBitOffsetValues(writerParams, byteBuffer, twoShifted, point5, count);
+                byteBuffer.flip();
+                return byteBuffer;
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -235,7 +236,6 @@ public class HdfFixedPointWrite {
      *
      * @param writerParams the parameters for writing the matrix
      */
-    @SneakyThrows
     private void writeAllMatrix(MatrixWriterParams writerParams) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_DATAPOINTS * writerParams.NUM_RECORDS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
         BigDecimal twoShifted = new BigDecimal(BigInteger.ONE.shiftLeft(writerParams.fixedPointDatatype.getBitOffset()));
@@ -245,7 +245,11 @@ public class HdfFixedPointWrite {
         }
         byteBuffer.flip();
         // Write to dataset
-        writerParams.dataset.write(byteBuffer);
+        try {
+            writerParams.dataset.write(byteBuffer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -271,19 +275,22 @@ public class HdfFixedPointWrite {
      *
      * @param writerParams the parameters for writing the vector
      */
-    @SneakyThrows
     private void writeEach(WriterParams writerParams) {
         AtomicInteger countHolder = new AtomicInteger(0);
         ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize()).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
         // Write to dataset
-        writerParams.dataset.write(() -> {
-            int count = countHolder.getAndIncrement();
-            if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
-            byteBuffer.clear();
-            HdfWriteUtils.writeFixedPointToBuffer(byteBuffer, new HdfFixedPoint(BigInteger.valueOf((long)(Math.random() * 40.0 + 10.0)), writerParams.fixedPointDatatype));
-            byteBuffer.flip();
-            return byteBuffer;
-        });
+        try {
+            writerParams.dataset.write(() -> {
+                int count = countHolder.getAndIncrement();
+                if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
+                byteBuffer.clear();
+                HdfWriteUtils.writeFixedPointToBuffer(byteBuffer, new HdfFixedPoint(BigInteger.valueOf((long)(Math.random() * 40.0 + 10.0)), writerParams.fixedPointDatatype));
+                byteBuffer.flip();
+                return byteBuffer;
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -291,7 +298,6 @@ public class HdfFixedPointWrite {
      *
      * @param writerParams the parameters for writing the vector
      */
-    @SneakyThrows
     private void writeAll(WriterParams writerParams) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.fixedPointDatatype.getSize() * writerParams.NUM_RECORDS).order(writerParams.fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
         for (int i = 0; i < writerParams.NUM_RECORDS; i++) {
@@ -299,13 +305,16 @@ public class HdfFixedPointWrite {
         }
         byteBuffer.flip();
         // Write to dataset
-        writerParams.dataset.write(byteBuffer);
+        try {
+            writerParams.dataset.write(byteBuffer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Parameters for writing vector data.
      */
-    @AllArgsConstructor
     static class WriterParams {
         /** The number of records to write. */
         int NUM_RECORDS;
@@ -313,12 +322,17 @@ public class HdfFixedPointWrite {
         FixedPointDatatype fixedPointDatatype;
         /** The dataset to write to. */
         HdfDataSet dataset;
+
+        public WriterParams(int NUM_RECORDS, FixedPointDatatype fixedPointDatatype, HdfDataSet dataset) {
+            this.NUM_RECORDS = NUM_RECORDS;
+            this.fixedPointDatatype = fixedPointDatatype;
+            this.dataset = dataset;
+        }
     }
 
     /**
      * Parameters for writing matrix data.
      */
-    @AllArgsConstructor
     static class MatrixWriterParams {
         /** The number of records (rows). */
         int NUM_RECORDS;
@@ -330,5 +344,13 @@ public class HdfFixedPointWrite {
         HdfDataSet dataset;
         /** The matrix data values. */
         List<List<BigDecimal>> values;
+
+        public MatrixWriterParams(int NUM_RECORDS, int NUM_DATAPOINTS, FixedPointDatatype fixedPointDatatype, HdfDataSet dataset, List<List<BigDecimal>> values) {
+            this.NUM_RECORDS = NUM_RECORDS;
+            this.NUM_DATAPOINTS = NUM_DATAPOINTS;
+            this.fixedPointDatatype = fixedPointDatatype;
+            this.dataset = dataset;
+            this.values = values;
+        }
     }
 }

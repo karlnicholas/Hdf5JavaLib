@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
-import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfEnum;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
@@ -22,7 +21,6 @@ import java.util.*;
  * @see org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype
  * @see org.hdf5javalib.file.dataobject.message.DatatypeMessage
  */
-@Getter
 public class EnumDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 8, version 1 or 2). */
     private final byte classAndVersion;

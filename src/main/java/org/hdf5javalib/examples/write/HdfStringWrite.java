@@ -1,7 +1,5 @@
 package org.hdf5javalib.examples.write;
 
-import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfDataSet;
@@ -12,6 +10,7 @@ import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
@@ -99,21 +98,24 @@ public class HdfStringWrite {
      *
      * @param writerParams the parameters for writing the string data
      */
-    @SneakyThrows
     private void writeEach(HdfStringWrite.WriterParams writerParams) {
         AtomicInteger countHolder = new AtomicInteger(0);
         ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.stringDatatype.getSize());
         // Write to dataset
-        writerParams.dataset.write(() -> {
-            int count = countHolder.getAndIncrement();
-            if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
-            byteBuffer.clear();
-            byte[] bytes = ("ꦠꦤ꧀" + " " + (count+1)).getBytes();
-            HdfString value = new HdfString(bytes, writerParams.stringDatatype);
-            value.writeValueToByteBuffer(byteBuffer);
-            byteBuffer.flip();
-            return byteBuffer;
-        });
+        try {
+            writerParams.dataset.write(() -> {
+                int count = countHolder.getAndIncrement();
+                if (count >= writerParams.NUM_RECORDS) return ByteBuffer.allocate(0);
+                byteBuffer.clear();
+                byte[] bytes = ("ꦠꦤ꧀" + " " + (count+1)).getBytes();
+                HdfString value = new HdfString(bytes, writerParams.stringDatatype);
+                value.writeValueToByteBuffer(byteBuffer);
+                byteBuffer.flip();
+                return byteBuffer;
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -121,7 +123,6 @@ public class HdfStringWrite {
      *
      * @param writerParams the parameters for writing the string data
      */
-    @SneakyThrows
     private void writeAll(HdfStringWrite.WriterParams writerParams) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(writerParams.stringDatatype.getSize() * writerParams.NUM_RECORDS);
         for(int i=0; i<writerParams.NUM_RECORDS; i++) {
@@ -131,13 +132,16 @@ public class HdfStringWrite {
         }
         byteBuffer.flip();
         // Write to dataset
-        writerParams.dataset.write(byteBuffer);
+        try {
+            writerParams.dataset.write(byteBuffer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Parameters for writing string data.
      */
-    @AllArgsConstructor
     static class WriterParams {
         /** The number of records to write. */
         int NUM_RECORDS;
@@ -147,5 +151,11 @@ public class HdfStringWrite {
 
         /** The dataset to write to. */
         HdfDataSet dataset;
+
+        public WriterParams(int NUM_RECORDS, StringDatatype stringDatatype, HdfDataSet dataset) {
+            this.NUM_RECORDS = NUM_RECORDS;
+            this.stringDatatype = stringDatatype;
+            this.dataset = dataset;
+        }
     }
 }

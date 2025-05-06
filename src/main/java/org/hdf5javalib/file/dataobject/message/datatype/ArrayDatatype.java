@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
-import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfArray;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
@@ -35,7 +34,6 @@ import java.util.Map;
  * @see org.hdf5javalib.file.infrastructure.HdfGlobalHeap
  * @see org.hdf5javalib.file.dataobject.message.DatatypeMessage
  */
-@Getter
 public class ArrayDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 10, version 2). */
     private final byte classAndVersion;

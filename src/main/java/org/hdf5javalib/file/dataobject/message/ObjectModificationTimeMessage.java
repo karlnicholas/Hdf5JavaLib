@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject.message;
 
-import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
 
 import java.nio.ByteBuffer;
@@ -33,7 +32,6 @@ import java.time.Instant;
  * @see org.hdf5javalib.file.dataobject.message.HdfMessage
  * @see org.hdf5javalib.HdfDataFile
  */
-@Getter
 public class ObjectModificationTimeMessage extends HdfMessage {
     /** The version of the modification time message format. */
     private final int version;

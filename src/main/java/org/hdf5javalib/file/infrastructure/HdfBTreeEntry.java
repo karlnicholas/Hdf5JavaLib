@@ -1,7 +1,5 @@
 package org.hdf5javalib.file.infrastructure;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 
 /**
@@ -17,10 +15,8 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
  * @see org.hdf5javalib.file.infrastructure.HdfGroupSymbolTableNode
  * @see org.hdf5javalib.file.infrastructure.HdfBTreeV1
  */
-@Getter
 public class HdfBTreeEntry {
     /** The key for this B-Tree entry, used for ordering. */
-    @Setter
     private HdfFixedPoint key;
     /** The address of the child node (symbol table node or child B-Tree). */
     private final HdfFixedPoint childPointer;
@@ -101,5 +97,25 @@ public class HdfBTreeEntry {
 
         sb.append('}');
         return sb.toString();
+    }
+
+    public void setKey(HdfFixedPoint key) {
+        this.key = key;
+    }
+
+    public HdfFixedPoint getKey() {
+        return key;
+    }
+
+    public HdfFixedPoint getChildPointer() {
+        return childPointer;
+    }
+
+    public HdfGroupSymbolTableNode getSymbolTableNode() {
+        return symbolTableNode;
+    }
+
+    public HdfBTreeV1 getChildBTree() {
+        return childBTree;
     }
 }

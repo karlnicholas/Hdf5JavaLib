@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
-import lombok.Getter;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
@@ -90,7 +89,6 @@ public interface HdfDatatype {
     /**
      * Enum representing the possible HDF5 datatype classes.
      */
-    @Getter
     enum DatatypeClass {
         /**
          * HDF5 integer types.

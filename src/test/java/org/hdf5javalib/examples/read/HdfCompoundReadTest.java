@@ -1,9 +1,5 @@
 package org.hdf5javalib.examples.read;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfData;
@@ -33,10 +29,6 @@ public class HdfCompoundReadTest {
             new BigDecimal("7.5000000"), new BigDecimal("8.7500000"), new BigDecimal("9.0000000"),
             new BigDecimal("10.2500000"));
 
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
     public static class CompoundExample {
         private Long recordId;
         private String fixedStr;
@@ -52,14 +44,157 @@ public class HdfCompoundReadTest {
         private Long uint32_Val;
         private BigInteger uint64_Val;
         private BigDecimal scaledUintVal;
+
+        public Long getRecordId() {
+            return recordId;
+        }
+
+        public void setRecordId(Long recordId) {
+            this.recordId = recordId;
+        }
+
+        public String getFixedStr() {
+            return fixedStr;
+        }
+
+        public void setFixedStr(String fixedStr) {
+            this.fixedStr = fixedStr;
+        }
+
+        public String getVarStr() {
+            return varStr;
+        }
+
+        public void setVarStr(String varStr) {
+            this.varStr = varStr;
+        }
+
+        public Float getFloatVal() {
+            return floatVal;
+        }
+
+        public void setFloatVal(Float floatVal) {
+            this.floatVal = floatVal;
+        }
+
+        public Double getDoubleVal() {
+            return doubleVal;
+        }
+
+        public void setDoubleVal(Double doubleVal) {
+            this.doubleVal = doubleVal;
+        }
+
+        public Byte getInt8_Val() {
+            return int8_Val;
+        }
+
+        public void setInt8_Val(Byte int8_Val) {
+            this.int8_Val = int8_Val;
+        }
+
+        public Short getInt16_Val() {
+            return int16_Val;
+        }
+
+        public void setInt16_Val(Short int16_Val) {
+            this.int16_Val = int16_Val;
+        }
+
+        public Integer getInt32_Val() {
+            return int32_Val;
+        }
+
+        public void setInt32_Val(Integer int32_Val) {
+            this.int32_Val = int32_Val;
+        }
+
+        public Long getInt64_Val() {
+            return int64_Val;
+        }
+
+        public void setInt64_Val(Long int64_Val) {
+            this.int64_Val = int64_Val;
+        }
+
+        public Short getUint8_Val() {
+            return uint8_Val;
+        }
+
+        public void setUint8_Val(Short uint8_Val) {
+            this.uint8_Val = uint8_Val;
+        }
+
+        public Integer getUint16_Val() {
+            return uint16_Val;
+        }
+
+        public void setUint16_Val(Integer uint16_Val) {
+            this.uint16_Val = uint16_Val;
+        }
+
+        public Long getUint32_Val() {
+            return uint32_Val;
+        }
+
+        public void setUint32_Val(Long uint32_Val) {
+            this.uint32_Val = uint32_Val;
+        }
+
+        public BigInteger getUint64_Val() {
+            return uint64_Val;
+        }
+
+        public void setUint64_Val(BigInteger uint64_Val) {
+            this.uint64_Val = uint64_Val;
+        }
+
+        public BigDecimal getScaledUintVal() {
+            return scaledUintVal;
+        }
+
+        public void setScaledUintVal(BigDecimal scaledUintVal) {
+            this.scaledUintVal = scaledUintVal;
+        }
     }
 
-    @Data
     public static class MonitoringData {
         private String siteName;
         private Float airQualityIndex;
         private Double temperature;
         private Integer sampleCount;
+
+        public String getSiteName() {
+            return siteName;
+        }
+
+        public void setSiteName(String siteName) {
+            this.siteName = siteName;
+        }
+
+        public Float getAirQualityIndex() {
+            return airQualityIndex;
+        }
+
+        public void setAirQualityIndex(Float airQualityIndex) {
+            this.airQualityIndex = airQualityIndex;
+        }
+
+        public Double getTemperature() {
+            return temperature;
+        }
+
+        public void setTemperature(Double temperature) {
+            this.temperature = temperature;
+        }
+
+        public Integer getSampleCount() {
+            return sampleCount;
+        }
+
+        public void setSampleCount(Integer sampleCount) {
+            this.sampleCount = sampleCount;
+        }
     }
 
     @BeforeAll

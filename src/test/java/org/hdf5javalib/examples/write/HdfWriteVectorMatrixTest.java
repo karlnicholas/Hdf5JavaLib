@@ -1,6 +1,5 @@
 package org.hdf5javalib.examples.write;
 
-import lombok.SneakyThrows;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.examples.MemorySeekableByteChannel;
@@ -74,7 +73,6 @@ public class HdfWriteVectorMatrixTest {
         }
     }
 
-    @SneakyThrows
     private static void writeVectorAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
         int numRecords = 1000;
         ByteBuffer byteBuffer = ByteBuffer.allocate(numRecords * 8).order(ByteOrder.LITTLE_ENDIAN);
@@ -82,25 +80,31 @@ public class HdfWriteVectorMatrixTest {
             HdfWriteUtils.hdfFixedPointFromValue(i+1, hdfDataFile.getFixedPointDatatypeForLength()).writeValueToByteBuffer(byteBuffer);
         }
         byteBuffer.flip();
-        dataset.write(byteBuffer);
+        try {
+            dataset.write(byteBuffer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    @SneakyThrows
     private static void writeVectorEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
         int numRecords = 1000;
         AtomicInteger countHolder = new AtomicInteger(0);
         ByteBuffer byteBuffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
-        dataset.write(() -> {
-            int count = countHolder.getAndIncrement();
-            if (count >= numRecords) return ByteBuffer.allocate(0);
-            byteBuffer.clear();
-            HdfWriteUtils.hdfFixedPointFromValue(count+1, hdfDataFile.getFixedPointDatatypeForLength()).writeValueToByteBuffer(byteBuffer);
-            byteBuffer.flip();
-            return byteBuffer;
-        });
+        try {
+            dataset.write(() -> {
+                int count = countHolder.getAndIncrement();
+                if (count >= numRecords) return ByteBuffer.allocate(0);
+                byteBuffer.clear();
+                HdfWriteUtils.hdfFixedPointFromValue(count+1, hdfDataFile.getFixedPointDatatypeForLength()).writeValueToByteBuffer(byteBuffer);
+                byteBuffer.flip();
+                return byteBuffer;
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    @SneakyThrows
     private static void writeMatrixAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
         int numRecords = 4;
         int numDatapoints = 17;
@@ -120,10 +124,13 @@ public class HdfWriteVectorMatrixTest {
             }
         }
         byteBuffer.flip();
-        dataset.write(byteBuffer);
+        try {
+            dataset.write(byteBuffer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    @SneakyThrows
     private static void writeMatrixEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
         int numRecords = 4;
         int numDatapoints = 17;
@@ -136,18 +143,22 @@ public class HdfWriteVectorMatrixTest {
                 FixedPointDatatype.createClassAndVersion(),
                 FixedPointDatatype.createClassBitField(false, false, false, false),
                 (short) 4, (short) 7, (short) 25);
-        dataset.write(() -> {
-            int count = countHolder.getAndIncrement();
-            if (count >= numRecords) return ByteBuffer.allocate(0);
-            byteBuffer.clear();
-            for (int c = 0; c < numDatapoints; c++) {
-                BigDecimal rawValue = values.get(count).get(c).multiply(twoShifted).add(point5);
-                BigInteger rawValueShifted = rawValue.toBigInteger();
-                new HdfFixedPoint(rawValueShifted, datatype).writeValueToByteBuffer(byteBuffer);
-            }
-            byteBuffer.flip();
-            return byteBuffer;
-        });
+        try {
+            dataset.write(() -> {
+                int count = countHolder.getAndIncrement();
+                if (count >= numRecords) return ByteBuffer.allocate(0);
+                byteBuffer.clear();
+                for (int c = 0; c < numDatapoints; c++) {
+                    BigDecimal rawValue = values.get(count).get(c).multiply(twoShifted).add(point5);
+                    BigInteger rawValueShifted = rawValue.toBigInteger();
+                    new HdfFixedPoint(rawValueShifted, datatype).writeValueToByteBuffer(byteBuffer);
+                }
+                byteBuffer.flip();
+                return byteBuffer;
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static short computeDataSpaceMessageSize(HdfFixedPoint[] hdfDimensions) {

@@ -1,7 +1,5 @@
 package org.hdf5javalib.file;
 
-import lombok.Getter;
-
 import java.util.*;
 
 /**
@@ -14,8 +12,27 @@ import java.util.*;
  * checks for overlaps, updates next available offsets, and supports dynamic resizing of heaps.
  * </p>
  */
-@Getter
 public class HdfFileAllocation {
+
+    public AllocationRecord getSuperblockRecord() {
+        return superblockRecord;
+    }
+
+    public AllocationRecord getLocalHeapHeaderRecord() {
+        return localHeapHeaderRecord;
+    }
+
+    public AllocationRecord getBtreeRecord() {
+        return btreeRecord;
+    }
+
+    public AllocationRecord getObjectHeaderPrefixRecord() {
+        return objectHeaderPrefixRecord;
+    }
+
+    public long getDataNextAvailableOffset() {
+        return dataNextAvailableOffset;
+    }
 
     /**
      * Defines the types of allocation blocks used in an HDF5 file.

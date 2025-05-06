@@ -1,7 +1,5 @@
 package org.hdf5javalib.file.infrastructure;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfFileAllocation;
@@ -28,7 +26,6 @@ import java.util.Map;
  * @see org.hdf5javalib.dataclass.HdfFixedPoint
  * @see org.hdf5javalib.file.HdfFileAllocation
  */
-@Slf4j
 public class HdfGlobalHeap {
     private static final String SIGNATURE = "GCOL";
     private static final int VERSION = 1;
@@ -437,7 +434,6 @@ public class HdfGlobalHeap {
     /**
      * Represents a single object in a global heap collection.
      */
-    @Getter
     private static class GlobalHeapObject {
         /** The unique ID of the object (0 for null terminator). */
         private final int objectId;
@@ -537,6 +533,18 @@ public class HdfGlobalHeap {
                 int padding = getPadding(expectedDataSize);
                 if (padding > 0) { buffer.put(new byte[padding]); }
             }
+        }
+
+        public int getObjectId() {
+            return objectId;
+        }
+
+        public long getObjectSize() {
+            return objectSize;
+        }
+
+        public byte[] getData() {
+            return data;
         }
     }
 }

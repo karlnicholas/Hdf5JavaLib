@@ -1,6 +1,5 @@
 package org.hdf5javalib.dataclass;
 
-import lombok.Getter;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
@@ -21,7 +20,6 @@ import java.nio.ByteBuffer;
  * @see org.hdf5javalib.dataclass.HdfData
  * @see org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype
  */
-@Getter
 public class HdfFixedPoint implements HdfData {
     /** The raw byte array containing the fixed-point data. */
     private final byte[] bytes;
@@ -161,5 +159,9 @@ public class HdfFixedPoint implements HdfData {
     @Override
     public <T> T getInstance(Class<T> clazz) {
         return datatype.getInstance(clazz, bytes);
+    }
+
+    public FixedPointDatatype getDatatype() {
+        return datatype;
     }
 }

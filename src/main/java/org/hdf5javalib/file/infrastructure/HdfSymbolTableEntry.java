@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.infrastructure;
 
-import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.utils.HdfReadUtils;
@@ -25,7 +24,6 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see org.hdf5javalib.dataclass.HdfFixedPoint
  * @see org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype
  */
-@Getter
 public class HdfSymbolTableEntry {
     /** The offset of the link name in the local heap. */
     private final HdfFixedPoint linkNameOffset;
@@ -154,5 +152,21 @@ public class HdfSymbolTableEntry {
 
         sb.append("}");
         return sb.toString();
+    }
+
+    public HdfFixedPoint getLinkNameOffset() {
+        return linkNameOffset;
+    }
+
+    public HdfFixedPoint getObjectHeaderOffset() {
+        return objectHeaderOffset;
+    }
+
+    public HdfFixedPoint getLocalHeapOffset() {
+        return localHeapOffset;
+    }
+
+    public HdfFixedPoint getBTreeOffset() {
+        return bTreeOffset;
     }
 }

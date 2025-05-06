@@ -1,7 +1,5 @@
 package org.hdf5javalib.file.dataobject.message;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.utils.HdfReadUtils;
@@ -40,8 +38,6 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see org.hdf5javalib.file.dataobject.message.HdfMessage
  * @see org.hdf5javalib.HdfDataFile
  */
-@Getter
-@Setter
 public class ObjectHeaderContinuationMessage extends HdfMessage {
     /** The offset of the continuation block in the file. */
     private HdfFixedPoint continuationOffset;
@@ -104,5 +100,21 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
         writeFixedPointToBuffer(buffer, continuationOffset);
         // Write continuation size
         writeFixedPointToBuffer(buffer, continuationSize);
+    }
+
+    public HdfFixedPoint getContinuationOffset() {
+        return continuationOffset;
+    }
+
+    public HdfFixedPoint getContinuationSize() {
+        return continuationSize;
+    }
+
+    public void setContinuationOffset(HdfFixedPoint continuationOffset) {
+        this.continuationOffset = continuationOffset;
+    }
+
+    public void setContinuationSize(HdfFixedPoint continuationSize) {
+        this.continuationSize = continuationSize;
     }
 }

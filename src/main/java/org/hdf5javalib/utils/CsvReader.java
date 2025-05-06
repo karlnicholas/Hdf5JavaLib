@@ -24,7 +24,7 @@ public class CsvReader {
      * @throws IOException if the file is not found, cannot be read, or contains invalid data
      * @throws NumberFormatException if any value in the CSV file cannot be parsed as a valid number
      */
-    public static List<List<BigDecimal>> readCsvFromFile(String fileName) throws IOException {
+    public static List<List<BigDecimal>> readCsvFromFile(String fileName) {
         List<List<BigDecimal>> data = new ArrayList<>();
 
         // Load file from resources
@@ -43,6 +43,8 @@ public class CsvReader {
                         .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
                 data.add(row);
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         return data;
