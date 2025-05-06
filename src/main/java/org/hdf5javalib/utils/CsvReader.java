@@ -21,7 +21,6 @@ public class CsvReader {
      *
      * @param fileName the name of the CSV file (including path if in a subdirectory) located in the resources folder
      * @return a {@code List<List<BigDecimal>>} containing the parsed numerical data from the CSV file
-     * @throws IOException if the file is not found, cannot be read, or contains invalid data
      * @throws NumberFormatException if any value in the CSV file cannot be parsed as a valid number
      */
     public static List<List<BigDecimal>> readCsvFromFile(String fileName) {
