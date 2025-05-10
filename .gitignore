@@ -36,3 +36,4 @@ build/
 *.exe
 /*.h5
 hdf5/*/*.h5
+/bouml/
