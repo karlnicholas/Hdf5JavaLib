@@ -1,7 +1,7 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.dataclass.HdfData;
-import org.hdf5javalib.dataclass.HdfEnum;
+import org.hdf5javalib.redo.dataclass.HdfData;
+import org.hdf5javalib.redo.dataclass.HdfEnum;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
 
@@ -23,7 +23,7 @@ import java.util.*;
  */
 public class EnumDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 8, version 1 or 2). */
-    private final byte classAndVersion;
+    private final int classAndVersion;
     /** A BitSet indicating the number of enumeration members. */
     private final BitSet classBitField;
     /** The size of each enumeration value in bytes, matching the base type. */
@@ -264,7 +264,7 @@ public class EnumDatatype implements HdfDatatype {
      * @return the size of the message data in bytes, as a short
      */
     @Override
-    public short getSizeMessageData() {
+    public int getSizeMessageData() {
         int totalNameBytes = 0;
         for (String name : names) {
             int nameLength = name.getBytes(StandardCharsets.US_ASCII).length + 1; // Include null terminator
@@ -326,7 +326,7 @@ public class EnumDatatype implements HdfDatatype {
      * @return the class and version byte
      */
     @Override
-    public byte getClassAndVersion() {
+    public int getClassAndVersion() {
         return classAndVersion;
     }
 

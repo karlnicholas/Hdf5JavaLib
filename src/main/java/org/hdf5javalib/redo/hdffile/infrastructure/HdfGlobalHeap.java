@@ -2,7 +2,7 @@ package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
+import org.hdf5javalib.redo.HdfFileAllocation;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 
 import java.io.IOException;
@@ -137,7 +137,7 @@ public class HdfGlobalHeap {
         }
 
         headerBuffer.position(headerBuffer.position() + 3);
-        HdfFixedPoint localCollectionSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForLength(), headerBuffer);
+        HdfFixedPoint localCollectionSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), headerBuffer);
         long declaredSize = localCollectionSize.getInstance(Long.class);
 
         if (declaredSize < 16 || (startOffset + declaredSize > fileChannel.size())) {

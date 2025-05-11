@@ -1,8 +1,8 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.dataclass.HdfData;
-import org.hdf5javalib.dataclass.HdfFloatPoint;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.redo.dataclass.HdfData;
+import org.hdf5javalib.redo.dataclass.HdfFloatPoint;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -24,23 +24,23 @@ import java.util.Map;
  */
 public class FloatingPointDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 1, version 1). */
-    private final byte classAndVersion;
+    private final int classAndVersion;
     /** A BitSet containing class-specific bit field information (byte order, padding, sign location). */
     private final BitSet classBitField;
     /** The total size of the floating-point datatype in bytes. */
     private final int size;
     /** The bit offset of the first significant bit. */
-    private final short bitOffset;
+    private final int bitOffset;
     /** The total number of bits of precision. */
-    private final short bitPrecision;
+    private final int bitPrecision;
     /** The bit position of the exponent. */
-    private final byte exponentLocation;
+    private final int exponentLocation;
     /** The size of the exponent in bits. */
-    private final byte exponentSize;
+    private final int exponentSize;
     /** The bit position of the mantissa. */
-    private final byte mantissaLocation;
+    private final int mantissaLocation;
     /** The size of the mantissa in bits. */
-    private final byte mantissaSize;
+    private final int mantissaSize;
     /** The exponent bias value. */
     private final int exponentBias;
 
@@ -69,7 +69,17 @@ public class FloatingPointDatatype implements HdfDatatype {
      * @param mantissaSize      the size of the mantissa in bits
      * @param exponentBias      the exponent bias value
      */
-    public FloatingPointDatatype(byte classAndVersion, BitSet classBitField, int size, short bitOffset, short bitPrecision, byte exponentLocation, byte exponentSize, byte mantissaLocation, byte mantissaSize, int exponentBias) {
+    public FloatingPointDatatype(
+            int classAndVersion,
+            BitSet classBitField,
+            int size,
+            int bitOffset,
+            int bitPrecision,
+            int exponentLocation,
+            int exponentSize,
+            int mantissaLocation,
+            int mantissaSize, int exponentBias
+    ) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
@@ -91,14 +101,14 @@ public class FloatingPointDatatype implements HdfDatatype {
      * @param buffer          the ByteBuffer containing the datatype definition
      * @return a new FloatingPointDatatype instance parsed from the buffer
      */
-    public static FloatingPointDatatype parseFloatingPointType(byte version, BitSet classBitField, int size, ByteBuffer buffer) {
-        short bitOffset = buffer.getShort();
-        short bitPrecision = buffer.getShort();
-        byte exponentLocation = buffer.get();
-        byte exponentSize = buffer.get();
-        byte mantissaLocation = buffer.get();
-        byte mantissaSize = buffer.get();
-        int exponentBias = buffer.getInt();
+    public static FloatingPointDatatype parseFloatingPointType(int version, BitSet classBitField, int size, ByteBuffer buffer) {
+        int bitOffset = Short.toUnsignedInt(buffer.getShort());
+        int bitPrecision = Short.toUnsignedInt(buffer.getShort());
+        int exponentLocation = Byte.toUnsignedInt(buffer.get());
+        int exponentSize = Byte.toUnsignedInt(buffer.get());
+        int mantissaLocation = Byte.toUnsignedInt(buffer.get());
+        int mantissaSize = Byte.toUnsignedInt(buffer.get());
+        int exponentBias = Byte.toUnsignedInt(buffer.get());
         return new FloatingPointDatatype(version, classBitField, size, bitOffset, bitPrecision, exponentLocation, exponentSize, mantissaLocation, mantissaSize, exponentBias);
     }
 
@@ -140,7 +150,7 @@ public class FloatingPointDatatype implements HdfDatatype {
      * @return the size of the message data in bytes, as a short
      */
     @Override
-    public short getSizeMessageData() {
+    public int getSizeMessageData() {
         return (short) (12 + 8);
     }
 
@@ -311,12 +321,12 @@ public class FloatingPointDatatype implements HdfDatatype {
      */
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        buffer.putShort(bitOffset);
-        buffer.putShort(bitPrecision);
-        buffer.put(exponentLocation);
-        buffer.put(exponentSize);
-        buffer.put(mantissaLocation);
-        buffer.put(mantissaSize);
+        buffer.putShort((short) bitOffset);
+        buffer.putShort((short) bitPrecision);
+        buffer.put((byte) exponentLocation);
+        buffer.put((byte) exponentSize);
+        buffer.put((byte) mantissaLocation);
+        buffer.put((byte) mantissaSize);
         buffer.putInt(exponentBias);
     }
 
@@ -550,7 +560,7 @@ public class FloatingPointDatatype implements HdfDatatype {
      * @return the class and version byte
      */
     @Override
-    public byte getClassAndVersion() {
+    public int getClassAndVersion() {
         return classAndVersion;
     }
 

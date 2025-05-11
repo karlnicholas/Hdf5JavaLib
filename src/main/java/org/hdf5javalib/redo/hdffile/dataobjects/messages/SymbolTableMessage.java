@@ -7,7 +7,7 @@ import org.hdf5javalib.redo.utils.HdfReadUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
+import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 /**
  * Represents a Symbol Table Message in the HDF5 file format.

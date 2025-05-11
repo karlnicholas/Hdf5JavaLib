@@ -1,7 +1,7 @@
 package org.hdf5javalib.redo.hdffile.dataobjects;
 
 import org.hdf5javalib.redo.HdfDataFile;
-import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
+import org.hdf5javalib.redo.HdfFileAllocation;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.ObjectHeaderContinuationMessage;
 
@@ -78,13 +78,13 @@ public class HdfObjectHeaderPrefixV1 {
         int version = Byte.toUnsignedInt(buffer.get());
 
         // Reserved (1 byte, should be zero)
-        byte reserved = buffer.get();
+        int reserved = Byte.toUnsignedInt(buffer.get());
         if (reserved != 0) {
             throw new IllegalArgumentException("Reserved byte in Data Object Header Prefix is not zero.");
         }
 
         // Total Number of Header Messages (2 bytes, little-endian)
-        int totalHeaderMessages = Short.toUnsignedInt(buffer.getShort());
+        short totalHeaderMessages = buffer.getShort();
 
         // Object Reference Count (4 bytes, little-endian)
         long objectReferenceCount = Integer.toUnsignedLong(buffer.getInt());

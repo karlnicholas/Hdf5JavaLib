@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
 
 import java.nio.ByteBuffer;
@@ -156,7 +156,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
      * @return the class and version byte
      */
     @Override
-    public byte getClassAndVersion() {
+    public int getClassAndVersion() {
         return type.getClassAndVersion();
     }
 
@@ -226,7 +226,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
     }
 
     @Override
-    public short getSizeMessageData() {
+    public int getSizeMessageData() {
         return sizeMessageData;
     }
 

@@ -1,8 +1,8 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.dataclass.HdfData;
-import org.hdf5javalib.dataclass.HdfString;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.redo.dataclass.HdfData;
+import org.hdf5javalib.redo.dataclass.HdfString;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class StringDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 3, version 1). */
-    private final byte classAndVersion;
+    private final int classAndVersion;
     /** A BitSet containing class-specific bit field information (padding type and character set). */
     private final BitSet classBitField;
     /** The fixed size of the string in bytes. */
@@ -207,7 +207,7 @@ public class StringDatatype implements HdfDatatype {
      * @return the size of the message data in bytes, as a short
      */
     @Override
-    public short getSizeMessageData() {
+    public int getSizeMessageData() {
         return (short) (0 + 8);
     }
 
@@ -433,7 +433,7 @@ public class StringDatatype implements HdfDatatype {
      * @return the class and version byte
      */
     @Override
-    public byte getClassAndVersion() {
+    public int getClassAndVersion() {
         return classAndVersion;
     }
 

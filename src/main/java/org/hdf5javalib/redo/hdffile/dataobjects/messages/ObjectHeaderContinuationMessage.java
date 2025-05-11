@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
 
-import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
+import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 /**
  * Represents an Object Header Continuation Message in the HDF5 file format.
@@ -70,8 +70,8 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Parse the continuation offset and size
         BitSet emptyBitSet = new BitSet();
-        HdfFixedPoint continuationOffset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), buffer);
-        HdfFixedPoint continuationSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForLength(), buffer);
+        HdfFixedPoint continuationOffset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint continuationSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), buffer);
         return new ObjectHeaderContinuationMessage(continuationOffset, continuationSize, flags, (short) data.length);
     }
 

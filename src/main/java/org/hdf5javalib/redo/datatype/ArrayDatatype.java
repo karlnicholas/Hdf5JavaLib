@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class ArrayDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 10, version 2). */
-    private final byte classAndVersion;
+    private final int classAndVersion;
     /** A BitSet containing class-specific bit field information (currently unused). */
     private final BitSet classBitField;
     /** The total size of the array datatype in bytes. */
@@ -118,7 +118,7 @@ public class ArrayDatatype implements HdfDatatype {
      */
     public static ArrayDatatype parseArrayDatatype(byte classAndVersion, BitSet classBitField,
                                                    int size, ByteBuffer buffer) {
-        int dimensionality = buffer.get() & 0xFF; // Unsigned byte
+        int dimensionality = Byte.toUnsignedInt(buffer.get()); // Unsigned byte
         buffer.get(new byte[3]); // Skip 3 reserved bytes (zero)
 
         // Read dimension sizes (slowest to fastest changing)
@@ -291,7 +291,7 @@ public class ArrayDatatype implements HdfDatatype {
      * @return the size of the message data in bytes, as a short
      */
     @Override
-    public short getSizeMessageData() {
+    public int getSizeMessageData() {
         return (short) (4 + 4 * dimensionality + 4 * dimensionality + baseType.getSizeMessageData());
         // 1 byte dim + 3 reserved + 4 bytes per dim size + 4 bytes per perm index + base type
     }
@@ -346,7 +346,7 @@ public class ArrayDatatype implements HdfDatatype {
      * @return the class and version byte
      */
     @Override
-    public byte getClassAndVersion() {
+    public int getClassAndVersion() {
         return classAndVersion;
     }
 

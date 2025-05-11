@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo;
 
-import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
+import org.hdf5javalib.redo.HdfFileAllocation;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.redo.hdffile.metadata.HdfSuperblock;
 

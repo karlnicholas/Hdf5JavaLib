@@ -1,8 +1,8 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.dataclass.HdfData;
-import org.hdf5javalib.dataclass.HdfTime;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.redo.dataclass.HdfData;
+import org.hdf5javalib.redo.dataclass.HdfTime;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -24,13 +24,13 @@ import java.util.Map;
  */
 public class TimeDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 2, version 1). */
-    private final byte classAndVersion;
+    private final int classAndVersion;
     /** A BitSet containing class-specific bit field information (byte order). */
     private final BitSet classBitField;
     /** The size of the time data in bytes. */
     private final int size;
     /** The number of bits of precision. */
-    private final short bitPrecision;
+    private final int bitPrecision;
 
     /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<TimeDatatype, ?>> CONVERTERS = new HashMap<>();
@@ -236,7 +236,7 @@ public class TimeDatatype implements HdfDatatype {
      * @return the size of the message data in bytes, as a short
      */
     @Override
-    public short getSizeMessageData() {
+    public int getSizeMessageData() {
         return 2; // Only bitPrecision
     }
 
@@ -277,7 +277,7 @@ public class TimeDatatype implements HdfDatatype {
      * @return the class and version byte
      */
     @Override
-    public byte getClassAndVersion() {
+    public int getClassAndVersion() {
         return classAndVersion;
     }
 

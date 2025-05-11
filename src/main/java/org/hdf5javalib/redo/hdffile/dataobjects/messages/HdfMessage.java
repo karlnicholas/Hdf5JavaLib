@@ -58,9 +58,9 @@ public abstract class HdfMessage {
     /** The type of the message. */
     private final MessageType messageType;
     /** The size of the message data in bytes, including padding. */
-    private short sizeMessageData;
+    private int sizeMessageData;
     /** The message flags indicating properties like constancy or shareability. */
-    private final byte messageFlags;
+    private final int messageFlags;
 
     /**
      * Constructs an HdfMessage with the specified components.
@@ -69,7 +69,7 @@ public abstract class HdfMessage {
      * @param sizeMessageData the size of the message data in bytes
      * @param messageFlags    the message flags
      */
-    protected HdfMessage(MessageType messageType, short sizeMessageData, byte messageFlags) {
+    protected HdfMessage(MessageType messageType, int sizeMessageData, int messageFlags) {
         this.messageType = messageType;
         this.sizeMessageData = sizeMessageData;
         this.messageFlags = messageFlags;
@@ -82,8 +82,8 @@ public abstract class HdfMessage {
      */
     protected void writeMessageData(ByteBuffer buffer) {
         buffer.putShort(messageType.getValue());
-        buffer.putShort(sizeMessageData);
-        buffer.put(messageFlags);
+        buffer.putShort((short) sizeMessageData);
+        buffer.put((byte) messageFlags);
         buffer.put((byte) 0);
         buffer.put((byte) 0);
         buffer.put((byte) 0);
@@ -115,7 +115,7 @@ public abstract class HdfMessage {
             // Header Message Type (2 bytes, little-endian)
             MessageType type = MessageType.fromValue(buffer.getShort());
             int size = Short.toUnsignedInt(buffer.getShort());
-            byte flags = buffer.get();
+            int flags = Byte.toUnsignedInt(buffer.get());
             buffer.position(buffer.position() + 3); // Skip 3 reserved bytes
 
             // Header Message Data
@@ -140,7 +140,7 @@ public abstract class HdfMessage {
      * @return a new HdfMessage instance
      * @throws IllegalArgumentException if the message type is unknown
      */
-    protected static HdfMessage createMessageInstance(MessageType type, byte flags, byte[] data, HdfDataFile hdfDataFile) {
+    protected static HdfMessage createMessageInstance(MessageType type, int flags, byte[] data, HdfDataFile hdfDataFile) {
         log.trace("type:flags:length {} {} {}", type, flags, data.length);
         return switch (type) {
             case NilMessage -> NilMessage.parseHeaderMessage(flags, data, hdfDataFile);
@@ -177,7 +177,7 @@ public abstract class HdfMessage {
         return new ArrayList<>(readMessagesFromByteBuffer(fileChannel, continuationSize, hdfDataFile));
     }
 
-    public short getSizeMessageData() {
+    public int getSizeMessageData() {
         return sizeMessageData;
     }
 

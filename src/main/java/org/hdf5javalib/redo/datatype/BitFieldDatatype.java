@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public class BitFieldDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 4, version 1). */
-    private final byte classAndVersion;
+    private final int classAndVersion;
     /** A BitSet containing class-specific bit field information (byte order and padding). */
     private final BitSet classBitField;
     /** The total size of the bitfield datatype in bytes. */
@@ -263,7 +263,7 @@ public class BitFieldDatatype implements HdfDatatype {
      * @return the size of the message data in bytes, as a short
      */
     @Override
-    public short getSizeMessageData() {
+    public int getSizeMessageData() {
         return 4; // 2 bytes for bitOffset + 2 bytes for bitPrecision
     }
 
@@ -309,7 +309,7 @@ public class BitFieldDatatype implements HdfDatatype {
      * @return the class and version byte
      */
     @Override
-    public byte getClassAndVersion() {
+    public int getClassAndVersion() {
         return classAndVersion;
     }
 

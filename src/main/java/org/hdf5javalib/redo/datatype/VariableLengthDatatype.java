@@ -1,8 +1,8 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.dataclass.HdfData;
-import org.hdf5javalib.dataclass.HdfVariableLength;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.redo.dataclass.HdfData;
+import org.hdf5javalib.redo.dataclass.HdfVariableLength;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
 
 import java.nio.ByteBuffer;
@@ -29,7 +29,7 @@ import java.util.Map;
  */
 public class VariableLengthDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 9, version 1). */
-    private final byte classAndVersion;
+    private final int classAndVersion;
     /** A BitSet containing class-specific bit field information (type, padding, character set). */
     private final BitSet classBitField;
     /** The fixed size of the variable-length descriptor in bytes. */
@@ -228,7 +228,7 @@ public class VariableLengthDatatype implements HdfDatatype {
      * @return the size of the message data in bytes, as a short
      */
     @Override
-    public short getSizeMessageData() {
+    public int getSizeMessageData() {
         short sizeMessageData = 16;
         if (hdfDatatype.getDatatypeClass() == DatatypeClass.FIXED) {
             sizeMessageData += 4;
@@ -294,7 +294,7 @@ public class VariableLengthDatatype implements HdfDatatype {
      * @return the class and version byte
      */
     @Override
-    public byte getClassAndVersion() {
+    public int getClassAndVersion() {
         return classAndVersion;
     }
 

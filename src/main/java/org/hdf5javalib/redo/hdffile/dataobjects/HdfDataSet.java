@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo.hdffile.dataobjects;
 
+import org.hdf5javalib.redo.AllocationRecord;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
@@ -94,7 +95,7 @@ public class HdfDataSet implements Closeable {
      */
     private void createInitialMessages(DataspaceMessage dataSpaceMessage, HdfDatatype hdfDatatype) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        Map<HdfFileAllocation.AllocationType, HdfFileAllocation.AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
+        Map<HdfFileAllocation.AllocationType, AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
 
         long headerSize = allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER).getSize();
         List<HdfMessage> headerMessages = new ArrayList<>();
@@ -118,12 +119,12 @@ public class HdfDataSet implements Closeable {
             dimensionSizes *= fixedPoint.getInstance(Long.class);
         }
         HdfFixedPoint[] hdfDimensionSizes = (HdfFixedPoint[]) Array.newInstance(HdfFixedPoint.class, 1);
-        hdfDimensionSizes[0] = HdfWriteUtils.hdfFixedPointFromValue(dimensionSizes, hdfDataFile.getFixedPointDatatypeForOffset());
+        hdfDimensionSizes[0] = HdfWriteUtils.hdfFixedPointFromValue(dimensionSizes, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
 
         short dataLayoutMessageSize = (short) (8 + 16); // Contiguous storage
         DataLayoutMessage dataLayoutMessage = new DataLayoutMessage(3, 1,
-                HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFixedPointDatatypeForOffset()),
-                hdfDimensionSizes, 0, null, hdfDataFile.getFixedPointDatatypeForOffset().undefined(), (byte)0, dataLayoutMessageSize);
+                HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()),
+                hdfDimensionSizes, 0, null, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(), (byte)0, dataLayoutMessageSize);
         headerMessages.add(dataLayoutMessage);
 
         // Add ObjectModificationTime message
@@ -311,7 +312,7 @@ public class HdfDataSet implements Closeable {
      */
     private void updateForAttribute() {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        Map<HdfFileAllocation.AllocationType, HdfFileAllocation.AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
+        Map<HdfFileAllocation.AllocationType, AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
         long headerSize = allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER).getSize();
         List<HdfMessage> headerMessages = this.dataObjectHeaderPrefix.getHeaderMessages();
         int objectHeaderSize = getObjectHeaderSize(headerMessages);
@@ -330,7 +331,7 @@ public class HdfDataSet implements Closeable {
         if (closed) return;
         if (hdfDataFile.getFileAllocation().getDatasetAllocationInfo(datasetName).size() == 0) return;
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        Map<HdfFileAllocation.AllocationType, HdfFileAllocation.AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
+        Map<HdfFileAllocation.AllocationType, AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
         long headerSize = allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER).getSize();
         List<HdfMessage> headerMessages = this.dataObjectHeaderPrefix.getHeaderMessages();
         int objectHeaderSize = getObjectHeaderSize(headerMessages);
@@ -386,7 +387,7 @@ public class HdfDataSet implements Closeable {
      */
     private boolean checkContinuationMessageNeeded(int objectHeaderSize, int attributeSize, List<HdfMessage> headerMessages, long headerSize) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        Map<HdfFileAllocation.AllocationType, HdfFileAllocation.AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
+        Map<HdfFileAllocation.AllocationType, AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
 
         if (objectHeaderSize + attributeSize > headerSize
                 && (allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_HEADER_CONTINUATION) == null || !attributes.isEmpty())) {
@@ -442,7 +443,7 @@ public class HdfDataSet implements Closeable {
      * @throws IOException if an I/O error occurs
      */
     public void write(Supplier<ByteBuffer> bufferSupplier) throws IOException {
-        Map<HdfFileAllocation.AllocationType, HdfFileAllocation.AllocationRecord> allocationInfo = hdfDataFile.getFileAllocation().getDatasetAllocationInfo(datasetName);
+        Map<HdfFileAllocation.AllocationType, AllocationRecord> allocationInfo = hdfDataFile.getFileAllocation().getDatasetAllocationInfo(datasetName);
         hdfDataFile.getSeekableByteChannel().position(allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_DATA).getOffset());
         ByteBuffer buffer;
         while ((buffer = bufferSupplier.get()).hasRemaining()) {
@@ -459,7 +460,7 @@ public class HdfDataSet implements Closeable {
      * @throws IOException if an I/O error occurs
      */
     public void write(ByteBuffer buffer) throws IOException {
-        Map<HdfFileAllocation.AllocationType, HdfFileAllocation.AllocationRecord> allocationInfo = hdfDataFile.getFileAllocation().getDatasetAllocationInfo(datasetName);
+        Map<HdfFileAllocation.AllocationType, AllocationRecord> allocationInfo = hdfDataFile.getFileAllocation().getDatasetAllocationInfo(datasetName);
         hdfDataFile.getSeekableByteChannel().position(allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_DATA).getOffset());
         while (buffer.hasRemaining()) {
             hdfDataFile.getSeekableByteChannel().write(buffer);
@@ -492,7 +493,7 @@ public class HdfDataSet implements Closeable {
      */
     public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        Map<HdfFileAllocation.AllocationType, HdfFileAllocation.AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
+        Map<HdfFileAllocation.AllocationType, AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
         ByteBuffer buffer = ByteBuffer.allocate((int)allocationInfo.get(HdfFileAllocation.AllocationType.DATASET_OBJECT_HEADER).getSize()).order(ByteOrder.LITTLE_ENDIAN);
         dataObjectHeaderPrefix.writeInitialMessageBlockToBuffer(buffer);
         buffer.rewind();

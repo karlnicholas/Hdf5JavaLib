@@ -2,7 +2,7 @@ package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.utils.HdfReadUtils;
+import org.hdf5javalib.redo.utils.HdfReadUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -64,8 +64,8 @@ public class DataspaceMessage extends HdfMessage {
             HdfFixedPoint[] dimensions,
             HdfFixedPoint[] maxDimensions,
             boolean hasMaxDimensions,
-            byte rawFlags,
-            short sizeMessageData
+            int rawFlags,
+            int sizeMessageData
     ) {
         super(MessageType.DataspaceMessage, sizeMessageData, rawFlags);
         this.version = version;
@@ -84,7 +84,7 @@ public class DataspaceMessage extends HdfMessage {
      * @param hdfDataFile the HDF5 file context for datatype resources
      * @return a new DataspaceMessage instance parsed from the data
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         int version = Byte.toUnsignedInt(buffer.get());
@@ -96,7 +96,7 @@ public class DataspaceMessage extends HdfMessage {
 
         HdfFixedPoint[] dimensions = new HdfFixedPoint[dimensionality];
         for (int i = 0; i < dimensionality; i++) {
-            dimensions[i] = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForLength(), buffer);
+            dimensions[i] = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), buffer);
         }
 
         boolean hasMaxDimensions = flagSet.get(DataspaceFlag.MAX_DIMENSIONS_PRESENT.getBitIndex());
@@ -104,7 +104,7 @@ public class DataspaceMessage extends HdfMessage {
         if (hasMaxDimensions) {
             maxDimensions = new HdfFixedPoint[dimensionality];
             for (int i = 0; i < dimensionality; i++) {
-                maxDimensions[i] = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForLength(), buffer);
+                maxDimensions[i] = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), buffer);
             }
         }
 

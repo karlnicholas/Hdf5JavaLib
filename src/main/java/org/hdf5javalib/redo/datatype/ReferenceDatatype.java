@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public class ReferenceDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 7, version 1). */
-    private final byte classAndVersion;
+    private final int classAndVersion;
     /** A BitSet indicating the reference type. */
     private final BitSet classBitField;
     /** The size of the reference data in bytes (e.g., 8 for object reference). */
@@ -263,7 +263,7 @@ public class ReferenceDatatype implements HdfDatatype {
      * @return zero, as ReferenceDatatype has no properties in the datatype message
      */
     @Override
-    public short getSizeMessageData() {
+    public int getSizeMessageData() {
         return 0; // No properties in the datatype message
     }
 
@@ -306,7 +306,7 @@ public class ReferenceDatatype implements HdfDatatype {
      * @return the class and version byte
      */
     @Override
-    public byte getClassAndVersion() {
+    public int getClassAndVersion() {
         return classAndVersion;
     }
 

@@ -52,7 +52,7 @@ public class NilMessage extends HdfMessage {
      * @param hdfDataFile the HDF5 file context for additional resources
      * @return a new NilMessage instance
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         // No data to parse for null message
         return new NilMessage(data.length, flags, (short) data.length);
     }

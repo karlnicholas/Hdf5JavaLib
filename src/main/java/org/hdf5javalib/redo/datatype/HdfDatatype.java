@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;
@@ -30,7 +30,7 @@ public interface HdfDatatype {
      *
      * @return a byte representing the class and version of the datatype
      */
-    byte getClassAndVersion();
+    int getClassAndVersion();
 
     /**
      * Retrieves the class bit field for the datatype.
@@ -51,7 +51,7 @@ public interface HdfDatatype {
      *
      * @return the size of the message data as a short
      */
-    short getSizeMessageData();
+    int getSizeMessageData();
 
     /**
      * Creates an instance of the specified class from the given byte array.

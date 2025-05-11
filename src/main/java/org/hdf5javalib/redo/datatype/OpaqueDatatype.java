@@ -1,8 +1,8 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.dataclass.HdfData;
-import org.hdf5javalib.dataclass.HdfOpaque;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.redo.dataclass.HdfData;
+import org.hdf5javalib.redo.dataclass.HdfOpaque;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class OpaqueDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 5, version 1). */
-    private final byte classAndVersion;
+    private final int classAndVersion;
     /** A BitSet indicating the length of the ASCII tag. */
     private final BitSet classBitField;
     /** The size of the opaque data in bytes. */
@@ -237,7 +237,7 @@ public class OpaqueDatatype implements HdfDatatype {
      * @return the size of the message data in bytes, as a short
      */
     @Override
-    public short getSizeMessageData() {
+    public int getSizeMessageData() {
         int tagLength = asciiTag.getBytes(StandardCharsets.US_ASCII).length + 1; // Include NUL
         return (short) ((tagLength + 7) & ~7); // Padded to 8-byte multiple
     }
@@ -287,7 +287,7 @@ public class OpaqueDatatype implements HdfDatatype {
      * @return the class and version byte
      */
     @Override
-    public byte getClassAndVersion() {
+    public int getClassAndVersion() {
         return classAndVersion;
     }
 

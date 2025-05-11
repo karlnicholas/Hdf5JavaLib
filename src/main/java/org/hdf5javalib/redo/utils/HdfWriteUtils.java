@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.hdf5javalib.utils.HdfReadUtils.reverseBytesInPlace;
+import static org.hdf5javalib.redo.utils.HdfReadUtils.reverseBytesInPlace;
 
 /**
  * Utility class for writing data to HDF5 files.

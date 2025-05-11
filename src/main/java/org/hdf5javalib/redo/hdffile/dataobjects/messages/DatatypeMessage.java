@@ -69,7 +69,7 @@ public class DatatypeMessage extends HdfMessage {
      * @param flags           message flags
      * @param sizeMessageData the size of the message data in bytes
      */
-    public DatatypeMessage(HdfDatatype hdfDatatype, byte flags, short sizeMessageData) {
+    public DatatypeMessage(HdfDatatype hdfDatatype, int flags, short sizeMessageData) {
         super(MessageType.DatatypeMessage, sizeMessageData, flags);
         this.hdfDatatype = hdfDatatype;
     }
@@ -82,7 +82,7 @@ public class DatatypeMessage extends HdfMessage {
      * @param hdfDataFile the HDF5 file context for datatype resources
      * @return a new DatatypeMessage instance parsed from the data
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         HdfDatatype hdfDatatype = getHdfDatatype(buffer);
         return new DatatypeMessage(hdfDatatype, flags, (short) data.length);
@@ -96,7 +96,7 @@ public class DatatypeMessage extends HdfMessage {
      */
     public static HdfDatatype getHdfDatatype(ByteBuffer buffer) {
         // Parse Version and Datatype Class (packed into a single byte)
-        byte classAndVersion = buffer.get();
+        int classAndVersion = Byte.toUnsignedInt(buffer.get());
         byte[] classBits = new byte[3];
         buffer.get(classBits);
         BitSet classBitField = BitSet.valueOf(new long[]{
@@ -108,7 +108,7 @@ public class DatatypeMessage extends HdfMessage {
         return parseMessageDataType(classAndVersion, classBitField, size, buffer);
     }
 
-    private static HdfDatatype parseMessageDataType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+    private static HdfDatatype parseMessageDataType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
         HdfDatatype.DatatypeClass dataTypeClass = HdfDatatype.DatatypeClass.fromValue(classAndVersion & 0x0F);
         return switch (dataTypeClass) {
             case FIXED -> parseFixedPointType(classAndVersion, classBitField, size, buffer);

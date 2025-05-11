@@ -46,7 +46,7 @@ public class ObjectModificationTimeMessage extends HdfMessage {
      * @param flags             message flags
      * @param sizeMessageData   the size of the message data in bytes
      */
-    public ObjectModificationTimeMessage(int version, long secondsAfterEpoch, byte flags, short sizeMessageData) {
+    public ObjectModificationTimeMessage(byte version, long secondsAfterEpoch, byte flags, short sizeMessageData) {
         super(MessageType.ObjectModificationTimeMessage, sizeMessageData, flags);
         this.version = version;
         this.secondsAfterEpoch = secondsAfterEpoch;

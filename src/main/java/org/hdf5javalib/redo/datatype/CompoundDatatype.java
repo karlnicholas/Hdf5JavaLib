@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  */
 public class CompoundDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 6, version 1). */
-    private final byte classAndVersion;
+    private final int classAndVersion;
     /** A BitSet indicating the number of members in the compound datatype. */
     private final BitSet classBitField;
     /** The total size of the compound datatype in bytes. */
@@ -227,7 +227,7 @@ public class CompoundDatatype implements HdfDatatype {
      * @return the size of the message data in bytes, as a short
      */
     @Override
-    public short getSizeMessageData() {
+    public int getSizeMessageData() {
         short size = 8; // confused here for 0 and 8
         for (CompoundMemberDatatype member : members) {
             size += member.getSizeMessageData();
@@ -358,7 +358,7 @@ public class CompoundDatatype implements HdfDatatype {
      * @return the class and version byte
      */
     @Override
-    public byte getClassAndVersion() {
+    public int getClassAndVersion() {
         return classAndVersion;
     }
 
