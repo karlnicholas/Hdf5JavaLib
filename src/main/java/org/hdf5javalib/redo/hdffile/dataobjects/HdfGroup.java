@@ -3,9 +3,7 @@ package org.hdf5javalib.redo.hdffile.dataobjects;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.dataclass.HdfString;
-import org.hdf5javalib.redo.HdfFile;
 import org.hdf5javalib.redo.HdfFileAllocation;
-import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DataspaceMessage;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.SymbolTableMessage;
 import org.hdf5javalib.redo.datatype.HdfDatatype;
@@ -35,8 +33,7 @@ import java.util.stream.Collectors;
  * </p>
  */
 public class HdfGroup implements Closeable {
-    /** The HDF5 file context. */
-    private final HdfFile hdfFile;
+    private final HdfDataFile hdfDataFile;
     /** The name of the group. */
     private final String name;
     /** The object header prefix for the group. */
@@ -105,7 +102,6 @@ public class HdfGroup implements Closeable {
      * the object header, B-tree, local heap, and dataset map.
      * </p>
      *
-     * @param hdfFile      the HDF5 file containing this group
      * @param name         the name of the group
      * @param objectHeader the object header prefix containing group metadata
      * @param bTree        the B-tree managing symbol table entries
@@ -113,19 +109,19 @@ public class HdfGroup implements Closeable {
      * @param dataSets     a map of dataset names to their corresponding DataSetInfo
      */
     public HdfGroup(
-            HdfFile hdfFile,
             String name,
             HdfObjectHeaderPrefixV1 objectHeader,
             HdfBTreeV1 bTree,
             HdfLocalHeap localHeap,
-            Map<String, DataSetInfo> dataSets
+            Map<String, DataSetInfo> dataSets,
+            HdfDataFile hdfDataFile
     ) {
-        this.hdfFile = hdfFile;
         this.name = name;
         this.objectHeader = objectHeader;
         this.bTree = bTree;
         this.localHeap = localHeap;
         this.dataSets = dataSets;
+        this.hdfDataFile = hdfDataFile;
     }
 
     /**
@@ -135,24 +131,23 @@ public class HdfGroup implements Closeable {
      * setting up the necessary metadata for writing to the file.
      * </p>
      *
-     * @param hdfFile         the HDF5 file to be written
      * @param name            the name of the group
      * @param btreeAddress    the file address for the B-tree
      * @param localHeapAddress the file address for the local heap
      */
-    public HdfGroup(HdfFile hdfFile, String name, long btreeAddress, long localHeapAddress) {
-        HdfFileAllocation fileAllocation = hdfFile.getFileAllocation();
-        this.hdfFile = hdfFile;
+    public HdfGroup(String name, long btreeAddress, long localHeapAddress, HdfDataFile hdfDataFile) {
+        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         this.name = name;
+        this.hdfDataFile = hdfDataFile;
         long localHeapContentsSize = fileAllocation.getCurrentLocalHeapContentsSize();
         byte[] heapData = new byte[(int) localHeapContentsSize];
         heapData[0] = (byte)0x1;
         heapData[8] = (byte)localHeapContentsSize;
 
         localHeap = new HdfLocalHeap(
-                HdfWriteUtils.hdfFixedPointFromValue(localHeapContentsSize, hdfFile.getFixedPointDatatypeForLength()),
-                HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getCurrentLocalHeapContentsOffset(), hdfFile.getFixedPointDatatypeForOffset()),
-                hdfFile);
+                HdfWriteUtils.hdfFixedPointFromValue(localHeapContentsSize, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()),
+                HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getCurrentLocalHeapContentsOffset(), hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()),
+                hdfDataFile);
 
         localHeap.addToHeap(
                 new HdfString(new byte[0],
@@ -162,12 +157,12 @@ public class HdfGroup implements Closeable {
         );
 
         bTree = new HdfBTreeV1("TREE", 0, 0,
-                hdfFile.getFixedPointDatatypeForOffset().undefined(),
-                hdfFile.getFixedPointDatatypeForOffset().undefined(),
-                hdfFile);
+                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
+                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
+                hdfDataFile);
 
-        HdfFixedPoint btree = HdfWriteUtils.hdfFixedPointFromValue(btreeAddress, hdfFile.getFixedPointDatatypeForOffset());
-        HdfFixedPoint localHeap = HdfWriteUtils.hdfFixedPointFromValue(localHeapAddress, hdfFile.getFixedPointDatatypeForOffset());
+        HdfFixedPoint btree = HdfWriteUtils.hdfFixedPointFromValue(btreeAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
+        HdfFixedPoint localHeap = HdfWriteUtils.hdfFixedPointFromValue(localHeapAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
 
         objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 24,
                 Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte)0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))));
@@ -205,7 +200,7 @@ public class HdfGroup implements Closeable {
 
         DataSetInfo dataSetInfo = new DataSetInfo(
                 newDataSet,
-                HdfWriteUtils.hdfFixedPointFromValue(allocationInfo, hdfFile.getFixedPointDatatypeForOffset()),
+                HdfWriteUtils.hdfFixedPointFromValue(allocationInfo, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()),
                 linkNameOffset);
         dataSets.put(datasetName, dataSetInfo);
 
@@ -236,7 +231,7 @@ public class HdfGroup implements Closeable {
      * @throws IOException if an I/O error occurs
      */
     public void writeToFileChannel(SeekableByteChannel seekableByteChannel) throws IOException {
-        HdfFileAllocation fileAllocation = hdfFile.getFileAllocation();
+        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         objectHeader.writeAsGroupToByteChannel(seekableByteChannel, fileAllocation);
         bTree.writeToByteChannel(seekableByteChannel, fileAllocation);
         localHeap.writeToByteChannel(seekableByteChannel, fileAllocation);

@@ -43,7 +43,7 @@ public class HdfFileAllocation {
 //     * or data region assignments and typical offset and size characteristics.
 //     * </p>
 //     */
-//    public enum AllocationType {
+//    public enum AllocationBlock.AllocationType {
 //        /** Superblock, located at offset 0 with a size of 96 bytes. */
 //        SUPERBLOCK,
 //        /** Object header prefix for the root group, typically at offset 96 with a size of 40 bytes. */
@@ -91,21 +91,21 @@ public class HdfFileAllocation {
 
     // --- Storage ---
     /** Maps dataset names to their allocation records by type. */
-    private final Map<String, Map<AllocationType, AllocationRecord>> datasetRecordsByName = new LinkedHashMap<>();
+    private final Map<String, Map<AllocationBlock.AllocationType, AllocationRecord>> datasetRecordsByName = new LinkedHashMap<>();
     /** List of symbol table node (SNOD) allocation records. */
     private final List<AllocationRecord> snodRecords = new ArrayList<>();
     /** Maps global heap block types to their allocation records. */
-    private final Map<AllocationType, AllocationRecord> globalHeapBlocks = new HashMap<>();
+    private final Map<AllocationBlock.AllocationType, AllocationRecord> globalHeapBlocks = new HashMap<>();
     /** List of all allocation records. */
     private final List<AllocationRecord> allocationRecords = new ArrayList<>();
     /** List of local heap allocation records (active and abandoned). */
     private final List<AllocationRecord> localHeapRecords = new ArrayList<>();
 
     // --- Fixed Allocations ---
-    private final AllocationRecord superblockRecord;
-    private final AllocationRecord objectHeaderPrefixRecord;
-    private final AllocationRecord btreeRecord;
-    private final AllocationRecord localHeapHeaderRecord;
+    private AllocationRecord superblockRecord;
+    private AllocationRecord objectHeaderPrefixRecord;
+    private AllocationRecord btreeRecord;
+    private AllocationRecord localHeapHeaderRecord;
 
     // --- Dynamic Tracking ---
     /** The next available offset in the metadata region. */
@@ -130,13 +130,13 @@ public class HdfFileAllocation {
     public void initializeForWriting() {
 
         // Initialize fixed structures
-        superblockRecord = new AllocationRecord(superblock, "Superblock", SUPERBLOCK_OFFSET, SUPERBLOCK_SIZE);
-        objectHeaderPrefixRecord = new AllocationRecord(superblockAllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE);
-        btreeRecord = new AllocationRecord(AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", objectHeaderPrefixRecord.getOffset() + OBJECT_HEADER_PREFIX_SIZE, BTREE_NODE_SIZE + BTREE_STORAGE_SIZE);
-        localHeapHeaderRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", btreeRecord.getOffset() + (BTREE_NODE_SIZE + BTREE_STORAGE_SIZE), LOCAL_HEAP_HEADER_SIZE);
+        superblockRecord = new AllocationRecord(AllocationBlock.AllocationType.SUPERBLOCK, "Superblock", SUPERBLOCK_OFFSET, SUPERBLOCK_SIZE);
+        objectHeaderPrefixRecord = new AllocationRecord(AllocationBlock.AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE);
+        btreeRecord = new AllocationRecord(AllocationBlock.AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", objectHeaderPrefixRecord.getOffset() + OBJECT_HEADER_PREFIX_SIZE, BTREE_NODE_SIZE + BTREE_STORAGE_SIZE);
+        localHeapHeaderRecord = new AllocationRecord(AllocationBlock.AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", btreeRecord.getOffset() + (BTREE_NODE_SIZE + BTREE_STORAGE_SIZE), LOCAL_HEAP_HEADER_SIZE);
 
         // Initialize local heap
-        AllocationRecord initialLocalHeapRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE, INITIAL_LOCAL_HEAP_CONTENTS_SIZE);
+        AllocationRecord initialLocalHeapRecord = new AllocationRecord(AllocationBlock.AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE, INITIAL_LOCAL_HEAP_CONTENTS_SIZE);
         localHeapRecords.add(initialLocalHeapRecord);
 
         // Add fixed structures to allocationRecords
@@ -159,7 +159,7 @@ public class HdfFileAllocation {
     public long allocateDatasetStorage(String datasetName) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (datasetName.isEmpty()) throw new IllegalArgumentException("Dataset name cannot be empty");
-        if (datasetRecordsByName.containsKey(datasetName) && datasetRecordsByName.get(datasetName).containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
+        if (datasetRecordsByName.containsKey(datasetName) && datasetRecordsByName.get(datasetName).containsKey(AllocationBlock.AllocationType.DATASET_OBJECT_HEADER)) {
             throw new IllegalStateException("Dataset '" + datasetName + "' already allocated");
         }
 
@@ -169,8 +169,8 @@ public class HdfFileAllocation {
         }
 
         long headerOffset = metadataNextAvailableOffset;
-        AllocationRecord record = new AllocationRecord(AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (" + datasetName + ")", headerOffset, headerSize);
-        datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_OBJECT_HEADER, record);
+        AllocationRecord record = new AllocationRecord(AllocationBlock.AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (" + datasetName + ")", headerOffset, headerSize);
+        datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationBlock.AllocationType.DATASET_OBJECT_HEADER, record);
         allocationRecords.add(record);
         metadataNextAvailableOffset += headerSize;
         updateMetadataOffset(metadataNextAvailableOffset);
@@ -187,12 +187,12 @@ public class HdfFileAllocation {
      */
     public void increaseHeaderAllocation(String datasetName, long newTotalHeaderSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
-        Map<AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
-        if (datasetAllocs == null || !datasetAllocs.containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
+        Map<AllocationBlock.AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
+        if (datasetAllocs == null || !datasetAllocs.containsKey(AllocationBlock.AllocationType.DATASET_OBJECT_HEADER)) {
             throw new IllegalStateException("Dataset '" + datasetName + "' not found");
         }
 
-        AllocationRecord record = datasetAllocs.get(AllocationType.DATASET_OBJECT_HEADER);
+        AllocationRecord record = datasetAllocs.get(AllocationBlock.AllocationType.DATASET_OBJECT_HEADER);
         long oldSize = record.getSize();
         if (newTotalHeaderSize <= oldSize) {
             throw new IllegalArgumentException("New size must be greater than current size");
@@ -227,7 +227,7 @@ public class HdfFileAllocation {
         }
 
         long offset = metadataNextAvailableOffset;
-        AllocationRecord record = new AllocationRecord(AllocationType.SNOD, "SNOD Block " + (snodRecords.size() + 1), offset, SNOD_STORAGE_SIZE);
+        AllocationRecord record = new AllocationRecord(AllocationBlock.AllocationType.SNOD, "SNOD Block " + (snodRecords.size() + 1), offset, SNOD_STORAGE_SIZE);
         snodRecords.add(record);
         allocationRecords.add(record);
         metadataNextAvailableOffset += SNOD_STORAGE_SIZE;
@@ -247,17 +247,17 @@ public class HdfFileAllocation {
     public long allocateAndSetDataBlock(String datasetName, long dataSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (dataSize < 0) throw new IllegalArgumentException("Data size cannot be negative");
-        Map<AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
+        Map<AllocationBlock.AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
         if (datasetAllocs == null) {
             throw new IllegalStateException("Dataset '" + datasetName + "' not found");
         }
-        if (datasetAllocs.containsKey(AllocationType.DATASET_DATA)) {
+        if (datasetAllocs.containsKey(AllocationBlock.AllocationType.DATASET_DATA)) {
             throw new IllegalStateException("Data block for '" + datasetName + "' already allocated");
         }
 
         long dataOffset = dataNextAvailableOffset;
-        AllocationRecord record = new AllocationRecord(AllocationType.DATASET_DATA, "Data Block (" + datasetName + ")", dataOffset, dataSize);
-        datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_DATA, record);
+        AllocationRecord record = new AllocationRecord(AllocationBlock.AllocationType.DATASET_DATA, "Data Block (" + datasetName + ")", dataOffset, dataSize);
+        datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationBlock.AllocationType.DATASET_DATA, record);
         allocationRecords.add(record);
         dataNextAvailableOffset += dataSize;
         updateDataOffset(dataNextAvailableOffset);
@@ -276,11 +276,11 @@ public class HdfFileAllocation {
     public long allocateAndSetContinuationBlock(String datasetName, long continuationSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         if (continuationSize <= 0) throw new IllegalArgumentException("Continuation size must be positive");
-        Map<AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
+        Map<AllocationBlock.AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
         if (datasetAllocs == null) {
             throw new IllegalStateException("Dataset '" + datasetName + "' not found");
         }
-        if (datasetAllocs.containsKey(AllocationType.DATASET_HEADER_CONTINUATION)) {
+        if (datasetAllocs.containsKey(AllocationBlock.AllocationType.DATASET_HEADER_CONTINUATION)) {
             throw new IllegalStateException("Continuation block for '" + datasetName + "' already allocated");
         }
 
@@ -289,8 +289,8 @@ public class HdfFileAllocation {
         }
 
         long continuationOffset = metadataNextAvailableOffset;
-        AllocationRecord record = new AllocationRecord(AllocationType.DATASET_HEADER_CONTINUATION, "Continuation (" + datasetName + ")", continuationOffset, continuationSize);
-        datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_HEADER_CONTINUATION, record);
+        AllocationRecord record = new AllocationRecord(AllocationBlock.AllocationType.DATASET_HEADER_CONTINUATION, "Continuation (" + datasetName + ")", continuationOffset, continuationSize);
+        datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationBlock.AllocationType.DATASET_HEADER_CONTINUATION, record);
         allocationRecords.add(record);
         metadataNextAvailableOffset += continuationSize;
         updateMetadataOffset(metadataNextAvailableOffset);
@@ -304,14 +304,14 @@ public class HdfFileAllocation {
      * @throws IllegalStateException if the first global heap block is already allocated
      */
     public long allocateFirstGlobalHeapBlock() {
-        if (globalHeapBlocks.containsKey(AllocationType.GLOBAL_HEAP_1)) {
+        if (globalHeapBlocks.containsKey(AllocationBlock.AllocationType.GLOBAL_HEAP_1)) {
             throw new IllegalStateException("First global heap already allocated");
         }
 
         long size = GLOBAL_HEAP_BLOCK_SIZE;
         long offset = dataNextAvailableOffset;
-        AllocationRecord record = new AllocationRecord(AllocationType.GLOBAL_HEAP_1, "Global Heap Block 1", offset, size);
-        globalHeapBlocks.put(AllocationType.GLOBAL_HEAP_1, record);
+        AllocationRecord record = new AllocationRecord(AllocationBlock.AllocationType.GLOBAL_HEAP_1, "Global Heap Block 1", offset, size);
+        globalHeapBlocks.put(AllocationBlock.AllocationType.GLOBAL_HEAP_1, record);
         allocationRecords.add(record);
         dataNextAvailableOffset += size;
         updateDataOffset(dataNextAvailableOffset);
@@ -331,8 +331,8 @@ public class HdfFileAllocation {
 
         long size = GLOBAL_HEAP_BLOCK_SIZE;
         long offset = dataNextAvailableOffset;
-        AllocationRecord record = new AllocationRecord(AllocationType.GLOBAL_HEAP_2, "Global Heap Block 2", offset, size);
-        globalHeapBlocks.put(AllocationType.GLOBAL_HEAP_2, record);
+        AllocationRecord record = new AllocationRecord(AllocationBlock.AllocationType.GLOBAL_HEAP_2, "Global Heap Block 2", offset, size);
+        globalHeapBlocks.put(AllocationBlock.AllocationType.GLOBAL_HEAP_2, record);
         allocationRecords.add(record);
         dataNextAvailableOffset += size;
         updateDataOffset(dataNextAvailableOffset);
@@ -346,7 +346,7 @@ public class HdfFileAllocation {
      * @throws IllegalStateException if the second global heap block is not yet allocated
      */
     public long expandGlobalHeapBlock() {
-        AllocationRecord record = globalHeapBlocks.get(AllocationType.GLOBAL_HEAP_2);
+        AllocationRecord record = globalHeapBlocks.get(AllocationBlock.AllocationType.GLOBAL_HEAP_2);
         if (record == null) {
             throw new IllegalStateException("Second global heap block not yet allocated");
         }
@@ -378,11 +378,11 @@ public class HdfFileAllocation {
         long newOffset = metadataNextAvailableOffset;
 
         // Update existing LOCAL_HEAP record to indicate abandonment
-        activeRecord.setType(AllocationType.LOCAL_HEAP_ABANDONED);
+        activeRecord.setType(AllocationBlock.AllocationType.LOCAL_HEAP_ABANDONED);
         activeRecord.setName("Abandoned Local Heap Contents (Offset " + activeRecord.getOffset() + ")");
 
         // Add new record
-        AllocationRecord newRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Expanded Local Heap Contents", newOffset, newSize);
+        AllocationRecord newRecord = new AllocationRecord(AllocationBlock.AllocationType.LOCAL_HEAP, "Expanded Local Heap Contents", newOffset, newSize);
         localHeapRecords.add(newRecord);
         allocationRecords.add(newRecord);
 
@@ -413,7 +413,7 @@ public class HdfFileAllocation {
         allocationRecords.add(localHeapHeaderRecord);
 
         // Reinitialize local heap
-        AllocationRecord initialLocalHeapRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE, INITIAL_LOCAL_HEAP_CONTENTS_SIZE);
+        AllocationRecord initialLocalHeapRecord = new AllocationRecord(AllocationBlock.AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE, INITIAL_LOCAL_HEAP_CONTENTS_SIZE);
         localHeapRecords.add(initialLocalHeapRecord);
         allocationRecords.add(initialLocalHeapRecord);
     }
@@ -513,7 +513,7 @@ public class HdfFileAllocation {
     private void moveDataNextAvailableOffset(long newMetadataOffset) {
         int diff = 0;
         for (AllocationRecord record: allocationRecords) {
-            if (record.getType() == AllocationType.DATASET_DATA || record.getType() == AllocationType.GLOBAL_HEAP_1) {
+            if (record.getType() == AllocationBlock.AllocationType.DATASET_DATA || record.getType() == AllocationBlock.AllocationType.GLOBAL_HEAP_1) {
                 if (diff == 0) {
                     diff = (int) (newMetadataOffset - record.getOffset());
                 }
@@ -702,7 +702,7 @@ public class HdfFileAllocation {
      * @return the offset, or -1 if not allocated
      */
     public long getGlobalHeapOffset() {
-        AllocationRecord record = globalHeapBlocks.get(AllocationType.GLOBAL_HEAP_1);
+        AllocationRecord record = globalHeapBlocks.get(AllocationBlock.AllocationType.GLOBAL_HEAP_1);
         return record != null ? record.getOffset() : -1L;
     }
 
@@ -731,7 +731,7 @@ public class HdfFileAllocation {
      */
     public boolean isDataBlocksAllocated() {
         return datasetRecordsByName.values().stream()
-                .anyMatch(datasetAllocs -> datasetAllocs.containsKey(AllocationType.DATASET_DATA));
+                .anyMatch(datasetAllocs -> datasetAllocs.containsKey(AllocationBlock.AllocationType.DATASET_DATA));
     }
 
     /**
@@ -789,7 +789,7 @@ public class HdfFileAllocation {
      * @param datasetName the name of the dataset
      * @return an unmodifiable map of allocation types to records
      */
-    public Map<AllocationType, AllocationRecord> getDatasetAllocationInfo(String datasetName) {
+    public Map<AllocationBlock.AllocationType, AllocationRecord> getDatasetAllocationInfo(String datasetName) {
         return datasetRecordsByName.getOrDefault(datasetName, Collections.emptyMap());
     }
 
@@ -798,7 +798,7 @@ public class HdfFileAllocation {
      *
      * @return an unmodifiable map of dataset names to their allocation records
      */
-    public Map<String, Map<AllocationType, AllocationRecord>> getAllDatasetAllocations() {
+    public Map<String, Map<AllocationBlock.AllocationType, AllocationRecord>> getAllDatasetAllocations() {
         return Collections.unmodifiableMap(datasetRecordsByName);
     }
 

@@ -2,7 +2,7 @@ package org.hdf5javalib.redo.utils;
 
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
-import org.hdf5javalib.redo.hdffile.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
