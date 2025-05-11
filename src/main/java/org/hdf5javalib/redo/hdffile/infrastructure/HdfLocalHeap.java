@@ -171,8 +171,8 @@ public class HdfLocalHeap {
             long newSize = fileAllocation.expandLocalHeapContents();
             byte[] newHeapData = new byte[(int) newSize];
             System.arraycopy(heapData, 0, newHeapData, 0, heapData.length); // Copy existing data
-            this.heapContentsSize = HdfWriteUtils.hdfFixedPointFromValue(newSize, hdfDataFile.getFixedPointDatatypeForLength());
-            this.heapContentsOffset = HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getCurrentLocalHeapContentsOffset(), hdfDataFile.getFixedPointDatatypeForLength());
+            this.heapContentsSize = HdfWriteUtils.hdfFixedPointFromValue(newSize, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength());
+            this.heapContentsOffset = HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getCurrentLocalHeapContentsOffset(), hdfDataFile.getSuperblock().getFixedPointDatatypeForLength());
             heapData = newHeapData;
             heapSize = (int) newSize;
         }
@@ -197,13 +197,13 @@ public class HdfLocalHeap {
             ByteBuffer buffer = ByteBuffer.wrap(heapData).order(ByteOrder.LITTLE_ENDIAN);
             buffer.putLong(newFreeListOffset, 1); // Next offset: 1 (last block)
             buffer.putLong(newFreeListOffset + 8, heapSize - newFreeListOffset); // Remaining space
-            this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(newFreeListOffset, hdfDataFile.getFixedPointDatatypeForLength());
+            this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(newFreeListOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength());
         } else {
             // Set freeListOffset to actual offset unless heap is exactly full
             if (currentOffset + alignedStringSize == heapSize) {
-                this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(1, hdfDataFile.getFixedPointDatatypeForLength()); // Heap full, mimic C++ behavior
+                this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(1, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()); // Heap full, mimic C++ behavior
             } else {
-                this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(newFreeListOffset, hdfDataFile.getFixedPointDatatypeForLength()); // Use actual offset
+                this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(newFreeListOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()); // Use actual offset
             }
         }
 
@@ -241,9 +241,9 @@ public class HdfLocalHeap {
             throw new IllegalArgumentException("Reserved bytes in heap header must be zero.");
         }
 
-        HdfFixedPoint dataSegmentSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), buffer);
-        HdfFixedPoint freeListOffset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), buffer);
-        HdfFixedPoint dataSegmentAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint dataSegmentSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint freeListOffset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint dataSegmentAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
 
         fileChannel.position(dataSegmentAddress.getInstance(Long.class));
         // Allocate buffer and read heap data from the file channel

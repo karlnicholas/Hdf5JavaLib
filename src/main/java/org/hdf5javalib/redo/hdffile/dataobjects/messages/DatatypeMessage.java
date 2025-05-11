@@ -163,7 +163,7 @@ public class DatatypeMessage extends HdfMessage {
      * @param hdfDatatype the HdfDatatype to write
      */
     public static void writeDatatypeProperties(ByteBuffer buffer, HdfDatatype hdfDatatype) {
-        buffer.put(hdfDatatype.getClassAndVersion());    // 1
+        buffer.put((byte) hdfDatatype.getClassAndVersion());    // 1
         // Write Class Bit Field (24 bits)
         byte[] bytes = hdfDatatype.getClassBitField().toByteArray();
         byte[] result = new byte[3];

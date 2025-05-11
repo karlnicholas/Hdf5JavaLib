@@ -1,8 +1,8 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.dataclass.HdfData;
-import org.hdf5javalib.dataclass.HdfReference;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.redo.dataclass.HdfData;
+import org.hdf5javalib.redo.dataclass.HdfReference;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;
@@ -91,7 +91,7 @@ public class ReferenceDatatype implements HdfDatatype {
      * @param size            the size of the reference data in bytes
      * @throws IllegalArgumentException if the reference type is invalid or reserved bits are non-zero
      */
-    public ReferenceDatatype(byte classAndVersion, BitSet classBitField, int size) {
+    public ReferenceDatatype(int classAndVersion, BitSet classBitField, int size) {
         int typeValue = getTypeValue(classBitField);
         if (typeValue > 1) { // Only 0 and 1 are defined
             throw new IllegalArgumentException("Invalid reference type value: " + typeValue);
@@ -116,7 +116,7 @@ public class ReferenceDatatype implements HdfDatatype {
      * @param buffer          the ByteBuffer containing the datatype definition
      * @return a new ReferenceDatatype instance
      */
-    public static ReferenceDatatype parseReferenceDatatype(byte classAndVersion, BitSet classBitField,
+    public static ReferenceDatatype parseReferenceDatatype(int classAndVersion, BitSet classBitField,
                                                            int size, ByteBuffer buffer) {
         // No properties to parse for Reference datatype
         return new ReferenceDatatype(classAndVersion, classBitField, size);

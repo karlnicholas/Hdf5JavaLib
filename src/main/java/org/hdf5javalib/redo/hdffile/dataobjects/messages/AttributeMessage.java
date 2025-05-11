@@ -61,7 +61,7 @@ public class AttributeMessage extends HdfMessage {
      * @param flags             message flags
      * @param sizeMessageData   the size of the message data in bytes
      */
-    public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfData value, byte flags, short sizeMessageData) {
+    public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfData value, int flags, int sizeMessageData) {
         super(MessageType.AttributeMessage, sizeMessageData, flags);
         this.version = version;
         this.datatypeMessage = datatypeMessage;
@@ -78,7 +78,7 @@ public class AttributeMessage extends HdfMessage {
      * @param hdfDataFile   the HDF5 file context for global heap and other resources
      * @return a new AttributeMessage instance parsed from the data
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Read the version (1 byte)
         int version = Byte.toUnsignedInt(buffer.get());
@@ -160,8 +160,8 @@ public class AttributeMessage extends HdfMessage {
         byte[] nameBytes = name.getBytes();
         int nameSize = nameBytes.length;
         buffer.putShort((short) nameSize);
-        buffer.putShort(datatypeMessage.getSizeMessageData());
-        buffer.putShort(dataspaceMessage.getSizeMessageData());
+        buffer.putShort((short) datatypeMessage.getSizeMessageData());
+        buffer.putShort((short) dataspaceMessage.getSizeMessageData());
 
         // Write the name (variable size)
         buffer.put(nameBytes);

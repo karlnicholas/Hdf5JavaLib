@@ -40,7 +40,7 @@ public class NilMessage extends HdfMessage {
      * @param flags           the message flags
      * @param sizeMessageData the size of the message data in bytes
      */
-    public NilMessage(int size, byte flags, short sizeMessageData) {
+    public NilMessage(int size, int flags, int sizeMessageData) {
         super(MessageType.NilMessage, sizeMessageData, flags);
     }
 

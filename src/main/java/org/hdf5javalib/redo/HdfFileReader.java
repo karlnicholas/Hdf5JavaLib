@@ -7,10 +7,9 @@ import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
-import org.hdf5javalib.redo.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.hdffile.infrastructure.*;
 import org.hdf5javalib.redo.hdffile.metadata.HdfSuperblock;
-import org.hdf5javalib.utils.HdfWriteUtils;
+import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
@@ -84,7 +83,7 @@ public class HdfFileReader implements HdfDataFile {
      * @return this HdfFileReader instance
      * @throws IOException if an I/O error occurs during reading
      */
-    public HdfFileReader readFile() throws IOException {
+    public HdfFileReader readFile() throws Exception {
         superblock = HdfSuperblock.readFromSeekableByteChannel(fileChannel, this);
         log.debug("{}", superblock);
 
@@ -103,12 +102,12 @@ public class HdfFileReader implements HdfDataFile {
         Map<String, HdfGroup.DataSetInfo> datasetMap = collectDatasetsMap(fileChannel, bTree, localHeap);
 
         rootGroup = new HdfGroup(
-                null,
                 "",
                 objectHeader,
                 bTree,
                 localHeap,
-                datasetMap
+                datasetMap,
+                this
         );
 
         log.debug("{}", rootGroup);
@@ -161,7 +160,7 @@ public class HdfFileReader implements HdfDataFile {
                     DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
                     HdfDataSet dataset = new HdfDataSet(this, linkName.toString(), dataType.getHdfDatatype(), header);
                     HdfGroup.DataSetInfo dataSetInfo = new HdfGroup.DataSetInfo(dataset,
-                            HdfWriteUtils.hdfFixedPointFromValue(0, getFixedPointDatatypeForOffset()),
+                            HdfWriteUtils.hdfFixedPointFromValue(0, superblock.getFixedPointDatatypeForOffset()),
                             linkNameOffset);
                     dataSets.put(linkName.toString(), dataSetInfo);
                 }
@@ -201,25 +200,5 @@ public class HdfFileReader implements HdfDataFile {
     @Override
     public SeekableByteChannel getSeekableByteChannel() {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    /**
-     * Retrieves the fixed-point datatype used for offset fields in the HDF5 file.
-     *
-     * @return the {@link FixedPointDatatype} for offsets
-     */
-    @Override
-    public FixedPointDatatype getFixedPointDatatypeForOffset() {
-        return superblock.getFixedPointDatatypeForOffset();
-    }
-
-    /**
-     * Retrieves the fixed-point datatype used for length fields in the HDF5 file.
-     *
-     * @return the {@link FixedPointDatatype} for lengths
-     */
-    @Override
-    public FixedPointDatatype getFixedPointDatatypeForLength() {
-        return superblock.getFixedPointDatatypeForLength();
     }
 }

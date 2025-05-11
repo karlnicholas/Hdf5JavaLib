@@ -58,7 +58,7 @@ public class VariableLengthDatatype implements HdfDatatype {
      * @param size            the fixed size of the variable-length descriptor in bytes
      * @param hdfDatatype     the underlying datatype for the variable-length elements
      */
-    public VariableLengthDatatype(byte classAndVersion, BitSet classBitField, int size, HdfDatatype hdfDatatype) {
+    public VariableLengthDatatype(int classAndVersion, BitSet classBitField, int size, HdfDatatype hdfDatatype) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
@@ -74,7 +74,7 @@ public class VariableLengthDatatype implements HdfDatatype {
      * @param buffer          the ByteBuffer containing the datatype definition
      * @return a new VariableLengthDatatype instance parsed from the buffer
      */
-    public static VariableLengthDatatype parseVariableLengthDatatype(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+    public static VariableLengthDatatype parseVariableLengthDatatype(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
         return new VariableLengthDatatype(classAndVersion, classBitField, size, DatatypeMessage.getHdfDatatype(buffer));
     }
 

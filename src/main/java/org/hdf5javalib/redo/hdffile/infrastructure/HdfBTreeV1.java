@@ -119,7 +119,7 @@ public class HdfBTreeV1 {
         this.entriesUsed = 0;
         this.leftSiblingAddress = leftSiblingAddress;
         this.rightSiblingAddress = rightSiblingAddress;
-        this.keyZero = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFixedPointDatatypeForLength());
+        this.keyZero = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength());
         this.entries = new ArrayList<>();
     }
 
@@ -131,7 +131,7 @@ public class HdfBTreeV1 {
      * @return the constructed HdfBTreeV1 instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
-    public static HdfBTreeV1 readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
+    public static HdfBTreeV1 readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws Exception {
         long initialAddress = fileChannel.position();
         return readFromSeekableByteChannelRecursive(fileChannel, initialAddress, new HashMap<>(), hdfDataFile);
     }
@@ -150,7 +150,7 @@ public class HdfBTreeV1 {
                                                            long nodeAddress,
                                                            Map<Long, HdfBTreeV1> visitedNodes,
                                                            HdfDataFile hdfDataFile
-    ) throws IOException {
+    ) throws Exception {
         if (visitedNodes.containsKey(nodeAddress)) {
             throw new IllegalStateException("Cycle detected or node re-visited: BTree node address "
                     + nodeAddress + " encountered again during recursive read.");
@@ -179,8 +179,8 @@ public class HdfBTreeV1 {
         int entriesUsed = Short.toUnsignedInt(headerBuffer.getShort());
 
         BitSet emptyBitset = new BitSet();
-        HdfFixedPoint leftSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), headerBuffer);
-        HdfFixedPoint rightSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), headerBuffer);
+        HdfFixedPoint leftSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), headerBuffer);
+        HdfFixedPoint rightSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), headerBuffer);
 
         int entriesDataSize = hdfDataFile.getSuperblock().getFixedPointDatatypeForLength().getSize()
                 + (entriesUsed * (hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().getSize() + hdfDataFile.getSuperblock().getFixedPointDatatypeForLength().getSize()));

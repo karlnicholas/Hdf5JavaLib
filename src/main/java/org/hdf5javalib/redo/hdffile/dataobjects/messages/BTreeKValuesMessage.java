@@ -55,7 +55,7 @@ public class BTreeKValuesMessage extends HdfMessage {
      * @param flags                      message flags
      * @param sizeMessageData            the size of the message data in bytes
      */
-    public BTreeKValuesMessage(int version, int indexedStorageInternalNodeK, int groupInternalNodeK, int groupLeafNodeK, byte flags, short sizeMessageData) {
+    public BTreeKValuesMessage(int version, int indexedStorageInternalNodeK, int groupInternalNodeK, int groupLeafNodeK, int flags, int sizeMessageData) {
         super(MessageType.BtreeKValuesMessage, sizeMessageData, flags);
         this.version = version;
         this.indexedStorageInternalNodeK = indexedStorageInternalNodeK;
@@ -72,7 +72,7 @@ public class BTreeKValuesMessage extends HdfMessage {
      * @return a new BTreeKValuesMessage instance parsed from the data
      * @throws IllegalArgumentException if the message version is unsupported
      */
-    public static BTreeKValuesMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static BTreeKValuesMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Parse the message fields from the buffer
         int version = Byte.toUnsignedInt(buffer.get());

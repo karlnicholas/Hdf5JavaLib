@@ -2,7 +2,7 @@ package org.hdf5javalib.redo.datatype;
 
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfEnum;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
 
 import java.nio.ByteBuffer;
@@ -55,7 +55,7 @@ public class EnumDatatype implements HdfDatatype {
      * @param values          the packed array of enumeration values
      * @throws IllegalArgumentException if the number of names or values does not match the specification
      */
-    public EnumDatatype(byte classAndVersion, BitSet classBitField, int size,
+    public EnumDatatype(int classAndVersion, BitSet classBitField, int size,
                         HdfDatatype baseType, String[] names, byte[] values) {
         if (names.length != getNumberOfMembers(classBitField)) {
             throw new IllegalArgumentException("Number of names doesn't match classBitField specification");
@@ -80,7 +80,7 @@ public class EnumDatatype implements HdfDatatype {
      * @param buffer          the ByteBuffer containing the datatype definition
      * @return a new EnumDatatype instance parsed from the buffer
      */
-    public static EnumDatatype parseEnumDatatype(byte classAndVersion, BitSet classBitField,
+    public static EnumDatatype parseEnumDatatype(int classAndVersion, BitSet classBitField,
                                                  int size, ByteBuffer buffer) {
         // Base type is parsed from the buffer first, after size
         HdfDatatype baseType = DatatypeMessage.getHdfDatatype(buffer);

@@ -47,7 +47,7 @@ public class StringDatatype implements HdfDatatype {
      * @param classBitField   a BitSet containing class-specific bit field information
      * @param size            the fixed size of the string in bytes
      */
-    public StringDatatype(byte classAndVersion, BitSet classBitField, int size) {
+    public StringDatatype(int classAndVersion, BitSet classBitField, int size) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
@@ -62,7 +62,7 @@ public class StringDatatype implements HdfDatatype {
      * @param ignoredBuffer   the ByteBuffer (ignored as string datatype has no properties)
      * @return a new StringDatatype instance
      */
-    public static StringDatatype parseStringType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer ignoredBuffer) {
+    public static StringDatatype parseStringType(int classAndVersion, BitSet classBitField, int size, ByteBuffer ignoredBuffer) {
         return new StringDatatype(classAndVersion, classBitField, size);
     }
 

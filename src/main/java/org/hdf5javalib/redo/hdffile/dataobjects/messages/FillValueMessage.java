@@ -70,8 +70,8 @@ public class FillValueMessage extends HdfMessage {
             int fillValueDefined,
             int size,
             byte[] fillValue,
-            byte flags,
-            short sizeMessageData
+            int flags,
+            int sizeMessageData
     ) {
         super(MessageType.FillValueMessage, sizeMessageData, flags);
         this.version = version;
@@ -90,7 +90,7 @@ public class FillValueMessage extends HdfMessage {
      * @param hdfDataFile the HDF5 file context for additional resources
      * @return a new FillValueMessage instance parsed from the data
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Parse the first 4 bytes

@@ -52,7 +52,7 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
      * @param flags              message flags
      * @param sizeMessageData    the size of the message data in bytes
      */
-    public ObjectHeaderContinuationMessage(final HdfFixedPoint continuationOffset, final HdfFixedPoint continuationSize, byte flags, short sizeMessageData) {
+    public ObjectHeaderContinuationMessage(final HdfFixedPoint continuationOffset, final HdfFixedPoint continuationSize, int flags, short sizeMessageData) {
         super(MessageType.ObjectHeaderContinuationMessage, sizeMessageData, flags);
         this.continuationOffset = continuationOffset;
         this.continuationSize = continuationSize;
@@ -66,7 +66,7 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
      * @param hdfDataFile the HDF5 file context for datatype resources
      * @return a new ObjectHeaderContinuationMessage instance
      */
-    public static ObjectHeaderContinuationMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static ObjectHeaderContinuationMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Parse the continuation offset and size
         BitSet emptyBitSet = new BitSet();

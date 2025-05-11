@@ -46,7 +46,7 @@ public class ObjectModificationTimeMessage extends HdfMessage {
      * @param flags             message flags
      * @param sizeMessageData   the size of the message data in bytes
      */
-    public ObjectModificationTimeMessage(byte version, long secondsAfterEpoch, byte flags, short sizeMessageData) {
+    public ObjectModificationTimeMessage(int version, long secondsAfterEpoch, int flags, int sizeMessageData) {
         super(MessageType.ObjectModificationTimeMessage, sizeMessageData, flags);
         this.version = version;
         this.secondsAfterEpoch = secondsAfterEpoch;
@@ -60,7 +60,7 @@ public class ObjectModificationTimeMessage extends HdfMessage {
      * @param hdfDataFile the HDF5 file context for additional resources
      * @return a new ObjectModificationTimeMessage instance
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Parse version

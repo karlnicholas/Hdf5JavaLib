@@ -51,7 +51,7 @@ public class TimeDatatype implements HdfDatatype {
      * @param size            the size of the time data in bytes
      * @param bitPrecision    the number of bits of precision
      */
-    public TimeDatatype(byte classAndVersion, BitSet classBitField, int size, short bitPrecision) {
+    public TimeDatatype(int classAndVersion, BitSet classBitField, int size, int bitPrecision) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
@@ -67,8 +67,8 @@ public class TimeDatatype implements HdfDatatype {
      * @param buffer          the ByteBuffer containing the datatype definition
      * @return a new TimeDatatype instance parsed from the buffer
      */
-    public static TimeDatatype parseTimeType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
-        short bitPrecision = buffer.getShort();
+    public static TimeDatatype parseTimeType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+        int bitPrecision = Short.toUnsignedInt(buffer.getShort());
         return new TimeDatatype(classAndVersion, classBitField, size, bitPrecision);
     }
 
@@ -247,7 +247,7 @@ public class TimeDatatype implements HdfDatatype {
      */
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        buffer.putShort(bitPrecision);
+        buffer.putShort((short) bitPrecision);
     }
 
     /**

@@ -115,7 +115,7 @@ public class HdfSymbolTableEntry {
                 .append(", objectHeaderOffset=").append(objectHeaderOffset)
                 .append(", cacheType=").append(cache);
 
-        switch (cache) {
+        switch (cache.getCacheType()) {
             case 0:
                 break; // Base fields only
             case 1:

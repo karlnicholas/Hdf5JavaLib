@@ -28,9 +28,9 @@ public class BitFieldDatatype implements HdfDatatype {
     /** The total size of the bitfield datatype in bytes. */
     private final int size;
     /** The bit offset of the first significant bit. */
-    private final short bitOffset;
+    private final int bitOffset;
     /** The number of bits of precision. */
-    private final short bitPrecision;
+    private final int bitPrecision;
 
     /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<BitFieldDatatype, ?>> CONVERTERS = new HashMap<>();
@@ -51,7 +51,7 @@ public class BitFieldDatatype implements HdfDatatype {
      * @param bitOffset       the bit offset of the first significant bit
      * @param bitPrecision    the number of bits of precision
      */
-    public BitFieldDatatype(byte classAndVersion, BitSet classBitField, int size, short bitOffset, short bitPrecision) {
+    public BitFieldDatatype(int classAndVersion, BitSet classBitField, int size, int bitOffset, int bitPrecision) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
@@ -68,9 +68,9 @@ public class BitFieldDatatype implements HdfDatatype {
      * @param buffer          the ByteBuffer containing the datatype definition
      * @return a new BitFieldDatatype instance parsed from the buffer
      */
-    public static BitFieldDatatype parseBitFieldType(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
-        short bitOffset = buffer.getShort();
-        short bitPrecision = buffer.getShort();
+    public static BitFieldDatatype parseBitFieldType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+        int bitOffset = Short.toUnsignedInt(buffer.getShort());
+        int bitPrecision = Short.toUnsignedInt(buffer.getShort());
         return new BitFieldDatatype(classAndVersion, classBitField, size, bitOffset, bitPrecision);
     }
 
@@ -274,8 +274,8 @@ public class BitFieldDatatype implements HdfDatatype {
      */
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        buffer.putShort(bitOffset);
-        buffer.putShort(bitPrecision);
+        buffer.putShort((short) bitOffset);
+        buffer.putShort((short) bitPrecision);
     }
 
     /**
@@ -323,11 +323,11 @@ public class BitFieldDatatype implements HdfDatatype {
         return size;
     }
 
-    public short getBitOffset() {
+    public int getBitOffset() {
         return bitOffset;
     }
 
-    public short getBitPrecision() {
+    public int getBitPrecision() {
         return bitPrecision;
     }
 }

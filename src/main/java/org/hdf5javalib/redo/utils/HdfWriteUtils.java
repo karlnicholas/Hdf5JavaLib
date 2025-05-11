@@ -5,7 +5,7 @@ import org.hdf5javalib.redo.dataclass.HdfFloatPoint;
 import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.dataclass.HdfVariableLength;
 import org.hdf5javalib.redo.datatype.*;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -195,7 +195,7 @@ public class HdfWriteUtils {
             BigInteger intValue = scaledValue.toBigInteger();
 
             // Apply bitPrecision mask if necessary
-            short bitPrecision = datatype.getBitPrecision();
+            int bitPrecision = datatype.getBitPrecision();
             if (bitPrecision > 0 && bitPrecision < size * 8) {
                 BigInteger mask = BigInteger.ONE.shiftLeft(bitPrecision).subtract(BigInteger.ONE);
                 intValue = intValue.and(mask);

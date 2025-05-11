@@ -79,7 +79,7 @@ public class ArrayDatatype implements HdfDatatype {
      *           <li>permutationIndices are not in canonical order (0, 1, ..., n-1)</li>
      *         </ul>
      */
-    public ArrayDatatype(byte classAndVersion, BitSet classBitField, int size, int dimensionality,
+    public ArrayDatatype(int classAndVersion, BitSet classBitField, int size, int dimensionality,
                          int[] dimensionSizes, int[] permutationIndices, HdfDatatype baseType) {
         if (dimensionality < 1) {
             throw new IllegalArgumentException("Dimensionality must be at least 1");
@@ -116,7 +116,7 @@ public class ArrayDatatype implements HdfDatatype {
      * @param buffer          the ByteBuffer containing the datatype definition
      * @return a new ArrayDatatype instance parsed from the buffer
      */
-    public static ArrayDatatype parseArrayDatatype(byte classAndVersion, BitSet classBitField,
+    public static ArrayDatatype parseArrayDatatype(int classAndVersion, BitSet classBitField,
                                                    int size, ByteBuffer buffer) {
         int dimensionality = Byte.toUnsignedInt(buffer.get()); // Unsigned byte
         buffer.get(new byte[3]); // Skip 3 reserved bytes (zero)

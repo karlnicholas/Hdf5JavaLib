@@ -47,7 +47,7 @@ public class SymbolTableMessage extends HdfMessage {
      * @param flags           message flags
      * @param sizeMessageData the size of the message data in bytes
      */
-    public SymbolTableMessage(HdfFixedPoint bTreeAddress, HdfFixedPoint localHeapAddress, byte flags, short sizeMessageData) {
+    public SymbolTableMessage(HdfFixedPoint bTreeAddress, HdfFixedPoint localHeapAddress, int flags, int sizeMessageData) {
         super(MessageType.SymbolTableMessage, sizeMessageData, flags);
         this.bTreeAddress = bTreeAddress;
         this.localHeapAddress = localHeapAddress;
@@ -61,10 +61,10 @@ public class SymbolTableMessage extends HdfMessage {
      * @param hdfDataFile the HDF5 file context for datatype resources
      * @return a new SymbolTableMessage instance
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        HdfFixedPoint bTreeAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), buffer);
-        HdfFixedPoint localHeapAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint bTreeAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint localHeapAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         return new SymbolTableMessage(bTreeAddress, localHeapAddress, flags, (short) data.length);
     }
 

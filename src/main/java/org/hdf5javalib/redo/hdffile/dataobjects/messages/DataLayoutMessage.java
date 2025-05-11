@@ -88,8 +88,8 @@ public class DataLayoutMessage extends HdfMessage {
             int compactDataSize,
             byte[] compactData,
             HdfFixedPoint datasetElementSize,
-            byte flags,
-            short sizeMessageData
+            int flags,
+            int sizeMessageData
     ) {
         super(MessageType.DataLayoutMessage, sizeMessageData, flags);
         this.version = version;
@@ -110,7 +110,7 @@ public class DataLayoutMessage extends HdfMessage {
      * @return a new DataLayoutMessage instance parsed from the data
      * @throws IllegalArgumentException if the version or layout class is unsupported
      */
-    public static HdfMessage parseHeaderMessage(byte flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Read version (1 byte)

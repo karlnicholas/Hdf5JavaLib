@@ -32,7 +32,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
     /** The base datatype of the member. */
     private final HdfDatatype type;
     /** The size of the message data for this member in bytes. */
-    private final short sizeMessageData;
+    private final int sizeMessageData;
 
     /**
      * Constructs a CompoundMemberDatatype for an HDF5 compound datatype member.

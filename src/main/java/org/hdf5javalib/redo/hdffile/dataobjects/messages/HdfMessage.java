@@ -81,7 +81,7 @@ public abstract class HdfMessage {
      * @param buffer the ByteBuffer to write the header data to
      */
     protected void writeMessageData(ByteBuffer buffer) {
-        buffer.putShort(messageType.getValue());
+        buffer.putShort((short) messageType.getValue());
         buffer.putShort((short) sizeMessageData);
         buffer.put((byte) messageFlags);
         buffer.put((byte) 0);
@@ -309,7 +309,7 @@ public abstract class HdfMessage {
          */
         FileSpaceInfoMessage((short) 23, "File Space Info Message");
 
-        private final short value;
+        private final int value;
         private final String name;
 
         MessageType(short value, String name) {
@@ -337,7 +337,7 @@ public abstract class HdfMessage {
          * Returns the numeric value of the message type.
          * @return short of value
          */
-        public short getValue() {
+        public int getValue() {
             return value;
         }
     }

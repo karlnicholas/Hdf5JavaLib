@@ -52,7 +52,7 @@ public class CompoundDatatype implements HdfDatatype {
      * @param size            the total size of the compound datatype in bytes
      * @param members         the list of member datatypes
      */
-    public CompoundDatatype(byte classAndVersion, BitSet classBitField, int size, List<CompoundMemberDatatype> members) {
+    public CompoundDatatype(int classAndVersion, BitSet classBitField, int size, List<CompoundMemberDatatype> members) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
@@ -67,7 +67,7 @@ public class CompoundDatatype implements HdfDatatype {
      * @param size            the total size of the compound datatype in bytes
      * @param buffer          the ByteBuffer containing the datatype definition
      */
-    public CompoundDatatype(byte classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+    public CompoundDatatype(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;

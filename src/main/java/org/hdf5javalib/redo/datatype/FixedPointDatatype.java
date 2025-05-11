@@ -80,8 +80,8 @@ public class FixedPointDatatype implements HdfDatatype {
      * @return a new FixedPointDatatype instance parsed from the buffer
      */
     public static FixedPointDatatype parseFixedPointType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
-        short bitOffset = buffer.getShort();
-        short bitPrecision = buffer.getShort();
+        int bitOffset = Short.toUnsignedInt(buffer.getShort());
+        int bitPrecision = Short.toUnsignedInt(buffer.getShort());
         return new FixedPointDatatype(classAndVersion, classBitField, size, bitOffset, bitPrecision);
     }
 
@@ -145,8 +145,8 @@ public class FixedPointDatatype implements HdfDatatype {
      */
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        buffer.putShort(bitOffset);         // 2
-        buffer.putShort(bitPrecision);      // 2
+        buffer.putShort((short) bitOffset);         // 2
+        buffer.putShort((short) bitPrecision);      // 2
     }
 
     /**
@@ -527,11 +527,11 @@ public class FixedPointDatatype implements HdfDatatype {
         return classBitField;
     }
 
-    public short getBitOffset() {
+    public int getBitOffset() {
         return bitOffset;
     }
 
-    public short getBitPrecision() {
+    public int getBitPrecision() {
         return bitPrecision;
     }
 }

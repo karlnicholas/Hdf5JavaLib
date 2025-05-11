@@ -4,4 +4,5 @@ import java.nio.ByteBuffer;
 
 public interface HdfSymbolTableEntryCache {
     void writeToBuffer(ByteBuffer buffer);
+    int getCacheType();
 }

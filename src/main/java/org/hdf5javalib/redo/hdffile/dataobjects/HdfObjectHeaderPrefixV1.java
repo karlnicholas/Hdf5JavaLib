@@ -84,7 +84,7 @@ public class HdfObjectHeaderPrefixV1 {
         }
 
         // Total Number of Header Messages (2 bytes, little-endian)
-        short totalHeaderMessages = buffer.getShort();
+        int totalHeaderMessages = Short.toUnsignedInt(buffer.getShort());
 
         // Object Reference Count (4 bytes, little-endian)
         long objectReferenceCount = Integer.toUnsignedLong(buffer.getInt());

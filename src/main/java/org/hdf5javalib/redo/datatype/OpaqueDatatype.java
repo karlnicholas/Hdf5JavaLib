@@ -50,7 +50,7 @@ public class OpaqueDatatype implements HdfDatatype {
      * @param asciiTag        the NUL-terminated ASCII tag
      * @throws IllegalArgumentException if the ASCII tag length exceeds the bit field specification
      */
-    public OpaqueDatatype(byte classAndVersion, BitSet classBitField, int size, String asciiTag) {
+    public OpaqueDatatype(int classAndVersion, BitSet classBitField, int size, String asciiTag) {
         int tagLength = getTagLength(classBitField); // Length including NUL, per bit field
         int actualLength = asciiTag.getBytes(StandardCharsets.US_ASCII).length + 1; // String length + NUL
         if (actualLength > tagLength) {
@@ -73,7 +73,7 @@ public class OpaqueDatatype implements HdfDatatype {
      * @return a new OpaqueDatatype instance parsed from the buffer
      * @throws IllegalArgumentException if the ASCII tag is not NUL-terminated within the specified length
      */
-    public static OpaqueDatatype parseOpaqueDatatype(byte classAndVersion, BitSet classBitField,
+    public static OpaqueDatatype parseOpaqueDatatype(int classAndVersion, BitSet classBitField,
                                                      int size, ByteBuffer buffer) {
         int tagLength = getTagLength(classBitField); // Length including NUL, before padding
         int paddedLength = (tagLength + 7) & ~7;     // Round up to next 8-byte multiple

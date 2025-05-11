@@ -52,7 +52,7 @@ public class HdfGroupSymbolTableNode {
      * @throws IOException if an I/O error occurs or the SNOD signature is invalid
      * @throws IllegalArgumentException if the SNOD signature is invalid
      */
-    public static HdfGroupSymbolTableNode readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
+    public static HdfGroupSymbolTableNode readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws Exception {
         ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();
@@ -80,7 +80,7 @@ public class HdfGroupSymbolTableNode {
         // Read Symbol Table Entries
         List<HdfSymbolTableEntry> symbolTableEntries = new ArrayList<>(numberOfSymbols);
         for (int i = 0; i < numberOfSymbols; i++) {
-            HdfSymbolTableEntry entry = HdfSymbolTableEntry.readFromSeekableByteChannel(fileChannel, hdfDataFile.getFixedPointDatatypeForOffset());
+            HdfSymbolTableEntry entry = HdfSymbolTableEntry.readFromSeekableByteChannel(fileChannel, hdfDataFile);
             symbolTableEntries.add(entry);
         }
 
