@@ -1,9 +1,11 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
+import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
+import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 
 import java.io.IOException;
@@ -46,17 +48,17 @@ public class HdfSymbolTableEntry {
         this.cache = cache;
     }
 
-    /**
-     * Constructs an HdfSymbolTableEntry for cache type 0 with basic fields only.
-     *
-     * @param linkNameOffset      the offset of the link name in the local heap
-     * @param objectHeader  the offset of the object's header in the file
-     */
-    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfObjectHeaderPrefixV1 objectHeader) {
-        this.linkNameOffset = linkNameOffset;
-        this.objectHeader = objectHeader;
-        this.cache = new HdfSymbolTableEntryCacheNotUsed();
-    }
+//    /**
+//     * Constructs an HdfSymbolTableEntry for cache type 0 with basic fields only.
+//     *
+//     * @param linkNameOffset      the offset of the link name in the local heap
+//     * @param objectHeader  the offset of the object's header in the file
+//     */
+//    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfObjectHeaderPrefixV1 objectHeader) {
+//        this.linkNameOffset = linkNameOffset;
+//        this.objectHeader = objectHeader;
+//        this.cache = new HdfSymbolTableEntryCacheNotUsed(null, objectHeader, "datasetName");
+//    }
 
     /**
      * Reads an HdfSymbolTableEntry from a file channel.
@@ -81,14 +83,11 @@ public class HdfSymbolTableEntry {
         // Initialize addresses for cacheType 1
         HdfSymbolTableEntryCache cache;
         if (cacheType == 1) {
-            cache = HdfSymbolTableEntryCacheGroupMetadata.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+            cache = HdfSymbolTableEntryCacheGroupMetadata.readFromSeekableByteChannel(fileChannel, hdfDataFile, linkNameOffset, objectHeaderAddress);
         } else {
-            HdfReadUtils.skipBytes(fileChannel, 16); // Skip 16 bytes for scratch-pad
-            cache = new HdfSymbolTableEntryCacheNotUsed();
+            cache = HdfSymbolTableEntryCacheNotUsed.readFromSeekableByteChannel(fileChannel, hdfDataFile, linkNameOffset, objectHeaderAddress);
         }
-        fileChannel.position(objectHeaderAddress.getInstance(Long.class));
-        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, hdfDataFile);
-        return new HdfSymbolTableEntry(linkNameOffset, objectHeader, cache);
+        return new HdfSymbolTableEntry(linkNameOffset, cache.getObjectHeader(), cache);
     }
 
     /**
@@ -117,21 +116,9 @@ public class HdfSymbolTableEntry {
     public String toString() {
         StringBuilder sb = new StringBuilder("HdfSymbolTableEntry{");
         sb.append("linkNameOffset=").append(linkNameOffset)
-                .append(", objectHeaderOffset=").append(objectHeaderOffset)
-                .append(", cacheType=").append(cache);
-
-        switch (cache.getCacheType()) {
-            case 0:
-                break; // Base fields only
-            case 1:
-                sb.append(", bTreeOffset=").append(bTreeOffset)
-                        .append(", localHeapOffset=").append(localHeapOffset);
-                break;
-            default:
-                throw new IllegalStateException("Unknown cache type: " + cache);
-        }
-
-        sb.append("}");
+            .append(", objectHeaderOffset=").append(objectHeader)
+            .append(", cacheType=").append(cache);
+            sb.append("}");
         return sb.toString();
     }
 

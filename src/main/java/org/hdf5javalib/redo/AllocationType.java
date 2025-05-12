@@ -10,13 +10,12 @@ package org.hdf5javalib.redo;
 public enum AllocationType {
     /** Superblock, located at offset 0 with a size of 96 bytes. */
     SUPERBLOCK,
-//    /** Object header prefix for the root group, typically at offset 96 with a size of 40 bytes. */
-//    GROUP_OBJECT_HEADER,
-//    /** B-tree node and storage, typically at offset 136 with a size of 544 bytes. */
-//    BTREE_HEADER,
-//    /** Local heap header, typically at offset 680 with a size of 32 bytes. */
-//    LOCAL_HEAP_HEADER,
-    GROUP,
+    /** Object header prefix for the root group, typically at offset 96 with a size of 40 bytes. */
+    GROUP_OBJECT_HEADER,
+    /** B-tree node and storage, typically at offset 136 with a size of 544 bytes. */
+    BTREE_HEADER,
+    /** Local heap header, typically at offset 680 with a size of 32 bytes. */
+    LOCAL_HEAP_HEADER,
     /** Dataset header, stored in the metadata region. */
     DATASET_OBJECT_HEADER,
     /** Dataset continuation block, stored in the metadata region. */

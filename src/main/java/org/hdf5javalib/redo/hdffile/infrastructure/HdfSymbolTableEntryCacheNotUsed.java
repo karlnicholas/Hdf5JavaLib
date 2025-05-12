@@ -1,18 +1,35 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
+import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
+import org.hdf5javalib.redo.utils.HdfReadUtils;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
-
-import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache {
     /** The cache type (0 for basic, 1 for additional B-Tree and heap offsets). */
     private final int cacheType = 0;
-    public static HdfSymbolTableEntryCache readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws Exception {
-        return new HdfSymbolTableEntryCacheNotUsed();
+    private final HdfDataSet dataSet;
+    public HdfSymbolTableEntryCacheNotUsed(HdfDataFile hdfDataFile, HdfObjectHeaderPrefixV1 objectHeader, String datasetName) {
+        dataSet = new HdfDataSet(hdfDataFile, datasetName, objectHeader);
     }
+
+    public static HdfSymbolTableEntryCacheNotUsed readFromSeekableByteChannel(
+            SeekableByteChannel fileChannel,
+            HdfDataFile hdfDataFile,
+            HdfFixedPoint linkNameOffset,
+            HdfFixedPoint objectHeaderAddress
+    ) throws IOException {
+        HdfReadUtils.skipBytes(fileChannel, 16); // Skip 16 bytes for scratch-pad
+        fileChannel.position(objectHeaderAddress.getInstance(Long.class));
+        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+        return new HdfSymbolTableEntryCacheNotUsed(hdfDataFile, objectHeader, "datasetName");
+    }
+
 
     @Override
     public void writeToBuffer(ByteBuffer buffer) {
@@ -26,7 +43,16 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
     }
 
     @Override
-    public int getCacheType() {
-        return cacheType;
+    public String toString() {
+        StringBuilder sb = new StringBuilder("HdfSymbolTableEntryCacheNotUsed{");
+        sb.append("cacheType=").append(cacheType);
+        sb.append(", dataSet=").append(dataSet);
+        sb.append("}");
+        return sb.toString();
+    }
+
+    @Override
+    public HdfObjectHeaderPrefixV1 getObjectHeader() {
+        return dataSet.getDataObjectHeaderPrefix();
     }
 }

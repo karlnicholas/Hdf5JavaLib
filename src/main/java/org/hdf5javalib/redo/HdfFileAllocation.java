@@ -16,9 +16,9 @@ import java.util.*;
  */
 public class HdfFileAllocation {
 
-    public AllocationRecord getSuperblockRecord() {
-        return superblockRecord;
-    }
+//    public AllocationRecord getSuperblockRecord() {
+//        return superblockRecord;
+//    }
 
 //    public AllocationRecord getLocalHeapHeaderRecord() {
 //        return localHeapHeaderRecord;
@@ -76,10 +76,9 @@ public class HdfFileAllocation {
     public static final long SUPERBLOCK_SIZE = 96L;
     private static final long OBJECT_HEADER_PREFIX_SIZE = 40L;
     // The assumption is that these are always stored together as a group
-    private static final long BTREE_NODE_SIZE = 32L;
-    private static final long BTREE_STORAGE_SIZE = 512L;
-    private static final long LOCAL_HEAP_HEADER_SIZE = 32L;
-    public static final long GROUP_SIZE = OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE + LOCAL_HEAP_HEADER_SIZE;
+    public static final long BTREE_NODE_SIZE = 32L;
+    public static final long BTREE_STORAGE_SIZE = 512L;
+    public static final long LOCAL_HEAP_HEADER_SIZE = 32L;
     public static final long INITIAL_LOCAL_HEAP_CONTENTS_SIZE = 88L;
     public static final long DATA_OBJECT_HEADER_MESSAGE_SIZE = 16L;
     public static final long SNOD_V1_HEADER_SIZE = 8L;
@@ -105,8 +104,7 @@ public class HdfFileAllocation {
     private final List<AllocationRecord> localHeapRecords = new ArrayList<>();
 
     // --- Fixed Allocations ---
-    private AllocationRecord superblockRecord;
-    private AllocationRecord rootGroupRecord;
+//    private AllocationRecord superblockRecord;
 //    private AllocationRecord objectHeaderPrefixRecord;
 //    private AllocationRecord btreeRecord;
 //    private AllocationRecord localHeapHeaderRecord;
@@ -131,7 +129,7 @@ public class HdfFileAllocation {
         this.dataNextAvailableOffset = MIN_DATA_OFFSET_THRESHOLD;
     }
 
-    public void initializeForWriting() {
+//    public void initializeForWriting() {
 //        // Initialize fixed structures
 //        superblockRecord = new org.hdf5javalib.file.HdfFileAllocation.AllocationRecord(org.hdf5javalib.file.HdfFileAllocation.AllocationType.SUPERBLOCK, "Superblock", SUPERBLOCK_OFFSET, SUPERBLOCK_SIZE);
 //        objectHeaderPrefixRecord = new org.hdf5javalib.file.HdfFileAllocation.AllocationRecord(org.hdf5javalib.file.HdfFileAllocation.AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE);
@@ -141,21 +139,14 @@ public class HdfFileAllocation {
 //        // Initialize local heap
 //        org.hdf5javalib.file.HdfFileAllocation.AllocationRecord initialLocalHeapRecord = new org.hdf5javalib.file.HdfFileAllocation.AllocationRecord(org.hdf5javalib.file.HdfFileAllocation.AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE, INITIAL_LOCAL_HEAP_CONTENTS_SIZE);
 //        localHeapRecords.add(initialLocalHeapRecord);
+//
+//        // Add fixed structures to allocationRecords
+//        allocationRecords.add(superblockRecord);
+//        allocationRecords.add(rootGroupRecord);
+//        allocationRecords.add(initialLocalHeapRecord);
+//    }
 
-        // Initialize fixed structures
-        superblockRecord = new AllocationRecord(AllocationType.SUPERBLOCK, "Superblock", SUPERBLOCK_OFFSET, SUPERBLOCK_SIZE);
-        rootGroupRecord = new AllocationRecord(AllocationType.GROUP, "Root Group", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, GROUP_SIZE);
-        // Initialize local heap
-        AllocationRecord initialLocalHeapRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", rootGroupRecord.getOffset() + rootGroupRecord.getSize(), INITIAL_LOCAL_HEAP_CONTENTS_SIZE);
-        localHeapRecords.add(initialLocalHeapRecord);
-
-        // Add fixed structures to allocationRecords
-        allocationRecords.add(superblockRecord);
-        allocationRecords.add(rootGroupRecord);
-        allocationRecords.add(initialLocalHeapRecord);
-    }
-
-    public void initializeForReading(
+    public void initializeFixedStructures(
             AllocationRecord superblockRecord,
             AllocationRecord rootGroupRecord,
             AllocationRecord initialLocalHeapRecord

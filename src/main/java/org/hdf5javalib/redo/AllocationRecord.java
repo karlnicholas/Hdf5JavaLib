@@ -2,14 +2,16 @@ package org.hdf5javalib.redo;
 
 // --- Helper Classes ---
 
+import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
+
 /**
  * Represents a single allocation record with type, name, offset, and size.
  */
 public class AllocationRecord {
     private AllocationType type;
     private String name;
-    private long offset;
-    private long size;
+    private HdfFixedPoint offset;
+    private HdfFixedPoint size;
 
     /**
      * Constructs an allocation record.
@@ -19,7 +21,7 @@ public class AllocationRecord {
      * @param offset the starting offset
      * @param size   the size of the allocation
      */
-    public AllocationRecord(AllocationType type, String name, long offset, long size) {
+    public AllocationRecord(AllocationType type, String name, HdfFixedPoint offset, HdfFixedPoint size) {
         this.type = type;
         this.name = name;
         this.offset = offset;
@@ -45,14 +47,14 @@ public class AllocationRecord {
      *
      * @return the offset
      */
-    public long getOffset() { return offset; }
+    public HdfFixedPoint getOffset() { return offset; }
 
     /**
      * Gets the size of the allocation.
      *
      * @return the size
      */
-    public long getSize() { return size; }
+    public HdfFixedPoint getSize() { return size; }
 
     /**
      * Sets the allocation type.
@@ -73,12 +75,12 @@ public class AllocationRecord {
      *
      * @param offset the offset
      */
-    public void setOffset(long offset) { this.offset = offset; }
+    public void setOffset(HdfFixedPoint offset) { this.offset = offset; }
 
     /**
      * Sets the size of the allocation.
      *
      * @param size the size
      */
-    public void setSize(long size) { this.size = size; }
+    public void setSize(HdfFixedPoint size) { this.size = size; }
 }

@@ -45,6 +45,18 @@ public class HdfGroup implements Closeable {
     /** Map of dataset names to their information (dataset, header offset, link name offset). */
     private final Map<String, DataSetInfo> dataSets;
 
+    public HdfBTreeV1 getBTree() {
+        return bTree;
+    }
+
+    public HdfLocalHeap getLocalHeap() {
+        return localHeap;
+    }
+
+    public HdfObjectHeaderPrefixV1 getObjectHeader() {
+        return objectHeader;
+    }
+
     /**
      * Inner class to hold dataset information, including the dataset, header offset,
      * and link name offset.

@@ -46,7 +46,7 @@ public class HdfLocalHeap extends AllocationRecord {
     /** The HDF5 file context. */
     private final HdfDataFile hdfDataFile;
     /** The raw byte array containing the heap's data. */
-    private byte[] heapData;
+    private final HdfLocalHeapData heapData;
 
     public HdfFixedPoint getFreeListOffset() {
         return freeListOffset;
@@ -106,8 +106,7 @@ public class HdfLocalHeap extends AllocationRecord {
      * @param heapData           the raw byte array containing the heap's data
      */
     public HdfLocalHeap(String signature, int version, HdfFixedPoint heapContentsSize,
-                        HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, byte[] heapData) {
-        super(AllocationType.LOCAL_HEAP_HEADER, "localheap", 0, 0);
+                        HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, HdfLocalHeapData heapData) {
         this.signature = signature;
         this.version = version;
         this.heapContentsSize = heapContentsSize;
@@ -129,7 +128,6 @@ public class HdfLocalHeap extends AllocationRecord {
      * @param hdfDataFile        the HDF5 data file to which the local heap will be written
      */
     public HdfLocalHeap(HdfFixedPoint heapContentsSize, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile) {
-        super(AllocationType.LOCAL_HEAP_HEADER, "localheap", 0, 0);
         this.signature = "HEAP";
         this.version = 0;
         this.heapContentsSize = heapContentsSize;
@@ -137,9 +135,10 @@ public class HdfLocalHeap extends AllocationRecord {
         this.heapContentsOffset = heapContentsOffset;
         this.hdfDataFile = hdfDataFile;
         long localHeapContentsSize = hdfDataFile.getFileAllocation().getCurrentLocalHeapContentsSize();
-        heapData = new byte[(int) localHeapContentsSize];
-        heapData[0] = (byte)0x1;
-        heapData[8] = (byte)localHeapContentsSize;
+        heapData = new HdfLocalHeapData();
+//        heapData[0] = (byte)0x1;
+//        heapData[8] = (byte)localHeapContentsSize;
+
     }
 
     /**

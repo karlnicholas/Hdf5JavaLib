@@ -80,7 +80,6 @@ public class HdfBTreeV1 extends AllocationRecord {
             List<HdfBTreeEntry> entries,
             HdfDataFile hdfDataFile
     ) {
-        super(AllocationType.BTREE_HEADER, "btree", HdfFileAllocation.B)
         this.signature = signature;
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;
@@ -112,7 +111,6 @@ public class HdfBTreeV1 extends AllocationRecord {
             String name,
             HdfFixedPoint offset
     ) {
-        super(AllocationType.BTREE_HEADER, name, offset, BTREE_NODE_SIZE + BTREE_STORAGE_SIZE);
         this.signature = signature;
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;
