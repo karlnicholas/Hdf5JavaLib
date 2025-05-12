@@ -78,9 +78,9 @@ public abstract class HdfBTreeEntry {
         return "key=\"+key\", childPointer=\""+childPointer+"\"";
     }
 
-//    public void setKey(HdfFixedPoint key) {
-//        this.key = key;
-//    }
+    public void setKey(HdfFixedPoint key) {
+        this.key = key;
+    }
 
     public HdfFixedPoint getKey() {
         return key;

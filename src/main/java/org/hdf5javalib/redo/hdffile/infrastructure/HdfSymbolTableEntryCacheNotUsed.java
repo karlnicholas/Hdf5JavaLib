@@ -22,7 +22,7 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
             SeekableByteChannel fileChannel,
             HdfDataFile hdfDataFile,
             HdfFixedPoint linkNameOffset,
-            HdfFixedPoint objectHeaderAddress
+            HdfObjectHeaderPrefixV1 objectHeader
     ) throws IOException {
         HdfReadUtils.skipBytes(fileChannel, 16); // Skip 16 bytes for scratch-pad
         fileChannel.position(objectHeaderAddress.getInstance(Long.class));

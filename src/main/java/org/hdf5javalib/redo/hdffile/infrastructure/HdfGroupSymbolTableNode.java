@@ -4,6 +4,7 @@ import org.hdf5javalib.redo.AllocationRecord;
 import org.hdf5javalib.redo.AllocationType;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.HdfFileAllocation;
+import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -45,7 +46,7 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
             int version,
             List<HdfSymbolTableEntry> symbolTableEntries,
             String name,
-            long offset
+            HdfFixedPoint offset
     ) {
         super(AllocationType.SNOD, name, offset, HdfFileAllocation.SNOD_STORAGE_SIZE);
         this.signature = signature;

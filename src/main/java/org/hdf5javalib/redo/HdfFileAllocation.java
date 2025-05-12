@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo;
 
+import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.metadata.HdfSuperblock;
 
 import java.util.*;
@@ -72,24 +73,24 @@ public class HdfFileAllocation {
 //    }
 //
     // --- Constants ---
-    public static final long SUPERBLOCK_OFFSET = 0L;
+    private static final long SUPERBLOCK_OFFSET = 0L;
     public static final long SUPERBLOCK_SIZE = 96L;
     private static final long OBJECT_HEADER_PREFIX_SIZE = 40L;
     // The assumption is that these are always stored together as a group
     public static final long BTREE_NODE_SIZE = 32L;
     public static final long BTREE_STORAGE_SIZE = 512L;
-    public static final long LOCAL_HEAP_HEADER_SIZE = 32L;
-    public static final long INITIAL_LOCAL_HEAP_CONTENTS_SIZE = 88L;
-    public static final long DATA_OBJECT_HEADER_MESSAGE_SIZE = 16L;
-    public static final long SNOD_V1_HEADER_SIZE = 8L;
-    public static final long SNOD_V1_ENTRY_SIZE = 32L;
-    public static final long DEFAULT_SNOD_ENTRY_COUNT = 10L;
-    public static final long GLOBAL_HEAP_BLOCK_SIZE = 4096L;
-    public static final long DEFAULT_DATASET_HEADER_SIZE = DATA_OBJECT_HEADER_MESSAGE_SIZE + 256L;
-    public static final long MIN_DATA_OFFSET_THRESHOLD = 2048L;
-    public static final long METADATA_REGION_START = 800L;
-    public static final long SNOD_STORAGE_SIZE = SNOD_V1_HEADER_SIZE + (DEFAULT_SNOD_ENTRY_COUNT * SNOD_V1_ENTRY_SIZE);
-    public static final long ALIGNMENT_BOUNDARY = 2048L;
+    private static final long LOCAL_HEAP_HEADER_SIZE = 32L;
+    private static final long INITIAL_LOCAL_HEAP_CONTENTS_SIZE = 88L;
+    private static final long DATA_OBJECT_HEADER_MESSAGE_SIZE = 16L;
+    private static final long SNOD_V1_HEADER_SIZE = 8L;
+    private static final long SNOD_V1_ENTRY_SIZE = 32L;
+    private static final long DEFAULT_SNOD_ENTRY_COUNT = 10L;
+    private static final long GLOBAL_HEAP_BLOCK_SIZE = 4096L;
+    private static final long DEFAULT_DATASET_HEADER_SIZE = DATA_OBJECT_HEADER_MESSAGE_SIZE + 256L;
+    private static final long MIN_DATA_OFFSET_THRESHOLD = 2048L;
+    private static final long METADATA_REGION_START = 800L;
+    private static final long SNOD_STORAGE_SIZE = SNOD_V1_HEADER_SIZE + (DEFAULT_SNOD_ENTRY_COUNT * SNOD_V1_ENTRY_SIZE);
+    private static final long ALIGNMENT_BOUNDARY = 2048L;
 
     // --- Storage ---
     /** Maps dataset names to their allocation records by type. */
@@ -104,7 +105,7 @@ public class HdfFileAllocation {
     private final List<AllocationRecord> localHeapRecords = new ArrayList<>();
 
     // --- Fixed Allocations ---
-//    private AllocationRecord superblockRecord;
+    private HdfSuperblock superblock;
 //    private AllocationRecord objectHeaderPrefixRecord;
 //    private AllocationRecord btreeRecord;
 //    private AllocationRecord localHeapHeaderRecord;
@@ -147,9 +148,7 @@ public class HdfFileAllocation {
 //    }
 
     public void initializeFixedStructures(
-            AllocationRecord superblockRecord,
-            AllocationRecord rootGroupRecord,
-            AllocationRecord initialLocalHeapRecord
+            AllocationRecord superblockRecord
     ) {
 
         // Initialize fixed structures
@@ -160,12 +159,13 @@ public class HdfFileAllocation {
 
         // Initialize local heap
 //        AllocationRecord initialLocalHeapRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE, INITIAL_LOCAL_HEAP_CONTENTS_SIZE);
-        localHeapRecords.add(initialLocalHeapRecord);
-
-        // Add fixed structures to allocationRecords
-        allocationRecords.add(superblockRecord);
-        allocationRecords.add(rootGroupRecord);
-        allocationRecords.add(initialLocalHeapRecord);
+        this.superblock = superblock;
+//        localHeapRecords.add(initialLocalHeapRecord);
+//
+//        // Add fixed structures to allocationRecords
+//        allocationRecords.add(superblockRecord);
+//        allocationRecords.add(rootGroupRecord);
+//        allocationRecords.add(initialLocalHeapRecord);
     }
 
     // --- Allocation Methods ---
@@ -206,7 +206,7 @@ public class HdfFileAllocation {
      * @throws IllegalArgumentException if the new size is not larger than the current size
      * @throws IllegalStateException if the dataset is not found
      */
-    public void increaseHeaderAllocation(String datasetName, long newTotalHeaderSize) {
+    public void increaseHeaderAllocation(String datasetName, HdfFixedPoint newTotalHeaderSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         Map<AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
         if (datasetAllocs == null || !datasetAllocs.containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
@@ -214,7 +214,7 @@ public class HdfFileAllocation {
         }
 
         AllocationRecord record = datasetAllocs.get(AllocationType.DATASET_OBJECT_HEADER);
-        long oldSize = record.getSize();
+        HdfFixedPoint oldSize = record.getSize();
         if (newTotalHeaderSize <= oldSize) {
             throw new IllegalArgumentException("New size must be greater than current size");
         }
@@ -550,7 +550,7 @@ public class HdfFileAllocation {
      * @param headerOffset the offset of the dataset header
      * @param headerSize   the size of the dataset header
      */
-    private void moveSnodIfOverlapped(long headerOffset, long headerSize) {
+    private void moveSnodIfOverlapped(HdfFixedPoint headerOffset, HdfFixedPoint headerSize) {
         if (snodRecords.isEmpty()) {
             return;
         }
@@ -704,9 +704,9 @@ public class HdfFileAllocation {
      *
      * @return the superblock size
      */
-    public long getSuperblockSize() {
-        return superblockRecord.getSize();
-    }
+//    public static long getSuperblockSize() {
+//        return superblockRecord.getSize();
+//    }
 
 //    /**
 //     * Retrieves the total size of the B-tree allocation.
@@ -832,4 +832,7 @@ public class HdfFileAllocation {
         return Collections.unmodifiableList(allocationRecords);
     }
 
+    public HdfSuperblock getSuperblock() {
+        return superblock;
+    }
 }

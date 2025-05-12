@@ -57,6 +57,10 @@ public class HdfGroup implements Closeable {
         return objectHeader;
     }
 
+    public String getName() {
+        return name;
+    }
+
     /**
      * Inner class to hold dataset information, including the dataset, header offset,
      * and link name offset.

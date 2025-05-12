@@ -4,6 +4,7 @@ import org.hdf5javalib.redo.AllocationRecord;
 import org.hdf5javalib.redo.AllocationType;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.HdfFileAllocation;
+import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.ObjectHeaderContinuationMessage;
 
@@ -49,7 +50,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
      * @param headerMessages      the list of header messages
      */
     public HdfObjectHeaderPrefixV1(int version, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> headerMessages,
-                                   String name, long offset
+                                   String name, HdfFixedPoint offset
     ) {
         super(AllocationType.DATASET_OBJECT_HEADER, name, offset, HdfFileAllocation.DATA_OBJECT_HEADER_MESSAGE_SIZE);
         this.version = version;

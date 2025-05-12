@@ -1,11 +1,9 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
-import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 
 import java.io.IOException;
@@ -39,12 +37,11 @@ public class HdfSymbolTableEntry {
      * Constructs an HdfSymbolTableEntry for cache type 1 with B-Tree and local heap offsets.
      *
      * @param linkNameOffset      the offset of the link name in the local heap
-     * @param objectHeader    the HdfObjectHeaderPrefixV1
-     * @param cache           the chache type instance for this Symbol Table Entry.
+     * @param cache               the cache type instance for this Symbol Table Entry.
      */
-    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfObjectHeaderPrefixV1 objectHeader, HdfSymbolTableEntryCache cache) {
+    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfSymbolTableEntryCache cache) {
         this.linkNameOffset = linkNameOffset;
-        this.objectHeader = objectHeader;
+        this.objectHeader = cache.getObjectHeader();
         this.cache = cache;
     }
 
@@ -80,14 +77,21 @@ public class HdfSymbolTableEntry {
         int cacheType = HdfReadUtils.readIntFromFileChannel(fileChannel);
         HdfReadUtils.skipBytes(fileChannel, 4); // Skip reserved field
 
+        fileChannel.position(objectHeaderAddress.getInstance(Long.class));
+        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+
+//      return new HdfSymbolTableEntryCacheGroupMetadata(groupName, objectHeader, bTreeV1, localHeap, hdfDataFile);
+
         // Initialize addresses for cacheType 1
         HdfSymbolTableEntryCache cache;
-        if (cacheType == 1) {
-            cache = HdfSymbolTableEntryCacheGroupMetadata.readFromSeekableByteChannel(fileChannel, hdfDataFile, linkNameOffset, objectHeaderAddress);
+        if (cacheType == 0) {
+            cache = HdfSymbolTableEntryCacheNotUsed.readFromSeekableByteChannel(fileChannel, hdfDataFile, linkNameOffset, objectHeader);
+        } else if (cacheType == 1) {
+            cache = HdfSymbolTableEntryCacheGroupMetadata.readFromSeekableByteChannel(fileChannel, hdfDataFile, linkNameOffset, objectHeader);
         } else {
-            cache = HdfSymbolTableEntryCacheNotUsed.readFromSeekableByteChannel(fileChannel, hdfDataFile, linkNameOffset, objectHeaderAddress);
+            throw new IllegalStateException("Unsupported cache type: " + cacheType);
         }
-        return new HdfSymbolTableEntry(linkNameOffset, cache.getObjectHeader(), cache);
+        return new HdfSymbolTableEntry(linkNameOffset, cache);
     }
 
     /**

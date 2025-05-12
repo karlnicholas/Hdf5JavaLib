@@ -15,34 +15,25 @@ import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
  * @see HdfGroupSymbolTableNode
  * @see HdfBTreeV1
  */
-public class HdfBTreeChildBtreeEntry {
-    /** The key for this B-Tree entry, used for ordering. */
-    private HdfFixedPoint key;
-    /** The address of the child node (symbol table node or child B-Tree). */
-    private final HdfFixedPoint childPointer;
-
-
-// THIS
-    /** The symbol table node payload, non-null for leaf entries (nodeLevel == 0). */
-    private final HdfGroupSymbolTableNode symbolTableNode;
+public class HdfBTreeChildBtreeEntry extends HdfBTreeEntry{
 
 // OR THAT
     /** The child B-Tree payload, non-null for internal entries (nodeLevel > 0). */
     private final HdfBTreeV1 childBTree;
 
-    /**
-     * Constructs an HdfBTreeEntry for a leaf node, pointing to a symbol table node.
-     *
-     * @param key             the key for the entry
-     * @param snodAddress     the address of the symbol table node
-     * @param symbolTableNode the symbol table node payload
-     */
-    public HdfBTreeChildBtreeEntry(HdfFixedPoint key, HdfFixedPoint snodAddress, HdfGroupSymbolTableNode symbolTableNode) {
-        this.key = key;
-        this.childPointer = snodAddress;
-        this.symbolTableNode = symbolTableNode;
-        this.childBTree = null;
-    }
+//    /**
+//     * Constructs an HdfBTreeEntry for a leaf node, pointing to a symbol table node.
+//     *
+//     * @param key             the key for the entry
+//     * @param childPointer     the address of the symbol table node
+//     * @param symbolTableNode the symbol table node payload
+//     */
+//    public HdfBTreeChildBtreeEntry(HdfFixedPoint key, HdfFixedPoint childPointer, HdfGroupSymbolTableNode symbolTableNode) {
+//        this.key = key;
+//        this.childPointer = childPointer;
+//        this.symbolTableNode = symbolTableNode;
+//        this.childBTree = null;
+//    }
 
     /**
      * Constructs an HdfBTreeEntry for an internal node, pointing to a child B-Tree.
@@ -52,29 +43,27 @@ public class HdfBTreeChildBtreeEntry {
      * @param childBTree       the child B-Tree payload
      */
     public HdfBTreeChildBtreeEntry(HdfFixedPoint key, HdfFixedPoint childBTreeAddress, HdfBTreeV1 childBTree) {
-        this.key = key;
-        this.childPointer = childBTreeAddress;
-        this.symbolTableNode = null;
+        super(key, childBTreeAddress);
         this.childBTree = childBTree;
     }
 
-    /**
-     * Checks if this is a leaf entry (contains a symbol table node).
-     *
-     * @return true if the entry is a leaf entry, false otherwise
-     */
-    public boolean isLeafEntry() {
-        return this.symbolTableNode != null;
-    }
-
-    /**
-     * Checks if this is an internal entry (contains a child B-Tree).
-     *
-     * @return true if the entry is an internal entry, false otherwise
-     */
-    public boolean isInternalEntry() {
-        return this.childBTree != null;
-    }
+//    /**
+//     * Checks if this is a leaf entry (contains a symbol table node).
+//     *
+//     * @return true if the entry is a leaf entry, false otherwise
+//     */
+//    public boolean isLeafEntry() {
+//        return this.symbolTableNode != null;
+//    }
+//
+//    /**
+//     * Checks if this is an internal entry (contains a child B-Tree).
+//     *
+//     * @return true if the entry is an internal entry, false otherwise
+//     */
+//    public boolean isInternalEntry() {
+//        return this.childBTree != null;
+//    }
 
     /**
      * Returns a string representation of the HdfBTreeEntry.
@@ -88,8 +77,7 @@ public class HdfBTreeChildBtreeEntry {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("HdfBTreeEntry{");
-        sb.append("key=").append(key);
-        sb.append(", childPointer=").append(childPointer);
+        sb.append(super.toString());
 
         // Append the payload by calling its toString() method
         if (isLeafEntry()) {

@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
+import org.hdf5javalib.redo.AllocationRecord;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
@@ -29,17 +30,19 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
             SeekableByteChannel fileChannel,
             HdfDataFile hdfDataFile,
             HdfFixedPoint linkNameOffset,
-            HdfFixedPoint objectHeaderAddress
+            HdfObjectHeaderPrefixV1 objectHeader
     ) throws Exception {
-        HdfFixedPoint bTreeAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
-        fileChannel.position(bTreeAddress.getInstance(Long.class));
-        HdfBTreeV1 bTreeV1 = HdfBTreeV1.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+        // reading for group.
         HdfFixedPoint localHeapAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
         fileChannel.position(localHeapAddress.getInstance(Long.class));
         HdfLocalHeap localHeap = org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeap.readFromSeekableByteChannel(fileChannel, hdfDataFile);
-        fileChannel.position(objectHeaderAddress.getInstance(Long.class));
-        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+
         String groupName = localHeap.parseStringAtOffset(linkNameOffset).toString();
+
+        HdfFixedPoint bTreeAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
+        fileChannel.position(bTreeAddress.getInstance(Long.class));
+        HdfBTreeV1 bTreeV1 = HdfBTreeV1.readFromSeekableByteChannel(fileChannel, hdfDataFile, groupName, localHeap);
+
         return new HdfSymbolTableEntryCacheGroupMetadata(groupName, objectHeader, bTreeV1, localHeap, hdfDataFile);
     }
 
@@ -66,5 +69,9 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
     @Override
     public HdfObjectHeaderPrefixV1 getObjectHeader() {
         return group.getObjectHeader();
+    }
+
+    public HdfBTreeV1 getBtree() {
+        return group.getBTree();
     }
 }

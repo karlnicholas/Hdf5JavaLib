@@ -8,6 +8,7 @@ import org.hdf5javalib.redo.HdfFileAllocation;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfSymbolTableEntry;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
+import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -84,7 +85,7 @@ public class HdfSuperblock extends AllocationRecord {
     private final HdfFixedPoint addressFileFreeSpaceInfo;
     private HdfFixedPoint endOfFileAddress;
     private final HdfFixedPoint driverInformationAddress;
-    private final HdfSymbolTableEntry rootGroupSymbolTableEntry;
+    private HdfSymbolTableEntry rootGroupSymbolTableEntry;
 
     // Working properties
     private final HdfDataFile hdfDataFile;
@@ -106,7 +107,6 @@ public class HdfSuperblock extends AllocationRecord {
      * @param addressFileFreeSpaceInfo   the address of the free space manager
      * @param endOfFileAddress           the end-of-file address
      * @param driverInformationAddress   the address of the driver information block
-     * @param rootGroupSymbolTableEntry  the root group symbol table entry
      * @param hdfDataFile                the HDF5 file context
      */
     public HdfSuperblock(
@@ -122,11 +122,12 @@ public class HdfSuperblock extends AllocationRecord {
             HdfFixedPoint addressFileFreeSpaceInfo,
             HdfFixedPoint endOfFileAddress,
             HdfFixedPoint driverInformationAddress,
-            HdfSymbolTableEntry rootGroupSymbolTableEntry,
             HdfDataFile hdfDataFile,
-            String name, long offset
-    ) {
-        super(AllocationType.SUPERBLOCK, name, offset, HdfFileAllocation.SUPERBLOCK_SIZE);
+            String name, HdfFixedPoint offset,
+            FixedPointDatatype fixedPointDatatypeForOffset,
+            FixedPointDatatype fixedPointDatatypeForLength
+            ) {
+        super(AllocationType.SUPERBLOCK, name, offset, HdfWriteUtils.hdfFixedPointFromValue(HdfFileAllocation.SUPERBLOCK_SIZE, fixedPointDatatypeForLength));
         this.version = version;
         this.freeSpaceVersion = freeSpaceVersion;
         this.rootGroupVersion = rootGroupVersion;
@@ -139,16 +140,9 @@ public class HdfSuperblock extends AllocationRecord {
         this.addressFileFreeSpaceInfo = addressFileFreeSpaceInfo;
         this.endOfFileAddress = endOfFileAddress;
         this.driverInformationAddress = driverInformationAddress;
-        this.rootGroupSymbolTableEntry = rootGroupSymbolTableEntry;
         this.hdfDataFile = hdfDataFile;
-        this.fixedPointDatatypeForOffset = new FixedPointDatatype(
-                FixedPointDatatype.createClassAndVersion(),
-                FixedPointDatatype.createClassBitField(false, false, false, false),
-                sizeOfOffsets, (short) 0, (short) (8*sizeOfOffsets));
-        this.fixedPointDatatypeForLength = new FixedPointDatatype(
-                FixedPointDatatype.createClassAndVersion(),
-                FixedPointDatatype.createClassBitField(false, false, false, false),
-                sizeOfLengths, (short) 0, (short) (8*sizeOfLengths));
+        this.fixedPointDatatypeForOffset = fixedPointDatatypeForOffset;
+        this.fixedPointDatatypeForLength = fixedPointDatatypeForLength;
     }
 
     /**
@@ -229,15 +223,14 @@ public class HdfSuperblock extends AllocationRecord {
         int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
         buffer.getInt(); // Skip consistency flags
 
-        HdfSymbolTableEntry rootGroupSymbolTableEntry = HdfSymbolTableEntry.readFromSeekableByteChannel(fileChannel, hdfDataFile);
-
         // Parse addresses using HdfFixedPoint
         HdfFixedPoint baseAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
         HdfFixedPoint freeSpaceAddress = HdfReadUtils.checkUndefined(buffer, offsetSize) ? fixedPointDatatypeForOffset.undefined(buffer) : HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
         HdfFixedPoint endOfFileAddress = HdfReadUtils.checkUndefined(buffer, offsetSize) ? fixedPointDatatypeForOffset.undefined(buffer) : HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
         HdfFixedPoint driverInformationAddress = HdfReadUtils.checkUndefined(buffer, offsetSize) ? fixedPointDatatypeForOffset.undefined(buffer) : HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+        HdfFixedPoint hdfOffset = HdfWriteUtils.hdfFixedPointFromValue(offset, fixedPointDatatypeForOffset);
 
-        return new HdfSuperblock(
+        HdfSuperblock superblock = new HdfSuperblock(
                 version,
                 freeSpaceVersion,
                 rootGroupVersion,
@@ -250,11 +243,20 @@ public class HdfSuperblock extends AllocationRecord {
                 freeSpaceAddress,
                 endOfFileAddress,
                 driverInformationAddress,
-                rootGroupSymbolTableEntry,
                 hdfDataFile,
                 "Superblock",
-                offset
+                hdfOffset,
+                fixedPointDatatypeForOffset,
+                fixedPointDatatypeForLength
         );
+        hdfDataFile.getFileAllocation().initializeFixedStructures(superblock);
+        HdfSymbolTableEntry rootGroupSymbolTableEntry = HdfSymbolTableEntry.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+        superblock.setRootGroupSymbolTableEntry(rootGroupSymbolTableEntry);
+        return superblock;
+    }
+
+    private void setRootGroupSymbolTableEntry(HdfSymbolTableEntry rootGroupSymbolTableEntry) {
+        this.rootGroupSymbolTableEntry = rootGroupSymbolTableEntry;
     }
 
     /**
@@ -270,7 +272,7 @@ public class HdfSuperblock extends AllocationRecord {
      */
     public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        ByteBuffer buffer = ByteBuffer.allocate(Math.toIntExact(fileAllocation.getSuperblockSize())).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer buffer = ByteBuffer.allocate((int) HdfFileAllocation.SUPERBLOCK_SIZE).order(ByteOrder.LITTLE_ENDIAN);
 
         // Step 1: Write the HDF5 file signature (8 bytes)
         buffer.put(new byte[]{(byte) 0x89, 0x48, 0x44, 0x46, 0x0D, 0x0A, 0x1A, 0x0A});
@@ -300,7 +302,7 @@ public class HdfSuperblock extends AllocationRecord {
 
         buffer.flip();
 
-        fileChannel.position(fileAllocation.getSuperblockRecord().getOffset());
+        fileChannel.position(fileAllocation.getSuperblock().getOffset().getInstance(Long.class));
         while (buffer.hasRemaining()) {
             fileChannel.write(buffer);
         }

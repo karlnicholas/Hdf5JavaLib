@@ -94,94 +94,94 @@ public class HdfFileReader implements HdfDataFile {
 //        btreeRecord = new AllocationRecord(AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", objectHeaderPrefixRecord.getOffset() + OBJECT_HEADER_PREFIX_SIZE, BTREE_NODE_SIZE + BTREE_STORAGE_SIZE);
 //        localHeapHeaderRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", btreeRecord.getOffset() + (BTREE_NODE_SIZE + BTREE_STORAGE_SIZE), LOCAL_HEAP_HEADER_SIZE);
 
-        long objectHeaderAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeaderOffset().getInstance(Long.class);
-        fileChannel.position(objectHeaderAddress);
-        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, this);
-//        AllocationType.GROUP_OBJECT_HEADER, "Group Object Header", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE
-
-        long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getLocalHeapOffset().getInstance(Long.class);
-        fileChannel.position(localHeapAddress);
-        HdfLocalHeap localHeap = HdfLocalHeap.readFromSeekableByteChannel(fileChannel, this);
-
-        long bTreeAddress = superblock.getRootGroupSymbolTableEntry().getBTreeOffset().getInstance(Long.class);
-        fileChannel.position(bTreeAddress);
-        HdfBTreeV1 bTree = HdfBTreeV1.readFromSeekableByteChannel(fileChannel, this);
-
-        Map<String, HdfGroup.DataSetInfo> datasetMap = collectDatasetsMap(fileChannel, bTree, localHeap);
-
-        rootGroup = new HdfGroup(
-                "",
-                objectHeader,
-                bTree,
-                localHeap,
-                datasetMap,
-                this
-        );
-
-        log.debug("{}", rootGroup);
-        log.debug("Parsing complete. NEXT: {}", fileChannel.position());
-
-        getFileAllocation().initializeForReading(
-                superblock, objectHeader, bTree, localHeap, localHeap.getLocalHeapData()
-        );
-
+//        long objectHeaderAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeader().getOffset().getInstance(Long.class);
+//        fileChannel.position(objectHeaderAddress);
+//        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, this);
+////        AllocationType.GROUP_OBJECT_HEADER, "Group Object Header", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE
+//
+//        long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeader().getOffset().getInstance(Long.class);
+//        fileChannel.position(localHeapAddress);
+//        HdfLocalHeap localHeap = HdfLocalHeap.readFromSeekableByteChannel(fileChannel, this);
+//
+//        long bTreeAddress = ((HdfSymbolTableEntryCacheGroupMetadata)superblock.getRootGroupSymbolTableEntry().getCache()).getBtree().getOffset().getInstance(Long.class);
+//        fileChannel.position(bTreeAddress);
+//        HdfBTreeV1 bTree = HdfBTreeV1.readFromSeekableByteChannel(fileChannel, this);
+//
+//        Map<String, HdfGroup.DataSetInfo> datasetMap = collectDatasetsMap(fileChannel, bTree, localHeap);
+//
+//        rootGroup = new HdfGroup(
+//                "",
+//                objectHeader,
+//                bTree,
+//                localHeap,
+//                datasetMap,
+//                this
+//        );
+//
+//        log.debug("{}", rootGroup);
+//        log.debug("Parsing complete. NEXT: {}", fileChannel.position());
+//
+//        getFileAllocation().initializeForReading(
+//                superblock, objectHeader, bTree, localHeap, localHeap.getLocalHeapData()
+//        );
+//
         return this;
     }
 
-    /**
-     * Collects a map of dataset names to their information from the B-tree and local heap.
-     *
-     * @param fileChannel the seekable byte channel for reading the file
-     * @param bTree       the B-tree containing symbol table entries
-     * @param localHeap   the local heap storing link names
-     * @return a map of dataset names to their {@link HdfGroup.DataSetInfo}
-     * @throws IOException if an I/O error occurs
-     */
-    private Map<String, HdfGroup.DataSetInfo> collectDatasetsMap(SeekableByteChannel fileChannel, HdfBTreeV1 bTree, HdfLocalHeap localHeap) throws IOException {
-        Map<String, HdfGroup.DataSetInfo> dataSets = new LinkedHashMap<>();
-        collectDatasetsRecursive(bTree, dataSets, localHeap, fileChannel);
-        return dataSets;
-    }
-
-    /**
-     * Recursively collects dataset information from the B-tree.
-     * <p>
-     * Traverses the B-tree, processing leaf nodes to extract dataset metadata and
-     * recursively handling internal nodes to collect all datasets.
-     * </p>
-     *
-     * @param currentNode the current B-tree node
-     * @param dataSets    the map to store dataset information
-     * @param localHeap   the local heap for link names
-     * @param fileChannel the seekable byte channel for reading
-     * @throws IOException if an I/O error occurs
-     */
-    private void collectDatasetsRecursive(HdfBTreeV1 currentNode,
-                                          Map<String, HdfGroup.DataSetInfo> dataSets,
-                                          HdfLocalHeap localHeap,
-                                          SeekableByteChannel fileChannel) throws IOException {
-        for (HdfBTreeEntry entry : currentNode.getEntries()) {
-            if (entry.isLeafEntry()) {
-                HdfGroupSymbolTableNode snod = entry.getSymbolTableNode();
-                for (HdfSymbolTableEntry ste : snod.getSymbolTableEntries()) {
-                    HdfString linkName = localHeap.parseStringAtOffset(ste.getLinkNameOffset());
-                    long dataObjectHeaderAddress = ste.getObjectHeaderOffset().getInstance(Long.class);
-                    long linkNameOffset = ste.getLinkNameOffset().getInstance(Long.class);
-                    fileChannel.position(dataObjectHeaderAddress);
-                    HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, this);
-                    DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
-                    HdfDataSet dataset = new HdfDataSet(this, linkName.toString(), dataType.getHdfDatatype(), header);
-                    HdfGroup.DataSetInfo dataSetInfo = new HdfGroup.DataSetInfo(dataset,
-                            HdfWriteUtils.hdfFixedPointFromValue(0, superblock.getFixedPointDatatypeForOffset()),
-                            linkNameOffset);
-                    dataSets.put(linkName.toString(), dataSetInfo);
-                }
-            } else if (entry.isInternalEntry()) {
-                HdfBTreeV1 childBTree = entry.getChildBTree();
-                collectDatasetsRecursive(childBTree, dataSets, localHeap, fileChannel);
-            }
-        }
-    }
+//    /**
+//     * Collects a map of dataset names to their information from the B-tree and local heap.
+//     *
+//     * @param fileChannel the seekable byte channel for reading the file
+//     * @param bTree       the B-tree containing symbol table entries
+//     * @param localHeap   the local heap storing link names
+//     * @return a map of dataset names to their {@link HdfGroup.DataSetInfo}
+//     * @throws IOException if an I/O error occurs
+//     */
+//    private Map<String, HdfGroup.DataSetInfo> collectDatasetsMap(SeekableByteChannel fileChannel, HdfBTreeV1 bTree, HdfLocalHeap localHeap) throws IOException {
+//        Map<String, HdfGroup.DataSetInfo> dataSets = new LinkedHashMap<>();
+//        collectDatasetsRecursive(bTree, dataSets, localHeap, fileChannel);
+//        return dataSets;
+//    }
+//
+//    /**
+//     * Recursively collects dataset information from the B-tree.
+//     * <p>
+//     * Traverses the B-tree, processing leaf nodes to extract dataset metadata and
+//     * recursively handling internal nodes to collect all datasets.
+//     * </p>
+//     *
+//     * @param currentNode the current B-tree node
+//     * @param dataSets    the map to store dataset information
+//     * @param localHeap   the local heap for link names
+//     * @param fileChannel the seekable byte channel for reading
+//     * @throws IOException if an I/O error occurs
+//     */
+//    private void collectDatasetsRecursive(HdfBTreeV1 currentNode,
+//                                          Map<String, HdfGroup.DataSetInfo> dataSets,
+//                                          HdfLocalHeap localHeap,
+//                                          SeekableByteChannel fileChannel) throws IOException {
+//        for (HdfBTreeEntry entry : currentNode.getEntries()) {
+//            if (entry.isLeafEntry()) {
+//                HdfGroupSymbolTableNode snod = entry.getSymbolTableNode();
+//                for (HdfSymbolTableEntry ste : snod.getSymbolTableEntries()) {
+//                    HdfString linkName = localHeap.parseStringAtOffset(ste.getLinkNameOffset());
+//                    long dataObjectHeaderAddress = ste.getObjectHeaderOffset().getInstance(Long.class);
+//                    long linkNameOffset = ste.getLinkNameOffset().getInstance(Long.class);
+//                    fileChannel.position(dataObjectHeaderAddress);
+//                    HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, this);
+//                    DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
+//                    HdfDataSet dataset = new HdfDataSet(this, linkName.toString(), dataType.getHdfDatatype(), header);
+//                    HdfGroup.DataSetInfo dataSetInfo = new HdfGroup.DataSetInfo(dataset,
+//                            HdfWriteUtils.hdfFixedPointFromValue(0, superblock.getFixedPointDatatypeForOffset()),
+//                            linkNameOffset);
+//                    dataSets.put(linkName.toString(), dataSetInfo);
+//                }
+//            } else if (entry.isInternalEntry()) {
+//                HdfBTreeV1 childBTree = entry.getChildBTree();
+//                collectDatasetsRecursive(childBTree, dataSets, localHeap, fileChannel);
+//            }
+//        }
+//    }
 
     /**
      * Retrieves the global heap of the HDF5 file.
