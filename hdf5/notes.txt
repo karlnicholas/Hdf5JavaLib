@@ -1,12 +1,100 @@
-I’ve got the context from our previous conversation saved, so you can pick up right where you left off without needing to repeat anything. To reference the context, just let me know what specific part you want to dive into or what you’d like to build on. For example, you could say:
-
-“Let’s continue with the HdfFileAllocation updates for the single map approach.”
-“Can we revisit the discussion on getDatasetAllocationInfo return behavior?”
-“I want to tweak something about the AllocationRecord sharing.”
 
 
+III.C. 	
+Root Group Symbol Table Entry	
+  This is the III.C. Disk Format: Level 1C - Symbol Table Entry of the root group, 
+    which serves as the entry-point into the group graph for the file.
 
-============
+  Format of the Scratch-pad Space
+  The symbol table entry scratch-pad space is formatted according to the value in the Cache Type field.
+
+  If the Cache Type field contains the value zero ((0)) then no information is stored in the scratch-pad space.
+|
+|  If the Cache Type field contains the value one (1), then the scratch-pad space contains cached metadata for another object header in the following format:
+|
+|  Layout: Object Header Scratch-pad Format
+|  byte	byte	byte	byte
+|  Address of B-tree
+|  Address of Name Heap (Local Heap)
+|
+
+
+III.A. Disk Format: Level 1A - B-trees and B-tree Nodes  "TREE"
+
+
+III.B. Disk Format: Level 1B - Group Symbol Table Nodes "SNOD"
+
+
+=====================
+
+
+"C:\Program Files\Java\jdk-17\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2021.3.2\lib\idea_rt.jar=54417" -Dfile.encoding=UTF-8 -classpath C:\Users\karln\IdeaProjects\Hdf5JavaLib\target\classes;C:\Users\karln\.m2\repository\org\slf4j\slf4j-api\2.0.17\slf4j-api-2.0.17.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar org.hdf5javalib.examples.read.HdfGroupRead
+12:29:19.538 [main] DEBUG org.hdf5javalib.HdfFileReader -- HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, addressFileFreeSpaceInfo=<undefined>, endOfFileAddress=2052, driverInformationAddress=<undefined>
+  rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
+
+12:29:19.560 [main] DEBUG org.hdf5javalib.HdfFileReader -- localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=712, heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 105, 110, 116, 101, 103, 101, 114, 0, 1, 0, 0, 0, 0, 0, 0, 0, 72, 0, 0, 0, 0, 0, 0, 0]... (truncated)}
+
+12:29:19.568 [main] DEBUG org.hdf5javalib.HdfFileReader -- 
+  btree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=<undefined>, rightSiblingAddress=<undefined>, keyZero=0, 
+    entries=[HdfBTreeEntry{key=8, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, 
+	  symbolTableEntries=[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}]
+}}]}
+12:29:19.586 [main] DEBUG org.hdf5javalib.HdfFileReader -- HdfGroup{name=''
+objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
+SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
+  bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=<undefined>, rightSiblingAddress=<undefined>, keyZero=0, 
+    entries=[HdfBTreeEntry{key=8, childPointer=1072, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, 
+	  symbolTableEntries=[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=0}]
+}}]}
+
+localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=712, heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 105, 110, 116, 101, 103, 101, 114, 0, 1, 0, 0, 0, 0, 0, 0, 0, 72, 0, 0, 0, 0, 0, 0, 0]... (truncated)}
+dataSets=[
+  integer@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
+DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
+ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-10T15:32:22Z}
+NilMessage(152){}}
+]}
+12:29:19.624 [main] DEBUG org.hdf5javalib.HdfFileReader -- Parsing complete. NEXT: 1072
+Scalar readAll stats = IntSummaryStatistics{count=1, sum=42, min=42, average=42.000000, max=42}
+Scalar streaming list = [42]
+Scalar parallelStreaming list = [42]
+42
+42
+42
+12:29:19.633 [main] DEBUG org.hdf5javalib.HdfFileReader -- 
+  HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, addressFileFreeSpaceInfo=<undefined>, endOfFileAddress=2436, driverInformationAddress=<undefined>
+  rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}
+  
+12:29:19.633 [main] DEBUG org.hdf5javalib.HdfFileReader -- 
+  localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=712, heapDataSize=88, heapData=[0, 0, 0, 0, 0, 0, 0, 0, 71, 114, 111, 117, 112, 49, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 72, 0, 0, 0, 0, 0, 0, 0]... (truncated)}
+
+12:29:19.633 [main] DEBUG org.hdf5javalib.HdfFileReader -- 
+  btree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=<undefined>, rightSiblingAddress=<undefined>, keyZero=0, 
+    entries=[HdfBTreeEntry{key=8, childPointer=1504, payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, 
+	  symbolTableEntries=[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=800, cacheType=1, bTreeOffset=840, localHeapOffset=1384}]
+}}]}
+
+
+Exception in thread "main" java.util.NoSuchElementException: No value present
+	at java.base/java.util.Optional.orElseThrow(Optional.java:377)
+	at org.hdf5javalib.HdfFileReader.collectDatasetsRecursive(HdfFileReader.java:161)
+	at org.hdf5javalib.HdfFileReader.collectDatasetsMap(HdfFileReader.java:131)
+	at org.hdf5javalib.HdfFileReader.readFile(HdfFileReader.java:103)
+	at org.hdf5javalib.examples.read.HdfGroupRead.run(HdfGroupRead.java:81)
+	at org.hdf5javalib.examples.read.HdfGroupRead.main(HdfGroupRead.java:45)
+
+Process finished with exit code 1
+
+==============
+
+
+
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfDataSet.class);
+
 
 2025-04-25 13:00:08 [main] DEBUG org.hdf5javalib.HdfFileReader - HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=-1, endOfFileAddress=135096, driverInformationAddress=-1
 rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=96, cacheType=1, bTreeOffset=136, localHeapOffset=680}}

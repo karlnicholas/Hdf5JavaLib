@@ -1,7 +1,8 @@
 package org.hdf5javalib.redo.hdffile.metadata;
 
+import org.hdf5javalib.redo.AllocationRecord;
+import org.hdf5javalib.redo.AllocationType;
 import org.hdf5javalib.redo.HdfDataFile;
-import org.hdf5javalib.redo.AllocationBlock;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.HdfFileAllocation;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;
@@ -67,7 +68,7 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * <p>This class provides methods to parse and interpret the HDF5 Superblock
  * based on the HDF5 file specification.</p>
  */
-public class HdfSuperblock implements AllocationBlock {
+public class HdfSuperblock extends AllocationRecord {
     private static final byte[] FILE_SIGNATURE = "\211HDF\r\n\032\n".getBytes(StandardCharsets.US_ASCII);
 
     private final int version;
@@ -122,8 +123,10 @@ public class HdfSuperblock implements AllocationBlock {
             HdfFixedPoint endOfFileAddress,
             HdfFixedPoint driverInformationAddress,
             HdfSymbolTableEntry rootGroupSymbolTableEntry,
-            HdfDataFile hdfDataFile
+            HdfDataFile hdfDataFile,
+            String name, long offset
     ) {
+        super(AllocationType.SUPERBLOCK, name, offset, HdfFileAllocation.SUPERBLOCK_SIZE);
         this.version = version;
         this.freeSpaceVersion = freeSpaceVersion;
         this.rootGroupVersion = rootGroupVersion;
@@ -163,6 +166,7 @@ public class HdfSuperblock implements AllocationBlock {
      * @throws IllegalArgumentException if the file signature is invalid or the version is unsupported
      */
     public static HdfSuperblock readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws Exception {
+        long offset = fileChannel.position();
         // Step 1: Allocate the minimum buffer size to determine the version
         ByteBuffer buffer = ByteBuffer.allocate(8 + 1); // File signature (8 bytes) + version (1 byte)
         buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -247,7 +251,9 @@ public class HdfSuperblock implements AllocationBlock {
                 endOfFileAddress,
                 driverInformationAddress,
                 rootGroupSymbolTableEntry,
-                hdfDataFile
+                hdfDataFile,
+                "Superblock",
+                offset
         );
     }
 
@@ -340,8 +346,4 @@ public class HdfSuperblock implements AllocationBlock {
         return rootGroupSymbolTableEntry;
     }
 
-    @Override
-    public AllocationType getAllocationType() {
-        return AllocationType.SUPERBLOCK;
-    }
 }

@@ -1,6 +1,9 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
+import org.hdf5javalib.redo.AllocationRecord;
+import org.hdf5javalib.redo.AllocationType;
 import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.HdfFileAllocation;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -22,7 +25,7 @@ import java.util.List;
  * @see HdfDataFile
  * @see HdfSymbolTableEntry
  */
-public class HdfGroupSymbolTableNode {
+public class HdfGroupSymbolTableNode extends AllocationRecord {
     /** The signature of the symbol table node ("SNOD"). */
     private final String signature;
     /** The version of the symbol table node format. */
@@ -37,7 +40,14 @@ public class HdfGroupSymbolTableNode {
      * @param version            the version of the node format
      * @param symbolTableEntries the list of symbol table entries
      */
-    public HdfGroupSymbolTableNode(String signature, int version, List<HdfSymbolTableEntry> symbolTableEntries) {
+    public HdfGroupSymbolTableNode(
+            String signature,
+            int version,
+            List<HdfSymbolTableEntry> symbolTableEntries,
+            String name,
+            long offset
+    ) {
+        super(AllocationType.SNOD, name, offset, HdfFileAllocation.SNOD_STORAGE_SIZE);
         this.signature = signature;
         this.version = version;
         this.symbolTableEntries = symbolTableEntries;
@@ -53,6 +63,7 @@ public class HdfGroupSymbolTableNode {
      * @throws IllegalArgumentException if the SNOD signature is invalid
      */
     public static HdfGroupSymbolTableNode readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws Exception {
+        long offset = fileChannel.position();
         ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();
@@ -84,7 +95,12 @@ public class HdfGroupSymbolTableNode {
             symbolTableEntries.add(entry);
         }
 
-        return new HdfGroupSymbolTableNode(signature, version, symbolTableEntries);
+        return new HdfGroupSymbolTableNode(
+                signature,
+                version,
+                symbolTableEntries,
+                "SNOD Block " + (hdfDataFile.getFileAllocation().getAllSnodAllocationOffsets().size() + 1),
+                offset);
     }
 
     /**

@@ -1,6 +1,7 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import org.hdf5javalib.redo.AllocationRecord;
+import org.hdf5javalib.redo.AllocationType;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.dataclass.HdfString;
@@ -31,9 +32,7 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfString
  * @see HdfFileAllocation
  */
-public class HdfLocalHeap {
-    /** offset */
-    private final AllocationRecord allocationRecord;
+public class HdfLocalHeap extends AllocationRecord {
     /** The signature of the local heap ("HEAP"). */
     private final String signature;
     /** The version of the local heap format. */
@@ -106,9 +105,9 @@ public class HdfLocalHeap {
      * @param hdfDataFile        the HDF5 data file containing the local heap
      * @param heapData           the raw byte array containing the heap's data
      */
-    public HdfLocalHeap(AllocationRecord allocationRecord, String signature, int version, HdfFixedPoint heapContentsSize,
+    public HdfLocalHeap(String signature, int version, HdfFixedPoint heapContentsSize,
                         HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, byte[] heapData) {
-        this.allocationRecord = allocationRecord;
+        super(AllocationType.LOCAL_HEAP_HEADER, "localheap", 0, 0);
         this.signature = signature;
         this.version = version;
         this.heapContentsSize = heapContentsSize;
@@ -129,8 +128,8 @@ public class HdfLocalHeap {
      * @param heapContentsOffset the offset to the heap's data segment in the file
      * @param hdfDataFile        the HDF5 data file to which the local heap will be written
      */
-    public HdfLocalHeap(AllocationRecord allocationRecord, HdfFixedPoint heapContentsSize, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile) {
-        this.allocationRecord = allocationRecord;
+    public HdfLocalHeap(HdfFixedPoint heapContentsSize, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile) {
+        super(AllocationType.LOCAL_HEAP_HEADER, "localheap", 0, 0);
         this.signature = "HEAP";
         this.version = 0;
         this.heapContentsSize = heapContentsSize;

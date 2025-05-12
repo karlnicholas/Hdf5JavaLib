@@ -6,7 +6,7 @@ package org.hdf5javalib.redo;
  * Represents a single allocation record with type, name, offset, and size.
  */
 public class AllocationRecord {
-    private AllocationBlock.AllocationType type;
+    private AllocationType type;
     private String name;
     private long offset;
     private long size;
@@ -19,7 +19,7 @@ public class AllocationRecord {
      * @param offset the starting offset
      * @param size   the size of the allocation
      */
-    public AllocationRecord(AllocationBlock.AllocationType type, String name, long offset, long size) {
+    public AllocationRecord(AllocationType type, String name, long offset, long size) {
         this.type = type;
         this.name = name;
         this.offset = offset;
@@ -31,7 +31,7 @@ public class AllocationRecord {
      *
      * @return the allocation type
      */
-    public AllocationBlock.AllocationType getType() { return type; }
+    public AllocationType getType() { return type; }
 
     /**
      * Gets the name of the allocation.
@@ -59,7 +59,7 @@ public class AllocationRecord {
      *
      * @param type the allocation type
      */
-    public void setType(AllocationBlock.AllocationType type) { this.type = type; }
+    public void setType(AllocationType type) { this.type = type; }
 
     /**
      * Sets the name of the allocation.

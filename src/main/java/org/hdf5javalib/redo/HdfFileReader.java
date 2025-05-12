@@ -16,6 +16,8 @@ import java.nio.channels.SeekableByteChannel;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static org.hdf5javalib.redo.HdfFileAllocation.*;
+
 /**
  * Reads and parses HDF5 file structures.
  * <p>
@@ -86,10 +88,16 @@ public class HdfFileReader implements HdfDataFile {
     public HdfFileReader readFile() throws Exception {
         superblock = HdfSuperblock.readFromSeekableByteChannel(fileChannel, this);
         log.debug("{}", superblock);
+        // Initialize fixed structures
+//        superblockRecord = new AllocationRecord(AllocationType.SUPERBLOCK, "Superblock", SUPERBLOCK_OFFSET, SUPERBLOCK_SIZE);
+//        objectHeaderPrefixRecord = new AllocationRecord(AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE);
+//        btreeRecord = new AllocationRecord(AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", objectHeaderPrefixRecord.getOffset() + OBJECT_HEADER_PREFIX_SIZE, BTREE_NODE_SIZE + BTREE_STORAGE_SIZE);
+//        localHeapHeaderRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", btreeRecord.getOffset() + (BTREE_NODE_SIZE + BTREE_STORAGE_SIZE), LOCAL_HEAP_HEADER_SIZE);
 
         long objectHeaderAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeaderOffset().getInstance(Long.class);
         fileChannel.position(objectHeaderAddress);
         HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, this);
+//        AllocationType.GROUP_OBJECT_HEADER, "Group Object Header", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE
 
         long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getLocalHeapOffset().getInstance(Long.class);
         fileChannel.position(localHeapAddress);
@@ -112,6 +120,10 @@ public class HdfFileReader implements HdfDataFile {
 
         log.debug("{}", rootGroup);
         log.debug("Parsing complete. NEXT: {}", fileChannel.position());
+
+        getFileAllocation().initializeForReading(
+                superblock, objectHeader, bTree, localHeap, localHeap.getLocalHeapData()
+        );
 
         return this;
     }

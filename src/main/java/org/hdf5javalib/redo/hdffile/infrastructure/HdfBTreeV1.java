@@ -1,6 +1,7 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import org.hdf5javalib.redo.AllocationRecord;
+import org.hdf5javalib.redo.AllocationType;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.HdfFileAllocation;
@@ -15,6 +16,8 @@ import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 import java.util.function.Function;
 
+import static org.hdf5javalib.redo.HdfFileAllocation.BTREE_NODE_SIZE;
+import static org.hdf5javalib.redo.HdfFileAllocation.BTREE_STORAGE_SIZE;
 import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 /**
@@ -31,11 +34,9 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfGroup
  * @see HdfBTreeEntry
  */
-public class HdfBTreeV1 {
+public class HdfBTreeV1 extends AllocationRecord {
     /** logger */
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfBTreeV1.class);
-    /** offset */
-    private final AllocationRecord allocationRecord;
     /** The signature of the B-Tree node ("TREE"). */
     private final String signature;
     /** The type of the node (0 for group B-Tree). */
@@ -69,7 +70,6 @@ public class HdfBTreeV1 {
      * @param hdfDataFile       the HDF5 file context
      */
     public HdfBTreeV1(
-            AllocationRecord allocationRecord,
             String signature,
             int nodeType,
             int nodeLevel,
@@ -80,7 +80,7 @@ public class HdfBTreeV1 {
             List<HdfBTreeEntry> entries,
             HdfDataFile hdfDataFile
     ) {
-        this.allocationRecord = allocationRecord;
+        super(AllocationType.BTREE_HEADER, "btree", HdfFileAllocation.B)
         this.signature = signature;
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;
@@ -103,15 +103,16 @@ public class HdfBTreeV1 {
      * @param hdfDataFile       the HDF5 file context
      */
     public HdfBTreeV1(
-            AllocationRecord allocationRecord,
             String signature,
             int nodeType,
             int nodeLevel,
             HdfFixedPoint leftSiblingAddress,
             HdfFixedPoint rightSiblingAddress,
-            HdfDataFile hdfDataFile
+            HdfDataFile hdfDataFile,
+            String name,
+            HdfFixedPoint offset
     ) {
-        this.allocationRecord = allocationRecord;
+        super(AllocationType.BTREE_HEADER, name, offset, BTREE_NODE_SIZE + BTREE_STORAGE_SIZE);
         this.signature = signature;
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;

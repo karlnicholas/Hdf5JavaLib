@@ -1,5 +1,7 @@
 package org.hdf5javalib.redo.hdffile.dataobjects;
 
+import org.hdf5javalib.redo.AllocationRecord;
+import org.hdf5javalib.redo.AllocationType;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.HdfFileAllocation;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage;
@@ -25,7 +27,7 @@ import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.readM
  * continuation messages for large headers.
  * </p>
  */
-public class HdfObjectHeaderPrefixV1 {
+public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
     /** The version of the object header (1 byte). */
     private final int version;
 
@@ -46,11 +48,15 @@ public class HdfObjectHeaderPrefixV1 {
      * @param objectHeaderSize    the size of the object header
      * @param headerMessages      the list of header messages
      */
-    public HdfObjectHeaderPrefixV1(int version, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> headerMessages) {
+    public HdfObjectHeaderPrefixV1(int version, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> headerMessages,
+                                   String name, long offset
+    ) {
+        super(AllocationType.DATASET_OBJECT_HEADER, name, offset, HdfFileAllocation.DATA_OBJECT_HEADER_MESSAGE_SIZE);
         this.version = version;
         this.objectReferenceCount = objectReferenceCount;
         this.objectHeaderSize = objectHeaderSize;
         this.headerMessages = headerMessages;
+
     }
 
     /**
@@ -70,6 +76,7 @@ public class HdfObjectHeaderPrefixV1 {
             SeekableByteChannel fileChannel,
             HdfDataFile hdfDataFile
     ) throws IOException {
+        long offset = fileChannel.position();
         ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
         fileChannel.read(buffer);
         buffer.flip();
@@ -106,7 +113,8 @@ public class HdfObjectHeaderPrefixV1 {
         }
 
         // Create the instance
-        return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages);
+        return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages,
+                "Group Object Header", offset);
     }
 
     /**
