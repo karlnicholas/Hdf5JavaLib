@@ -5,6 +5,7 @@ import org.hdf5javalib.redo.AllocationType;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.HdfFileAllocation;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
@@ -259,25 +260,19 @@ public class HdfBTreeV1 extends AllocationRecord {
      * Adds a dataset to the B-Tree, inserting it into the appropriate symbol table node.
      *
      * @param linkNameOffset           the offset of the link name in the local heap
-     * @param objectHeader the address of the dataset's object header
-     * @param datasetName              the name of the dataset
+     * @param dataset                   the dataset
      * @param group                    the parent group containing the dataset
      * @throws IllegalStateException if called on a non-leaf node
      * @throws IllegalArgumentException if the dataset name is null or empty
      */
     public void addDataset(
             long linkNameOffset,
-            HdfObjectHeaderPrefixV1 objectHeader,
-            String datasetName,
+            HdfDataSet dataset,
             HdfGroup group
     ) {
         if (!isLeafLevelNode()) {
             throw new IllegalStateException("addDataset can only be called on leaf B-tree nodes (nodeLevel 0).");
         }
-        if (datasetName == null || datasetName.isEmpty()) {
-            throw new IllegalArgumentException("Dataset name cannot be null or empty");
-        }
-
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         final int MAX_SNOD_ENTRIES = 8;
         HdfGroupSymbolTableNode targetSnod;
@@ -288,8 +283,13 @@ public class HdfBTreeV1 extends AllocationRecord {
         // --- Step 1: Find or create target SNOD ---
         if (entries.isEmpty()) {
             long snodOffset = fileAllocation.allocateNextSnodStorage();
-            targetSnod = new HdfGroupSymbolTableNode("SNOD", 1, new ArrayList<>(MAX_SNOD_ENTRIES), group.getName()+":SNOD",
-                    HdfWriteUtils.hdfFixedPointFromValue(snodOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()));
+            targetSnod = new HdfGroupSymbolTableNode("SNOD",
+                    1,
+                    new ArrayList<>(MAX_SNOD_ENTRIES),
+                    hdfDataFile,
+                    group.getName()+":SNOD",
+                    HdfWriteUtils.hdfFixedPointFromValue(snodOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+            );
             targetEntry = new HdfBTreeSnodEntry(
                     HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()),
                     HdfWriteUtils.hdfFixedPointFromValue(snodOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()), targetSnod);
@@ -303,7 +303,7 @@ public class HdfBTreeV1 extends AllocationRecord {
                 HdfBTreeEntry entry = entries.get(mid);
                 long maxOffset = entry.getKey().getInstance(Long.class);
                 String maxName = group.getDatasetNameByLinkNameOffset(maxOffset);
-                return datasetName.compareTo(maxName);
+                return dataset.getDatasetName().compareTo(maxName);
             });
             targetSnodIndex = targetSnodIndex == entries.size() ? entries.size() - 1 : targetSnodIndex;
 
@@ -315,13 +315,13 @@ public class HdfBTreeV1 extends AllocationRecord {
                 HdfSymbolTableEntry ste = targetSnod.getSymbolTableEntries().get(mid);
                 long offset = ste.getLinkNameOffset().getInstance(Long.class);
                 String name = group.getDatasetNameByLinkNameOffset(offset);
-                return datasetName.compareTo(name);
+                return dataset.getDatasetName().compareTo(name);
             });
         }
 
         // --- Step 3: Insert new dataset ---
 //        HdfWriteUtils.hdfFixedPointFromValue(datasetObjectHeaderAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
-        HdfSymbolTableEntryCacheNotUsed steCache = new HdfSymbolTableEntryCacheNotUsed(hdfDataFile, objectHeader, datasetName);
+        HdfSymbolTableEntryCacheNotUsed steCache = new HdfSymbolTableEntryCacheNotUsed(hdfDataFile, dataset.getDataObjectHeaderPrefix(), dataset.getDatasetName());
         HdfSymbolTableEntry ste = new HdfSymbolTableEntry(
                 HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()),
                 steCache
@@ -381,8 +381,13 @@ public class HdfBTreeV1 extends AllocationRecord {
 
         // Create new SNOD
         long newSnodOffset = fileAllocation.allocateNextSnodStorage();
-        HdfGroupSymbolTableNode newSnod = new HdfGroupSymbolTableNode("SNOD", 1, new ArrayList<>(MAX_SNOD_ENTRIES),
-                group.getName()+":SNOD", HdfWriteUtils.hdfFixedPointFromValue(newSnodOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()));
+        HdfGroupSymbolTableNode newSnod = new HdfGroupSymbolTableNode("SNOD",
+                1,
+                new ArrayList<>(MAX_SNOD_ENTRIES),
+                hdfDataFile,
+                group.getName()+":SNOD",
+                HdfWriteUtils.hdfFixedPointFromValue(newSnodOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+        );
 
         // Redistribute entries: first 4 to target SNOD, last 5 to new SNOD
         List<HdfSymbolTableEntry> retainedEntries = new ArrayList<>(symbolTableEntries.subList(0, 4));

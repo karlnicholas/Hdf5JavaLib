@@ -30,9 +30,9 @@ public class HdfFileAllocation {
 //    public AllocationRecord getObjectHeaderPrefixRecord() {
 //        return objectHeaderPrefixRecord;
 //    }
-    public AllocationRecord getRootGroupRecord() {
-        return rootGroupRecord;
-    }
+//    public AllocationRecord getRootGroupRecord() {
+//        return rootGroupRecord;
+//    }
 
     public long getDataNextAvailableOffset() {
         return dataNextAvailableOffset;
@@ -73,15 +73,15 @@ public class HdfFileAllocation {
 //    }
 //
     // --- Constants ---
-    private static final long SUPERBLOCK_OFFSET = 0L;
+    public static final long SUPERBLOCK_OFFSET = 0L;
     public static final long SUPERBLOCK_SIZE = 96L;
-    private static final long OBJECT_HEADER_PREFIX_SIZE = 40L;
+    public static final long OBJECT_HEADER_PREFIX_SIZE = 40L;
     // The assumption is that these are always stored together as a group
     public static final long BTREE_NODE_SIZE = 32L;
     public static final long BTREE_STORAGE_SIZE = 512L;
     private static final long LOCAL_HEAP_HEADER_SIZE = 32L;
     private static final long INITIAL_LOCAL_HEAP_CONTENTS_SIZE = 88L;
-    private static final long DATA_OBJECT_HEADER_MESSAGE_SIZE = 16L;
+    public static final long DATA_OBJECT_HEADER_MESSAGE_SIZE = 16L;
     private static final long SNOD_V1_HEADER_SIZE = 8L;
     private static final long SNOD_V1_ENTRY_SIZE = 32L;
     private static final long DEFAULT_SNOD_ENTRY_COUNT = 10L;
@@ -89,7 +89,7 @@ public class HdfFileAllocation {
     private static final long DEFAULT_DATASET_HEADER_SIZE = DATA_OBJECT_HEADER_MESSAGE_SIZE + 256L;
     private static final long MIN_DATA_OFFSET_THRESHOLD = 2048L;
     private static final long METADATA_REGION_START = 800L;
-    private static final long SNOD_STORAGE_SIZE = SNOD_V1_HEADER_SIZE + (DEFAULT_SNOD_ENTRY_COUNT * SNOD_V1_ENTRY_SIZE);
+    public static final long SNOD_STORAGE_SIZE = SNOD_V1_HEADER_SIZE + (DEFAULT_SNOD_ENTRY_COUNT * SNOD_V1_ENTRY_SIZE);
     private static final long ALIGNMENT_BOUNDARY = 2048L;
 
     // --- Storage ---
@@ -206,7 +206,7 @@ public class HdfFileAllocation {
      * @throws IllegalArgumentException if the new size is not larger than the current size
      * @throws IllegalStateException if the dataset is not found
      */
-    public void increaseHeaderAllocation(String datasetName, HdfFixedPoint newTotalHeaderSize) {
+    public void increaseHeaderAllocation(String datasetName, long newTotalHeaderSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
         Map<AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
         if (datasetAllocs == null || !datasetAllocs.containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
@@ -214,7 +214,7 @@ public class HdfFileAllocation {
         }
 
         AllocationRecord record = datasetAllocs.get(AllocationType.DATASET_OBJECT_HEADER);
-        HdfFixedPoint oldSize = record.getSize();
+        long oldSize = record.getSize().getInstance(Long.class);
         if (newTotalHeaderSize <= oldSize) {
             throw new IllegalArgumentException("New size must be greater than current size");
         }

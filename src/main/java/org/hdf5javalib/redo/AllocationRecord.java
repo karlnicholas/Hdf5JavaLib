@@ -3,6 +3,7 @@ package org.hdf5javalib.redo;
 // --- Helper Classes ---
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
+import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
 /**
  * Represents a single allocation record with type, name, offset, and size.
@@ -83,4 +84,11 @@ public class AllocationRecord {
      * @param size the size
      */
     public void setSize(HdfFixedPoint size) { this.size = size; }
+
+    /**
+     * Sets the size of the allocation.
+     *
+     * @param size the size
+     */
+    public void setSize(long size) { this.size = HdfWriteUtils.hdfFixedPointFromValue(size, this.size.getDatatype()); }
 }

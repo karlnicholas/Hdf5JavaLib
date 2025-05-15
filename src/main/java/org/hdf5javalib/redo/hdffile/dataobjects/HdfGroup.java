@@ -10,6 +10,7 @@ import org.hdf5javalib.redo.datatype.HdfDatatype;
 import org.hdf5javalib.redo.datatype.StringDatatype;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeV1;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeap;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeapData;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
 import java.io.Closeable;
@@ -20,6 +21,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.hdf5javalib.redo.HdfFileAllocation.*;
 
 /**
  * Represents an HDF5 group within an HDF5 file.
@@ -160,28 +163,41 @@ public class HdfGroup implements Closeable {
         heapData[0] = (byte)0x1;
         heapData[8] = (byte)localHeapContentsSize;
 
+//        new HdfLocalHeapData(name+"heap",
+//                HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getCurrentLocalHeapContentsOffset(), hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+//                HdfWriteUtils.hdfFixedPointFromValue(localHeapContentsSize, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()))
+
         localHeap = new HdfLocalHeap(
                 HdfWriteUtils.hdfFixedPointFromValue(localHeapContentsSize, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()),
                 HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getCurrentLocalHeapContentsOffset(), hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()),
-                hdfDataFile);
+                hdfDataFile, name+"heap");
 
-        localHeap.addToHeap(
-                new HdfString(new byte[0],
-                        new StringDatatype(
-                                StringDatatype.createClassAndVersion(),
-                                StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0))
-        );
+        localHeap.addToHeap("");
+//        localHeap.addToHeap(
+//                new HdfString(new byte[0],
+//                        new StringDatatype(
+//                                StringDatatype.createClassAndVersion(),
+//                                StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0))
+//        );
 
+        ;
         bTree = new HdfBTreeV1("TREE", 0, 0,
                 hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
                 hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
-                hdfDataFile);
+                hdfDataFile,
+                name+"btree",
+                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+        );
 
         HdfFixedPoint btree = HdfWriteUtils.hdfFixedPointFromValue(btreeAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
         HdfFixedPoint localHeap = HdfWriteUtils.hdfFixedPointFromValue(localHeapAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
 
         objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 24,
-                Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte)0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))));
+                Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte)0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))),
+                hdfDataFile,
+                name+"header",
+                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE+BTREE_NODE_SIZE+BTREE_STORAGE_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+        );
 
         this.dataSets = new LinkedHashMap<>();
     }
@@ -205,11 +221,11 @@ public class HdfGroup implements Closeable {
         int linkNameOffset;
         long allocationInfo;
         if (localHeap.getFreeListOffset().getInstance(Long.class) != 1) {
-            linkNameOffset = localHeap.addToHeap(hdfDatasetName);
+            linkNameOffset = localHeap.addToHeap(hdfDatasetName.toString());
             allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
         } else {
             allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
-            linkNameOffset = localHeap.addToHeap(hdfDatasetName);
+            linkNameOffset = localHeap.addToHeap(hdfDatasetName.toString());
         }
 
         HdfDataSet newDataSet = new HdfDataSet(hdfDataFile, datasetName, hdfDatatype, dataSpaceMessage);
@@ -220,7 +236,7 @@ public class HdfGroup implements Closeable {
                 linkNameOffset);
         dataSets.put(datasetName, dataSetInfo);
 
-        bTree.addDataset(linkNameOffset, allocationInfo, datasetName, this);
+        bTree.addDataset(linkNameOffset, newDataSet, this);
         return newDataSet;
     }
 
