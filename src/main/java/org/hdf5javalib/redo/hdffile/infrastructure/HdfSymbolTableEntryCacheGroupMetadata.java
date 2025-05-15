@@ -35,7 +35,7 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
         // reading for group.
         HdfFixedPoint localHeapAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
         fileChannel.position(localHeapAddress.getInstance(Long.class));
-        HdfLocalHeap localHeap = HdfLocalHeap.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+        HdfLocalHeap localHeap = HdfLocalHeap.readFromSeekableByteChannel(fileChannel, hdfDataFile, linkNameOffset);
 
         String groupName = localHeap.parseStringAtOffset(linkNameOffset).toString();
 

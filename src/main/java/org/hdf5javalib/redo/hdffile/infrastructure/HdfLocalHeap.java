@@ -6,7 +6,9 @@ import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.HdfFileAllocation;
+import org.hdf5javalib.redo.datatype.HdfDatatype;
 import org.hdf5javalib.redo.datatype.StringDatatype;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
@@ -44,7 +46,7 @@ public class HdfLocalHeap extends AllocationRecord {
     private HdfLocalHeapData heapData;
 
     public HdfFixedPoint getFreeListOffset() {
-        return freeListOffset;
+        return heapData.getFreeListOffset();
     }
 
     /**
@@ -133,7 +135,7 @@ public class HdfLocalHeap extends AllocationRecord {
 //        this.heapContentsOffset = heapContentsOffset;
         this.hdfDataFile = hdfDataFile;
 //        long localHeapContentsSize = hdfDataFile.getFileAllocation().getCurrentLocalHeapContentsSize();
-        heapData = new HdfLocalHeapData(name+"HEAP-DATA", heapContentsOffset, heapContentsSize);
+        heapData = new HdfLocalHeapData(name+"HEAP-DATA", heapContentsOffset, heapContentsSize, hdfDataFile);
         addToHeap("");
 //        heapData[0] = (byte)0x1;
 //        heapData[8] = (byte)localHeapContentsSize;
@@ -160,7 +162,7 @@ public class HdfLocalHeap extends AllocationRecord {
      * @throws IOException if an I/O error occurs
      * @throws IllegalArgumentException if the heap signature or reserved bytes are invalid
      */
-    public static HdfLocalHeap readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
+    public static HdfLocalHeap readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfFixedPoint linkNameOffset) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(32);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -198,8 +200,16 @@ public class HdfLocalHeap extends AllocationRecord {
 //
 //        fileChannel.read(buffer);
 
+//        String signature, int version, HdfFixedPoint heapContentsSize,
+//                HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, HdfLocalHeapData heapData,
+//                String name
 
-        return new HdfLocalHeap(signature, version, hdfDataFile, hdfLocalHeapData);
+        return new HdfLocalHeap(signature, version,
+                freeListOffset,
+                dataSegmentSize,
+                dataSegmentAddress,
+                hdfDataFile, hdfLocalHeapData,
+                hdfLocalHeapData.getStringAtOffset(linkNameOffset) + "local heap");
     }
 
     /**

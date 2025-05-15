@@ -26,17 +26,31 @@ public class HdfLocalHeapData extends AllocationRecord {
 
     private final Map<Integer, HdfLocalHeapDataValue> data;
 
+    /**
+     * for reading
+     * @param name               name
+     * @param heapContentsOffset    heapContentsOffset
+     * @param heapContentsSize  heapContentsSize
+     * @param data              data
+     */
+    public HdfLocalHeapData(String name, HdfFixedPoint heapContentsOffset, HdfFixedPoint heapContentsSize, Map<Integer, HdfLocalHeapDataValue> data) {
+        super(AllocationType.LOCAL_HEAP, name, heapContentsOffset, heapContentsSize);
+        this.data = data;
+    }
+
+    /**
+     * for writing
+     * @param name      name
+     * @param offset    offset
+     * @param size      size
+     * @param hdfDataFile   hdfDataFile
+     */
     public HdfLocalHeapData(String name, HdfFixedPoint offset, HdfFixedPoint size, HdfDataFile hdfDataFile) {
         super(AllocationType.LOCAL_HEAP, name, offset, size);
         this.heapContentsSize = size;
         this.heapContentsOffset = offset;
         this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength());
         this.data = new LinkedHashMap<>();
-    }
-
-    public HdfLocalHeapData(String name, HdfFixedPoint heapContentsOffset, HdfFixedPoint heapContentsSize, Map<Integer, HdfLocalHeapDataValue> data) {
-        super(AllocationType.LOCAL_HEAP, name, heapContentsOffset, heapContentsSize);
-        this.data = data;
     }
 
     /**

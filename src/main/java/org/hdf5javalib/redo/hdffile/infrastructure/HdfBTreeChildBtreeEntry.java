@@ -80,33 +80,34 @@ public class HdfBTreeChildBtreeEntry extends HdfBTreeEntry{
         sb.append(super.toString());
 
         // Append the payload by calling its toString() method
-        if (isLeafEntry()) {
-            sb.append(", payload(SNOD)=").append(symbolTableNode);
-        } else if (isInternalEntry()) {
-            sb.append(", payload(ChildBTree)=").append(childBTree);
-        } else {
-            sb.append(", payload=<empty/unknown>");
-        }
+//        if (isLeafEntry()) {
+//            sb.append(", payload(SNOD)=").append(symbolTableNode);
+//        } else if (isInternalEntry()) {
+//            sb.append(", payload(ChildBTree)=").append(childBTree);
+//        } else {
+//            sb.append(", payload=<empty/unknown>");
+//        }
+        sb.append(", payload(ChildBTree)=").append(childBTree);
 
         sb.append('}');
         return sb.toString();
     }
 
-    public void setKey(HdfFixedPoint key) {
-        this.key = key;
-    }
-
-    public HdfFixedPoint getKey() {
-        return key;
-    }
-
-    public HdfFixedPoint getChildPointer() {
-        return childPointer;
-    }
-
-    public HdfGroupSymbolTableNode getSymbolTableNode() {
-        return symbolTableNode;
-    }
+//    public void setKey(HdfFixedPoint key) {
+//        this.key = key;
+//    }
+//
+//    public HdfFixedPoint getKey() {
+//        return key;
+//    }
+//
+//    public HdfFixedPoint getChildPointer() {
+//        return childPointer;
+//    }
+//
+//    public HdfGroupSymbolTableNode getSymbolTableNode() {
+//        return symbolTableNode;
+//    }
 
     public HdfBTreeV1 getChildBTree() {
         return childBTree;
