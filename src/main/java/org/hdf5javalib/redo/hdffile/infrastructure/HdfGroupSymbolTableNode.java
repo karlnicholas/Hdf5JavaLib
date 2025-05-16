@@ -50,7 +50,9 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
             String name,
             HdfFixedPoint offset
     ) {
-        super(AllocationType.SNOD, name, offset, HdfWriteUtils.hdfFixedPointFromValue(HdfFileAllocation.SNOD_STORAGE_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()));
+        super(AllocationType.SNOD, name, offset,
+                hdfDataFile.getFileAllocation().HDF_SNOD_STORAGE_SIZE
+        );
         this.signature = signature;
         this.version = version;
         this.symbolTableEntries = symbolTableEntries;
@@ -103,7 +105,7 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
                 version,
                 symbolTableEntries,
                 hdfDataFile,
-                "SNOD Block " + (hdfDataFile.getFileAllocation().getAllSnodAllocationOffsets().size() + 1),
+                "SNOD Block " + (hdfDataFile.getFileAllocation().getSnodAllocationCount()),
                 HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()));
     }
 

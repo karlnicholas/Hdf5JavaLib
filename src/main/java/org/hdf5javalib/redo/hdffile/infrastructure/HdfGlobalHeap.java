@@ -4,6 +4,7 @@ import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.HdfFileAllocation;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
+import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -31,45 +32,45 @@ public class HdfGlobalHeap {
     private static final int VERSION = 1;
 
     /** Map of heap offsets to collections of global heap objects. */
-    private final Map<Long, LinkedHashMap<Integer, GlobalHeapObject>> heapCollections;
+    private final Map<HdfFixedPoint, LinkedHashMap<Integer, GlobalHeapObject>> heapCollections;
     /** Map of heap offsets to their declared sizes. */
-    private final Map<Long, HdfFixedPoint> collectionSizes;
+    private final Map<HdfFixedPoint, HdfFixedPoint> collectionSizes;
     /** Map of heap offsets to the next available object ID. */
-    private final Map<Long, Integer> nextObjectIds;
+    private final Map<HdfFixedPoint, Integer> nextObjectIds;
     /** The current heap offset for writing new objects. */
-    private long currentWriteHeapOffset = -1L;
+    private HdfFixedPoint currentWriteHeapOffset;
     /** Optional initializer for lazy loading heap collections. */
     private final GlobalHeapInitialize initialize;
     /** The HDF5 file context. */
-    private final HdfDataFile dataFile;
+    private final HdfDataFile hdfDataFile;
 
     /**
      * Constructs an HdfGlobalHeap with an initializer and file context.
      *
      * @param initialize the initializer for lazy loading heap collections
-     * @param dataFile   the HDF5 file context
+     * @param hdfDataFile   the HDF5 file context
      */
-    public HdfGlobalHeap(GlobalHeapInitialize initialize, HdfDataFile dataFile) {
+    public HdfGlobalHeap(GlobalHeapInitialize initialize, HdfDataFile hdfDataFile) {
         this.initialize = initialize;
-        this.dataFile = dataFile;
+        this.hdfDataFile = hdfDataFile;
         this.heapCollections = new HashMap<>();
         this.collectionSizes = new HashMap<>();
         this.nextObjectIds = new HashMap<>();
-        this.currentWriteHeapOffset = -1L;
+        this.currentWriteHeapOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined();
     }
 
     /**
      * Constructs an HdfGlobalHeap without an initializer.
      *
-     * @param dataFile the HDF5 file context
+     * @param hdfDataFile the HDF5 file context
      */
-    public HdfGlobalHeap(HdfDataFile dataFile) {
-        this.dataFile = dataFile;
+    public HdfGlobalHeap(HdfDataFile hdfDataFile) {
+        this.hdfDataFile = hdfDataFile;
         this.initialize = null;
         this.heapCollections = new HashMap<>();
         this.collectionSizes = new HashMap<>();
         this.nextObjectIds = new HashMap<>();
-        this.currentWriteHeapOffset = -1L;
+        this.currentWriteHeapOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined();
     }
 
     /**
@@ -101,7 +102,7 @@ public class HdfGlobalHeap {
         if (obj == null) {
             throw new RuntimeException("No object found for objectId: " + objectId + " in heap at offset: " + heapOffset);
         }
-        if (obj.getObjectId() == 0) {
+        if (obj.getHeapObjectIndex() == 0) {
             throw new RuntimeException("Internal error: Object ID 0 found unexpectedly during data retrieval for offset: " + heapOffset);
         }
         return obj.getData();
@@ -178,27 +179,28 @@ public class HdfGlobalHeap {
                         break;
                     }
                     GlobalHeapObject obj = GlobalHeapObject.readFromByteBuffer(objectBuffer);
-                    if (obj.getObjectId() == 0) {
-                        localObjects.put(obj.getObjectId(), obj);
+                    if (obj.getHeapObjectIndex() == 0) {
+                        localObjects.put(obj.getHeapObjectIndex(), obj);
                         break;
                     }
-                    if (localObjects.containsKey(obj.getObjectId())) {
-                        throw new RuntimeException("Duplicate object ID " + obj.getObjectId() + " found in heap at offset: " + startOffset);
+                    if (localObjects.containsKey(obj.getHeapObjectIndex())) {
+                        throw new RuntimeException("Duplicate object ID " + obj.getHeapObjectIndex() + " found in heap at offset: " + startOffset);
                     }
-                    if (obj.getObjectId() < 1 || obj.getObjectId() > 0xFFFF) {
-                        throw new RuntimeException("Invalid object ID " + obj.getObjectId() + " found in heap at offset: " + startOffset);
+                    if (obj.getHeapObjectIndex() < 1 || obj.getHeapObjectIndex() > 0xFFFF) {
+                        throw new RuntimeException("Invalid object ID " + obj.getHeapObjectIndex() + " found in heap at offset: " + startOffset);
                     }
-                    localObjects.put(obj.getObjectId(), obj);
-                    localNextObjectId = Math.max(localNextObjectId, obj.getObjectId() + 1);
+                    localObjects.put(obj.getHeapObjectIndex(), obj);
+                    localNextObjectId = Math.max(localNextObjectId, obj.getHeapObjectIndex() + 1);
                 }
             }
         } catch (Exception e) {
             throw new IOException("Unexpected error processing global heap object data buffer at offset: " + startOffset, e);
         }
 
-        this.heapCollections.put(startOffset, localObjects);
-        this.collectionSizes.put(startOffset, localCollectionSize);
-        this.nextObjectIds.put(startOffset, localNextObjectId);
+        HdfFixedPoint hdfStartOffset = HdfWriteUtils.hdfFixedPointFromValue(startOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
+        this.heapCollections.put(hdfStartOffset, localObjects);
+        this.collectionSizes.put(hdfStartOffset, localCollectionSize);
+        this.nextObjectIds.put(hdfStartOffset, localNextObjectId);
     }
 
     /**
@@ -214,15 +216,12 @@ public class HdfGlobalHeap {
             throw new IllegalArgumentException("Input byte array cannot be null.");
         }
 
-        HdfFileAllocation fileAllocation = dataFile.getFileAllocation();
+        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
 
-        if (this.currentWriteHeapOffset == -1L) {
+        if (currentWriteHeapOffset.isUndefined()) {
             this.currentWriteHeapOffset = fileAllocation.getGlobalHeapOffset();
-            if (this.currentWriteHeapOffset == -1L) {
-                throw new IllegalStateException("The first Global Heap block has not been allocated yet. Call HdfFileAllocation.allocateFirstGlobalHeapBlock() first.");
-            }
         }
-        long currentHeapOffset = this.currentWriteHeapOffset;
+        HdfFixedPoint currentHeapOffset = this.currentWriteHeapOffset;
 
         LinkedHashMap<Integer, GlobalHeapObject> targetObjects = heapCollections.computeIfAbsent(currentHeapOffset, k -> new LinkedHashMap<>());
 
@@ -231,7 +230,7 @@ public class HdfGlobalHeap {
             currentUsedSize += 16;
             long existingObjectSize = existingObj.getObjectSize();
             if (existingObjectSize > Integer.MAX_VALUE) {
-                throw new IllegalStateException("Existing object " + existingObj.getObjectId() + " size too large to calculate padding.");
+                throw new IllegalStateException("Existing object " + existingObj.getHeapObjectIndex() + " size too large to calculate padding.");
             }
             currentUsedSize += existingObjectSize;
             currentUsedSize += getPadding((int) existingObjectSize);
@@ -241,7 +240,7 @@ public class HdfGlobalHeap {
         int newObjectPadding = getPadding(newObjectDataSize);
         long newObjectRequiredSize = 16L + newObjectDataSize + newObjectPadding;
 
-        long blockSize = fileAllocation.getGlobalHeapBlockSize(currentHeapOffset);
+        HdfFixedPoint blockSize = fileAllocation.getGlobalHeapBlockSize(currentHeapOffset);
         if (currentUsedSize + newObjectRequiredSize + 16L > blockSize) {
             // Add null terminator to mark the block as full
             long freeSpace = blockSize - currentUsedSize;
@@ -253,7 +252,7 @@ public class HdfGlobalHeap {
                 targetObjects.put(0, nullTerminator);
             }
 
-            long newHeapOffset;
+            HdfFixedPoint newHeapOffset;
             if (currentHeapOffset == fileAllocation.getGlobalHeapOffset()) {
                 newHeapOffset = fileAllocation.allocateNextGlobalHeapBlock();
             } else {
@@ -299,7 +298,7 @@ public class HdfGlobalHeap {
             long heapOffset = entry.getKey();
             LinkedHashMap<Integer, GlobalHeapObject> objects = entry.getValue();
 
-            long heapSize = this.dataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
+            long heapSize = this.hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
             fileChannel.position(heapOffset);
             int size1 = (int) getWriteBufferSize(heapOffset);
             ByteBuffer buffer = ByteBuffer.allocate((int)heapSize);
@@ -317,10 +316,10 @@ public class HdfGlobalHeap {
             if (!objects.containsKey(0)) {
                 long usedSize = 16;
                 for (GlobalHeapObject obj : objects.values()) {
-                    long objSize = obj.getObjectId() == 0 ? 16 : 16 + obj.getObjectSize() + getPadding((int) obj.getObjectSize());
+                    long objSize = obj.getHeapObjectIndex() == 0 ? 16 : 16 + obj.getObjectSize() + getPadding((int) obj.getObjectSize());
                     usedSize += objSize;
                 }
-                long blockSize = dataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
+                long blockSize = hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
                 long remainingSize = blockSize - usedSize;
                 if (remainingSize < 16) {
                     throw new IllegalStateException("Insufficient space for null terminator in heap at offset: " + heapOffset);
@@ -351,7 +350,7 @@ public class HdfGlobalHeap {
 
         long totalSize = 16;
         for (GlobalHeapObject obj : objects.values()) {
-            long objSize = obj.getObjectId() == 0 ? 16 : 16 + obj.getObjectSize() + getPadding((int) obj.getObjectSize());
+            long objSize = obj.getHeapObjectIndex() == 0 ? 16 : 16 + obj.getObjectSize() + getPadding((int) obj.getObjectSize());
             totalSize += objSize;
         }
 
@@ -359,7 +358,7 @@ public class HdfGlobalHeap {
             totalSize += 16;
         }
 
-        long blockSize = dataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
+        long blockSize = hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
         return alignTo(totalSize, (int) blockSize);
     }
 
@@ -436,7 +435,7 @@ public class HdfGlobalHeap {
      */
     private static class GlobalHeapObject {
         /** The unique ID of the object (0 for null terminator). */
-        private final int objectId;
+        private final int heapObjectIndex;
         /** The reference count of the object. */
         private final int referenceCount;
         /** The size of the object data or free space (for null terminator). */
@@ -447,27 +446,27 @@ public class HdfGlobalHeap {
         /**
          * Constructs a GlobalHeapObject.
          *
-         * @param objectId      the object ID
+         * @param heapObjectIndex      the object ID
          * @param referenceCount the reference count
          * @param sizeOrFreeSpace the size of the data or free space
          * @param data          the data bytes (null for ID 0)
          * @throws IllegalArgumentException if data constraints are violated
          */
-        private GlobalHeapObject(int objectId, int referenceCount, long sizeOrFreeSpace, byte[] data) {
-            this.objectId = objectId;
+        private GlobalHeapObject(int heapObjectIndex, int referenceCount, long sizeOrFreeSpace, byte[] data) {
+            this.heapObjectIndex = heapObjectIndex;
             this.referenceCount = referenceCount;
             this.objectSize = sizeOrFreeSpace;
-            if (objectId == 0) {
+            if (heapObjectIndex == 0) {
                 this.data = null;
                 if (data != null && data.length > 0) {
                     throw new IllegalArgumentException("Data must be null for Global Heap Object ID 0");
                 }
             } else {
                 if (data == null) {
-                    throw new IllegalArgumentException("Data cannot be null for non-zero Global Heap Object ID: " + objectId);
+                    throw new IllegalArgumentException("Data cannot be null for non-zero Global Heap Object ID: " + heapObjectIndex);
                 }
                 if (data.length != sizeOrFreeSpace) {
-                    throw new IllegalArgumentException("Data length ("+data.length+") must match objectSize ("+sizeOrFreeSpace+") for non-zero objectId "+objectId);
+                    throw new IllegalArgumentException("Data length ("+data.length+") must match objectSize ("+sizeOrFreeSpace+") for non-zero objectId "+ heapObjectIndex);
                 }
                 this.data = data;
             }
@@ -520,14 +519,14 @@ public class HdfGlobalHeap {
          * @throws IllegalStateException if the object data is inconsistent
          */
         public void writeToByteBuffer(ByteBuffer buffer) {
-            buffer.putShort((short) objectId);
+            buffer.putShort((short) heapObjectIndex);
             buffer.putShort((short) referenceCount);
             buffer.putInt(0);
             buffer.putLong(objectSize);
-            if (objectId != 0) {
+            if (heapObjectIndex != 0) {
                 int expectedDataSize = (int)objectSize;
                 if (data == null || data.length != expectedDataSize) {
-                    throw new IllegalStateException("Object data is inconsistent or null for writing object ID: " + objectId + ". Expected size " + expectedDataSize + ", data length " + (data != null ? data.length : "null"));
+                    throw new IllegalStateException("Object data is inconsistent or null for writing object ID: " + heapObjectIndex + ". Expected size " + expectedDataSize + ", data length " + (data != null ? data.length : "null"));
                 }
                 buffer.put(data);
                 int padding = getPadding(expectedDataSize);
@@ -535,8 +534,8 @@ public class HdfGlobalHeap {
             }
         }
 
-        public int getObjectId() {
-            return objectId;
+        public int getHeapObjectIndex() {
+            return heapObjectIndex;
         }
 
         public long getObjectSize() {

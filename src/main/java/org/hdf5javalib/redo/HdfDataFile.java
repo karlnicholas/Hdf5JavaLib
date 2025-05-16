@@ -43,4 +43,6 @@ public interface HdfDataFile {
      * @return the {@link HdfSuperblock} for offsets
      */
     HdfSuperblock getSuperblock();
+
+    void setFileAllocation(HdfFileAllocation hdfFileAllocation);
 }

@@ -17,8 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hdf5javalib.redo.HdfFileAllocation.SUPERBLOCK_OFFSET;
-import static org.hdf5javalib.redo.HdfFileAllocation.SUPERBLOCK_SIZE;
 import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.parseContinuationMessage;
 import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.readMessagesFromByteBuffer;
 
@@ -44,6 +42,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
     /** The list of header messages associated with the object. */
     private final List<HdfMessage> headerMessages;
 
+
     /**
      * Constructs an HdfObjectHeaderPrefixV1 with application-defined values.
      *
@@ -56,7 +55,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
                                    HdfDataFile hdfDataFile, String name, HdfFixedPoint offset
     ) {
         super(AllocationType.DATASET_OBJECT_HEADER, name, offset,
-                HdfWriteUtils.hdfFixedPointFromValue(HdfFileAllocation.DATA_OBJECT_HEADER_MESSAGE_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength())
+                hdfDataFile.getFileAllocation().HDF_DATA_OBJECT_HEADER_MESSAGE_SIZE
         );
         this.version = version;
         this.objectReferenceCount = objectReferenceCount;
@@ -178,7 +177,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
             }
         }
         buffer.rewind();
-        long rootGroupOffset = SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE;
+        long rootGroupOffset = getOffset().getInstance(Long.class);
 
         seekableByteChannel.position(rootGroupOffset);
         while (buffer.hasRemaining()) {

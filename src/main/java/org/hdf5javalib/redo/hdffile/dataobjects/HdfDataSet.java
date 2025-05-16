@@ -136,8 +136,9 @@ public class HdfDataSet implements Closeable {
 
         int objectReferenceCount = 1;
         int objectHeaderSize = getObjectHeaderSize(headerMessages);
+        HdfFixedPoint objectHeaderSizePlus16 = HdfWriteUtils.hdfFixedPointFromValue(objectHeaderSize + 16, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
         if (objectHeaderSize > headerSize - 16) {
-            fileAllocation.increaseHeaderAllocation(datasetName, objectHeaderSize + 16);
+            fileAllocation.increaseHeaderAllocation(datasetName, objectHeaderSizePlus16);
             allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
             headerSize = allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getSize().getInstance(Long.class);
         }
@@ -158,7 +159,7 @@ public class HdfDataSet implements Closeable {
             if (requiresGlobalHeap && !hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
                 hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
             }
-            hdfDataFile.getFileAllocation().allocateAndSetDataBlock(datasetName, hdfDimensionSizes[0].getInstance(Long.class));
+            hdfDataFile.getFileAllocation().allocateAndSetDataBlock(datasetName, hdfDimensionSizes[0]);
         }
     }
 
@@ -404,11 +405,13 @@ public class HdfDataSet implements Closeable {
                 throw new IllegalArgumentException("Dataspace message not found: " + dataspaceMessage.getClass().getName());
             }
             if (allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getSize().getInstance(Long.class) < headerSize) {
-                fileAllocation.increaseHeaderAllocation(datasetName, headerSize);
+                fileAllocation.increaseHeaderAllocation(datasetName, HdfWriteUtils.hdfFixedPointFromValue(headerSize, fileAllocation.getSuperblock().getFixedPointDatatypeForLength()));
             }
             int newContinuationSize = dataspaceMessage.getSizeMessageData() + 8 + attributeSize;
             if (allocationInfo.get(AllocationType.DATASET_HEADER_CONTINUATION) == null || (allocationInfo.get(AllocationType.DATASET_HEADER_CONTINUATION).getSize().getInstance(Long.class) < newContinuationSize)) {
-                fileAllocation.allocateAndSetContinuationBlock(datasetName, newContinuationSize);
+                fileAllocation.allocateAndSetContinuationBlock(datasetName,
+                        HdfWriteUtils.hdfFixedPointFromValue(newContinuationSize, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()))
+                ;
             }
             return true;
         }

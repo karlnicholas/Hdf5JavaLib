@@ -7,7 +7,6 @@ import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.HdfFileAllocation;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
-import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
@@ -18,8 +17,6 @@ import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 import java.util.function.Function;
 
-import static org.hdf5javalib.redo.HdfFileAllocation.BTREE_NODE_SIZE;
-import static org.hdf5javalib.redo.HdfFileAllocation.BTREE_STORAGE_SIZE;
 import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 /**
@@ -84,7 +81,8 @@ public class HdfBTreeV1 extends AllocationRecord {
             String name, HdfFixedPoint offset
     ) {
         super(AllocationType.BTREE_HEADER, name, offset,
-                HdfWriteUtils.hdfFixedPointFromValue(HdfFileAllocation.BTREE_NODE_SIZE + HdfFileAllocation.BTREE_STORAGE_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()) );
+            new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+        );
         this.signature = signature;
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;
@@ -116,7 +114,8 @@ public class HdfBTreeV1 extends AllocationRecord {
             String name, HdfFixedPoint offset
     ) {
         super(AllocationType.BTREE_HEADER, name, offset,
-                HdfWriteUtils.hdfFixedPointFromValue(HdfFileAllocation.BTREE_NODE_SIZE + HdfFileAllocation.BTREE_STORAGE_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()) );
+                new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+        );
         this.signature = signature;
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;
@@ -282,17 +281,17 @@ public class HdfBTreeV1 extends AllocationRecord {
 
         // --- Step 1: Find or create target SNOD ---
         if (entries.isEmpty()) {
-            long snodOffset = fileAllocation.allocateNextSnodStorage();
+            HdfFixedPoint snodOffset = fileAllocation.allocateNextSnodStorage();
             targetSnod = new HdfGroupSymbolTableNode("SNOD",
                     1,
                     new ArrayList<>(MAX_SNOD_ENTRIES),
                     hdfDataFile,
                     group.getName()+":SNOD",
-                    HdfWriteUtils.hdfFixedPointFromValue(snodOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+                    snodOffset
             );
             targetEntry = new HdfBTreeSnodEntry(
                     HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()),
-                    HdfWriteUtils.hdfFixedPointFromValue(snodOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()), targetSnod);
+                    snodOffset, targetSnod);
             entries.add(targetEntry);
             entriesUsed++;
             targetSnodIndex = 0;
@@ -380,13 +379,13 @@ public class HdfBTreeV1 extends AllocationRecord {
         List<HdfSymbolTableEntry> symbolTableEntries = targetSnod.getSymbolTableEntries();
 
         // Create new SNOD
-        long newSnodOffset = fileAllocation.allocateNextSnodStorage();
+        HdfFixedPoint newSnodOffset = fileAllocation.allocateNextSnodStorage();
         HdfGroupSymbolTableNode newSnod = new HdfGroupSymbolTableNode("SNOD",
                 1,
                 new ArrayList<>(MAX_SNOD_ENTRIES),
                 hdfDataFile,
                 group.getName()+":SNOD",
-                HdfWriteUtils.hdfFixedPointFromValue(newSnodOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+                newSnodOffset
         );
 
         // Redistribute entries: first 4 to target SNOD, last 5 to new SNOD
@@ -420,13 +419,13 @@ public class HdfBTreeV1 extends AllocationRecord {
                 .filter(Objects::nonNull)
                 .max(String::compareTo)
                 .orElseThrow(() -> new IllegalStateException("No valid dataset names in new SNOD"));
-        long newMaxLinkNameOffset = newSnodEntries.stream()
+        HdfFixedPoint newMaxLinkNameOffset = newSnodEntries.stream()
                 .filter(e -> newMaxName.equals(group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class))))
                 .findFirst()
-                .map(e -> e.getLinkNameOffset().getInstance(Long.class))
+                .map(e -> e.getLinkNameOffset())
                 .orElseThrow(() -> new IllegalStateException("Could not find linkNameOffset for max dataset name: " + newMaxName));
-        HdfFixedPoint newKey = HdfWriteUtils.hdfFixedPointFromValue(newMaxLinkNameOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
-        HdfFixedPoint newChildPointer = HdfWriteUtils.hdfFixedPointFromValue(newSnodOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
+        HdfFixedPoint newKey = newMaxLinkNameOffset;
+        HdfFixedPoint newChildPointer = newSnodOffset;
         HdfBTreeEntry newEntry = new HdfBTreeSnodEntry(newKey, newChildPointer, newSnod);
 
         // Insert new BTreeEntry in sorted order
@@ -471,7 +470,9 @@ public class HdfBTreeV1 extends AllocationRecord {
      * @throws IOException if an I/O error occurs
      */
     public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate((int)(fileAllocation.BTREE_NODE_SIZE + fileAllocation.BTREE_STORAGE_SIZE)).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer buffer = ByteBuffer.allocate(
+                new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()).getInstance(Long.class).intValue())
+                .order(ByteOrder.LITTLE_ENDIAN);
         buffer.put(signature.getBytes());
         buffer.put((byte) nodeType);
         buffer.put((byte) nodeLevel);

@@ -43,7 +43,7 @@ public class HdfFileReader implements HdfDataFile {
     private final HdfGlobalHeap globalHeap;
 
     /** The file allocation manager for tracking storage blocks. */
-    private final HdfFileAllocation fileAllocation;
+    private HdfFileAllocation fileAllocation;
 
     /**
      * Constructs an HdfFileReader for reading an HDF5 file.
@@ -52,7 +52,7 @@ public class HdfFileReader implements HdfDataFile {
      */
     public HdfFileReader(SeekableByteChannel fileChannel) {
         this.fileChannel = fileChannel;
-        this.fileAllocation = new HdfFileAllocation();
+        this.fileAllocation = null;
         this.globalHeap = new HdfGlobalHeap(this::initializeGlobalHeap, this);
     }
 
@@ -212,5 +212,10 @@ public class HdfFileReader implements HdfDataFile {
     @Override
     public SeekableByteChannel getSeekableByteChannel() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setFileAllocation(HdfFileAllocation hdfFileAllocation) {
+        this.fileAllocation = hdfFileAllocation;
     }
 }
