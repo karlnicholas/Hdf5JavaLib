@@ -81,18 +81,16 @@ public class HdfSymbolTableEntry {
         fileChannel.position(objectHeaderAddress.getInstance(Long.class));
         HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, hdfDataFile);
         fileChannel.position(savedPosition);
-
-//      return new HdfSymbolTableEntryCacheGroupMetadata(groupName, objectHeader, bTreeV1, localHeap, hdfDataFile);
-
-        // Initialize addresses for cacheType 1
+System.out.println("STE savedPosition " + fileChannel.position());
         HdfSymbolTableEntryCache cache;
         if (cacheType == 0) {
             cache = HdfSymbolTableEntryCacheNotUsed.readFromSeekableByteChannel(fileChannel, hdfDataFile, objectHeader);
         } else if (cacheType == 1) {
-            cache = HdfSymbolTableEntryCacheGroupMetadata.readFromSeekableByteChannel(fileChannel, hdfDataFile, linkNameOffset, objectHeader);
+            cache = HdfSymbolTableEntryCacheGroupMetadata.readFromSeekableByteChannel(fileChannel, hdfDataFile, objectHeader);
         } else {
             throw new IllegalStateException("Unsupported cache type: " + cacheType);
         }
+System.out.println("STE " + fileChannel.position());
         return new HdfSymbolTableEntry(linkNameOffset, cache);
     }
 

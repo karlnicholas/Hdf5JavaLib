@@ -156,7 +156,10 @@ public class HdfLocalHeap extends AllocationRecord {
      * @throws IOException if an I/O error occurs
      * @throws IllegalArgumentException if the heap signature or reserved bytes are invalid
      */
-    public static HdfLocalHeap readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfFixedPoint linkNameOffset) throws IOException {
+    public static HdfLocalHeap readFromSeekableByteChannel(
+            SeekableByteChannel fileChannel,
+            HdfDataFile hdfDataFile
+    ) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(32);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -197,12 +200,14 @@ public class HdfLocalHeap extends AllocationRecord {
 //        String signature, int version, HdfFixedPoint heapContentsSize,
 //                HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, HdfLocalHeapData heapData,
 //                String name
-        String objectName = hdfLocalHeapData.getStringAtOffset(linkNameOffset);
+//TODO:
+//        // wrong hdfLocalHeapData, needs to be prior one
+//        String objectName = hdfLocalHeapData.getStringAtOffset(linkNameOffset);
         return new HdfLocalHeap(signature, version,
                 dataSegmentSize,
                 dataSegmentAddress,
                 hdfDataFile, hdfLocalHeapData,
-                objectName + ":local heap");
+                ":local heap");
     }
 
     /**

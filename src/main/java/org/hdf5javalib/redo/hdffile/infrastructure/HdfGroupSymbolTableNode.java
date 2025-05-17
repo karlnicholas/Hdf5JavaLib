@@ -95,7 +95,9 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
         // Read Symbol Table Entries
         List<HdfSymbolTableEntry> symbolTableEntries = new ArrayList<>(numberOfSymbols);
         for (int i = 0; i < numberOfSymbols; i++) {
+System.out.println("Reading symbol table entry 1 " + fileChannel.position() );
             HdfSymbolTableEntry entry = HdfSymbolTableEntry.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+System.out.println("Reading symbol table entry 2 "  + fileChannel.position() );
             symbolTableEntries.add(entry);
         }
 
