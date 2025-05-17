@@ -1,7 +1,5 @@
 package org.hdf5javalib;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.HdfFileAllocation;
@@ -27,9 +25,8 @@ import java.util.Map;
  * datasets by parsing the file's metadata and data structures.
  * </p>
  */
-@Getter
-@Slf4j
 public class HdfFileReader implements HdfDataFile {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfFileReader.class);
     /** The superblock containing metadata about the HDF5 file. */
     private HdfSuperblock superblock;
 
@@ -222,5 +219,9 @@ public class HdfFileReader implements HdfDataFile {
     @Override
     public FixedPointDatatype getFixedPointDatatypeForLength() {
         return superblock.getFixedPointDatatypeForLength();
+    }
+
+    public HdfGroup getRootGroup() {
+        return rootGroup;
     }
 }

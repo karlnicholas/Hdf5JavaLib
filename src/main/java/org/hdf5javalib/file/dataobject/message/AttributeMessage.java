@@ -1,7 +1,5 @@
 package org.hdf5javalib.file.dataobject.message;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfString;
@@ -40,7 +38,6 @@ import java.util.BitSet;
  * @see org.hdf5javalib.file.dataobject.message.DatatypeMessage
  * @see org.hdf5javalib.file.dataobject.message.DataspaceMessage
  */
-@Getter
 public class AttributeMessage extends HdfMessage {
     /** The version of the attribute message format. */
     private final int version;
@@ -51,7 +48,6 @@ public class AttributeMessage extends HdfMessage {
     /** The dataspace defining the dimensionality and size of the attribute's value. */
     private final DataspaceMessage dataspaceMessage;
     /** The actual value of the attribute. */
-    @Setter
     private HdfData value;
 
     /**
@@ -192,5 +188,9 @@ public class AttributeMessage extends HdfMessage {
         } else {
             throw new RuntimeException("Unsupported datatype");
         }
+    }
+
+    public void setValue(HdfData value) {
+        this.value = value;
     }
 }

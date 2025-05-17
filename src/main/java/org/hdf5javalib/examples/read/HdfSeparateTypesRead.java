@@ -1,7 +1,5 @@
 package org.hdf5javalib.examples.read;
 
-import lombok.Builder;
-import lombok.Data;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.*;
 import org.hdf5javalib.file.HdfDataSet;
@@ -126,19 +124,32 @@ public class HdfSeparateTypesRead {
     /**
      * A data class representing a basic compound dataset with two fields.
      */
-    @Data
     public static class Compound {
         /** A short integer field. */
         private Short a;
         /** A double-precision floating-point field. */
         private Double b;
+
+        public Short getA() {
+            return a;
+        }
+
+        public void setA(Short a) {
+            this.a = a;
+        }
+
+        public Double getB() {
+            return b;
+        }
+
+        public void setB(Double b) {
+            this.b = b;
+        }
     }
 
     /**
      * A custom data class for a compound dataset with renamed fields.
      */
-    @Data
-    @Builder
     public static class CustomCompound {
         /** A name identifier for the compound. */
         private String name;
@@ -146,5 +157,59 @@ public class HdfSeparateTypesRead {
         private Short someShort;
         /** A double-precision floating-point field (mapped from field 'b'). */
         private Double someDouble;
+
+        private CustomCompound() {
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Short getSomeShort() {
+            return someShort;
+        }
+
+        public void setSomeShort(Short someShort) {
+            this.someShort = someShort;
+        }
+
+        public Double getSomeDouble() {
+            return someDouble;
+        }
+
+        public void setSomeDouble(Double someDouble) {
+            this.someDouble = someDouble;
+        }
+
+        public static class Builder {
+            private final CustomCompound instance = new CustomCompound();
+
+            public Builder name(String name) {
+                instance.setName(name);
+                return this;
+            }
+
+            public Builder someShort(Short someShort) {
+                instance.setSomeShort(someShort);
+                return this;
+            }
+
+            public Builder someDouble(Double someDouble) {
+                instance.setSomeDouble(someDouble);
+                return this;
+            }
+
+            public CustomCompound build() {
+                return instance;
+            }
+        }
     }
 }

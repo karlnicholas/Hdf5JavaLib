@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.hdf5javalib</groupId>
   <artifactId>hdf5javalib</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>HDF5JavaLib</name>
@@ -31,6 +30,7 @@
     <connection>scm:git:git://github.com/karlnicholas/hdf5javalib.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/karlnicholas/hdf5javalib.git</developerConnection>
     <url>https://github.com/karlnicholas/hdf5javalib</url>
+    <tag>HEAD</tag>
   </scm>
 
   <issueManagement>
@@ -42,24 +42,15 @@
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <lombok.version>1.18.36</lombok.version>
     <slf4j.version>2.0.17</slf4j.version>
-    <logback.version>1.5.8</logback.version>
-    <junit.version>5.11.3</junit.version>
+    <logback.version>1.5.18</logback.version>
+    <junit.version>5.12.2</junit.version>
+    <sonar.projectKey>karlnicholas_Hdf5JavaLib</sonar.projectKey>
+    <sonar.organization>karlnicholas</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>${lombok.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-csv</artifactId>
-      <version>1.12.0</version>
-    </dependency>
     <!-- SLF4J API -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -174,18 +165,6 @@
           </execution>
         </executions>
       </plugin>
-      <!-- Nexus Staging Plugin for deploying to OSSRH/Maven Central -->
-      <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.7.0</version>
-        <extensions>true</extensions>
-        <configuration>
-          <serverId>ossrh</serverId>
-          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-          <autoReleaseAfterClose>true</autoReleaseAfterClose>
-        </configuration>
-      </plugin>
       <!-- Release Plugin for managing versioning -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -196,6 +175,15 @@
           <useReleaseProfile>false</useReleaseProfile>
           <releaseProfiles>release</releaseProfiles>
           <goals>deploy</goals>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.7.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
         </configuration>
       </plugin>
     </plugins>

@@ -4,6 +4,7 @@ import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
+import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.utils.FlattenedArrayUtils;
 import org.junit.jupiter.api.Test;
@@ -14,13 +15,8 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,18 +37,9 @@ public class HdfFixedPointReadTest {
     private static final int[] TICTACTOE_FIRST_PIECE_COORDS = {0, 0, 0, 0};
     private static final int[] TICTACTOE_LAST_PIECE_COORDS = {1, 1, 0, 4};
 
-    private Path getResourcePath(String fileName) {
-        String resourcePath = Objects.requireNonNull(getClass().getClassLoader().getResource(fileName)).getPath();
-        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
-            resourcePath = resourcePath.substring(1);
-        }
-        return Paths.get(resourcePath);
-    }
-
     @Test
     void testScalarH5() throws IOException {
-        Path filePath = getResourcePath("scalar.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("scalar.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
 
             // "byte" dataset (1 byte, value 42)
@@ -145,8 +132,7 @@ public class HdfFixedPointReadTest {
 
     @Test
     void testVectorH5() throws IOException {
-        Path filePath = getResourcePath("vector.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("vector.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet dataSet = reader.getRootGroup().findDataset("vector");
             TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, reader, dataSet, BigInteger.class);
@@ -172,8 +158,7 @@ public class HdfFixedPointReadTest {
 
     @Test
     void testWeatherdataH5() throws IOException {
-        Path filePath = getResourcePath("weatherdata.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("weatherdata.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet dataSet = reader.getRootGroup().findDataset("weatherdata");
             TypedDataSource<BigDecimal> dataSource = new TypedDataSource<>(channel, reader, dataSet, BigDecimal.class);
@@ -213,8 +198,7 @@ public class HdfFixedPointReadTest {
 
     @Test
     void testTictactoe4dStateH5() throws IOException {
-        Path filePath = getResourcePath("tictactoe_4d_state.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("tictactoe_4d_state.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataSet dataSet = reader.getRootGroup().findDataset("game");
             TypedDataSource<Integer> dataSource = new TypedDataSource<>(channel, reader, dataSet, Integer.class);

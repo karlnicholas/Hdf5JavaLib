@@ -1,7 +1,5 @@
 package org.hdf5javalib.file.dataobject.message;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
@@ -53,14 +51,12 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see org.hdf5javalib.file.dataobject.message.HdfMessage
  * @see org.hdf5javalib.HdfDataFile
  */
-@Getter
 public class DataLayoutMessage extends HdfMessage {
     /** The version of the data layout message format. */
     private final int version;
     /** The layout class (0: Contiguous, 1: Chunked, 2: Compact). */
     private final int layoutClass;
     /** The file address where data begins (for Contiguous or Chunked). */
-    @Setter
     private HdfFixedPoint dataAddress;
     /** The dimensions of the dataset or chunks (for Contiguous or Chunked). */
     private final HdfFixedPoint[] dimensionSizes;
@@ -227,6 +223,18 @@ public class DataLayoutMessage extends HdfMessage {
             default:
                 throw new IllegalArgumentException("Unsupported layout class: " + layoutClass);
         }
+    }
+
+    public void setDataAddress(HdfFixedPoint dataAddress) {
+        this.dataAddress = dataAddress;
+    }
+
+    public HdfFixedPoint getDataAddress() {
+        return dataAddress;
+    }
+
+    public HdfFixedPoint[] getDimensionSizes() {
+        return dimensionSizes;
     }
 
     /**

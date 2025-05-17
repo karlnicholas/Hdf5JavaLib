@@ -1,7 +1,5 @@
 package org.hdf5javalib.examples.write;
 
-import lombok.*;
-import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfDataSet;
@@ -10,6 +8,7 @@ import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
 import org.hdf5javalib.file.dataobject.message.datatype.*;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -33,8 +32,8 @@ import static org.hdf5javalib.utils.HdfDisplayUtils.writeVersionAttribute;
  * bulk and individual record methods, and adds a version attribute.
  * </p>
  */
-@Slf4j
 public class HdfCompoundWrite {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfCompoundWrite.class);
     /**
      * Entry point for the application.
      *
@@ -186,8 +185,7 @@ public class HdfCompoundWrite {
      * @param hdfDataFile the HDF5 file context
      * @throws IOException if an I/O error occurs
      */
-    @SneakyThrows
-    private static void writeCompoundAll(HdfDataSet dataset, HdfDataFile hdfDataFile) {
+    private static void writeCompoundAll(HdfDataSet dataset, HdfDataFile hdfDataFile) throws IOException {
         int numRecords = 1000;
         CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();
         int bufferSize = numRecords * compoundType.getSize();
@@ -211,8 +209,7 @@ public class HdfCompoundWrite {
      * @param hdfDataFile the HDF5 file context
      * @throws IOException if an I/O error occurs
      */
-    @SneakyThrows
-    private static void writeCompoundEach(HdfDataSet dataset, HdfDataFile hdfDataFile) {
+    private static void writeCompoundEach(HdfDataSet dataset, HdfDataFile hdfDataFile) throws IOException {
         int numRecords = 1000;
         CompoundDatatype compoundType = (CompoundDatatype) dataset.getHdfDatatype();
         int bufferSize = compoundType.getSize();
@@ -257,10 +254,6 @@ public class HdfCompoundWrite {
     /**
      * A data class representing a compound dataset record.
      */
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
     public static class CompoundExample {
         /** The record ID. */
         private Long recordId;
@@ -290,12 +283,205 @@ public class HdfCompoundWrite {
         private BigInteger uint64_Val;
         /** A scaled unsigned integer value as a BigDecimal. */
         private BigDecimal scaledUintVal;
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public static class Builder {
+            private final CompoundExample instance = new CompoundExample();
+
+            public Builder recordId(Long recordId) {
+                instance.recordId = recordId;
+                return this;
+            }
+
+            public Builder fixedStr(String fixedStr) {
+                instance.fixedStr = fixedStr;
+                return this;
+            }
+
+            public Builder varStr(String varStr) {
+                instance.varStr = varStr;
+                return this;
+            }
+
+            public Builder floatVal(Float floatVal) {
+                instance.floatVal = floatVal;
+                return this;
+            }
+
+            public Builder doubleVal(Double doubleVal) {
+                instance.doubleVal = doubleVal;
+                return this;
+            }
+
+            public Builder int8_Val(Byte int8_Val) {
+                instance.int8_Val = int8_Val;
+                return this;
+            }
+
+            public Builder uint8_Val(Short uint8_Val) {
+                instance.uint8_Val = uint8_Val;
+                return this;
+            }
+
+            public Builder int16_Val(Short int16_Val) {
+                instance.int16_Val = int16_Val;
+                return this;
+            }
+
+            public Builder uint16_Val(Integer uint16_Val) {
+                instance.uint16_Val = uint16_Val;
+                return this;
+            }
+
+            public Builder int32_Val(Integer int32_Val) {
+                instance.int32_Val = int32_Val;
+                return this;
+            }
+
+            public Builder uint32_Val(Long uint32_Val) {
+                instance.uint32_Val = uint32_Val;
+                return this;
+            }
+
+            public Builder int64_Val(Long int64_Val) {
+                instance.int64_Val = int64_Val;
+                return this;
+            }
+
+            public Builder uint64_Val(BigInteger uint64_Val) {
+                instance.uint64_Val = uint64_Val;
+                return this;
+            }
+
+            public Builder scaledUintVal(BigDecimal scaledUintVal) {
+                instance.scaledUintVal = scaledUintVal;
+                return this;
+            }
+
+            public CompoundExample build() {
+                return instance;
+            }
+        }
+
+        public Long getRecordId() {
+            return recordId;
+        }
+
+        public void setRecordId(Long recordId) {
+            this.recordId = recordId;
+        }
+
+        public String getFixedStr() {
+            return fixedStr;
+        }
+
+        public void setFixedStr(String fixedStr) {
+            this.fixedStr = fixedStr;
+        }
+
+        public String getVarStr() {
+            return varStr;
+        }
+
+        public void setVarStr(String varStr) {
+            this.varStr = varStr;
+        }
+
+        public Float getFloatVal() {
+            return floatVal;
+        }
+
+        public void setFloatVal(Float floatVal) {
+            this.floatVal = floatVal;
+        }
+
+        public Double getDoubleVal() {
+            return doubleVal;
+        }
+
+        public void setDoubleVal(Double doubleVal) {
+            this.doubleVal = doubleVal;
+        }
+
+        public Byte getInt8_Val() {
+            return int8_Val;
+        }
+
+        public void setInt8_Val(Byte int8_Val) {
+            this.int8_Val = int8_Val;
+        }
+
+        public Short getUint8_Val() {
+            return uint8_Val;
+        }
+
+        public void setUint8_Val(Short uint8_Val) {
+            this.uint8_Val = uint8_Val;
+        }
+
+        public Short getInt16_Val() {
+            return int16_Val;
+        }
+
+        public void setInt16_Val(Short int16_Val) {
+            this.int16_Val = int16_Val;
+        }
+
+        public Integer getUint16_Val() {
+            return uint16_Val;
+        }
+
+        public void setUint16_Val(Integer uint16_Val) {
+            this.uint16_Val = uint16_Val;
+        }
+
+        public Integer getInt32_Val() {
+            return int32_Val;
+        }
+
+        public void setInt32_Val(Integer int32_Val) {
+            this.int32_Val = int32_Val;
+        }
+
+        public Long getUint32_Val() {
+            return uint32_Val;
+        }
+
+        public void setUint32_Val(Long uint32_Val) {
+            this.uint32_Val = uint32_Val;
+        }
+
+        public Long getInt64_Val() {
+            return int64_Val;
+        }
+
+        public void setInt64_Val(Long int64_Val) {
+            this.int64_Val = int64_Val;
+        }
+
+        public BigInteger getUint64_Val() {
+            return uint64_Val;
+        }
+
+        public void setUint64_Val(BigInteger uint64_Val) {
+            this.uint64_Val = uint64_Val;
+        }
+
+        public BigDecimal getScaledUintVal() {
+            return scaledUintVal;
+        }
+
+        public void setScaledUintVal(BigDecimal scaledUintVal) {
+            this.scaledUintVal = scaledUintVal;
+        }
     }
 
     /**
      * A data class for monitoring data (not used in this example).
      */
-    @Data
     public static class MonitoringData {
         /** The site name. */
         private String siteName;
@@ -305,6 +491,70 @@ public class HdfCompoundWrite {
         private Double temperature;
         /** The sample count. */
         private Integer sampleCount;
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public static class Builder {
+            private final MonitoringData instance = new MonitoringData();
+
+            public Builder siteName(String siteName) {
+                instance.siteName = siteName;
+                return this;
+            }
+
+            public Builder airQualityIndex(Float airQualityIndex) {
+                instance.airQualityIndex = airQualityIndex;
+                return this;
+            }
+
+            public Builder temperature(Double temperature) {
+                instance.temperature = temperature;
+                return this;
+            }
+
+            public Builder sampleCount(Integer sampleCount) {
+                instance.sampleCount = sampleCount;
+                return this;
+            }
+
+            public MonitoringData build() {
+                return instance;
+            }
+        }
+
+        public String getSiteName() {
+            return siteName;
+        }
+
+        public void setSiteName(String siteName) {
+            this.siteName = siteName;
+        }
+
+        public Float getAirQualityIndex() {
+            return airQualityIndex;
+        }
+
+        public void setAirQualityIndex(Float airQualityIndex) {
+            this.airQualityIndex = airQualityIndex;
+        }
+
+        public Double getTemperature() {
+            return temperature;
+        }
+
+        public void setTemperature(Double temperature) {
+            this.temperature = temperature;
+        }
+
+        public Integer getSampleCount() {
+            return sampleCount;
+        }
+
+        public void setSampleCount(Integer sampleCount) {
+            this.sampleCount = sampleCount;
+        }
     }
 
     private static final int CYCLE_LENGTH = 5;

@@ -1,7 +1,5 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
 
@@ -20,8 +18,6 @@ import java.util.BitSet;
  * @see org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype
  * @see org.hdf5javalib.file.dataobject.message.DatatypeMessage
  */
-@Getter
-@Slf4j
 public class CompoundMemberDatatype implements HdfDatatype {
     /** The name of the compound member. */
     private final String name;
@@ -227,5 +223,22 @@ public class CompoundMemberDatatype implements HdfDatatype {
     @Override
     public String toString(byte[] bytes) {
         return type.toString(bytes);
+    }
+
+    @Override
+    public short getSizeMessageData() {
+        return sizeMessageData;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    public HdfDatatype getType() {
+        return type;
     }
 }

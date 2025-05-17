@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject.message.datatype;
 
-import lombok.Getter;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
@@ -27,7 +26,6 @@ import java.util.Map;
  * @see org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype
  * @see org.hdf5javalib.utils.HdfReadUtils
  */
-@Getter
 public class FixedPointDatatype implements HdfDatatype {
     /** The class and version information for the datatype (class 0, version 1). */
     private final byte classAndVersion;
@@ -527,5 +525,13 @@ public class FixedPointDatatype implements HdfDatatype {
     @Override
     public BitSet getClassBitField() {
         return classBitField;
+    }
+
+    public short getBitOffset() {
+        return bitOffset;
+    }
+
+    public short getBitPrecision() {
+        return bitPrecision;
     }
 }

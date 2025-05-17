@@ -1,7 +1,5 @@
 package org.hdf5javalib.file.infrastructure;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.file.HdfFileAllocation;
@@ -32,9 +30,8 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see org.hdf5javalib.file.HdfGroup
  * @see org.hdf5javalib.file.infrastructure.HdfBTreeEntry
  */
-@Getter
-@Slf4j
 public class HdfBTreeV1 {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfBTreeV1.class);
     /** The signature of the B-Tree node ("TREE"). */
     private final String signature;
     /** The type of the node (0 for group B-Tree). */
@@ -563,5 +560,9 @@ public class HdfBTreeV1 {
         sb.append("]");
         sb.append('}');
         return sb.toString();
+    }
+
+    public List<HdfBTreeEntry> getEntries() {
+        return entries;
     }
 }

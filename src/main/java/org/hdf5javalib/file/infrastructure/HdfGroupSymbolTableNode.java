@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.infrastructure;
 
-import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
 
 import java.io.IOException;
@@ -23,7 +22,6 @@ import java.util.List;
  * @see org.hdf5javalib.HdfDataFile
  * @see org.hdf5javalib.file.infrastructure.HdfSymbolTableEntry
  */
-@Getter
 public class HdfGroupSymbolTableNode {
     /** The signature of the symbol table node ("SNOD"). */
     private final String signature;
@@ -135,5 +133,9 @@ public class HdfGroupSymbolTableNode {
      */
     public int getNumberOfSymbols() {
         return symbolTableEntries.size();
+    }
+
+    public List<HdfSymbolTableEntry> getSymbolTableEntries() {
+        return symbolTableEntries;
     }
 }

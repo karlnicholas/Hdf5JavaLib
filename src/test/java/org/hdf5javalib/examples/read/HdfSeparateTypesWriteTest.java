@@ -1,10 +1,9 @@
 package org.hdf5javalib.examples.read;
 
-import lombok.Builder;
-import lombok.Data;
 import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.*;
 import org.hdf5javalib.datasource.TypedDataSource;
+import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,39 +15,98 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.BitSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HdfSeparateTypesWriteTest {
-    private static Path getResourcePath() {
-        String resourcePath = Objects.requireNonNull(HdfSeparateTypesWriteTest.class.getClassLoader().getResource("all_types_separate.h5")).getPath();
-        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
-            resourcePath = resourcePath.substring(1);
-        }
-        return Paths.get(resourcePath);
-    }
-
-    @Data
     public static class Compound {
         private Short a;
         private Double b;
+
+        public Short getA() {
+            return a;
+        }
+
+        public void setA(Short a) {
+            this.a = a;
+        }
+
+        public Double getB() {
+            return b;
+        }
+
+        public void setB(Double b) {
+            this.b = b;
+        }
     }
 
-    @Data
-    @Builder
     public static class CustomCompound {
         private String name;
         private Short someShort;
         private Double someDouble;
+
+        private CustomCompound(Builder builder) {
+            this.name = builder.name;
+            this.someShort = builder.someShort;
+            this.someDouble = builder.someDouble;
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Short getSomeShort() {
+            return someShort;
+        }
+
+        public void setSomeShort(Short someShort) {
+            this.someShort = someShort;
+        }
+
+        public Double getSomeDouble() {
+            return someDouble;
+        }
+
+        public void setSomeDouble(Double someDouble) {
+            this.someDouble = someDouble;
+        }
+
+        public static class Builder {
+            private String name;
+            private Short someShort;
+            private Double someDouble;
+
+            public Builder name(String name) {
+                this.name = name;
+                return this;
+            }
+
+            public Builder someShort(Short someShort) {
+                this.someShort = someShort;
+                return this;
+            }
+
+            public Builder someDouble(Double someDouble) {
+                this.someDouble = someDouble;
+                return this;
+            }
+
+            public CustomCompound build() {
+                return new CustomCompound(this);
+            }
+        }
     }
 
     @BeforeAll
@@ -68,8 +126,7 @@ public class HdfSeparateTypesWriteTest {
 
     @Test
     void testAllTypesSeparateH5() throws IOException {
-        Path filePath = getResourcePath();
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("all_types_separate.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
 
             // Fixed Point (8-bit signed, 42)

@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject.message;
 
-import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
 
 import java.nio.ByteBuffer;
@@ -36,7 +35,6 @@ import java.nio.ByteOrder;
  * @see org.hdf5javalib.file.dataobject.message.HdfMessage
  * @see org.hdf5javalib.HdfDataFile
  */
-@Getter
 public class BTreeKValuesMessage extends HdfMessage {
     /** The version of the message format. */
     private final int version;

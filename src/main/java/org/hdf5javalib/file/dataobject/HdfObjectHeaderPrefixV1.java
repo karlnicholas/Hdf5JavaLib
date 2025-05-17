@@ -1,6 +1,5 @@
 package org.hdf5javalib.file.dataobject;
 
-import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.file.HdfFileAllocation;
 import org.hdf5javalib.file.dataobject.message.HdfMessage;
@@ -26,7 +25,6 @@ import static org.hdf5javalib.file.dataobject.message.HdfMessage.readMessagesFro
  * continuation messages for large headers.
  * </p>
  */
-@Getter
 public class HdfObjectHeaderPrefixV1 {
     /** The version of the object header (1 byte). */
     private final int version;
@@ -289,5 +287,9 @@ public class HdfObjectHeaderPrefixV1 {
             }
         }
         return Optional.empty();
+    }
+
+    public List<HdfMessage> getHeaderMessages() {
+        return headerMessages;
     }
 }

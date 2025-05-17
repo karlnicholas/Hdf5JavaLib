@@ -1,6 +1,5 @@
 package org.hdf5javalib.dataclass;
 
-import lombok.Getter;
 import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
 
 import java.nio.ByteBuffer;
@@ -20,7 +19,6 @@ import java.util.List;
  * @see org.hdf5javalib.dataclass.HdfData
  * @see org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype
  */
-@Getter
 public class HdfCompound implements HdfData {
     /** The CompoundDatatype defining the compound structure and member specifications. */
     private final CompoundDatatype datatype;
@@ -106,5 +104,9 @@ public class HdfCompound implements HdfData {
     @Override
     public <T> T getInstance(Class<T> clazz) {
         return datatype.getInstance(clazz, bytes);
+    }
+
+    public List<HdfCompoundMember> getMembers() {
+        return members;
     }
 }

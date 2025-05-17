@@ -1,6 +1,5 @@
 package org.hdf5javalib.file;
 
-import lombok.Getter;
 import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
@@ -33,7 +32,6 @@ import java.util.stream.Collectors;
  * management.
  * </p>
  */
-@Getter
 public class HdfGroup implements Closeable {
     /** The HDF5 file context. */
     private final HdfFile hdfFile;
