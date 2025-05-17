@@ -208,41 +208,41 @@ public class HdfFileAllocation {
 //        allocationRecords.add(initialLocalHeapRecord);
 //    }
 
-//    // --- Allocation Methods ---
-//    /**
-//     * Allocates storage for a dataset's object header.
-//     *
-//     * @param datasetName the name of the dataset
-//     * @return the offset of the allocated header
-//     * @throws IllegalArgumentException if the dataset name is null or empty
-//     * @throws IllegalStateException if the dataset is already allocated or an overlap occurs
-//     */
-//    public long allocateDatasetStorage(String datasetName) {
-//        Objects.requireNonNull(datasetName, "Dataset name cannot be null");
-//        if (datasetName.isEmpty()) throw new IllegalArgumentException("Dataset name cannot be empty");
-//        if (datasetRecordsByName.containsKey(datasetName) && datasetRecordsByName.get(datasetName).containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
-//            throw new IllegalStateException("Dataset '" + datasetName + "' already allocated");
-//        }
-//
-//        long headerSize = DEFAULT_DATASET_HEADER_SIZE;
-//        if (checkForOverlap(metadataNextAvailableOffset, headerSize)) {
-//            moveMetadataNextAvailableOffset(metadataNextAvailableOffset, headerSize);
-//        }
-//
-//        long headerOffset = metadataNextAvailableOffset;
-//        AllocationRecord record = new AllocationRecord(
-//                AllocationType.DATASET_OBJECT_HEADER,
-//                "Dataset Header (" + datasetName + ")",
-//                HdfWriteUtils.hdfFixedPointFromValue(headerOffset, superblock.getFixedPointDatatypeForOffset()),
-//                HdfWriteUtils.hdfFixedPointFromValue(headerSize, superblock.getFixedPointDatatypeForLength())
-//        );
-//        datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_OBJECT_HEADER, record);
-//        allocationRecords.add(record);
-//        metadataNextAvailableOffset += headerSize;
-//        updateMetadataOffset(metadataNextAvailableOffset);
-//        return headerOffset;
-//    }
-//
+    // --- Allocation Methods ---
+    /**
+     * Allocates storage for a dataset's object header.
+     *
+     * @param datasetName the name of the dataset
+     * @return the offset of the allocated header
+     * @throws IllegalArgumentException if the dataset name is null or empty
+     * @throws IllegalStateException if the dataset is already allocated or an overlap occurs
+     */
+    public HdfFixedPoint allocateDatasetStorage(String datasetName) {
+        Objects.requireNonNull(datasetName, "Dataset name cannot be null");
+        if (datasetName.isEmpty()) throw new IllegalArgumentException("Dataset name cannot be empty");
+        if (datasetRecordsByName.containsKey(datasetName) && datasetRecordsByName.get(datasetName).containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
+            throw new IllegalStateException("Dataset '" + datasetName + "' already allocated");
+        }
+
+        HdfFixedPoint headerSize = HDF_DEFAULT_DATASET_HEADER_SIZE.clone();
+        if (checkForOverlap(metadataNextAvailableOffset, headerSize)) {
+            moveMetadataNextAvailableOffset(metadataNextAvailableOffset, headerSize);
+        }
+
+        HdfFixedPoint headerOffset = metadataNextAvailableOffset.clone();
+        AllocationRecord record = new AllocationRecord(
+                AllocationType.DATASET_OBJECT_HEADER,
+                "Dataset Header (" + datasetName + ")",
+                headerOffset,
+                headerSize
+        );
+        datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_OBJECT_HEADER, record);
+        allocationRecords.add(record);
+        metadataNextAvailableOffset.mutate(metadataNextAvailableOffset.add(headerSize));
+        updateMetadataOffset(metadataNextAvailableOffset);
+        return headerOffset;
+    }
+
     /**
      * Increases the size of a dataset's object header allocation.
      *
@@ -405,58 +405,57 @@ public class HdfFileAllocation {
         return offset;
     }
 
-//    /**
-//     * Expands the second global heap block by doubling its size.
-//     *
-//     * @return the offset of the expanded global heap block
-//     * @throws IllegalStateException if the second global heap block is not yet allocated
-//     */
-//    public long expandGlobalHeapBlock() {
-//        AllocationRecord record = globalHeapBlocks.get(AllocationType.GLOBAL_HEAP_2);
-//        if (record == null) {
-//            throw new IllegalStateException("Second global heap block not yet allocated");
-//        }
-//        long oldSize = record.getSize();
-//        long newSize = oldSize * 2;
-//
-//        record.setSize(newSize);
-//        dataNextAvailableOffset = record.getOffset() + newSize;
-//        updateDataOffset(dataNextAvailableOffset);
-//        return record.getOffset();
-//    }
-//
-//    /**
-//     * Expands the active local heap contents by doubling its size.
-//     *
-//     * @return the new size of the local heap contents
-//     * @throws IllegalStateException if the current heap size is non-positive
-//     */
-//    public long expandLocalHeapContents() {
-//        AllocationRecord activeRecord = localHeapRecords.get(localHeapRecords.size() - 1);
-//        long oldSize = activeRecord.getSize();
-//        if (oldSize <= 0) throw new IllegalStateException("Cannot expand heap with non-positive current tracked size: " + oldSize);
-//        long newSize = oldSize * 2;
-//
-//        if (checkForOverlap(metadataNextAvailableOffset, newSize)) {
-//            moveMetadataNextAvailableOffset(metadataNextAvailableOffset, newSize);
-//        }
-//
-//        long newOffset = metadataNextAvailableOffset;
-//
-//        // Update existing LOCAL_HEAP record to indicate abandonment
-//        activeRecord.setType(AllocationType.LOCAL_HEAP_ABANDONED);
-//        activeRecord.setName("Abandoned Local Heap Contents (Offset " + activeRecord.getOffset() + ")");
-//
-//        // Add new record
-//        AllocationRecord newRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Expanded Local Heap Contents", newOffset, newSize);
-//        localHeapRecords.add(newRecord);
-//        allocationRecords.add(newRecord);
-//
-//        metadataNextAvailableOffset += newSize;
-//        updateMetadataOffset(metadataNextAvailableOffset);
-//        return newSize;
-//    }
-//
+    /**
+     * Expands the second global heap block by doubling its size.
+     *
+     * @return the offset of the expanded global heap block
+     * @throws IllegalStateException if the second global heap block is not yet allocated
+     */
+    public HdfFixedPoint expandGlobalHeapBlock() {
+        AllocationRecord record = globalHeapBlocks.get(AllocationType.GLOBAL_HEAP_2);
+        if (record == null) {
+            throw new IllegalStateException("Second global heap block not yet allocated");
+        }
+        HdfFixedPoint oldSize = record.getSize();
+        HdfFixedPoint newSize = new HdfFixedPoint(oldSize.add(oldSize), oldSize.getDatatype());
+
+        record.setSize(newSize);
+        dataNextAvailableOffset.mutate(record.getOffset().add(newSize));
+        updateDataOffset(dataNextAvailableOffset);
+        return record.getOffset();
+    }
+
+    /**
+     * Expands the active local heap contents by doubling its size.
+     *
+     * @return the new size of the local heap contents
+     * @throws IllegalStateException if the current heap size is non-positive
+     */
+    public HdfFixedPoint expandLocalHeapContents() {
+        AllocationRecord activeRecord = localHeapRecords.get(localHeapRecords.size() - 1);
+        HdfFixedPoint oldSize = activeRecord.getSize();
+        HdfFixedPoint newSize = new HdfFixedPoint(oldSize.add(oldSize), oldSize.getDatatype());
+
+        if (checkForOverlap(metadataNextAvailableOffset, newSize)) {
+            moveMetadataNextAvailableOffset(metadataNextAvailableOffset, newSize);
+        }
+
+        HdfFixedPoint newOffset = metadataNextAvailableOffset.clone();
+
+        // Update existing LOCAL_HEAP record to indicate abandonment
+        activeRecord.setType(AllocationType.LOCAL_HEAP_ABANDONED);
+        activeRecord.setName("Abandoned Local Heap Contents (Offset " + activeRecord.getOffset() + ")");
+
+        // Add new record
+        AllocationRecord newRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Expanded Local Heap Contents", newOffset, newSize);
+        localHeapRecords.add(newRecord);
+        allocationRecords.add(newRecord);
+
+        metadataNextAvailableOffset.mutate(metadataNextAvailableOffset.add(newSize));
+        updateMetadataOffset(metadataNextAvailableOffset);
+        return newSize;
+    }
+
 //    /**
 //     * Resets the allocation manager to its initial state.
 //     * <p>
@@ -778,24 +777,24 @@ public class HdfFileAllocation {
         return record.getOffset();
     }
 
-//    /**
-//     * Retrieves the offset of the current local heap contents.
-//     *
-//     * @return the offset of the active local heap
-//     */
-//    public long getCurrentLocalHeapContentsOffset() {
-//        return localHeapRecords.get(localHeapRecords.size() - 1).getOffset();
-//    }
-//
-//    /**
-//     * Retrieves the size of the current local heap contents.
-//     *
-//     * @return the size of the active local heap
-//     */
-//    public long getCurrentLocalHeapContentsSize() {
-//        return localHeapRecords.get(localHeapRecords.size() - 1).getSize();
-//    }
-//
+    /**
+     * Retrieves the offset of the current local heap contents.
+     *
+     * @return the offset of the active local heap
+     */
+    public HdfFixedPoint getCurrentLocalHeapContentsOffset() {
+        return localHeapRecords.get(localHeapRecords.size() - 1).getOffset();
+    }
+
+    /**
+     * Retrieves the size of the current local heap contents.
+     *
+     * @return the size of the active local heap
+     */
+    public HdfFixedPoint getCurrentLocalHeapContentsSize() {
+        return localHeapRecords.get(localHeapRecords.size() - 1).getSize();
+    }
+
     /**
      * Checks if any dataset data blocks are allocated.
      *

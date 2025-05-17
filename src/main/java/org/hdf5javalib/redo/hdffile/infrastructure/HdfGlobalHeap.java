@@ -241,9 +241,9 @@ public class HdfGlobalHeap {
         long newObjectRequiredSize = 16L + newObjectDataSize + newObjectPadding;
 
         HdfFixedPoint blockSize = fileAllocation.getGlobalHeapBlockSize(currentHeapOffset);
-        if (currentUsedSize + newObjectRequiredSize + 16L > blockSize) {
+        if (currentUsedSize + newObjectRequiredSize + 16L > blockSize.getInstance(Long.class)) {
             // Add null terminator to mark the block as full
-            long freeSpace = blockSize - currentUsedSize;
+            long freeSpace = blockSize.getInstance(Long.class) - currentUsedSize;
             if (freeSpace < 16) {
                 throw new IllegalStateException("Insufficient space for null terminator in heap at offset " + currentHeapOffset);
             }
@@ -278,7 +278,7 @@ public class HdfGlobalHeap {
 
         ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN);
         buffer.putInt(newObjectDataSize);
-        buffer.putLong(currentHeapOffset);
+        buffer.putLong(currentHeapOffset.getInstance(Long.class));
         buffer.putInt(objectId);
         return buffer.array();
     }
@@ -294,20 +294,20 @@ public class HdfGlobalHeap {
             return;
         }
 
-        for (Map.Entry<Long, LinkedHashMap<Integer, GlobalHeapObject>> entry : heapCollections.entrySet()) {
-            long heapOffset = entry.getKey();
+        for (Map.Entry<HdfFixedPoint, LinkedHashMap<Integer, GlobalHeapObject>> entry : heapCollections.entrySet()) {
+            HdfFixedPoint heapOffset = entry.getKey();
             LinkedHashMap<Integer, GlobalHeapObject> objects = entry.getValue();
 
-            long heapSize = this.hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
-            fileChannel.position(heapOffset);
-            int size1 = (int) getWriteBufferSize(heapOffset);
-            ByteBuffer buffer = ByteBuffer.allocate((int)heapSize);
+            HdfFixedPoint heapSize = this.hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
+            fileChannel.position(heapOffset.getInstance(Long.class));
+            int size1 = getWriteBufferSize(heapOffset).getInstance(Long.class).intValue();
+            ByteBuffer buffer = ByteBuffer.allocate(heapSize.getInstance(Integer.class).intValue());
             buffer.order(ByteOrder.LITTLE_ENDIAN);
 
             buffer.put(SIGNATURE.getBytes());
             buffer.put((byte) VERSION);
             buffer.put(new byte[3]);
-            buffer.putLong(calculateAlignedTotalSize(heapOffset));
+            buffer.putLong(calculateAlignedTotalSize(heapOffset).getInstance(Long.class));
 
             for (GlobalHeapObject obj : objects.values()) {
                 obj.writeToByteBuffer(buffer);
@@ -319,7 +319,7 @@ public class HdfGlobalHeap {
                     long objSize = obj.getHeapObjectIndex() == 0 ? 16 : 16 + obj.getObjectSize() + getPadding((int) obj.getObjectSize());
                     usedSize += objSize;
                 }
-                long blockSize = hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
+                long blockSize = hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset).getInstance(Long.class);
                 long remainingSize = blockSize - usedSize;
                 if (remainingSize < 16) {
                     throw new IllegalStateException("Insufficient space for null terminator in heap at offset: " + heapOffset);
@@ -342,7 +342,7 @@ public class HdfGlobalHeap {
      * @return the aligned total size in bytes
      * @throws IllegalStateException if the heap collection is not found
      */
-    private long calculateAlignedTotalSize(long heapOffset) {
+    private HdfFixedPoint calculateAlignedTotalSize(HdfFixedPoint heapOffset) {
         LinkedHashMap<Integer, GlobalHeapObject> objects = heapCollections.get(heapOffset);
         if (objects == null) {
             throw new IllegalStateException("No heap collection found at offset: " + heapOffset);
@@ -358,8 +358,9 @@ public class HdfGlobalHeap {
             totalSize += 16;
         }
 
-        long blockSize = hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
-        return alignTo(totalSize, (int) blockSize);
+        HdfFixedPoint blockSize = hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
+        long aligned = alignTo(totalSize, blockSize.getInstance(Long.class));
+        return HdfWriteUtils.hdfFixedPointFromValue(aligned, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
     }
 
     /**
@@ -368,7 +369,7 @@ public class HdfGlobalHeap {
      * @param heapOffset the offset of the heap collection
      * @return the buffer size in bytes
      */
-    public long getWriteBufferSize(long heapOffset) {
+    public HdfFixedPoint getWriteBufferSize(HdfFixedPoint heapOffset) {
         return calculateAlignedTotalSize(heapOffset);
     }
 
@@ -380,7 +381,7 @@ public class HdfGlobalHeap {
      * @return the aligned size
      * @throws IllegalArgumentException if the alignment is not a positive power of 2
      */
-    private static long alignTo(long size, int alignment) {
+    private static long alignTo(long size, long alignment) {
         if (alignment <= 0 || (alignment & (alignment - 1)) != 0) {
             throw new IllegalArgumentException("Alignment must be a positive power of 2. Got: " + alignment);
         }

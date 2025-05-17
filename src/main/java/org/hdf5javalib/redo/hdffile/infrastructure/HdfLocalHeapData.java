@@ -80,11 +80,11 @@ public class HdfLocalHeapData extends AllocationRecord {
         // Check if there's enough space for the string
         if (currentOffset + requiredSpace > heapSize) {
             // Resize heap
-            long newSize = fileAllocation.expandLocalHeapContents();
+            HdfFixedPoint newSize = fileAllocation.expandLocalHeapContents();
 //            byte[] newHeapData = new byte[(int) newSize];
 //            System.arraycopy(heapData, 0, newHeapData, 0, heapData.getSize().getInstance(Integer.class)); // Copy existing data
-            this.heapContentsSize = HdfWriteUtils.hdfFixedPointFromValue(newSize, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength());
-            this.heapContentsOffset = HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getCurrentLocalHeapContentsOffset(), hdfDataFile.getSuperblock().getFixedPointDatatypeForLength());
+            this.heapContentsSize = newSize;
+            this.heapContentsOffset = fileAllocation.getCurrentLocalHeapContentsOffset();
 //            heapData = new HdfLocalHeapData(heapData.getName(), heapContentsOffset, heapContentsSize, heapData);
 //            heapSize = (int) newSize;
         }

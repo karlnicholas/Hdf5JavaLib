@@ -158,18 +158,18 @@ public class HdfGroup implements Closeable {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         this.name = name;
         this.hdfDataFile = hdfDataFile;
-        long localHeapContentsSize = fileAllocation.getCurrentLocalHeapContentsSize();
-        byte[] heapData = new byte[(int) localHeapContentsSize];
+        HdfFixedPoint localHeapContentsSize = fileAllocation.getCurrentLocalHeapContentsSize();
+        byte[] heapData = new byte[localHeapContentsSize.getInstance(Long.class).intValue()];
         heapData[0] = (byte)0x1;
-        heapData[8] = (byte)localHeapContentsSize;
+        heapData[8] = localHeapContentsSize.getInstance(Long.class).byteValue();
 
 //        new HdfLocalHeapData(name+"heap",
 //                HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getCurrentLocalHeapContentsOffset(), hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
 //                HdfWriteUtils.hdfFixedPointFromValue(localHeapContentsSize, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()))
 
         localHeap = new HdfLocalHeap(
-                HdfWriteUtils.hdfFixedPointFromValue(localHeapContentsSize, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()),
-                HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getCurrentLocalHeapContentsOffset(), hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()),
+                localHeapContentsSize,
+                fileAllocation.getCurrentLocalHeapContentsOffset(),
                 hdfDataFile, name+"heap");
 
         localHeap.addToHeap("");
@@ -219,7 +219,7 @@ public class HdfGroup implements Closeable {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length));
         int linkNameOffset;
-        long allocationInfo;
+        HdfFixedPoint allocationInfo;
         if (localHeap.getFreeListOffset().getInstance(Long.class) != 1) {
             linkNameOffset = localHeap.addToHeap(hdfDatasetName.toString());
             allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
@@ -232,7 +232,7 @@ public class HdfGroup implements Closeable {
 
         DataSetInfo dataSetInfo = new DataSetInfo(
                 newDataSet,
-                HdfWriteUtils.hdfFixedPointFromValue(allocationInfo, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()),
+                allocationInfo,
                 linkNameOffset);
         dataSets.put(datasetName, dataSetInfo);
 
