@@ -7,6 +7,8 @@ import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.utils.FlattenedArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -36,6 +38,7 @@ import java.util.stream.Stream;
  * </p>
  */
 public class HdfFixedPointRead {
+    private static final Logger log = LoggerFactory.getLogger(HdfFixedPointRead.class);
     /**
      * Entry point for the application.
      *
@@ -70,6 +73,7 @@ public class HdfFixedPointRead {
         Path filePath = getResourcePath("dsgroup.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfGroup rootGroup = new HdfFileReader(channel).readFile();
+            log.debug("rootGroup: {}", rootGroup);
 //            for (HdfDataSet dataset : reader.getRootGroup().getDataSets()) {
 //                try (HdfDataSet ds = dataset) {
 //                    tryScalarDataSpliterator(channel, reader, ds);
