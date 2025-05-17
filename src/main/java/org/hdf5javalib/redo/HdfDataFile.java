@@ -36,12 +36,12 @@ public interface HdfDataFile {
      */
     SeekableByteChannel getSeekableByteChannel();
 
-    /**
-     * Retrieves the {@link HdfSuperblock} which holds offset and length fields.
-     *
-     * @return the {@link HdfSuperblock} for offsets
-     */
-    HdfSuperblock getSuperblock();
+//    /**
+//     * Retrieves the {@link HdfSuperblock} which holds offset and length fields.
+//     *
+//     * @return the {@link HdfSuperblock} for offsets
+//     */
+//    HdfSuperblock getSuperblock();
 
     void setFileAllocation(HdfFileAllocation hdfFileAllocation);
 }

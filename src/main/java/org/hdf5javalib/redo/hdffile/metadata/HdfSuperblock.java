@@ -70,7 +70,7 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * based on the HDF5 file specification.</p>
  */
 public class HdfSuperblock extends AllocationRecord {
-    private static final byte[] FILE_SIGNATURE = "\211HDF\r\n\032\n".getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] FILE_SIGNATURE = new byte[] { (byte) 0x89, 'H', 'D', 'F', '\r', '\n', 0x1A, '\n' };
 
     private final int version;
     private final int freeSpaceVersion;

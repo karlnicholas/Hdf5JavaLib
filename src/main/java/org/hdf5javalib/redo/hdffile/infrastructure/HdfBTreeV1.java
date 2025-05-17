@@ -81,7 +81,7 @@ public class HdfBTreeV1 extends AllocationRecord {
             String name, HdfFixedPoint offset
     ) {
         super(AllocationType.BTREE_HEADER, name, offset,
-            new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+            new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset())
         );
         this.signature = signature;
         this.nodeType = nodeType;
@@ -114,7 +114,7 @@ public class HdfBTreeV1 extends AllocationRecord {
             String name, HdfFixedPoint offset
     ) {
         super(AllocationType.BTREE_HEADER, name, offset,
-                new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+                new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset())
         );
         this.signature = signature;
         this.nodeType = nodeType;
@@ -123,7 +123,7 @@ public class HdfBTreeV1 extends AllocationRecord {
         this.entriesUsed = 0;
         this.leftSiblingAddress = leftSiblingAddress;
         this.rightSiblingAddress = rightSiblingAddress;
-        this.keyZero = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength());
+        this.keyZero = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength());
         this.entries = new ArrayList<>();
     }
 
@@ -165,7 +165,7 @@ public class HdfBTreeV1 extends AllocationRecord {
         fileChannel.position(nodeAddress);
         long startPos = nodeAddress;
 
-        int headerSize = 8 + hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().getSize() + hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().getSize();
+        int headerSize = 8 + hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize() + hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize();
         ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
         int headerBytesRead = fileChannel.read(headerBuffer);
         if (headerBytesRead != headerSize) {
@@ -185,12 +185,12 @@ public class HdfBTreeV1 extends AllocationRecord {
         int entriesUsed = Short.toUnsignedInt(headerBuffer.getShort());
 
         BitSet emptyBitset = new BitSet();
-        HdfFixedPoint leftSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), headerBuffer);
-        HdfFixedPoint rightSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), headerBuffer);
+        HdfFixedPoint leftSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), headerBuffer);
+        HdfFixedPoint rightSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), headerBuffer);
 
-        int entriesDataSize = hdfDataFile.getSuperblock().getFixedPointDatatypeForLength().getSize()
-                + (entriesUsed * (hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().getSize() + hdfDataFile.getSuperblock().getFixedPointDatatypeForLength().getSize()));
-        if (entriesUsed < 0 || entriesDataSize < hdfDataFile.getSuperblock().getFixedPointDatatypeForLength().getSize()) {
+        int entriesDataSize = hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength().getSize()
+                + (entriesUsed * (hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize() + hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength().getSize()));
+        if (entriesUsed < 0 || entriesDataSize < hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength().getSize()) {
             throw new IOException("Invalid BTree node parameters at position " + startPos + ": entriesUsed=" + entriesUsed);
         }
         long currentPosBeforeEntries = fileChannel.position();
@@ -210,18 +210,18 @@ public class HdfBTreeV1 extends AllocationRecord {
             throw new IOException("BTree node at " + startPos + " has entriesUsed=" + entriesUsed + " but entriesDataSize is 0.");
         }
 
-        HdfFixedPoint keyZero = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), entriesBuffer);
+        HdfFixedPoint keyZero = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength(), entriesBuffer);
 
         List<HdfBTreeEntry> entries = new ArrayList<>(entriesUsed);
         long filePosAfterEntriesBlock = fileChannel.position();
 
         HdfBTreeV1 currentNode = new HdfBTreeV1(signature, nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries, hdfDataFile,
-                "Btree for " + groupName, HdfWriteUtils.hdfFixedPointFromValue(startPos, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()));
+                "Btree for " + groupName, HdfWriteUtils.hdfFixedPointFromValue(startPos, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
         visitedNodes.put(nodeAddress, currentNode);
 
         for (int i = 0; i < entriesUsed; i++) {
-            HdfFixedPoint childPointer = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), entriesBuffer);
-            HdfFixedPoint key = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), entriesBuffer);
+            HdfFixedPoint childPointer = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), entriesBuffer);
+            HdfFixedPoint key = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength(), entriesBuffer);
             long childAddress = childPointer.getInstance(Long.class);
             HdfBTreeEntry entry;
 
@@ -290,7 +290,7 @@ public class HdfBTreeV1 extends AllocationRecord {
                     snodOffset
             );
             targetEntry = new HdfBTreeSnodEntry(
-                    HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()),
+                    HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
                     snodOffset, targetSnod);
             entries.add(targetEntry);
             entriesUsed++;
@@ -322,7 +322,7 @@ public class HdfBTreeV1 extends AllocationRecord {
 //        HdfWriteUtils.hdfFixedPointFromValue(datasetObjectHeaderAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
         HdfSymbolTableEntryCacheNotUsed steCache = new HdfSymbolTableEntryCacheNotUsed(hdfDataFile, dataset.getDataObjectHeaderPrefix(), dataset.getDatasetName());
         HdfSymbolTableEntry ste = new HdfSymbolTableEntry(
-                HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()),
+                HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
                 steCache
         );
         targetSnod.getSymbolTableEntries().add(insertIndex, ste);
@@ -330,7 +330,7 @@ public class HdfBTreeV1 extends AllocationRecord {
         // --- Step 4: Update B-tree key with new max ---
         List<HdfSymbolTableEntry> symbolTableEntries = targetSnod.getSymbolTableEntries();
         long maxOffset = symbolTableEntries.get(symbolTableEntries.size() - 1).getLinkNameOffset().getInstance(Long.class);
-        targetEntry.setKey(HdfWriteUtils.hdfFixedPointFromValue(maxOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()));
+        targetEntry.setKey(HdfWriteUtils.hdfFixedPointFromValue(maxOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
 
         // --- Step 5: Split if SNOD too large ---
         if (symbolTableEntries.size() > MAX_SNOD_ENTRIES) {
@@ -411,7 +411,7 @@ public class HdfBTreeV1 extends AllocationRecord {
                 .findFirst()
                 .map(e -> e.getLinkNameOffset().getInstance(Long.class))
                 .orElseThrow(() -> new IllegalStateException("Could not find linkNameOffset for max dataset name: " + targetMaxName));
-        targetEntry.setKey(HdfWriteUtils.hdfFixedPointFromValue(targetMaxLinkNameOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()));
+        targetEntry.setKey(HdfWriteUtils.hdfFixedPointFromValue(targetMaxLinkNameOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
 
         // Create new BTreeEntry
         String newMaxName = newSnodEntries.stream()
@@ -471,7 +471,7 @@ public class HdfBTreeV1 extends AllocationRecord {
      */
     public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(
-                new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()).getInstance(Long.class).intValue())
+                new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()).getInstance(Long.class).intValue())
                 .order(ByteOrder.LITTLE_ENDIAN);
         buffer.put(signature.getBytes());
         buffer.put((byte) nodeType);

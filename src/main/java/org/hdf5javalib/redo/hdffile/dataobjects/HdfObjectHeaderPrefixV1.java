@@ -118,7 +118,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
 
         // Create the instance
         return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages,
-                hdfDataFile, "Group Object Header", HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()));
+                hdfDataFile, "Group Object Header", HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
     }
 
     /**

@@ -56,7 +56,8 @@ public class HdfGlobalHeap {
         this.heapCollections = new HashMap<>();
         this.collectionSizes = new HashMap<>();
         this.nextObjectIds = new HashMap<>();
-        this.currentWriteHeapOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined();
+//        this.currentWriteHeapOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined();
+        this.currentWriteHeapOffset = null;
     }
 
     /**
@@ -70,7 +71,8 @@ public class HdfGlobalHeap {
         this.heapCollections = new HashMap<>();
         this.collectionSizes = new HashMap<>();
         this.nextObjectIds = new HashMap<>();
-        this.currentWriteHeapOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined();
+//        this.currentWriteHeapOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined();
+        this.currentWriteHeapOffset = null;
     }
 
     /**
@@ -138,7 +140,7 @@ public class HdfGlobalHeap {
         }
 
         headerBuffer.position(headerBuffer.position() + 3);
-        HdfFixedPoint localCollectionSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), headerBuffer);
+        HdfFixedPoint localCollectionSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength(), headerBuffer);
         long declaredSize = localCollectionSize.getInstance(Long.class);
 
         if (declaredSize < 16 || (startOffset + declaredSize > fileChannel.size())) {
@@ -197,7 +199,7 @@ public class HdfGlobalHeap {
             throw new IOException("Unexpected error processing global heap object data buffer at offset: " + startOffset, e);
         }
 
-        HdfFixedPoint hdfStartOffset = HdfWriteUtils.hdfFixedPointFromValue(startOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
+        HdfFixedPoint hdfStartOffset = HdfWriteUtils.hdfFixedPointFromValue(startOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset());
         this.heapCollections.put(hdfStartOffset, localObjects);
         this.collectionSizes.put(hdfStartOffset, localCollectionSize);
         this.nextObjectIds.put(hdfStartOffset, localNextObjectId);
@@ -218,7 +220,7 @@ public class HdfGlobalHeap {
 
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
 
-        if (currentWriteHeapOffset.isUndefined()) {
+        if (currentWriteHeapOffset == null) {
             this.currentWriteHeapOffset = fileAllocation.getGlobalHeapOffset();
         }
         HdfFixedPoint currentHeapOffset = this.currentWriteHeapOffset;
@@ -360,7 +362,7 @@ public class HdfGlobalHeap {
 
         HdfFixedPoint blockSize = hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(heapOffset);
         long aligned = alignTo(totalSize, blockSize.getInstance(Long.class));
-        return HdfWriteUtils.hdfFixedPointFromValue(aligned, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
+        return HdfWriteUtils.hdfFixedPointFromValue(aligned, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset());
     }
 
     /**

@@ -20,8 +20,8 @@ import java.nio.channels.SeekableByteChannel;
  */
 public class HdfFileReader implements HdfDataFile {
     private static final Logger log = LoggerFactory.getLogger(HdfFileReader.class);
-    /** The superblock containing metadata about the HDF5 file. */
-    private HdfSuperblock superblock;
+//    /** The superblock containing metadata about the HDF5 file. */
+//    private HdfSuperblock superblock;
 
     /** The root group of the HDF5 file. */
     private HdfGroup rootGroup;
@@ -76,7 +76,7 @@ public class HdfFileReader implements HdfDataFile {
      * @throws IOException if an I/O error occurs during reading
      */
     public HdfFileReader readFile() throws Exception {
-        superblock = HdfSuperblock.readFromSeekableByteChannel(fileChannel, this);
+        HdfSuperblock superblock = HdfSuperblock.readFromSeekableByteChannel(fileChannel, this);
         log.debug("{}", superblock);
         // Initialize fixed structures
 //        superblockRecord = new AllocationRecord(AllocationType.SUPERBLOCK, "Superblock", SUPERBLOCK_OFFSET, SUPERBLOCK_SIZE);
@@ -204,10 +204,10 @@ public class HdfFileReader implements HdfDataFile {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public HdfSuperblock getSuperblock() {
-        return superblock;
-    }
+//    @Override
+//    public HdfSuperblock getSuperblock() {
+//        return superblock;
+//    }
 
     @Override
     public void setFileAllocation(HdfFileAllocation hdfFileAllocation) {

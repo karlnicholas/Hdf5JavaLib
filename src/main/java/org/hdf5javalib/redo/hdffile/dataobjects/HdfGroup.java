@@ -181,21 +181,21 @@ public class HdfGroup implements Closeable {
 
         ;
         bTree = new HdfBTreeV1("TREE", 0, 0,
-                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
-                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
+                hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(),
+                hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(),
                 hdfDataFile,
                 name+"btree",
-                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset())
         );
 
-        HdfFixedPoint btree = HdfWriteUtils.hdfFixedPointFromValue(btreeAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
-        HdfFixedPoint localHeap = HdfWriteUtils.hdfFixedPointFromValue(localHeapAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
+        HdfFixedPoint btree = HdfWriteUtils.hdfFixedPointFromValue(btreeAddress, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset());
+        HdfFixedPoint localHeap = HdfWriteUtils.hdfFixedPointFromValue(localHeapAddress, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset());
 
         objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 24,
                 Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte)0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))),
                 hdfDataFile,
                 name+"header",
-                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE+BTREE_NODE_SIZE+BTREE_STORAGE_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE+BTREE_NODE_SIZE+BTREE_STORAGE_SIZE, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset())
         );
 
         this.dataSets = new LinkedHashMap<>();

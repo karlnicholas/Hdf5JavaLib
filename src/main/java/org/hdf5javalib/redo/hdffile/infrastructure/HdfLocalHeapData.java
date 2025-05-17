@@ -47,7 +47,7 @@ public class HdfLocalHeapData extends AllocationRecord {
         super(AllocationType.LOCAL_HEAP, name, offset, size);
         this.heapContentsSize = size;
         this.heapContentsOffset = offset;
-        this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength());
+        this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength());
         this.data = new LinkedHashMap<>();
     }
 
