@@ -152,10 +152,11 @@ public class HdfLocalHeapData extends AllocationRecord {
             String objectName = new String(heapData, iStart, iOffset - iStart, StandardCharsets.US_ASCII);
             HdfLocalHeapDataValue value = new HdfLocalHeapDataValue(objectName, iStart);
             data.put(iStart, value);
-            iOffset = (iOffset + 7) & ~7;
-            if (iOffset == 0) {
-                iOffset = 8;
-            }
+            // 8 to add 1 for the 0 terminator.
+            iOffset = (iOffset + 8) & ~7;
+//            if (iOffset == 0) {
+//                iOffset = 8;
+//            }
             buffer.position(iOffset);
         }
 

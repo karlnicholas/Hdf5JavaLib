@@ -5,6 +5,7 @@ import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.utils.FlattenedArrayUtils;
 
 import java.io.IOException;
@@ -66,9 +67,9 @@ public class HdfFixedPointRead {
      * @throws IOException if an I/O error occurs
      */
     void run() throws Exception {
-        Path filePath = getResourcePath("scalar.h5");
+        Path filePath = getResourcePath("dsgroup.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-            HdfFileReader reader = new HdfFileReader(channel).readFile();
+            HdfGroup rootGroup = new HdfFileReader(channel).readFile();
 //            for (HdfDataSet dataset : reader.getRootGroup().getDataSets()) {
 //                try (HdfDataSet ds = dataset) {
 //                    tryScalarDataSpliterator(channel, reader, ds);

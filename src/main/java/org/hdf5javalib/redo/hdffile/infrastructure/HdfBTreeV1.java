@@ -167,10 +167,7 @@ public class HdfBTreeV1 extends AllocationRecord {
 
         int headerSize = 8 + hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize() + hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize();
         ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
-        int headerBytesRead = fileChannel.read(headerBuffer);
-        if (headerBytesRead != headerSize) {
-            throw new IOException("Could not read complete BTree header (" + headerSize + " bytes) at position " + startPos + ". Read only " + headerBytesRead + " bytes.");
-        }
+        fileChannel.read(headerBuffer);
         headerBuffer.flip();
 
         byte[] signatureBytes = new byte[4];
@@ -184,31 +181,14 @@ public class HdfBTreeV1 extends AllocationRecord {
         int nodeLevel = Byte.toUnsignedInt(headerBuffer.get());
         int entriesUsed = Short.toUnsignedInt(headerBuffer.getShort());
 
-        BitSet emptyBitset = new BitSet();
         HdfFixedPoint leftSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), headerBuffer);
         HdfFixedPoint rightSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), headerBuffer);
 
         int entriesDataSize = hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength().getSize()
                 + (entriesUsed * (hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize() + hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength().getSize()));
-        if (entriesUsed < 0 || entriesDataSize < hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength().getSize()) {
-            throw new IOException("Invalid BTree node parameters at position " + startPos + ": entriesUsed=" + entriesUsed);
-        }
-        long currentPosBeforeEntries = fileChannel.position();
-        long fileSize = fileChannel.size();
-        if (currentPosBeforeEntries + entriesDataSize > fileSize) {
-            throw new IOException("Calculated BTree entriesDataSize (" + entriesDataSize + ") exceeds available file size at position " + currentPosBeforeEntries + " (Node: " + startPos + ")");
-        }
-
         ByteBuffer entriesBuffer = ByteBuffer.allocate(entriesDataSize).order(ByteOrder.LITTLE_ENDIAN);
-        if (entriesDataSize > 0) {
-            int entryBytesRead = fileChannel.read(entriesBuffer);
-            if (entryBytesRead != entriesDataSize) {
-                throw new IOException("Could not read complete BTree entries data block (" + entriesDataSize + " bytes) at position " + currentPosBeforeEntries + ". Read only " + entryBytesRead + " bytes.");
-            }
-            entriesBuffer.flip();
-        } else if (entriesUsed > 0) {
-            throw new IOException("BTree node at " + startPos + " has entriesUsed=" + entriesUsed + " but entriesDataSize is 0.");
-        }
+        fileChannel.read(entriesBuffer);
+        entriesBuffer.flip();
 
         HdfFixedPoint keyZero = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength(), entriesBuffer);
 
@@ -225,10 +205,10 @@ public class HdfBTreeV1 extends AllocationRecord {
             long childAddress = childPointer.getInstance(Long.class);
             HdfBTreeEntry entry;
 
-            if (childAddress < -1L || (childAddress != -1L && childAddress >= fileSize)) {
-                throw new IOException("Invalid child address " + childAddress + " in BTree entry " + i
-                        + " at node " + startPos + " (Level " + nodeLevel + "). File size is " + fileSize);
-            }
+//            if (childAddress < -1L || (childAddress != -1L && childAddress >= fileSize)) {
+//                throw new IOException("Invalid child address " + childAddress + " in BTree entry " + i
+//                        + " at node " + startPos + " (Level " + nodeLevel + "). File size is " + fileSize);
+//            }
 
             if (nodeLevel == 0) {
                 if (childAddress != -1L) {

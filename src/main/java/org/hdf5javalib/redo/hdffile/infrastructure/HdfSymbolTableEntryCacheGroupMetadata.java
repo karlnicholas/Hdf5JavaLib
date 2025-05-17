@@ -1,6 +1,7 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
@@ -72,5 +73,9 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
 
     public HdfBTreeV1 getBtree() {
         return group.getBTree();
+    }
+
+    public HdfGroup getGroup() {
+        return group;
     }
 }
