@@ -2,8 +2,8 @@ package org.hdf5javalib.redo.datatype;
 
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfEnum;
-import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;

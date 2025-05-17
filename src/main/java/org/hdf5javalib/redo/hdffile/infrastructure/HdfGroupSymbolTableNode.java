@@ -3,7 +3,6 @@ package org.hdf5javalib.redo.hdffile.infrastructure;
 import org.hdf5javalib.redo.AllocationRecord;
 import org.hdf5javalib.redo.AllocationType;
 import org.hdf5javalib.redo.HdfDataFile;
-import org.hdf5javalib.redo.HdfFileAllocation;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 

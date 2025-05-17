@@ -3,16 +3,16 @@ package org.hdf5javalib.redo.hdffile.dataobjects;
 import org.hdf5javalib.redo.AllocationRecord;
 import org.hdf5javalib.redo.AllocationType;
 import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.HdfFileAllocation;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.dataclass.HdfVariableLength;
-import org.hdf5javalib.redo.HdfFileAllocation;
-import org.hdf5javalib.redo.hdffile.dataobjects.messages.*;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.datatype.HdfDatatype;
 import org.hdf5javalib.redo.datatype.StringDatatype;
 import org.hdf5javalib.redo.datatype.VariableLengthDatatype;
+import org.hdf5javalib.redo.hdffile.dataobjects.messages.*;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
 import java.io.Closeable;

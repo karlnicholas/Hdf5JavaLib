@@ -1,22 +1,13 @@
 package org.hdf5javalib.redo;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import org.hdf5javalib.redo.dataclass.HdfString;
-import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
-import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
-import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
-import org.hdf5javalib.redo.hdffile.infrastructure.*;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.redo.hdffile.metadata.HdfSuperblock;
-import org.hdf5javalib.redo.utils.HdfWriteUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import static org.hdf5javalib.redo.HdfFileAllocation.*;
 
 /**
  * Reads and parses HDF5 file structures.
@@ -27,9 +18,8 @@ import static org.hdf5javalib.redo.HdfFileAllocation.*;
  * datasets by parsing the file's metadata and data structures.
  * </p>
  */
-@Getter
-@Slf4j
 public class HdfFileReader implements HdfDataFile {
+    private static final Logger log = LoggerFactory.getLogger(HdfFileReader.class);
     /** The superblock containing metadata about the HDF5 file. */
     private HdfSuperblock superblock;
 
@@ -212,6 +202,11 @@ public class HdfFileReader implements HdfDataFile {
     @Override
     public SeekableByteChannel getSeekableByteChannel() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public HdfSuperblock getSuperblock() {
+        return superblock;
     }
 
     @Override
