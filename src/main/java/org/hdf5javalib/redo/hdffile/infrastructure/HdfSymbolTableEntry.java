@@ -77,8 +77,10 @@ public class HdfSymbolTableEntry {
         int cacheType = HdfReadUtils.readIntFromFileChannel(fileChannel);
         HdfReadUtils.skipBytes(fileChannel, 4); // Skip reserved field
 
+        long savedPosition = fileChannel.position();
         fileChannel.position(objectHeaderAddress.getInstance(Long.class));
         HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+        fileChannel.position(savedPosition);
 
 //      return new HdfSymbolTableEntryCacheGroupMetadata(groupName, objectHeader, bTreeV1, localHeap, hdfDataFile);
 

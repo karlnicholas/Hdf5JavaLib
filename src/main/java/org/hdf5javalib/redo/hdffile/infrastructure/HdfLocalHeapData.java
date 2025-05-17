@@ -26,25 +26,31 @@ public class HdfLocalHeapData extends AllocationRecord {
 
     /**
      * for reading
-     * @param name               name
      * @param heapContentsOffset    heapContentsOffset
      * @param heapContentsSize  heapContentsSize
      * @param data              data
      */
-    public HdfLocalHeapData(String name, HdfFixedPoint heapContentsOffset, HdfFixedPoint heapContentsSize, Map<Integer, HdfLocalHeapDataValue> data) {
-        super(AllocationType.LOCAL_HEAP, name, heapContentsOffset, heapContentsSize);
+    public HdfLocalHeapData(
+            HdfFixedPoint heapContentsOffset,
+            HdfFixedPoint heapContentsSize,
+            HdfFixedPoint freeListOffset,
+            Map<Integer, HdfLocalHeapDataValue> data
+    ) {
+        super(AllocationType.LOCAL_HEAP, "LOCALHEAP", heapContentsOffset, heapContentsSize);
+        this.heapContentsSize = heapContentsSize;
+        this.heapContentsSize = heapContentsSize;
+        this.freeListOffset = freeListOffset;
         this.data = data;
     }
 
     /**
      * for writing
-     * @param name      name
      * @param offset    offset
      * @param size      size
      * @param hdfDataFile   hdfDataFile
      */
-    public HdfLocalHeapData(String name, HdfFixedPoint offset, HdfFixedPoint size, HdfDataFile hdfDataFile) {
-        super(AllocationType.LOCAL_HEAP, name, offset, size);
+    public HdfLocalHeapData(HdfFixedPoint offset, HdfFixedPoint size, HdfDataFile hdfDataFile) {
+        super(AllocationType.LOCAL_HEAP, "LOCALHEAP", offset, size);
         this.heapContentsSize = size;
         this.heapContentsOffset = offset;
         this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength());
@@ -128,13 +134,13 @@ public class HdfLocalHeapData extends AllocationRecord {
             HdfFixedPoint dataSegmentAddress
     ) throws IOException {
 
-        Map<HdfFixedPoint, HdfLocalHeapDataValue> data = new LinkedHashMap<>();
+        Map<Integer, HdfLocalHeapDataValue> data = new LinkedHashMap<>();
         fileChannel.position(dataSegmentAddress.getInstance(Long.class));
         // Allocate buffer and read heap data from the file channel
         byte[] heapData = new byte[dataSegmentSize.getInstance(Long.class).intValue()];
         ByteBuffer buffer = ByteBuffer.wrap(heapData);
-
         fileChannel.read(buffer);
+        buffer.flip();
         int iFreeListOffset = freeListOffset.getInstance(Long.class).intValue();
         int iOffset = 0;
         while ( buffer.position() < iFreeListOffset ) {
@@ -145,12 +151,15 @@ public class HdfLocalHeapData extends AllocationRecord {
             }
             String objectName = new String(heapData, iStart, iOffset - iStart, StandardCharsets.US_ASCII);
             HdfLocalHeapDataValue value = new HdfLocalHeapDataValue(objectName, iStart);
-            data.put(HdfWriteUtils.hdfFixedPointFromValue(iStart, dataSegmentSize.getDatatype()), value);
+            data.put(iStart, value);
             iOffset = (iOffset + 7) & ~7;
+            if (iOffset == 0) {
+                iOffset = 8;
+            }
             buffer.position(iOffset);
         }
 
-        return null;
+        return new HdfLocalHeapData(dataSegmentAddress, dataSegmentSize, freeListOffset, data);
     }
 
     public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfDataFile hdfDataFile) throws IOException {

@@ -92,13 +92,12 @@ public class HdfLocalHeap extends AllocationRecord {
      * @param signature          the signature of the local heap (e.g., "HEAP")
      * @param version            the version of the local heap format
      * @param heapContentsSize   the size of the heap's data segment
-     * @param freeListOffset     the offset to the free list within the heap
      * @param heapContentsOffset the offset to the heap's data segment in the file
      * @param hdfDataFile        the HDF5 data file containing the local heap
      * @param heapData           the raw byte array containing the heap's data
      */
     public HdfLocalHeap(String signature, int version, HdfFixedPoint heapContentsSize,
-                        HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, HdfLocalHeapData heapData,
+                        HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, HdfLocalHeapData heapData,
                         String name) {
         super(AllocationType.LOCAL_HEAP_HEADER, name, heapContentsOffset, heapContentsSize);
         this.signature = signature;
@@ -130,7 +129,7 @@ public class HdfLocalHeap extends AllocationRecord {
 //        this.heapContentsOffset = heapContentsOffset;
         this.hdfDataFile = hdfDataFile;
 //        long localHeapContentsSize = hdfDataFile.getFileAllocation().getCurrentLocalHeapContentsSize();
-        heapData = new HdfLocalHeapData(name+"HEAP-DATA", heapContentsOffset, heapContentsSize, hdfDataFile);
+        heapData = new HdfLocalHeapData(heapContentsOffset, heapContentsSize, hdfDataFile);
         addToHeap("");
 //        heapData[0] = (byte)0x1;
 //        heapData[8] = (byte)localHeapContentsSize;
@@ -198,13 +197,12 @@ public class HdfLocalHeap extends AllocationRecord {
 //        String signature, int version, HdfFixedPoint heapContentsSize,
 //                HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, HdfLocalHeapData heapData,
 //                String name
-
+        String objectName = hdfLocalHeapData.getStringAtOffset(linkNameOffset);
         return new HdfLocalHeap(signature, version,
-                freeListOffset,
                 dataSegmentSize,
                 dataSegmentAddress,
                 hdfDataFile, hdfLocalHeapData,
-                hdfLocalHeapData.getStringAtOffset(linkNameOffset) + "local heap");
+                objectName + ":local heap");
     }
 
     /**
