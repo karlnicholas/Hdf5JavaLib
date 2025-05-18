@@ -34,8 +34,6 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfBTreeEntry
  */
 public class HdfBTreeV1 extends AllocationRecord {
-    /** logger */
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfBTreeV1.class);
     /** The signature of the B-Tree node ("TREE"). */
     private final String signature;
     /** The type of the node (0 for group B-Tree). */
@@ -168,7 +166,6 @@ public class HdfBTreeV1 extends AllocationRecord {
         }
 
         fileChannel.position(nodeAddress);
-        long startPos = nodeAddress;
 
         int headerSize = 8 + hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize() + hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize();
         ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
@@ -179,7 +176,7 @@ public class HdfBTreeV1 extends AllocationRecord {
         headerBuffer.get(signatureBytes);
         String signature = new String(signatureBytes);
         if (!"TREE".equals(signature)) {
-            throw new IOException("Invalid B-tree node signature: '" + signature + "' at position " + startPos);
+            throw new IOException("Invalid B-tree node signature: '" + signature + "' at position " + nodeAddress);
         }
 
         int nodeType = Byte.toUnsignedInt(headerBuffer.get());
@@ -200,7 +197,7 @@ public class HdfBTreeV1 extends AllocationRecord {
         List<HdfBTreeEntry> entries = new ArrayList<>(entriesUsed);
 
         HdfBTreeV1 currentNode = new HdfBTreeV1(signature, nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries, hdfDataFile,
-                "Btree for ", HdfWriteUtils.hdfFixedPointFromValue(startPos, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
+                "Btree for ", HdfWriteUtils.hdfFixedPointFromValue(nodeAddress, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
         visitedNodes.put(nodeAddress, currentNode);
 
         for (int i = 0; i < entriesUsed; i++) {
@@ -252,9 +249,6 @@ public class HdfBTreeV1 extends AllocationRecord {
             HdfDataSet dataset,
             HdfGroup group
     ) {
-        if (!isLeafLevelNode()) {
-            throw new IllegalStateException("addDataset can only be called on leaf B-tree nodes (nodeLevel 0).");
-        }
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         final int MAX_SNOD_ENTRIES = 8;
         HdfGroupSymbolTableNode targetSnod;
@@ -402,14 +396,12 @@ public class HdfBTreeV1 extends AllocationRecord {
                 .filter(Objects::nonNull)
                 .max(String::compareTo)
                 .orElseThrow(() -> new IllegalStateException("No valid dataset names in new SNOD"));
-        HdfFixedPoint newMaxLinkNameOffset = newSnodEntries.stream()
+        HdfFixedPoint newKey = newSnodEntries.stream()
                 .filter(e -> newMaxName.equals(group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class))))
                 .findFirst()
-                .map(e -> e.getLinkNameOffset())
+                .map(HdfSymbolTableEntry::getLinkNameOffset)
                 .orElseThrow(() -> new IllegalStateException("Could not find linkNameOffset for max dataset name: " + newMaxName));
-        HdfFixedPoint newKey = newMaxLinkNameOffset;
-        HdfFixedPoint newChildPointer = newSnodOffset;
-        HdfBTreeEntry newEntry = new HdfBTreeSnodEntry(newKey, newChildPointer, newSnod);
+        HdfBTreeEntry newEntry = new HdfBTreeSnodEntry(newKey, newSnodOffset, newSnod);
 
         // Insert new BTreeEntry in sorted order
         int insertPos = targetEntryIndex + 1;
@@ -427,23 +419,23 @@ public class HdfBTreeV1 extends AllocationRecord {
         entriesUsed++;
     }
 
-    /**
-     * Checks if this is a leaf-level node (nodeLevel == 0).
-     *
-     * @return true if the node is a leaf node, false otherwise
-     */
-    public boolean isLeafLevelNode() {
-        return this.nodeLevel == 0;
-    }
-
-    /**
-     * Checks if this is an internal-level node (nodeLevel > 0).
-     *
-     * @return true if the node is an internal node, false otherwise
-     */
-    public boolean isInternalLevelNode() {
-        return this.nodeLevel > 0;
-    }
+//    /**
+//     * Checks if this is a leaf-level node (nodeLevel == 0).
+//     *
+//     * @return true if the node is a leaf node, false otherwise
+//     */
+//    public boolean isLeafLevelNode() {
+//        return this.nodeLevel == 0;
+//    }
+//
+//    /**
+//     * Checks if this is an internal-level node (nodeLevel > 0).
+//     *
+//     * @return true if the node is an internal node, false otherwise
+//     */
+//    public boolean isInternalLevelNode() {
+//        return this.nodeLevel > 0;
+//    }
 
     /**
      * Writes the B-Tree and its symbol table nodes to a file channel.
@@ -516,7 +508,8 @@ public class HdfBTreeV1 extends AllocationRecord {
             return;
         }
 
-        if (node.isLeafLevelNode()) {
+        // Leaf node
+        if (node.nodeLevel == 0 ) {
             for (HdfBTreeEntry entry : entries) {
                 HdfGroupSymbolTableNode snod = ((HdfBTreeSnodEntry)entry).getSymbolTableNode();
                 if (snod != null) {
@@ -549,8 +542,8 @@ public class HdfBTreeV1 extends AllocationRecord {
         sb.append(", nodeType=").append(nodeType);
         sb.append(", nodeLevel=").append(nodeLevel);
         sb.append(", entriesUsed=").append(entriesUsed);
-        sb.append(", leftSiblingAddress=").append(leftSiblingAddress);
-        sb.append(", rightSiblingAddress=").append(rightSiblingAddress);
+        sb.append(", leftSiblingAddress=").append(leftSiblingAddress.isUndefined()?"undefined":leftSiblingAddress);
+        sb.append(", rightSiblingAddress=").append(rightSiblingAddress.isUndefined()?"undefined":rightSiblingAddress);
         sb.append(", keyZero=").append(keyZero);
         sb.append(", entries=[");
         if (entries != null && !entries.isEmpty()) {
