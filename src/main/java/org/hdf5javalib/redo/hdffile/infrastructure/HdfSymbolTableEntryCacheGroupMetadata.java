@@ -1,7 +1,6 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import org.hdf5javalib.redo.HdfDataFile;
-import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
@@ -23,14 +22,16 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
     private final HdfGroup group;
 
     public HdfSymbolTableEntryCacheGroupMetadata(String groupName, HdfObjectHeaderPrefixV1 objectHeader, HdfBTreeV1 bTree, HdfLocalHeap localHeap, HdfDataFile hdfDataFile) {
-        group = new HdfGroup(groupName, objectHeader, bTree, localHeap, new LinkedHashMap<>(), hdfDataFile);
+        group = new HdfGroup(groupName, objectHeader, bTree, localHeap,
+//                new LinkedHashMap<>(),
+                hdfDataFile);
     }
 
     public static HdfSymbolTableEntryCache readFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
             HdfDataFile hdfDataFile,
-//            HdfFixedPoint linkNameOffset,
-            HdfObjectHeaderPrefixV1 objectHeader
+            HdfObjectHeaderPrefixV1 objectHeader,
+            String objectName
     ) throws Exception {
         // reading for group.
         HdfFixedPoint bTreeAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
@@ -40,12 +41,10 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
         fileChannel.position(localHeapAddress.getInstance(Long.class));
         HdfLocalHeap localHeap = HdfLocalHeap.readFromSeekableByteChannel(fileChannel, hdfDataFile);
 
-//        String groupName = localHeap.parseStringAtOffset(linkNameOffset).toString();
-
         fileChannel.position(bTreeAddress.getInstance(Long.class));
-        HdfBTreeV1 bTreeV1 = HdfBTreeV1.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+        HdfBTreeV1 bTreeV1 = HdfBTreeV1.readFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap);
         fileChannel.position(savedPosition);
-        return new HdfSymbolTableEntryCacheGroupMetadata("groupName", objectHeader, bTreeV1, localHeap, hdfDataFile);
+        return new HdfSymbolTableEntryCacheGroupMetadata(objectName, objectHeader, bTreeV1, localHeap, hdfDataFile);
     }
 
     @Override

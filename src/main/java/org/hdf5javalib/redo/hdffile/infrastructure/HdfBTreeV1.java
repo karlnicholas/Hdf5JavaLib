@@ -137,12 +137,12 @@ public class HdfBTreeV1 extends AllocationRecord {
      */
     public static HdfBTreeV1 readFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile
+            HdfDataFile hdfDataFile,
 //            String groupName,
-//            HdfLocalHeap localHeap
+            HdfLocalHeap localHeap
     ) throws Exception {
         long initialAddress = fileChannel.position();
-        return readFromSeekableByteChannelRecursive(fileChannel, initialAddress, hdfDataFile, new LinkedHashMap<>());
+        return readFromSeekableByteChannelRecursive(fileChannel, initialAddress, hdfDataFile, localHeap, new LinkedHashMap<>());
     }
 
     /**
@@ -158,7 +158,7 @@ public class HdfBTreeV1 extends AllocationRecord {
     private static HdfBTreeV1 readFromSeekableByteChannelRecursive(SeekableByteChannel fileChannel,
                                                            long nodeAddress,
                                                            HdfDataFile hdfDataFile,
-//                                                           HdfLocalHeap localHeap,
+                                                           HdfLocalHeap localHeap,
 //                                                           String groupName,
                                                            Map<Long, HdfBTreeV1> visitedNodes
     ) throws Exception {
@@ -208,25 +208,30 @@ public class HdfBTreeV1 extends AllocationRecord {
             HdfFixedPoint key = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength(), entriesBuffer);
             long filePosAfterEntriesBlock = fileChannel.position();
             long childAddress = childPointer.getInstance(Long.class);
-            HdfBTreeEntry entry;
-            if (nodeLevel == 0) {
-                if (childAddress != -1L) {
-                    fileChannel.position(childAddress);
-                    HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromSeekableByteChannel(fileChannel, hdfDataFile);
-                    entry = new HdfBTreeSnodEntry(key, childPointer, snod);
-                } else {
-                    HdfBTreeV1 childNode = readFromSeekableByteChannelRecursive(fileChannel, childAddress, hdfDataFile, visitedNodes);
-                    entry = new HdfBTreeChildBtreeEntry(key, childPointer, childNode);
-                }
-            } else {
-                if (childAddress != -1L) {
-                    HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromSeekableByteChannel(fileChannel, hdfDataFile);
-                    entry = new HdfBTreeSnodEntry(key, childPointer, snod);
-                } else {
-                    HdfBTreeV1 childNode = readFromSeekableByteChannelRecursive(fileChannel, childAddress, hdfDataFile, visitedNodes);
-                    entry = new HdfBTreeChildBtreeEntry(key, childPointer, childNode);
-                }
-            }
+//            HdfBTreeEntry entry;
+//            if (nodeLevel == 0) {
+//                if (childAddress != -1L) {
+//                    fileChannel.position(childAddress);
+//                    HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+//                    entry = new HdfBTreeSnodEntry(key, childPointer, snod);
+//                } else {
+//                    HdfBTreeV1 childNode = readFromSeekableByteChannelRecursive(fileChannel, childAddress, hdfDataFile, visitedNodes);
+//                    entry = new HdfBTreeChildBtreeEntry(key, childPointer, childNode);
+//                }
+//            } else {
+//                if (childAddress != -1L) {
+//                    HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+//                    entry = new HdfBTreeSnodEntry(key, childPointer, snod);
+//                } else {
+//                    HdfBTreeV1 childNode = readFromSeekableByteChannelRecursive(fileChannel, childAddress, hdfDataFile, visitedNodes);
+//                    entry = new HdfBTreeChildBtreeEntry(key, childPointer, childNode);
+//                }
+//            }
+
+            fileChannel.position(childAddress);
+            HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap);
+            HdfBTreeEntry entry = new HdfBTreeSnodEntry(key, childPointer, snod);
+
             fileChannel.position(filePosAfterEntriesBlock);
             entries.add(entry);
         }
@@ -278,7 +283,7 @@ public class HdfBTreeV1 extends AllocationRecord {
             // instead of the full while loop over entries:
             targetSnodIndex = binarySearchDatasetName(entries.size(), (mid)->{
                 HdfBTreeEntry entry = entries.get(mid);
-                long maxOffset = entry.getKey().getInstance(Long.class);
+                Long maxOffset = entry.getKey().getInstance(Long.class);
                 String maxName = group.getDatasetNameByLinkNameOffset(maxOffset);
                 return dataset.getDatasetName().compareTo(maxName);
             });
@@ -290,7 +295,7 @@ public class HdfBTreeV1 extends AllocationRecord {
             // --- Step 2: Binary search within SNOD's symbol table ---
             insertIndex = binarySearchDatasetName(targetSnod.getSymbolTableEntries().size(), (mid)->{
                 HdfSymbolTableEntry ste = targetSnod.getSymbolTableEntries().get(mid);
-                long offset = ste.getLinkNameOffset().getInstance(Long.class);
+                Long offset = ste.getLinkNameOffset().getInstance(Long.class);
                 String name = group.getDatasetNameByLinkNameOffset(offset);
                 return dataset.getDatasetName().compareTo(name);
             });

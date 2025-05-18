@@ -20,12 +20,8 @@ import java.nio.channels.SeekableByteChannel;
  * </p>
  */
 public class HdfFileReader implements HdfDataFile {
-    private static final Logger log = LoggerFactory.getLogger(HdfFileReader.class);
 //    /** The superblock containing metadata about the HDF5 file. */
 //    private HdfSuperblock superblock;
-
-    /** The root group of the HDF5 file. */
-    private HdfGroup rootGroup;
 
     /** The seekable byte channel for reading the HDF5 file. */
     private final SeekableByteChannel fileChannel;
@@ -78,7 +74,6 @@ public class HdfFileReader implements HdfDataFile {
      */
     public HdfGroup readFile() throws Exception {
         HdfSuperblock superblock = HdfSuperblock.readFromSeekableByteChannel(fileChannel, this);
-        log.debug("{}", superblock);
         // Initialize fixed structures
 //        superblockRecord = new AllocationRecord(AllocationType.SUPERBLOCK, "Superblock", SUPERBLOCK_OFFSET, SUPERBLOCK_SIZE);
 //        objectHeaderPrefixRecord = new AllocationRecord(AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE);

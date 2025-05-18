@@ -2,9 +2,9 @@ package org.hdf5javalib.redo.hdffile.infrastructure;
 
 public class HdfLocalHeapDataValue {
     private final String value;
-    private final Integer offset;
+    private final Long offset;
 
-    public HdfLocalHeapDataValue(String value, Integer offset) {
+    public HdfLocalHeapDataValue(String value, Long offset) {
         this.value = value;
         this.offset = offset;
     }
@@ -13,7 +13,15 @@ public class HdfLocalHeapDataValue {
         return value;
     }
 
-    public Integer getOffset() {
+    public Long getOffset() {
         return offset;
+    }
+
+    @Override
+    public String toString() {
+        return "HdfLocalHeapDataValue{" +
+                "value='" + value + '\'' +
+                ", offset=" + offset +
+                '}';
     }
 }

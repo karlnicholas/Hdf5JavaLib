@@ -143,7 +143,7 @@ public class HdfLocalHeap extends AllocationRecord {
      * @return the offset in the heap where the string is stored
      */
 //    public int addToHeap(HdfString objectName) {
-    public int addToHeap(String objectName) {
+    public Long addToHeap(String objectName) {
         return heapData.addToHeap(objectName, hdfDataFile);
     }
 
@@ -281,7 +281,7 @@ public class HdfLocalHeap extends AllocationRecord {
      * @param offset the offset in the heap data to start parsing
      * @return the parsed HdfString, or null if no valid string is found
      */
-    public HdfString parseStringAtOffset(HdfFixedPoint offset) {
+    public String parseStringAtOffset(Long offset) {
 //        long iOffset = offset.getInstance(Long.class);
 //        if (iOffset >= heapData.length) {
 //            return null; // End of heap data
@@ -293,14 +293,14 @@ public class HdfLocalHeap extends AllocationRecord {
 //        while (iOffset < heapData.length && heapData[(int) iOffset] != 0) {
 //            iOffset++;
 //        }
-        ;
+//        ;
         // Extract the string
-        String value = heapData.getStringAtOffset(offset);
-        return new HdfString(value,
-            new StringDatatype(
-                    StringDatatype.createClassAndVersion(),
-                    StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII),
-                    value.length())
-        );
+        return heapData.getStringAtOffset(offset);
+//        return new HdfString(value,
+//            new StringDatatype(
+//                    StringDatatype.createClassAndVersion(),
+//                    StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII),
+//                    value.length())
+//        );
     }
 }

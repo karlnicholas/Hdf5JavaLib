@@ -56,7 +56,6 @@ public class HdfGlobalHeap {
         this.heapCollections = new HashMap<>();
         this.collectionSizes = new HashMap<>();
         this.nextObjectIds = new HashMap<>();
-//        this.currentWriteHeapOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined();
         this.currentWriteHeapOffset = null;
     }
 
@@ -71,7 +70,6 @@ public class HdfGlobalHeap {
         this.heapCollections = new HashMap<>();
         this.collectionSizes = new HashMap<>();
         this.nextObjectIds = new HashMap<>();
-//        this.currentWriteHeapOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined();
         this.currentWriteHeapOffset = null;
     }
 

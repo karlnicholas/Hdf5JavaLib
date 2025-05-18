@@ -44,8 +44,8 @@ public class HdfGroup implements Closeable {
     private final HdfBTreeV1 bTree;
     /** The local heap storing link names. */
     private final HdfLocalHeap localHeap;
-    /** Map of dataset names to their information (dataset, header offset, link name offset). */
-    private final Map<String, DataSetInfo> dataSets;
+//    /** Map of dataset names to their information (dataset, header offset, link name offset). */
+//    private final Map<String, DataSetInfo> dataSets;
 
     public HdfBTreeV1 getBTree() {
         return bTree;
@@ -124,21 +124,21 @@ public class HdfGroup implements Closeable {
      * @param objectHeader the object header prefix containing group metadata
      * @param bTree        the B-tree managing symbol table entries
      * @param localHeap    the local heap storing link names
-     * @param dataSets     a map of dataset names to their corresponding DataSetInfo
+//     * @param dataSets     a map of dataset names to their corresponding DataSetInfo
      */
     public HdfGroup(
             String name,
             HdfObjectHeaderPrefixV1 objectHeader,
             HdfBTreeV1 bTree,
             HdfLocalHeap localHeap,
-            Map<String, DataSetInfo> dataSets,
+//            Map<String, DataSetInfo> dataSets,
             HdfDataFile hdfDataFile
     ) {
         this.name = name;
         this.objectHeader = objectHeader;
         this.bTree = bTree;
         this.localHeap = localHeap;
-        this.dataSets = dataSets;
+//        this.dataSets = dataSets;
         this.hdfDataFile = hdfDataFile;
     }
 
@@ -198,7 +198,7 @@ public class HdfGroup implements Closeable {
                 HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE+BTREE_NODE_SIZE+BTREE_STORAGE_SIZE, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset())
         );
 
-        this.dataSets = new LinkedHashMap<>();
+//        this.dataSets = new LinkedHashMap<>();
     }
 
     /**
@@ -217,7 +217,7 @@ public class HdfGroup implements Closeable {
     public HdfDataSet createDataSet(HdfDataFile hdfDataFile, String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length));
-        int linkNameOffset;
+        Long linkNameOffset;
         HdfFixedPoint allocationInfo;
         if (localHeap.getFreeListOffset().getInstance(Long.class) != 1) {
             linkNameOffset = localHeap.addToHeap(hdfDatasetName.toString());
@@ -229,11 +229,11 @@ public class HdfGroup implements Closeable {
 
         HdfDataSet newDataSet = new HdfDataSet(hdfDataFile, datasetName, hdfDatatype, dataSpaceMessage);
 
-        DataSetInfo dataSetInfo = new DataSetInfo(
-                newDataSet,
-                allocationInfo,
-                linkNameOffset);
-        dataSets.put(datasetName, dataSetInfo);
+//        DataSetInfo dataSetInfo = new DataSetInfo(
+//                newDataSet,
+//                allocationInfo,
+//                linkNameOffset);
+//        dataSets.put(datasetName, dataSetInfo);
 
         bTree.addDataset(linkNameOffset, newDataSet, this);
         return newDataSet;
@@ -246,13 +246,14 @@ public class HdfGroup implements Closeable {
      * @return the dataset name associated with the offset
      * @throws IllegalArgumentException if the offset is not found
      */
-    public String getDatasetNameByLinkNameOffset(long linkNameOffset) {
-        for (Map.Entry<String, DataSetInfo> entry : dataSets.entrySet()) {
-            if (entry.getValue().getLinkNameOffset() == linkNameOffset) {
-                return entry.getKey();
-            }
-        }
-        throw new IllegalArgumentException("Link name offset " + linkNameOffset + " not found in group " + name);
+    public String getDatasetNameByLinkNameOffset(Long linkNameOffset) {
+        return localHeap.parseStringAtOffset(linkNameOffset);
+//        for (Map.Entry<String, DataSetInfo> entry : dataSets.entrySet()) {
+//            if (entry.getValue().getLinkNameOffset() == linkNameOffset) {
+//                return entry.getKey();
+//            }
+//        }
+//        throw new IllegalArgumentException("Link name offset " + linkNameOffset + " not found in group " + name);
     }
 
     /**
@@ -268,25 +269,25 @@ public class HdfGroup implements Closeable {
         localHeap.writeToByteChannel(seekableByteChannel, fileAllocation);
     }
 
-    /**
-     * Retrieves all datasets in the group.
-     *
-     * @return a collection of all {@link HdfDataSet} objects in the group
-     */
-    public Collection<HdfDataSet> getDataSets() {
-        return dataSets.values().stream().map(DataSetInfo::getDataSet).collect(Collectors.toList());
-    }
+//    /**
+//     * Retrieves all datasets in the group.
+//     *
+//     * @return a collection of all {@link HdfDataSet} objects in the group
+//     */
+//    public Collection<HdfDataSet> getDataSets() {
+//        return dataSets.values().stream().map(DataSetInfo::getDataSet).collect(Collectors.toList());
+//    }
 
-    /**
-     * Finds a dataset by name.
-     *
-     * @param datasetName the name of the dataset to find
-     * @return the {@link HdfDataSet} with the specified name, or null if not found
-     */
-    public HdfDataSet findDataset(String datasetName) {
-        DataSetInfo info = dataSets.get(datasetName);
-        return info != null ? info.getDataSet() : null;
-    }
+//    /**
+//     * Finds a dataset by name.
+//     *
+//     * @param datasetName the name of the dataset to find
+//     * @return the {@link HdfDataSet} with the specified name, or null if not found
+//     */
+//    public HdfDataSet findDataset(String datasetName) {
+//        DataSetInfo info = dataSets.get(datasetName);
+//        return info != null ? info.getDataSet() : null;
+//    }
 
     /**
      * Returns a string representation of the HdfGroup.
@@ -295,18 +296,18 @@ public class HdfGroup implements Closeable {
      */
     @Override
     public String toString() {
-        String dataSetsString = dataSets.isEmpty()
-                ? ""
-                : "\r\ndataSets=[\r\n" + dataSets.entrySet().stream()
-                .map(entry -> "  " + entry.getKey() + "@" + entry.getValue().getHeaderOffset() + " " + entry.getValue().getDataSet().getDataObjectHeaderPrefix())
-                .collect(Collectors.joining(",\r\n")) + "\r\n]";
+//        String dataSetsString = dataSets.isEmpty()
+//                ? ""
+//                : "\r\ndataSets=[\r\n" + dataSets.entrySet().stream()
+//                .map(entry -> "  " + entry.getKey() + "@" + entry.getValue().getHeaderOffset() + " " + entry.getValue().getDataSet().getDataObjectHeaderPrefix())
+//                .collect(Collectors.joining(",\r\n")) + "\r\n]";
 
         return "HdfGroup{" +
                 "name='" + name + '\'' +
                 "\r\nobjectHeader=" + objectHeader +
                 "\r\nbTree=" + bTree +
                 "\r\nlocalHeap=" + localHeap +
-                dataSetsString +
+//                dataSetsString +
                 "}";
     }
 
@@ -317,8 +318,8 @@ public class HdfGroup implements Closeable {
      */
     @Override
     public void close() throws IOException {
-        for (DataSetInfo datasetInfo : dataSets.values()) {
-            datasetInfo.getDataSet().close();
-        }
+//        for (DataSetInfo datasetInfo : dataSets.values()) {
+//            datasetInfo.getDataSet().close();
+//        }
     }
 }

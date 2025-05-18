@@ -20,12 +20,11 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
     public static HdfSymbolTableEntryCacheNotUsed readFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
             HdfDataFile hdfDataFile,
-            HdfObjectHeaderPrefixV1 objectHeader
+            HdfObjectHeaderPrefixV1 objectHeader,
+            String objectName
     ) throws IOException {
         HdfReadUtils.skipBytes(fileChannel, 16); // Skip 16 bytes for scratch-pad
-//        fileChannel.position(objectHeader.getOffset().getInstance(Long.class));
-//        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, hdfDataFile);
-        return new HdfSymbolTableEntryCacheNotUsed(hdfDataFile, objectHeader, "datasetName");
+        return new HdfSymbolTableEntryCacheNotUsed(hdfDataFile, objectHeader, objectName);
     }
 
 

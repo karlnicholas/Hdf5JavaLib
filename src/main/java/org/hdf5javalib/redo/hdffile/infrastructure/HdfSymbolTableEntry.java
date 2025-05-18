@@ -67,7 +67,8 @@ public class HdfSymbolTableEntry {
      */
     public static HdfSymbolTableEntry readFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile
+            HdfDataFile hdfDataFile, 
+            HdfLocalHeap localHeap
     ) throws Exception {
         // Read the fixed-point values for linkNameOffset and objectHeaderAddress
         HdfFixedPoint linkNameOffset = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
@@ -81,11 +82,12 @@ public class HdfSymbolTableEntry {
         fileChannel.position(objectHeaderAddress.getInstance(Long.class));
         HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, hdfDataFile);
         fileChannel.position(savedPosition);
+        String objectName = localHeap == null ? "" : localHeap.parseStringAtOffset(linkNameOffset.getInstance(Long.class)).toString();
         HdfSymbolTableEntryCache cache;
         if (cacheType == 0) {
-            cache = HdfSymbolTableEntryCacheNotUsed.readFromSeekableByteChannel(fileChannel, hdfDataFile, objectHeader);
+            cache = HdfSymbolTableEntryCacheNotUsed.readFromSeekableByteChannel(fileChannel, hdfDataFile, objectHeader, objectName);
         } else if (cacheType == 1) {
-            cache = HdfSymbolTableEntryCacheGroupMetadata.readFromSeekableByteChannel(fileChannel, hdfDataFile, objectHeader);
+            cache = HdfSymbolTableEntryCacheGroupMetadata.readFromSeekableByteChannel(fileChannel, hdfDataFile, objectHeader, objectName);
         } else {
             throw new IllegalStateException("Unsupported cache type: " + cacheType);
         }
@@ -118,7 +120,7 @@ public class HdfSymbolTableEntry {
     public String toString() {
         StringBuilder sb = new StringBuilder("HdfSymbolTableEntry{");
         sb.append("linkNameOffset=").append(linkNameOffset)
-            .append(", objectHeaderOffset=").append(objectHeader)
+//            .append(", objectHeaderOffset=").append(objectHeader)
             .append(", cacheType=").append(cache);
             sb.append("}");
         return sb.toString();

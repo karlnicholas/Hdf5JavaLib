@@ -16,7 +16,7 @@ import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
  * @see HdfBTreeV1
  */
 public abstract class HdfBTreeEntry {
-    /** The key for this B-Tree entry, used for ordering. */
+    /** The key for this B-Tree entry, linkNameOffset. */
     private HdfFixedPoint key;
     /** The address of the child node (symbol table node or child B-Tree). */
     private final HdfFixedPoint childPointer;

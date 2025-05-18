@@ -1,78 +1,31 @@
-
-
-19:29:30.017 [main] DEBUG org.hdf5javalib.redo.HdfFileReader -- 
-HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=18446744073709551615, endOfFileAddress=4816, driverInformationAddress=18446744073709551615
-  rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, objectHeaderOffset=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
-    SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1
-	
-group=HdfGroup{name='groupName'
-  objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
-    SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
-      bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=18446744073709551615, rightSiblingAddress=18446744073709551615, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=2, symbolTableEntries=[
-	    HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=
-	      HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
-            DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		    DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-		    FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-		    DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-		    ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-10T16:44:29Z}
-		    NilMessage(152){}}, 
-          cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet@17f6480}}, 
-	    HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
-	     SymbolTableMessage(24){bTreeAddress=1440, localHeapAddress=4096}}, 
-		 cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1
-	       group=HdfGroup{name='groupName' 
-		     objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
-			   SymbolTableMessage(24){bTreeAddress=1440, localHeapAddress=4096}}
-			     bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=18446744073709551615, rightSiblingAddress=18446744073709551615, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="4488", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=[
-				   HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=
-				     HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
-					   DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-					   DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
-					   FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
-					   DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2052, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-					   ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-10T16:44:29Z}
-					   NilMessage(152){}}, 
-					 cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet@2d6e8792}}]
-				   }}]}
-	             localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=null, heapData={0=org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeapDataValue@1a407d53, 8=org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeapDataValue@3d8c7aca}}}}}}]
-        }}]}
-      localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=32, dataSegmentAddress=null, heapData={0=org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeapDataValue@5ebec15, 8=org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeapDataValue@21bcffb5, 24=org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeapDataValue@380fb434}}}}}}}
-
-
-
-
-
-19:29:30.072 [main] DEBUG org.hdf5javalib.redo.examples.read.HdfFixedPointRead -- rootGroup: HdfGroup{name='groupName'
+"C:\Program Files\Java\jdk-17\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2021.3.2\lib\idea_rt.jar=57047" -Dfile.encoding=UTF-8 -classpath C:\Users\karln\IdeaProjects\Hdf5JavaLib\target\classes;C:\Users\karln\.m2\repository\org\slf4j\slf4j-api\2.0.17\slf4j-api-2.0.17.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar org.hdf5javalib.redo.examples.read.HdfFixedPointRead
+11:01:59.938 [main] DEBUG org.hdf5javalib.redo.examples.read.HdfFixedPointRead -- rootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=18446744073709551615, rightSiblingAddress=18446744073709551615, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=2, symbolTableEntries=
-[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+[HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=HdfDataSet{, datasetName='Dataset0', hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}, attributes=[], dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
 DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-10T16:44:29Z}
-NilMessage(152){}}, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet@17f6480}}, HdfSymbolTableEntry{linkNameOffset=24, objectHeaderOffset=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
-SymbolTableMessage(24){bTreeAddress=1440, localHeapAddress=4096}}, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name='groupName'
+NilMessage(152){}}, closed=false}}}, HdfSymbolTableEntry{linkNameOffset=24, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name='Group1'
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=1440, localHeapAddress=4096}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=18446744073709551615, rightSiblingAddress=18446744073709551615, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="4488", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
-[HdfSymbolTableEntry{linkNameOffset=8, objectHeaderOffset=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+[HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=HdfDataSet{, datasetName='Dataset1', hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}, attributes=[], dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
 DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2052, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-10T16:44:29Z}
-NilMessage(152){}}, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet@2d6e8792}}]
+NilMessage(152){}}, closed=false}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=null, heapData={0=org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeapDataValue@1a407d53, 8=org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeapDataValue@3d8c7aca}}}}}}]
+localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue{value='', offset=0}, 8=HdfLocalHeapDataValue{value='Dataset1', offset=8}}}}}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=32, dataSegmentAddress=null, heapData={0=org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeapDataValue@5ebec15, 8=org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeapDataValue@21bcffb5, 24=org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeapDataValue@380fb434}}}}
+localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=32, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue{value='', offset=0}, 8=HdfLocalHeapDataValue{value='Dataset0', offset=8}, 24=HdfLocalHeapDataValue{value='Group1', offset=24}}}}}
 
 Process finished with exit code 0
-
-
 
 ----------------------
 

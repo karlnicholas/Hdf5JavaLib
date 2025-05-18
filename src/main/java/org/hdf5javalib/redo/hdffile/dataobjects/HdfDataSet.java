@@ -53,6 +53,17 @@ public class HdfDataSet implements Closeable {
     /** Indicates whether the dataset is closed. */
     private boolean closed;
 
+    @Override
+    public String toString() {
+        return "HdfDataSet{" +
+                ", datasetName='" + datasetName + '\'' +
+                ", hdfDatatype=" + hdfDatatype +
+                ", attributes=" + attributes +
+                ", dataObjectHeaderPrefix=" + dataObjectHeaderPrefix +
+                ", closed=" + closed +
+                '}';
+    }
+
     /**
      * Constructs an HdfDataSet for creating a new dataset.
      *

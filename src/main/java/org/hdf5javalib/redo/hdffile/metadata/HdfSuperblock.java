@@ -250,7 +250,7 @@ public class HdfSuperblock extends AllocationRecord {
                 fixedPointDatatypeForLength
         );
         hdfDataFile.setFileAllocation(new HdfFileAllocation(superblock));
-        HdfSymbolTableEntry rootGroupSymbolTableEntry = HdfSymbolTableEntry.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+        HdfSymbolTableEntry rootGroupSymbolTableEntry = HdfSymbolTableEntry.readFromSeekableByteChannel(fileChannel, hdfDataFile, null);
         superblock.setRootGroupSymbolTableEntry(rootGroupSymbolTableEntry);
         return superblock;
     }
