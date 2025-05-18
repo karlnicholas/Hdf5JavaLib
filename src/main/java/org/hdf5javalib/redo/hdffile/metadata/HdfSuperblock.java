@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.charset.StandardCharsets;
 
 import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
 

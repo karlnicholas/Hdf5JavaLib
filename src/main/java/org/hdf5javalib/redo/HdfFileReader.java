@@ -4,8 +4,6 @@ import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfSymbolTableEntryCacheGroupMetadata;
 import org.hdf5javalib.redo.hdffile.metadata.HdfSuperblock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;

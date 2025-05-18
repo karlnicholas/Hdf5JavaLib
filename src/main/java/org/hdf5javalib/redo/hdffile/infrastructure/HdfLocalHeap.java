@@ -6,7 +6,6 @@ import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.HdfFileAllocation;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.dataclass.HdfString;
-import org.hdf5javalib.redo.datatype.StringDatatype;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 
 import java.io.IOException;

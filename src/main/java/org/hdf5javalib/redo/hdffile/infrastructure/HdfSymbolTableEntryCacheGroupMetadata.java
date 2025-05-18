@@ -8,7 +8,6 @@ import org.hdf5javalib.redo.utils.HdfReadUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
-import java.util.LinkedHashMap;
 
 import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
 

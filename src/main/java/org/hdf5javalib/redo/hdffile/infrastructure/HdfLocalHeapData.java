@@ -5,7 +5,6 @@ import org.hdf5javalib.redo.AllocationType;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.HdfFileAllocation;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.redo.utils.HdfReadUtils;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
 import java.io.IOException;
@@ -198,7 +197,6 @@ public class HdfLocalHeapData extends AllocationRecord {
     }
 
     public String getStringAtOffset(HdfFixedPoint offset) {
-        HdfLocalHeapDataValue x = data.get(offset);
-        return x.getValue();
+        return data.get(offset).getValue();
     }
 }

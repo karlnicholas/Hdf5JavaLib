@@ -15,11 +15,7 @@ import org.hdf5javalib.redo.utils.HdfWriteUtils;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.hdf5javalib.redo.HdfFileAllocation.*;
 
