@@ -1,8 +1,8 @@
-"C:\Program Files\Java\jdk-17\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2021.3.2\lib\idea_rt.jar=57047" -Dfile.encoding=UTF-8 -classpath C:\Users\karln\IdeaProjects\Hdf5JavaLib\target\classes;C:\Users\karln\.m2\repository\org\slf4j\slf4j-api\2.0.17\slf4j-api-2.0.17.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar org.hdf5javalib.redo.examples.read.HdfFixedPointRead
-11:01:59.938 [main] DEBUG org.hdf5javalib.redo.examples.read.HdfFixedPointRead -- rootGroup: HdfGroup{name=''
+"C:\Program Files\Java\jdk-17\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2021.3.2\lib\idea_rt.jar=57357" -Dfile.encoding=UTF-8 -classpath C:\Users\karln\IdeaProjects\Hdf5JavaLib\target\classes;C:\Users\karln\.m2\repository\org\slf4j\slf4j-api\2.0.17\slf4j-api-2.0.17.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar org.hdf5javalib.redo.examples.read.HdfFixedPointRead
+11:30:11.274 [main] DEBUG org.hdf5javalib.redo.examples.read.HdfFixedPointRead -- rootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
-bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=18446744073709551615, rightSiblingAddress=18446744073709551615, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=2, symbolTableEntries=
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=2, symbolTableEntries=
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=HdfDataSet{, datasetName='Dataset0', hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}, attributes=[], dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
 DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
@@ -12,7 +12,7 @@ ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-10T16:44:
 NilMessage(152){}}, closed=false}}}, HdfSymbolTableEntry{linkNameOffset=24, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name='Group1'
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=1440, localHeapAddress=4096}}
-bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=18446744073709551615, rightSiblingAddress=18446744073709551615, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="4488", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
+bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="4488", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=HdfDataSet{, datasetName='Dataset1', hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}, attributes=[], dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
 DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
@@ -26,6 +26,8 @@ localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, 
 localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=32, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue{value='', offset=0}, 8=HdfLocalHeapDataValue{value='Dataset0', offset=8}, 24=HdfLocalHeapDataValue{value='Group1', offset=24}}}}}
 
 Process finished with exit code 0
+
+
 
 ----------------------
 

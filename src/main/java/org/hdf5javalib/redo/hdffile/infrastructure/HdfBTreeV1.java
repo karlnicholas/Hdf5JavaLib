@@ -245,7 +245,7 @@ public class HdfBTreeV1 extends AllocationRecord {
      * @throws IllegalArgumentException if the dataset name is null or empty
      */
     public void addDataset(
-            long linkNameOffset,
+            HdfFixedPoint linkNameOffset,
             HdfDataSet dataset,
             HdfGroup group
     ) {
@@ -267,7 +267,8 @@ public class HdfBTreeV1 extends AllocationRecord {
                     snodOffset
             );
             targetEntry = new HdfBTreeSnodEntry(
-                    HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
+//                    HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
+                    linkNameOffset,
                     snodOffset, targetSnod);
             entries.add(targetEntry);
             entriesUsed++;
@@ -277,7 +278,8 @@ public class HdfBTreeV1 extends AllocationRecord {
             // instead of the full while loop over entries:
             targetSnodIndex = binarySearchDatasetName(entries.size(), (mid)->{
                 HdfBTreeEntry entry = entries.get(mid);
-                Long maxOffset = entry.getKey().getInstance(Long.class);
+//                Long maxOffset = entry.getKey().getInstance(Long.class);
+                HdfFixedPoint maxOffset = entry.getKey();
                 String maxName = group.getDatasetNameByLinkNameOffset(maxOffset);
                 return dataset.getDatasetName().compareTo(maxName);
             });
@@ -289,7 +291,7 @@ public class HdfBTreeV1 extends AllocationRecord {
             // --- Step 2: Binary search within SNOD's symbol table ---
             insertIndex = binarySearchDatasetName(targetSnod.getSymbolTableEntries().size(), (mid)->{
                 HdfSymbolTableEntry ste = targetSnod.getSymbolTableEntries().get(mid);
-                Long offset = ste.getLinkNameOffset().getInstance(Long.class);
+                HdfFixedPoint offset = ste.getLinkNameOffset();
                 String name = group.getDatasetNameByLinkNameOffset(offset);
                 return dataset.getDatasetName().compareTo(name);
             });
@@ -299,7 +301,8 @@ public class HdfBTreeV1 extends AllocationRecord {
 //        HdfWriteUtils.hdfFixedPointFromValue(datasetObjectHeaderAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
         HdfSymbolTableEntryCacheNotUsed steCache = new HdfSymbolTableEntryCacheNotUsed(hdfDataFile, dataset.getDataObjectHeaderPrefix(), dataset.getDatasetName());
         HdfSymbolTableEntry ste = new HdfSymbolTableEntry(
-                HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
+//                HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
+                linkNameOffset,
                 steCache
         );
         targetSnod.getSymbolTableEntries().add(insertIndex, ste);
@@ -379,12 +382,12 @@ public class HdfBTreeV1 extends AllocationRecord {
 
         // Update key for target SNOD
         String targetMaxName = symbolTableEntries.stream()
-                .map(e -> group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class)))
+                .map(e -> group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset()))
                 .filter(Objects::nonNull)
                 .max(String::compareTo)
                 .orElseThrow(() -> new IllegalStateException("No valid dataset names in target SNOD"));
         long targetMaxLinkNameOffset = symbolTableEntries.stream()
-                .filter(e -> targetMaxName.equals(group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class))))
+                .filter(e -> targetMaxName.equals(group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset())))
                 .findFirst()
                 .map(e -> e.getLinkNameOffset().getInstance(Long.class))
                 .orElseThrow(() -> new IllegalStateException("Could not find linkNameOffset for max dataset name: " + targetMaxName));
@@ -392,12 +395,12 @@ public class HdfBTreeV1 extends AllocationRecord {
 
         // Create new BTreeEntry
         String newMaxName = newSnodEntries.stream()
-                .map(e -> group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class)))
+                .map(e -> group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset()))
                 .filter(Objects::nonNull)
                 .max(String::compareTo)
                 .orElseThrow(() -> new IllegalStateException("No valid dataset names in new SNOD"));
         HdfFixedPoint newKey = newSnodEntries.stream()
-                .filter(e -> newMaxName.equals(group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset().getInstance(Long.class))))
+                .filter(e -> newMaxName.equals(group.getDatasetNameByLinkNameOffset(e.getLinkNameOffset())))
                 .findFirst()
                 .map(HdfSymbolTableEntry::getLinkNameOffset)
                 .orElseThrow(() -> new IllegalStateException("Could not find linkNameOffset for max dataset name: " + newMaxName));
@@ -406,9 +409,9 @@ public class HdfBTreeV1 extends AllocationRecord {
         // Insert new BTreeEntry in sorted order
         int insertPos = targetEntryIndex + 1;
         for (int i = targetEntryIndex + 1; i < entries.size(); i++) {
-            String maxName = group.getDatasetNameByLinkNameOffset(entries.get(i).getKey().getInstance(Long.class));
+            String maxName = group.getDatasetNameByLinkNameOffset(entries.get(i).getKey());
             if (maxName == null) {
-                throw new IllegalStateException("No dataset name found for key linkNameOffset: " + entries.get(i).getKey().getInstance(Long.class));
+                throw new IllegalStateException("No dataset name found for key linkNameOffset: " + entries.get(i).getKey());
             }
             if (newMaxName.compareTo(maxName) < 0) {
                 break;

@@ -143,7 +143,7 @@ public class HdfLocalHeap extends AllocationRecord {
      * @return the offset in the heap where the string is stored
      */
 //    public int addToHeap(HdfString objectName) {
-    public Long addToHeap(String objectName) {
+    public HdfFixedPoint addToHeap(String objectName) {
         return heapData.addToHeap(objectName, hdfDataFile);
     }
 
@@ -281,7 +281,7 @@ public class HdfLocalHeap extends AllocationRecord {
      * @param offset the offset in the heap data to start parsing
      * @return the parsed HdfString, or null if no valid string is found
      */
-    public String parseStringAtOffset(Long offset) {
+    public String parseStringAtOffset(HdfFixedPoint offset) {
 //        long iOffset = offset.getInstance(Long.class);
 //        if (iOffset >= heapData.length) {
 //            return null; // End of heap data

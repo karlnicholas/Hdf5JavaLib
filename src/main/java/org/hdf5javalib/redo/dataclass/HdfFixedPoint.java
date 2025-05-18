@@ -6,6 +6,7 @@ import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -172,15 +173,7 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
             throw new NullPointerException("Cannot compare to null");
         }
         if (Objects.equals(datatype, other.datatype)) {
-            // Compare bytes from MSB to LSB, treating as unsigned
-            for (int i = bytes.length - 1; i >= 0; i--) {
-                int thisByte = bytes[i] & 0xFF;
-                int otherByte = other.bytes[i] & 0xFF;
-                if (thisByte != otherByte) {
-                    return Integer.compare(thisByte, otherByte);
-                }
-            }
-            return 0;
+            return compareToBytes(bytes, other.getBytes());
         } else {
             // Handle undefined values
             boolean thisUndefined = isUndefined();
@@ -213,17 +206,29 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
         }
     }
 
+    public static int compareToBytes(byte[] first, byte[] second) {
+        // Compare bytes from MSB to LSB, treating as unsigned
+        for (int i = first.length - 1; i >= 0; i--) {
+            int thisByte = first[i] & 0xFF;
+            int otherByte = second[i] & 0xFF;
+            if (thisByte != otherByte) {
+                return Integer.compare(thisByte, otherByte);
+            }
+        }
+        return 0;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         HdfFixedPoint that = (HdfFixedPoint) o;
-        return Objects.equals(bytes, that.bytes);
+        return Arrays.equals(bytes, that.bytes) && Objects.equals(datatype, that.datatype);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(bytes);
+        return Objects.hash(Arrays.hashCode(bytes), datatype);
     }
 
     public byte[] add(HdfFixedPoint addend) {

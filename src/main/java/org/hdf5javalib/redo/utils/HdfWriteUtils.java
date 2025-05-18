@@ -169,7 +169,7 @@ public class HdfWriteUtils {
      * @return the byte array representing the value
      * @throws IllegalArgumentException if the field type or value is unsupported
      */
-    private static byte[] toFixedPointBytes(Object value, FixedPointDatatype datatype, Class<?> fieldType) {
+    public static byte[] toFixedPointBytes(Object value, FixedPointDatatype datatype, Class<?> fieldType) {
         int size = datatype.getSize();
         ByteBuffer temp = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
 

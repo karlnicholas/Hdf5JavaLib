@@ -1,10 +1,12 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
+import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
+
 public class HdfLocalHeapDataValue {
     private final String value;
-    private final Long offset;
+    private final HdfFixedPoint offset;
 
-    public HdfLocalHeapDataValue(String value, Long offset) {
+    public HdfLocalHeapDataValue(String value, HdfFixedPoint offset) {
         this.value = value;
         this.offset = offset;
     }
@@ -13,7 +15,7 @@ public class HdfLocalHeapDataValue {
         return value;
     }
 
-    public Long getOffset() {
+    public HdfFixedPoint getOffset() {
         return offset;
     }
 

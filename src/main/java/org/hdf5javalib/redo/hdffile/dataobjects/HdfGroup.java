@@ -217,13 +217,13 @@ public class HdfGroup implements Closeable {
     public HdfDataSet createDataSet(HdfDataFile hdfDataFile, String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length));
-        Long linkNameOffset;
-        HdfFixedPoint allocationInfo;
+        HdfFixedPoint linkNameOffset;
+//        HdfFixedPoint allocationInfo;
         if (localHeap.getFreeListOffset().getInstance(Long.class) != 1) {
             linkNameOffset = localHeap.addToHeap(hdfDatasetName.toString());
-            allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
+//            allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
         } else {
-            allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
+//            allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
             linkNameOffset = localHeap.addToHeap(hdfDatasetName.toString());
         }
 
@@ -246,7 +246,7 @@ public class HdfGroup implements Closeable {
      * @return the dataset name associated with the offset
      * @throws IllegalArgumentException if the offset is not found
      */
-    public String getDatasetNameByLinkNameOffset(Long linkNameOffset) {
+    public String getDatasetNameByLinkNameOffset(HdfFixedPoint linkNameOffset) {
         return localHeap.parseStringAtOffset(linkNameOffset);
 //        for (Map.Entry<String, DataSetInfo> entry : dataSets.entrySet()) {
 //            if (entry.getValue().getLinkNameOffset() == linkNameOffset) {
