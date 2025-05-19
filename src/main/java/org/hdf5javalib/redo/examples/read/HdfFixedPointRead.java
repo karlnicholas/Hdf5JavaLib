@@ -72,8 +72,11 @@ public class HdfFixedPointRead {
     void run() throws Exception {
         Path filePath = getResourcePath("dsgroup.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-            HdfGroup rootGroup = new HdfFileReader(channel).readFile();
+            HdfFileReader hdfFileReader = new HdfFileReader(channel);
+            HdfGroup rootGroup = hdfFileReader.readFile();
             log.debug("rootGroup: {}", rootGroup);
+            hdfFileReader.getFileAllocation().printBlocks();
+
 //            for (HdfDataSet dataset : reader.getRootGroup().getDataSets()) {
 //                try (HdfDataSet ds = dataset) {
 //                    tryScalarDataSpliterator(channel, reader, ds);

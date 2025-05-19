@@ -40,8 +40,6 @@ public class HdfGroup implements Closeable {
     private final HdfBTreeV1 bTree;
     /** The local heap storing link names. */
     private final HdfLocalHeap localHeap;
-//    /** Map of dataset names to their information (dataset, header offset, link name offset). */
-//    private final Map<String, DataSetInfo> dataSets;
 
     public HdfBTreeV1 getBTree() {
         return bTree;
@@ -60,56 +58,6 @@ public class HdfGroup implements Closeable {
     }
 
     /**
-     * Inner class to hold dataset information, including the dataset, header offset,
-     * and link name offset.
-     */
-    public static class DataSetInfo {
-        private final HdfDataSet dataSet;
-        private final HdfFixedPoint headerOffset;
-        private final long linkNameOffset;
-
-        /**
-         * Constructs a DataSetInfo instance.
-         *
-         * @param dataSet        the dataset
-         * @param headerOffset   the offset of the dataset's header
-         * @param linkNameOffset the offset of the dataset's link name in the local heap
-         */
-        public DataSetInfo(HdfDataSet dataSet, HdfFixedPoint headerOffset, long linkNameOffset) {
-            this.dataSet = dataSet;
-            this.headerOffset = headerOffset;
-            this.linkNameOffset = linkNameOffset;
-        }
-
-        /**
-         * Retrieves the dataset.
-         *
-         * @return the {@link HdfDataSet} instance
-         */
-        public HdfDataSet getDataSet() {
-            return dataSet;
-        }
-
-        /**
-         * Retrieves the header offset of the dataset.
-         *
-         * @return the {@link HdfFixedPoint} representing the header offset
-         */
-        public HdfFixedPoint getHeaderOffset() {
-            return headerOffset;
-        }
-
-        /**
-         * Retrieves the link name offset in the local heap.
-         *
-         * @return the offset of the dataset's link name
-         */
-        public long getLinkNameOffset() {
-            return linkNameOffset;
-        }
-    }
-
-    /**
      * Constructs an HdfGroup for reading an existing HDF5 file.
      * <p>
      * Initializes the group with metadata and datasets parsed from the file, including
@@ -120,21 +68,18 @@ public class HdfGroup implements Closeable {
      * @param objectHeader the object header prefix containing group metadata
      * @param bTree        the B-tree managing symbol table entries
      * @param localHeap    the local heap storing link names
-//     * @param dataSets     a map of dataset names to their corresponding DataSetInfo
      */
     public HdfGroup(
             String name,
             HdfObjectHeaderPrefixV1 objectHeader,
             HdfBTreeV1 bTree,
             HdfLocalHeap localHeap,
-//            Map<String, DataSetInfo> dataSets,
             HdfDataFile hdfDataFile
     ) {
         this.name = name;
         this.objectHeader = objectHeader;
         this.bTree = bTree;
         this.localHeap = localHeap;
-//        this.dataSets = dataSets;
         this.hdfDataFile = hdfDataFile;
     }
 
@@ -158,24 +103,13 @@ public class HdfGroup implements Closeable {
         heapData[0] = (byte)0x1;
         heapData[8] = localHeapContentsSize.getInstance(Long.class).byteValue();
 
-//        new HdfLocalHeapData(name+"heap",
-//                HdfWriteUtils.hdfFixedPointFromValue(fileAllocation.getCurrentLocalHeapContentsOffset(), hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
-//                HdfWriteUtils.hdfFixedPointFromValue(localHeapContentsSize, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()))
-
         localHeap = new HdfLocalHeap(
                 localHeapContentsSize,
                 fileAllocation.getCurrentLocalHeapContentsOffset(),
                 hdfDataFile, name+"heap");
 
         localHeap.addToHeap("");
-//        localHeap.addToHeap(
-//                new HdfString(new byte[0],
-//                        new StringDatatype(
-//                                StringDatatype.createClassAndVersion(),
-//                                StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), 0))
-//        );
 
-        ;
         bTree = new HdfBTreeV1("TREE", 0, 0,
                 hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(),
                 hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(),
@@ -193,8 +127,6 @@ public class HdfGroup implements Closeable {
                 name+"header",
                 HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE+BTREE_NODE_SIZE+BTREE_STORAGE_SIZE, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset())
         );
-
-//        this.dataSets = new LinkedHashMap<>();
     }
 
     /**
@@ -217,19 +149,11 @@ public class HdfGroup implements Closeable {
 //        HdfFixedPoint allocationInfo;
         if (localHeap.getFreeListOffset().getInstance(Long.class) != 1) {
             linkNameOffset = localHeap.addToHeap(hdfDatasetName.toString());
-//            allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
         } else {
-//            allocationInfo = fileAllocation.allocateDatasetStorage(datasetName);
             linkNameOffset = localHeap.addToHeap(hdfDatasetName.toString());
         }
 
         HdfDataSet newDataSet = new HdfDataSet(hdfDataFile, datasetName, hdfDatatype, dataSpaceMessage);
-
-//        DataSetInfo dataSetInfo = new DataSetInfo(
-//                newDataSet,
-//                allocationInfo,
-//                linkNameOffset);
-//        dataSets.put(datasetName, dataSetInfo);
 
         bTree.addDataset(linkNameOffset, newDataSet, this);
         return newDataSet;
@@ -244,12 +168,6 @@ public class HdfGroup implements Closeable {
      */
     public String getDatasetNameByLinkNameOffset(HdfFixedPoint linkNameOffset) {
         return localHeap.stringAtOffset(linkNameOffset);
-//        for (Map.Entry<String, DataSetInfo> entry : dataSets.entrySet()) {
-//            if (entry.getValue().getLinkNameOffset() == linkNameOffset) {
-//                return entry.getKey();
-//            }
-//        }
-//        throw new IllegalArgumentException("Link name offset " + linkNameOffset + " not found in group " + name);
     }
 
     /**
@@ -265,26 +183,6 @@ public class HdfGroup implements Closeable {
         localHeap.writeToByteChannel(seekableByteChannel, fileAllocation);
     }
 
-//    /**
-//     * Retrieves all datasets in the group.
-//     *
-//     * @return a collection of all {@link HdfDataSet} objects in the group
-//     */
-//    public Collection<HdfDataSet> getDataSets() {
-//        return dataSets.values().stream().map(DataSetInfo::getDataSet).collect(Collectors.toList());
-//    }
-
-//    /**
-//     * Finds a dataset by name.
-//     *
-//     * @param datasetName the name of the dataset to find
-//     * @return the {@link HdfDataSet} with the specified name, or null if not found
-//     */
-//    public HdfDataSet findDataset(String datasetName) {
-//        DataSetInfo info = dataSets.get(datasetName);
-//        return info != null ? info.getDataSet() : null;
-//    }
-
     /**
      * Returns a string representation of the HdfGroup.
      *
@@ -292,18 +190,11 @@ public class HdfGroup implements Closeable {
      */
     @Override
     public String toString() {
-//        String dataSetsString = dataSets.isEmpty()
-//                ? ""
-//                : "\r\ndataSets=[\r\n" + dataSets.entrySet().stream()
-//                .map(entry -> "  " + entry.getKey() + "@" + entry.getValue().getHeaderOffset() + " " + entry.getValue().getDataSet().getDataObjectHeaderPrefix())
-//                .collect(Collectors.joining(",\r\n")) + "\r\n]";
-
         return "HdfGroup{" +
                 "name='" + name + '\'' +
                 "\r\nobjectHeader=" + objectHeader +
                 "\r\nbTree=" + bTree +
                 "\r\nlocalHeap=" + localHeap +
-//                dataSetsString +
                 "}";
     }
 
@@ -314,8 +205,5 @@ public class HdfGroup implements Closeable {
      */
     @Override
     public void close() throws IOException {
-//        for (DataSetInfo datasetInfo : dataSets.values()) {
-//            datasetInfo.getDataSet().close();
-//        }
     }
 }

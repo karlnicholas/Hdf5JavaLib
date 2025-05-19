@@ -628,68 +628,68 @@ public class HdfFileAllocation {
         }
     }
 
-//    // --- Debugging ---
-//    /**
-//     * Prints the current allocation layout with gap and overlap analysis.
-//     */
-//    public void printBlocks() {
-//        System.out.println("=== HDF File Allocation Layout ===");
-//        System.out.println("Metadata End of File Offset: " + metadataNextAvailableOffset);
-//        System.out.println("Data End of File Offset: " + dataNextAvailableOffset);
-//        System.out.println("Current End of File Offset: " + getEndOfFileOffset());
-//        System.out.println("----------------------------------");
-//
-//        System.out.println("Offset (Dec) | Offset (Hex) | Size     | Type       | Name");
-//        List<AllocationRecord> sortedRecords = new ArrayList<>(allocationRecords);
-//        sortedRecords.sort(Comparator.comparingLong(AllocationRecord::getOffset));
-//        for (AllocationRecord block : sortedRecords) {
-//            String hexOffset = String.format("0x%08X", block.getOffset());
-//            System.out.printf("%-12d | %-12s | %-8d | %-10s | %s%n",
-//                    block.getOffset(), hexOffset, block.getSize(), block.getType().name(), block.getName());
-//        }
-//
-//        // Detect gaps
-//        System.out.println("--- Gap Analysis ---");
-//        long lastEnd = 0;
-//        for (AllocationRecord record : sortedRecords) {
-//            long start = record.getOffset();
-//            if (start > lastEnd) {
-//                long gapSize = start - lastEnd;
-//                System.out.printf("Gap detected: Offset %d to %d, Size %d%n", lastEnd, start, gapSize);
-//            }
-//            lastEnd = Math.max(lastEnd, start + record.getSize());
-//        }
-//
-//        // Check for overlaps
-//        System.out.println("--- Overlap Check ---");
-//        boolean hasOverlap = false;
-//        for (int i = 0; i < sortedRecords.size(); i++) {
-//            AllocationRecord record1 = sortedRecords.get(i);
-//            long start1 = record1.getOffset();
-//            long end1 = start1 + record1.getSize() - 1;
-//
-//            for (int j = i + 1; j < sortedRecords.size(); j++) {
-//                AllocationRecord record2 = sortedRecords.get(j);
-//                long start2 = record2.getOffset();
-//                long end2 = start2 + record2.getSize() - 1;
-//
-//                if (start1 <= end2 && start2 <= end1) {
-//                    hasOverlap = true;
-//                    System.out.printf("Overlap detected between:%n");
-//                    System.out.printf("  %s (Offset: %d, Size: %d, End: %d)%n",
-//                            record1.getName(), start1, record1.getSize(), end1);
-//                    System.out.printf("  %s (Offset: %d, Size: %d, End: %d)%n",
-//                            record2.getName(), start2, record2.getSize(), end2);
-//                }
-//            }
-//        }
-//        if (!hasOverlap) {
-//            System.out.println("No overlaps detected.");
-//        }
-//
-//        System.out.println("==================================");
-//    }
-//
+    // --- Debugging ---
+    /**
+     * Prints the current allocation layout with gap and overlap analysis.
+     */
+    public void printBlocks() {
+        System.out.println("=== HDF File Allocation Layout ===");
+        System.out.println("Metadata End of File Offset: " + metadataNextAvailableOffset);
+        System.out.println("Data End of File Offset: " + dataNextAvailableOffset);
+        System.out.println("Current End of File Offset: " + getEndOfFileOffset());
+        System.out.println("----------------------------------");
+
+        System.out.println("Offset (Dec) | Offset (Hex) | Size     | Type       | Name");
+        List<AllocationRecord> sortedRecords = new ArrayList<>(allocationRecords);
+        sortedRecords.sort(Comparator.comparingLong(ar->ar.getOffset().getInstance(Long.class)));
+        for (AllocationRecord block : sortedRecords) {
+            String hexOffset = String.format("0x%08X", block.getOffset());
+            System.out.printf("%-12d | %-12s | %-8d | %-10s | %s%n",
+                    block.getOffset(), hexOffset, block.getSize(), block.getType().name(), block.getName());
+        }
+
+        // Detect gaps
+        System.out.println("--- Gap Analysis ---");
+        long lastEnd = 0;
+        for (AllocationRecord record : sortedRecords) {
+            long start = record.getOffset().getInstance(Long.class);
+            if (start > lastEnd) {
+                long gapSize = start - lastEnd;
+                System.out.printf("Gap detected: Offset %d to %d, Size %d%n", lastEnd, start, gapSize);
+            }
+            lastEnd = Math.max(lastEnd, start + record.getSize().getInstance(Long.class));
+        }
+
+        // Check for overlaps
+        System.out.println("--- Overlap Check ---");
+        boolean hasOverlap = false;
+        for (int i = 0; i < sortedRecords.size(); i++) {
+            AllocationRecord record1 = sortedRecords.get(i);
+            long start1 = record1.getOffset().getInstance(Long.class);;
+            long end1 = start1 + record1.getSize().getInstance(Long.class) - 1;
+
+            for (int j = i + 1; j < sortedRecords.size(); j++) {
+                AllocationRecord record2 = sortedRecords.get(j);
+                long start2 = record2.getOffset().getInstance(Long.class);
+                long end2 = start2 + record2.getSize().getInstance(Long.class) - 1;
+
+                if (start1 <= end2 && start2 <= end1) {
+                    hasOverlap = true;
+                    System.out.printf("Overlap detected between:%n");
+                    System.out.printf("  %s (Offset: %d, Size: %d, End: %d)%n",
+                            record1.getName(), start1, record1.getSize(), end1);
+                    System.out.printf("  %s (Offset: %d, Size: %d, End: %d)%n",
+                            record2.getName(), start2, record2.getSize(), end2);
+                }
+            }
+        }
+        if (!hasOverlap) {
+            System.out.println("No overlaps detected.");
+        }
+
+        System.out.println("==================================");
+    }
+
 //    /**
 //     * Prints the allocation layout sorted by offset with overlap analysis.
 //     */
@@ -739,16 +739,16 @@ public class HdfFileAllocation {
 //        System.out.println("==================================");
 //    }
 //
-//    // --- Getters ---
-//    /**
-//     * Retrieves the end-of-file offset.
-//     *
-//     * @return the maximum of metadata and data next available offsets
-//     */
-//    public long getEndOfFileOffset() {
-//        return Math.max(metadataNextAvailableOffset, dataNextAvailableOffset);
-//    }
-//
+    // --- Getters ---
+    /**
+     * Retrieves the end-of-file offset.
+     *
+     * @return the maximum of metadata and data next available offsets
+     */
+    public HdfFixedPoint getEndOfFileOffset() {
+        return metadataNextAvailableOffset.compareTo(dataNextAvailableOffset) > 0 ? metadataNextAvailableOffset: dataNextAvailableOffset;
+    }
+
 //    /**
 //     * Retrieves the size of the superblock.
 //     *

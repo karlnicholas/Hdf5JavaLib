@@ -29,7 +29,6 @@ public class HdfSymbolTableEntry {
     /** The offset of the link name in the local heap. */
     private final HdfFixedPoint linkNameOffset;
     /** The offset of the object's header in the file. */
-//    private final HdfFixedPoint objectHeaderOffset;
     private final HdfObjectHeaderPrefixV1 objectHeader;
     private final HdfSymbolTableEntryCache cache;
 
@@ -44,18 +43,6 @@ public class HdfSymbolTableEntry {
         this.objectHeader = cache.getObjectHeader();
         this.cache = cache;
     }
-
-//    /**
-//     * Constructs an HdfSymbolTableEntry for cache type 0 with basic fields only.
-//     *
-//     * @param linkNameOffset      the offset of the link name in the local heap
-//     * @param objectHeader  the offset of the object's header in the file
-//     */
-//    public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfObjectHeaderPrefixV1 objectHeader) {
-//        this.linkNameOffset = linkNameOffset;
-//        this.objectHeader = objectHeader;
-//        this.cache = new HdfSymbolTableEntryCacheNotUsed(null, objectHeader, "datasetName");
-//    }
 
     /**
      * Reads an HdfSymbolTableEntry from a file channel.
@@ -82,7 +69,7 @@ public class HdfSymbolTableEntry {
         fileChannel.position(objectHeaderAddress.getInstance(Long.class));
         HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, hdfDataFile);
         fileChannel.position(savedPosition);
-        String objectName = localHeap == null ? "" : localHeap.stringAtOffset(linkNameOffset).toString();
+        String objectName = localHeap == null ? "" : localHeap.stringAtOffset(linkNameOffset);
         HdfSymbolTableEntryCache cache;
         if (cacheType == 0) {
             cache = HdfSymbolTableEntryCacheNotUsed.readFromSeekableByteChannel(fileChannel, hdfDataFile, objectHeader, objectName);
@@ -118,12 +105,9 @@ public class HdfSymbolTableEntry {
      */
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("HdfSymbolTableEntry{");
-        sb.append("linkNameOffset=").append(linkNameOffset)
-//            .append(", objectHeaderOffset=").append(objectHeader)
-            .append(", cacheType=").append(cache);
-            sb.append("}");
-        return sb.toString();
+        return "HdfSymbolTableEntry{" + "linkNameOffset=" + linkNameOffset +
+                ", cacheType=" + cache +
+                "}";
     }
 
     public HdfFixedPoint getLinkNameOffset() {

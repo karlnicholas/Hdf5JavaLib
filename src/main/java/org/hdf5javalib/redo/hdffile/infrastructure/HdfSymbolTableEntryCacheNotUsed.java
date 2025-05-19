@@ -41,11 +41,9 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("HdfSymbolTableEntryCacheNotUsed{");
-        sb.append("cacheType=").append(cacheType);
-        sb.append(", dataSet=").append(dataSet);
-        sb.append("}");
-        return sb.toString();
+        return "HdfSymbolTableEntryCacheNotUsed{" + "cacheType=" + cacheType +
+                ", dataSet=" + dataSet +
+                "}";
     }
 
     @Override

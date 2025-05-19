@@ -136,7 +136,6 @@ public class HdfBTreeV1 extends AllocationRecord {
     public static HdfBTreeV1 readFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
             HdfDataFile hdfDataFile,
-//            String groupName,
             HdfLocalHeap localHeap
     ) throws Exception {
         long initialAddress = fileChannel.position();
@@ -267,7 +266,6 @@ public class HdfBTreeV1 extends AllocationRecord {
                     snodOffset
             );
             targetEntry = new HdfBTreeSnodEntry(
-//                    HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
                     linkNameOffset,
                     snodOffset, targetSnod);
             entries.add(targetEntry);
@@ -298,10 +296,8 @@ public class HdfBTreeV1 extends AllocationRecord {
         }
 
         // --- Step 3: Insert new dataset ---
-//        HdfWriteUtils.hdfFixedPointFromValue(datasetObjectHeaderAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
         HdfSymbolTableEntryCacheNotUsed steCache = new HdfSymbolTableEntryCacheNotUsed(hdfDataFile, dataset.getDataObjectHeaderPrefix(), dataset.getDatasetName());
         HdfSymbolTableEntry ste = new HdfSymbolTableEntry(
-//                HdfWriteUtils.hdfFixedPointFromValue(linkNameOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
                 linkNameOffset,
                 steCache
         );

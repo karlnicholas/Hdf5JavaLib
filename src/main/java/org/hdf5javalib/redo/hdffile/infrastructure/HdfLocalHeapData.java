@@ -20,7 +20,7 @@ public class HdfLocalHeapData extends AllocationRecord {
     /** The size of the heap's data segment. */
     private HdfFixedPoint heapContentsSize;
     /** The offset to the free list within the heap. */
-    private HdfFixedPoint freeListOffset;
+    private final HdfFixedPoint freeListOffset;
 
     private final Map<HdfFixedPoint, HdfLocalHeapDataValue> data;
 
@@ -66,10 +66,6 @@ public class HdfLocalHeapData extends AllocationRecord {
     public HdfFixedPoint addToHeap(String objectName, HdfDataFile hdfDataFile) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         byte[] objectNameBytes = objectName.getBytes(StandardCharsets.US_ASCII);
-//        HdfFixedPoint iFreeListOffset = this.freeListOffset.getInstance(Long.class);
-//
-//        HdfFixedPoint heapSize = heapContentsSize.getInstance(Long.class);
-
         // Calculate string size and alignment
         int stringSize = objectNameBytes.length + 1; // Include null terminator
         int alignedStringSize = (stringSize + 7) & ~7; // Pad to 8-byte boundary
@@ -84,25 +80,10 @@ public class HdfLocalHeapData extends AllocationRecord {
         // Check if there's enough space for the string
         if (HdfFixedPoint.compareToBytes(HdfFixedPoint.addBytes(currentOffset.getBytes(), requiredSpace), heapContentsSize.getBytes()) > 0) {
             // Resize heap
-            HdfFixedPoint newSize = fileAllocation.expandLocalHeapContents();
-//            byte[] newHeapData = new byte[(int) newSize];
-//            System.arraycopy(heapData, 0, newHeapData, 0, heapData.getSize().getInstance(Integer.class)); // Copy existing data
-            this.heapContentsSize = newSize;
+            this.heapContentsSize = fileAllocation.expandLocalHeapContents();
             this.heapContentsOffset = fileAllocation.getCurrentLocalHeapContentsOffset();
-//            heapData = new HdfLocalHeapData(heapData.getName(), heapContentsOffset, heapContentsSize, heapData);
-//            heapSize = (int) newSize;
         }
 
-        // Check if there's enough space for a free block after the string
-//        boolean includeFreeBlock = (heapSize - (currentOffset + alignedStringSize)) >= 16;
-//        if (includeFreeBlock) {
-//            requiredSpace += 16; // Add 16 bytes for free block
-//        }
-
-        // Write string
-//        System.arraycopy(objectNameBytes, 0, heapData, currentOffset, objectNameBytes.length);
-//        heapData[currentOffset + objectNameBytes.length] = 0; // Null terminator
-//        Arrays.fill(heapData, currentOffset + stringSize, currentOffset + alignedStringSize, (byte) 0); // Padding
         data.put(currentOffset, new HdfLocalHeapDataValue(objectName, currentOffset));
 
         // Update offset
@@ -155,9 +136,6 @@ public class HdfLocalHeapData extends AllocationRecord {
             data.put(hdfOffset, value);
             // 8 to add 1 for the 0 terminator.
             iOffset = (iOffset + 8) & ~7;
-//            if (iOffset == 0) {
-//                iOffset = 8;
-//            }
             buffer.position((int) iOffset);
         }
 
@@ -197,6 +175,6 @@ public class HdfLocalHeapData extends AllocationRecord {
     }
 
     public String getStringAtOffset(HdfFixedPoint offset) {
-        return data.get(offset).getValue();
+        return data.get(offset).value();
     }
 }

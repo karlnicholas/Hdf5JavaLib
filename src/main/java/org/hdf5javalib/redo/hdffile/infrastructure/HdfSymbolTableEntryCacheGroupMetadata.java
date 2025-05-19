@@ -60,10 +60,9 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("HdfSymbolTableEntryCacheGroupMetadata{");
-        sb.append("cacheType=").append(cacheType);
-        sb.append("group=").append(group);
-        return sb.append("}").toString();
+        return "HdfSymbolTableEntryCacheGroupMetadata{" + "cacheType=" + cacheType +
+                "group=" + group +
+                "}";
     }
 
     @Override

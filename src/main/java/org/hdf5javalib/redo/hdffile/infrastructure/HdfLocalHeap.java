@@ -37,50 +37,10 @@ public class HdfLocalHeap extends AllocationRecord {
     /** The HDF5 file context. */
     private final HdfDataFile hdfDataFile;
     /** The raw byte array containing the heap's data. */
-    private HdfLocalHeapData heapData;
+    private final HdfLocalHeapData heapData;
 
     public HdfFixedPoint getFreeListOffset() {
         return heapData.getFreeListOffset();
-    }
-
-    /**
-     * A utility class to hold a pair of values.
-     *
-     * @param <T> the type of the first value
-     * @param <U> the type of the second value
-     */
-    public static class Pair<T, U> {
-        private final T first;
-        private final U second;
-
-        /**
-         * Constructs a Pair with the specified values.
-         *
-         * @param first  the first value
-         * @param second the second value
-         */
-        public Pair(T first, U second) {
-            this.first = first;
-            this.second = second;
-        }
-
-        /**
-         * Returns the first value of the pair.
-         *
-         * @return the first value
-         */
-        public T getFirst() {
-            return first;
-        }
-
-        /**
-         * Returns the second value of the pair.
-         *
-         * @return the second value
-         */
-        public U getSecond() {
-            return second;
-        }
     }
 
     /**
@@ -101,9 +61,6 @@ public class HdfLocalHeap extends AllocationRecord {
         super(AllocationType.LOCAL_HEAP_HEADER, name, heapContentsOffset, heapContentsSize);
         this.signature = signature;
         this.version = version;
-//        this.heapContentsSize = heapContentsSize;
-//        this.freeListOffset = freeListOffset;
-//        this.heapContentsOffset = heapContentsOffset;
         this.hdfDataFile = hdfDataFile;
         this.heapData = heapData;
     }
@@ -123,16 +80,9 @@ public class HdfLocalHeap extends AllocationRecord {
         super(AllocationType.LOCAL_HEAP_HEADER, name, heapContentsOffset, heapContentsSize);
         this.signature = "HEAP";
         this.version = 0;
-//        this.heapContentsSize = heapContentsSize;
-//        this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
-//        this.heapContentsOffset = heapContentsOffset;
         this.hdfDataFile = hdfDataFile;
-//        long localHeapContentsSize = hdfDataFile.getFileAllocation().getCurrentLocalHeapContentsSize();
         heapData = new HdfLocalHeapData(heapContentsOffset, heapContentsSize, hdfDataFile);
         addToHeap("");
-//        heapData[0] = (byte)0x1;
-//        heapData[8] = (byte)localHeapContentsSize;
-
     }
 
     /**
@@ -141,7 +91,6 @@ public class HdfLocalHeap extends AllocationRecord {
      * @param objectName the string to add to the heap
      * @return the offset in the heap where the string is stored
      */
-//    public int addToHeap(HdfString objectName) {
     public HdfFixedPoint addToHeap(String objectName) {
         return heapData.addToHeap(objectName, hdfDataFile);
     }
@@ -180,7 +129,6 @@ public class HdfLocalHeap extends AllocationRecord {
             throw new IllegalArgumentException("Reserved bytes in heap header must be zero.");
         }
 
-//        HdfLocalHeapData hdfLocalHeapData = HdfLocalHeapData.readFromSeekableByteChannel(fileChannel, hdfDataFile);
         HdfFixedPoint dataSegmentSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         HdfFixedPoint freeListOffset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         HdfFixedPoint dataSegmentAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
@@ -234,10 +182,6 @@ public class HdfLocalHeap extends AllocationRecord {
         return "HdfLocalHeap{" +
                 "signature='" + signature + '\'' +
                 ", version=" + version +
-//                ", dataSegmentSize=" + heapContentsSize +
-//                ", freeListOffset=" + freeListOffset +
-//                ", dataSegmentAddress=" + heapContentsOffset +
-//                ", heapDataSize=" + heapData.length +
                 ", heapData=" + heapData +'}';
     }
 
@@ -266,12 +210,6 @@ public class HdfLocalHeap extends AllocationRecord {
         }
 
         heapData.writeToByteChannel(seekableByteChannel, hdfDataFile);
-//
-//        buffer = ByteBuffer.wrap(heapData);
-//        seekableByteChannel.position(hdfDataFile.getFileAllocation().getCurrentLocalHeapContentsOffset());
-//        while (buffer.hasRemaining()) {
-//            seekableByteChannel.write(buffer);
-//        }
     }
 
     /**
@@ -281,25 +219,6 @@ public class HdfLocalHeap extends AllocationRecord {
      * @return the parsed HdfString, or null if no valid string is found
      */
     public String stringAtOffset(HdfFixedPoint offset) {
-//        long iOffset = offset.getInstance(Long.class);
-//        if (iOffset >= heapData.length) {
-//            return null; // End of heap data
-//        }
-//
-//        long start = iOffset;
-//
-//        // Find the null terminator
-//        while (iOffset < heapData.length && heapData[(int) iOffset] != 0) {
-//            iOffset++;
-//        }
-//        ;
-        // Extract the string
         return heapData.getStringAtOffset(offset);
-//        return new HdfString(value,
-//            new StringDatatype(
-//                    StringDatatype.createClassAndVersion(),
-//                    StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII),
-//                    value.length())
-//        );
     }
 }

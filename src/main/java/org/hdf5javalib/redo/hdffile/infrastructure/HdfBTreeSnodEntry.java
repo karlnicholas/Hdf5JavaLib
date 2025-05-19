@@ -43,11 +43,10 @@ public class HdfBTreeSnodEntry extends HdfBTreeEntry {
      */
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("HdfBTreeEntry{");
-        sb.append(super.toString());
-        sb.append(", payload(SNOD)=").append(symbolTableNode);
-        sb.append('}');
-        return sb.toString();
+        String sb = "HdfBTreeEntry{" + super.toString() +
+                ", payload(SNOD)=" + symbolTableNode +
+                '}';
+        return sb;
     }
 
     public HdfGroupSymbolTableNode getSymbolTableNode() {

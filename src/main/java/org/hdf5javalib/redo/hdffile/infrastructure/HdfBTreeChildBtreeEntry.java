@@ -16,24 +16,8 @@ import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
  * @see HdfBTreeV1
  */
 public class HdfBTreeChildBtreeEntry extends HdfBTreeEntry{
-
-// OR THAT
     /** The child B-Tree payload, non-null for internal entries (nodeLevel > 0). */
     private final HdfBTreeV1 childBTree;
-
-//    /**
-//     * Constructs an HdfBTreeEntry for a leaf node, pointing to a symbol table node.
-//     *
-//     * @param key             the key for the entry
-//     * @param childPointer     the address of the symbol table node
-//     * @param symbolTableNode the symbol table node payload
-//     */
-//    public HdfBTreeChildBtreeEntry(HdfFixedPoint key, HdfFixedPoint childPointer, HdfGroupSymbolTableNode symbolTableNode) {
-//        this.key = key;
-//        this.childPointer = childPointer;
-//        this.symbolTableNode = symbolTableNode;
-//        this.childBTree = null;
-//    }
 
     /**
      * Constructs an HdfBTreeEntry for an internal node, pointing to a child B-Tree.
@@ -47,24 +31,6 @@ public class HdfBTreeChildBtreeEntry extends HdfBTreeEntry{
         this.childBTree = childBTree;
     }
 
-//    /**
-//     * Checks if this is a leaf entry (contains a symbol table node).
-//     *
-//     * @return true if the entry is a leaf entry, false otherwise
-//     */
-//    public boolean isLeafEntry() {
-//        return this.symbolTableNode != null;
-//    }
-//
-//    /**
-//     * Checks if this is an internal entry (contains a child B-Tree).
-//     *
-//     * @return true if the entry is an internal entry, false otherwise
-//     */
-//    public boolean isInternalEntry() {
-//        return this.childBTree != null;
-//    }
-
     /**
      * Returns a string representation of the HdfBTreeEntry.
      * <p>
@@ -76,38 +42,12 @@ public class HdfBTreeChildBtreeEntry extends HdfBTreeEntry{
      */
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("HdfBTreeEntry{");
-        sb.append(super.toString());
 
-        // Append the payload by calling its toString() method
-//        if (isLeafEntry()) {
-//            sb.append(", payload(SNOD)=").append(symbolTableNode);
-//        } else if (isInternalEntry()) {
-//            sb.append(", payload(ChildBTree)=").append(childBTree);
-//        } else {
-//            sb.append(", payload=<empty/unknown>");
-//        }
-        sb.append(", payload(ChildBTree)=").append(childBTree);
-
-        sb.append('}');
-        return sb.toString();
+        String sb = "HdfBTreeEntry{" + super.toString() +
+                ", payload(ChildBTree)=" + childBTree +
+                '}';
+        return sb;
     }
-
-//    public void setKey(HdfFixedPoint key) {
-//        this.key = key;
-//    }
-//
-//    public HdfFixedPoint getKey() {
-//        return key;
-//    }
-//
-//    public HdfFixedPoint getChildPointer() {
-//        return childPointer;
-//    }
-//
-//    public HdfGroupSymbolTableNode getSymbolTableNode() {
-//        return symbolTableNode;
-//    }
 
     public HdfBTreeV1 getChildBTree() {
         return childBTree;
