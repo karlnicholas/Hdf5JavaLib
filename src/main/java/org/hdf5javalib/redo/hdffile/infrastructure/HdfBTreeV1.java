@@ -138,10 +138,11 @@ public class HdfBTreeV1 extends AllocationRecord {
     public static HdfBTreeV1 readFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
             HdfDataFile hdfDataFile,
-            HdfLocalHeap localHeap
+            HdfLocalHeap localHeap,
+            String objectName
     ) throws Exception {
         long initialAddress = fileChannel.position();
-        return readFromSeekableByteChannelRecursive(fileChannel, initialAddress, hdfDataFile, localHeap, new LinkedHashMap<>());
+        return readFromSeekableByteChannelRecursive(fileChannel, initialAddress, hdfDataFile, localHeap, objectName, new LinkedHashMap<>());
     }
 
     /**
@@ -158,7 +159,7 @@ public class HdfBTreeV1 extends AllocationRecord {
                                                            long nodeAddress,
                                                            HdfDataFile hdfDataFile,
                                                            HdfLocalHeap localHeap,
-//                                                           String groupName,
+                                                           String objectName,
                                                            Map<Long, HdfBTreeV1> visitedNodes
     ) throws Exception {
         if (visitedNodes.containsKey(nodeAddress)) {
@@ -198,7 +199,7 @@ public class HdfBTreeV1 extends AllocationRecord {
         List<HdfBTreeEntry> entries = new ArrayList<>(entriesUsed);
 
         HdfBTreeV1 currentNode = new HdfBTreeV1(signature, nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries, hdfDataFile,
-                "Btree for ", HdfWriteUtils.hdfFixedPointFromValue(nodeAddress, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
+                objectName+":Btree", HdfWriteUtils.hdfFixedPointFromValue(nodeAddress, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
         visitedNodes.put(nodeAddress, currentNode);
 
         for (int i = 0; i < entriesUsed; i++) {
@@ -227,7 +228,7 @@ public class HdfBTreeV1 extends AllocationRecord {
 //            }
 
             fileChannel.position(childAddress);
-            HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap);
+            HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap, objectName);
             HdfBTreeEntry entry = new HdfBTreeSnodEntry(key, childPointer, snod);
 
             fileChannel.position(filePosAfterEntriesBlock);

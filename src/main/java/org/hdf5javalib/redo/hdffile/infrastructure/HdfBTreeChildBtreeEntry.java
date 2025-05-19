@@ -43,10 +43,9 @@ public class HdfBTreeChildBtreeEntry extends HdfBTreeEntry{
     @Override
     public String toString() {
 
-        String sb = "HdfBTreeEntry{" + super.toString() +
+        return "HdfBTreeEntry{" + super.toString() +
                 ", payload(ChildBTree)=" + childBTree +
                 '}';
-        return sb;
     }
 
     public HdfBTreeV1 getChildBTree() {

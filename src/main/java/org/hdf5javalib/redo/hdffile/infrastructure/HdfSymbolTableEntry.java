@@ -67,9 +67,13 @@ public class HdfSymbolTableEntry {
 
         long savedPosition = fileChannel.position();
         fileChannel.position(objectHeaderAddress.getInstance(Long.class));
-        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, hdfDataFile);
-        fileChannel.position(savedPosition);
         String objectName = localHeap == null ? "" : localHeap.stringAtOffset(linkNameOffset);
+        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(
+                fileChannel,
+                hdfDataFile,
+                objectName
+        );
+        fileChannel.position(savedPosition);
         HdfSymbolTableEntryCache cache;
         if (cacheType == 0) {
             cache = HdfSymbolTableEntryCacheNotUsed.readFromSeekableByteChannel(fileChannel, hdfDataFile, objectHeader, objectName);

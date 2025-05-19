@@ -114,7 +114,8 @@ public class HdfLocalHeap extends AllocationRecord {
      */
     public static HdfLocalHeap readFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile
+            HdfDataFile hdfDataFile,
+            String objectName
     ) throws IOException {
         long heapOffset = fileChannel.position();
         ByteBuffer buffer = ByteBuffer.allocate(32);
@@ -143,7 +144,7 @@ public class HdfLocalHeap extends AllocationRecord {
         HdfFixedPoint dataSegmentAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
 
         HdfLocalHeapData hdfLocalHeapData = HdfLocalHeapData.readFromSeekableByteChannel(
-                fileChannel, dataSegmentSize, freeListOffset, dataSegmentAddress, hdfDataFile);
+                fileChannel, dataSegmentSize, freeListOffset, dataSegmentAddress, hdfDataFile, objectName);
 
         //
 //        fileChannel.position(dataSegmentAddress.getInstance(Long.class));
@@ -163,7 +164,7 @@ public class HdfLocalHeap extends AllocationRecord {
                 dataSegmentSize,
                 dataSegmentAddress,
                 hdfDataFile, hdfLocalHeapData,
-                ":local heap", heapOffset);
+                objectName+":Local Heap Header", heapOffset);
     }
 
     /**

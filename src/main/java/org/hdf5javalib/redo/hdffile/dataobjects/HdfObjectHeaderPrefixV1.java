@@ -79,7 +79,8 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
      */
     public static HdfObjectHeaderPrefixV1 readFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile
+            HdfDataFile hdfDataFile,
+            String objectName
     ) throws IOException {
         long offset = fileChannel.position();
         ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
@@ -119,7 +120,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
 
         // Create the instance
         return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages,
-                hdfDataFile, "Group Object Header",
+                hdfDataFile, objectName+":Object Header",
                 HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
     }
 

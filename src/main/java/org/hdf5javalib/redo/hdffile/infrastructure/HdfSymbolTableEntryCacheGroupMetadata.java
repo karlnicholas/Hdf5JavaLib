@@ -38,10 +38,10 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
         long savedPosition = fileChannel.position();
 
         fileChannel.position(localHeapAddress.getInstance(Long.class));
-        HdfLocalHeap localHeap = HdfLocalHeap.readFromSeekableByteChannel(fileChannel, hdfDataFile);
+        HdfLocalHeap localHeap = HdfLocalHeap.readFromSeekableByteChannel(fileChannel, hdfDataFile, objectName);
 
         fileChannel.position(bTreeAddress.getInstance(Long.class));
-        HdfBTreeV1 bTreeV1 = HdfBTreeV1.readFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap);
+        HdfBTreeV1 bTreeV1 = HdfBTreeV1.readFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap, objectName);
         fileChannel.position(savedPosition);
         return new HdfSymbolTableEntryCacheGroupMetadata(objectName, objectHeader, bTreeV1, localHeap, hdfDataFile);
     }

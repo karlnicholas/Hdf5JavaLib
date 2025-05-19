@@ -64,7 +64,12 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
      * @throws IOException if an I/O error occurs or the SNOD signature is invalid
      * @throws IllegalArgumentException if the SNOD signature is invalid
      */
-    public static HdfGroupSymbolTableNode readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfLocalHeap localHeap) throws Exception {
+    public static HdfGroupSymbolTableNode readFromSeekableByteChannel(
+            SeekableByteChannel fileChannel,
+            HdfDataFile hdfDataFile,
+            HdfLocalHeap localHeap,
+            String objectName
+    ) throws Exception {
         long offset = fileChannel.position();
         ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
@@ -102,7 +107,7 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
                 version,
                 symbolTableEntries,
                 hdfDataFile,
-                "SNOD Block " + (hdfDataFile.getFileAllocation().getSnodAllocationCount()),
+                objectName+":Snod",
                 HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()));
     }
 
