@@ -127,6 +127,9 @@ public class HdfLocalHeapData extends AllocationRecord {
         fileChannel.read(buffer);
         buffer.flip();
         long iFreeListOffset = freeListOffset.getInstance(Long.class);
+        if ( iFreeListOffset == 1 ) {
+            iFreeListOffset = dataSegmentSize.getInstance(Long.class);
+        }
         long iOffset = 0;
         while ( buffer.position() < iFreeListOffset ) {
             long iStart = iOffset;

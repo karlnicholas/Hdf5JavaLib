@@ -70,7 +70,7 @@ public class HdfFixedPointRead {
      * @throws IOException if an I/O error occurs
      */
     void run() throws Exception {
-        Path filePath = getResourcePath("compound_example.h5");
+        Path filePath = getResourcePath("vlen_types_example.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader hdfFileReader = new HdfFileReader(channel);
             HdfGroup rootGroup = hdfFileReader.readFile();

@@ -73,43 +73,6 @@ public class HdfFileReader implements HdfDataFile {
      */
     public HdfGroup readFile() throws Exception {
         HdfSuperblock superblock = HdfSuperblock.readFromSeekableByteChannel(fileChannel, this);
-        // Initialize fixed structures
-//        superblockRecord = new AllocationRecord(AllocationType.SUPERBLOCK, "Superblock", SUPERBLOCK_OFFSET, SUPERBLOCK_SIZE);
-//        objectHeaderPrefixRecord = new AllocationRecord(AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE);
-//        btreeRecord = new AllocationRecord(AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", objectHeaderPrefixRecord.getOffset() + OBJECT_HEADER_PREFIX_SIZE, BTREE_NODE_SIZE + BTREE_STORAGE_SIZE);
-//        localHeapHeaderRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", btreeRecord.getOffset() + (BTREE_NODE_SIZE + BTREE_STORAGE_SIZE), LOCAL_HEAP_HEADER_SIZE);
-
-//        long objectHeaderAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeader().getOffset().getInstance(Long.class);
-//        fileChannel.position(objectHeaderAddress);
-//        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, this);
-////        AllocationType.GROUP_OBJECT_HEADER, "Group Object Header", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE
-//
-//        long localHeapAddress = superblock.getRootGroupSymbolTableEntry().getObjectHeader().getOffset().getInstance(Long.class);
-//        fileChannel.position(localHeapAddress);
-//        HdfLocalHeap localHeap = HdfLocalHeap.readFromSeekableByteChannel(fileChannel, this);
-//
-//        long bTreeAddress = ((HdfSymbolTableEntryCacheGroupMetadata)superblock.getRootGroupSymbolTableEntry().getCache()).getBtree().getOffset().getInstance(Long.class);
-//        fileChannel.position(bTreeAddress);
-//        HdfBTreeV1 bTree = HdfBTreeV1.readFromSeekableByteChannel(fileChannel, this);
-//
-//        Map<String, HdfGroup.DataSetInfo> datasetMap = collectDatasetsMap(fileChannel, bTree, localHeap);
-//
-//        rootGroup = new HdfGroup(
-//                "",
-//                objectHeader,
-//                bTree,
-//                localHeap,
-//                datasetMap,
-//                this
-//        );
-//
-//        log.debug("{}", rootGroup);
-//        log.debug("Parsing complete. NEXT: {}", fileChannel.position());
-//
-//        getFileAllocation().initializeForReading(
-//                superblock, objectHeader, bTree, localHeap, localHeap.getLocalHeapData()
-//        );
-//
         return ((HdfSymbolTableEntryCacheGroupMetadata)superblock.getRootGroupSymbolTableEntry().getCache()).getGroup();
     }
 
