@@ -243,7 +243,7 @@ public class HdfGroup implements Closeable {
      * @throws IllegalArgumentException if the offset is not found
      */
     public String getDatasetNameByLinkNameOffset(HdfFixedPoint linkNameOffset) {
-        return localHeap.parseStringAtOffset(linkNameOffset);
+        return localHeap.stringAtOffset(linkNameOffset);
 //        for (Map.Entry<String, DataSetInfo> entry : dataSets.entrySet()) {
 //            if (entry.getValue().getLinkNameOffset() == linkNameOffset) {
 //                return entry.getKey();

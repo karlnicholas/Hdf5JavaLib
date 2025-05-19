@@ -1,0 +1,18 @@
+graph TD
+    A[HdfSuperblock<br>readFromSeekableByteChannel] -->|localHeap=null| B[HdfSymbolTableEntry<br>readFromSeekableByteChannel]
+    B --> P[Read linkNameOffset]
+    P --> K{localHeap != null?}
+    K -->|Yes| L[objectName from localHeap]
+    K -->|No| M[objectName is empty]
+    L --> C[HdfObjectHeaderPrefixV1<br>readFromSeekableByteChannel]
+    M --> C
+    C --> J{cacheType?}
+    J -->|0: object=dataset<br>pass objectHeader, objectName| D[HdfSymbolTableEntryCacheNotUsed<br>readFromSeekableByteChannel]
+    J -->|1: object=group<br>pass objectHeader, objectName| E[HdfSymbolTableEntryCacheGroupMetadata<br>readFromSeekableByteChannel]
+    E --> F[HdfLocalHeap<br>readFromSeekableByteChannel]
+    F --> H[HdfLocalHeapData<br>readFromSeekableByteChannel]
+    F -->|pass localHeap| G[HdfBTreeV1<br>readFromSeekableByteChannel]
+    G --> N{i < entriesUsed?}
+    N -->|Yes| I[HdfGroupSymbolTableNode<br>readFromSeekableByteChannel]
+    I -->|next i| N
+    I -->|pass localHeap| B

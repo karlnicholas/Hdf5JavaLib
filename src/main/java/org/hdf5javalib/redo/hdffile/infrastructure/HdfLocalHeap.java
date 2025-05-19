@@ -280,7 +280,7 @@ public class HdfLocalHeap extends AllocationRecord {
      * @param offset the offset in the heap data to start parsing
      * @return the parsed HdfString, or null if no valid string is found
      */
-    public String parseStringAtOffset(HdfFixedPoint offset) {
+    public String stringAtOffset(HdfFixedPoint offset) {
 //        long iOffset = offset.getInstance(Long.class);
 //        if (iOffset >= heapData.length) {
 //            return null; // End of heap data
