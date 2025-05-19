@@ -21,7 +21,7 @@ public class HdfLocalHeapData extends AllocationRecord {
     private HdfFixedPoint heapContentsSize;
     /** The offset to the free list within the heap. */
     private final HdfFixedPoint freeListOffset;
-
+    /** Map of localHeap data by offsets */
     private final Map<HdfFixedPoint, HdfLocalHeapDataValue> data;
 
     /**
