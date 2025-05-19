@@ -71,9 +71,10 @@ public class HdfFileReader implements HdfDataFile {
      * @return this HdfFileReader instance
      * @throws IOException if an I/O error occurs during reading
      */
-    public HdfGroup readFile() throws Exception {
+    public HdfFileReader readFile() throws Exception {
         HdfSuperblock superblock = HdfSuperblock.readFromSeekableByteChannel(fileChannel, this);
-        return ((HdfSymbolTableEntryCacheGroupMetadata)superblock.getRootGroupSymbolTableEntry().getCache()).getGroup();
+        return this;
+//        return ((HdfSymbolTableEntryCacheGroupMetadata)superblock.getRootGroupSymbolTableEntry().getCache()).getGroup();
     }
 
 //    /**
@@ -170,5 +171,10 @@ public class HdfFileReader implements HdfDataFile {
     @Override
     public void setFileAllocation(HdfFileAllocation hdfFileAllocation) {
         this.fileAllocation = hdfFileAllocation;
+    }
+
+    public HdfGroup getRootGroup() {
+        return ((HdfSymbolTableEntryCacheGroupMetadata)fileAllocation.getSuperblock().getRootGroupSymbolTableEntry().getCache())
+                .getGroup();
     }
 }

@@ -70,25 +70,20 @@ public class HdfFixedPointRead {
      * @throws IOException if an I/O error occurs
      */
     void run() throws Exception {
-        Path filePath = getResourcePath("vlen_types_example.h5");
+        Path filePath = getResourcePath("dsgroup.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-            HdfFileReader hdfFileReader = new HdfFileReader(channel);
-            HdfGroup rootGroup = hdfFileReader.readFile();
-            log.debug("rootGroup: {}", rootGroup);
+            HdfFileReader hdfFileReader = new HdfFileReader(channel).readFile();
             hdfFileReader.getFileAllocation().printBlocks();
-
-//            for (HdfDataSet dataset : reader.getRootGroup().getDataSets()) {
-//                try (HdfDataSet ds = dataset) {
-//                    tryScalarDataSpliterator(channel, reader, ds);
-//                }
-//            }
+            log.debug("Root Group: {} ", hdfFileReader.getRootGroup());
+            HdfDataSet dataset = hdfFileReader.getRootGroup().getDataset("/Group1/Dataset1").orElseThrow();
+            tryScalarDataSpliterator(channel, hdfFileReader, dataset);
         }
-
+//
 //        try {
 //            filePath = getResourcePath("vector.h5");
 //            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
 //                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                tryVectorSpliterator(channel, reader, reader.getRootGroup().findDataset("vector"));
+//                tryVectorSpliterator(channel, reader, reader.getRootGroup().getDataSets().get(0));
 //            }
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
@@ -98,7 +93,7 @@ public class HdfFixedPointRead {
 //            filePath = getResourcePath("weatherdata.h5");
 //            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
 //                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                tryMatrixSpliterator(channel, reader, reader.getRootGroup().findDataset("weatherdata"));
+//                tryMatrixSpliterator(channel, reader, reader.getRootGroup().getDataset("/weatherdata").orElseThrow());
 //            }
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
@@ -126,6 +121,7 @@ public class HdfFixedPointRead {
     void tryScalarDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataSet dataSet) throws IOException {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, hdfDataFile, dataSet, BigInteger.class);
         BigInteger allData = dataSource.readScalar();
+        System.out.println("Scalar dataset name = " + dataSet.getDatasetName());
         System.out.println("Scalar readAll stats = " + Stream.of(allData)
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
         System.out.println("Scalar streaming list = " + dataSource.streamScalar().toList());

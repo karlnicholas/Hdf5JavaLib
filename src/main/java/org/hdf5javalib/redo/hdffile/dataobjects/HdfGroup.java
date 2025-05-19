@@ -8,14 +8,15 @@ import org.hdf5javalib.redo.datatype.HdfDatatype;
 import org.hdf5javalib.redo.datatype.StringDatatype;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DataspaceMessage;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.SymbolTableMessage;
-import org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeV1;
-import org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeap;
+import org.hdf5javalib.redo.hdffile.infrastructure.*;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.hdf5javalib.redo.HdfFileAllocation.*;
 
@@ -33,7 +34,7 @@ import static org.hdf5javalib.redo.HdfFileAllocation.*;
 public class HdfGroup implements Closeable {
     private final HdfDataFile hdfDataFile;
     /** The name of the group. */
-    private final String name;
+    private final String groupName;
     /** The object header prefix for the group. */
     private final HdfObjectHeaderPrefixV1 objectHeader;
     /** The B-tree managing symbol table entries. */
@@ -53,8 +54,8 @@ public class HdfGroup implements Closeable {
         return objectHeader;
     }
 
-    public String getName() {
-        return name;
+    public String getGroupName() {
+        return groupName;
     }
 
     /**
@@ -64,19 +65,19 @@ public class HdfGroup implements Closeable {
      * the object header, B-tree, local heap, and dataset map.
      * </p>
      *
-     * @param name         the name of the group
+     * @param groupName         the name of the group
      * @param objectHeader the object header prefix containing group metadata
      * @param bTree        the B-tree managing symbol table entries
      * @param localHeap    the local heap storing link names
      */
     public HdfGroup(
-            String name,
+            String groupName,
             HdfObjectHeaderPrefixV1 objectHeader,
             HdfBTreeV1 bTree,
             HdfLocalHeap localHeap,
             HdfDataFile hdfDataFile
     ) {
-        this.name = name;
+        this.groupName = groupName;
         this.objectHeader = objectHeader;
         this.bTree = bTree;
         this.localHeap = localHeap;
@@ -90,13 +91,13 @@ public class HdfGroup implements Closeable {
      * setting up the necessary metadata for writing to the file.
      * </p>
      *
-     * @param name            the name of the group
+     * @param groupName            the name of the group
      * @param btreeAddress    the file address for the B-tree
      * @param localHeapAddress the file address for the local heap
      */
-    public HdfGroup(String name, long btreeAddress, long localHeapAddress, HdfDataFile hdfDataFile) {
+    public HdfGroup(String groupName, long btreeAddress, long localHeapAddress, HdfDataFile hdfDataFile) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        this.name = name;
+        this.groupName = groupName;
         this.hdfDataFile = hdfDataFile;
         HdfFixedPoint localHeapContentsSize = fileAllocation.getCurrentLocalHeapContentsSize();
         byte[] heapData = new byte[localHeapContentsSize.getInstance(Long.class).intValue()];
@@ -106,7 +107,7 @@ public class HdfGroup implements Closeable {
         localHeap = new HdfLocalHeap(
                 localHeapContentsSize,
                 fileAllocation.getCurrentLocalHeapContentsOffset(),
-                hdfDataFile, name+"heap",
+                hdfDataFile, groupName +"heap",
                 HdfFileAllocation.SUPERBLOCK_SIZE + HdfFileAllocation.OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE
         );
 
@@ -116,7 +117,7 @@ public class HdfGroup implements Closeable {
                 hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(),
                 hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(),
                 hdfDataFile,
-                name+"btree",
+                groupName +"btree",
                 HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset())
         );
 
@@ -126,7 +127,7 @@ public class HdfGroup implements Closeable {
         objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 24,
                 Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte)0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))),
                 hdfDataFile,
-                name+"header",
+                groupName +"header",
                 HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE+BTREE_NODE_SIZE+BTREE_STORAGE_SIZE, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset())
         );
     }
@@ -186,6 +187,32 @@ public class HdfGroup implements Closeable {
     }
 
     /**
+     * Retrieves all datasets in the group.
+     *
+     * @return a collection of all {@link org.hdf5javalib.file.HdfDataSet} objects in the group
+     */
+    public List<HdfDataSet> getDataSets() {
+        return bTree.getEntries().stream()
+                .filter(bte -> bte instanceof HdfBTreeSnodEntry)
+                .flatMap(bte -> ((HdfBTreeSnodEntry) bte).getSymbolTableNode().getSymbolTableEntries().stream())
+                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)
+                .map(ste -> ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet())
+                .toList();
+
+    }
+
+    public HdfDataSet findDataset(String datasetName) {
+        return bTree.getEntries().stream()
+                .filter(bte -> bte instanceof HdfBTreeSnodEntry)
+                .flatMap(bte -> ((HdfBTreeSnodEntry) bte).getSymbolTableNode().getSymbolTableEntries().stream())
+                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)
+                .map(ste -> ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet())
+                .filter(dataSet -> dataSet.getDatasetName().equalsIgnoreCase(datasetName))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
      * Returns a string representation of the HdfGroup.
      *
      * @return a string describing the group's name, object header, B-tree, local heap, and datasets
@@ -193,7 +220,7 @@ public class HdfGroup implements Closeable {
     @Override
     public String toString() {
         return "HdfGroup{" +
-                "name='" + name + '\'' +
+                "name='" + groupName + '\'' +
                 "\r\nobjectHeader=" + objectHeader +
                 "\r\nbTree=" + bTree +
                 "\r\nlocalHeap=" + localHeap +
@@ -208,4 +235,160 @@ public class HdfGroup implements Closeable {
     @Override
     public void close() throws IOException {
     }
+
+     /**
+     * Retrieves a dataset by its path.
+     *
+     * @param path the path to the dataset (e.g., "/weatherdata" or "Group0/Dataset1")
+     * @return an Optional containing the HdfDataSet if found, or Optional.empty() if not found or invalid
+     */
+    public Optional<HdfDataSet> getDataset(String path) {
+        if (path == null || path.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Remove leading '/' if present
+        String cleanedPath = path.startsWith("/") ? path.substring(1) : path;
+        if (cleanedPath.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String[] components = cleanedPath.split("/");
+        if (components.length == 0) {
+            return Optional.empty();
+        }
+
+        return findDatasetByPath(components, 0, this);
+    }
+
+    /**
+     * Retrieves a group by its path.
+     *
+     * @param path the path to the group (e.g., "/Group0" or "Group0/Group1")
+     * @return an Optional containing the HdfGroup if found, or Optional.empty() if not found or invalid
+     */
+    public Optional<HdfGroup> getGroup(String path) {
+        if (path == null || path.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Remove leading '/' if present
+        String cleanedPath = path.startsWith("/") ? path.substring(1) : path;
+        if (cleanedPath.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String[] components = cleanedPath.split("/");
+        if (components.length == 0) {
+            return Optional.empty();
+        }
+
+        return findGroupByPath(components, 0, this);
+    }
+
+    /**
+     * Helper method to recursively find a dataset by path components.
+     *
+     * @param components   the path components
+     * @param index        the current component index
+     * @param currentGroup the current group being searched
+     * @return an Optional containing the HdfDataSet if found, or Optional.empty()
+     */
+    private Optional<HdfDataSet> findDatasetByPath(String[] components, int index, HdfGroup currentGroup) {
+        if (index >= components.length || components[index].isEmpty()) {
+            return Optional.empty();
+        }
+
+        String currentComponent = components[index];
+
+        // If this is the last component, look for a dataset
+        if (index == components.length - 1) {
+            for (Object bte : currentGroup.bTree.getEntries()) {
+                if (bte instanceof HdfBTreeSnodEntry) {
+                    HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) bte;
+                    for (HdfSymbolTableEntry ste : snodEntry.getSymbolTableNode().getSymbolTableEntries()) {
+                        if (ste.getCache() instanceof HdfSymbolTableEntryCacheNotUsed) {
+                            HdfDataSet dataSet = ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet();
+                            if (dataSet.getDatasetName().equals(currentComponent)) {
+                                return Optional.of(dataSet);
+                            }
+                        }
+                    }
+                }
+            }
+            return Optional.empty();
+        }
+
+        // Otherwise, find the next group and recurse
+        for (Object bte : currentGroup.bTree.getEntries()) {
+            if (bte instanceof HdfBTreeSnodEntry) {
+                HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) bte;
+                for (HdfSymbolTableEntry ste : snodEntry.getSymbolTableNode().getSymbolTableEntries()) {
+                    if (ste.getCache() instanceof HdfSymbolTableEntryCacheGroupMetadata) {
+                        HdfGroup group = ((HdfSymbolTableEntryCacheGroupMetadata) ste.getCache()).getGroup();
+                        if (group.getGroupName().equals(currentComponent)) {
+                            return findDatasetByPath(components, index + 1, group);
+                        }
+                    }
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Helper method to recursively find a group by path components.
+     *
+     * @param components   the path components
+     * @param index        the current component index
+     * @param currentGroup the current group being searched
+     * @return an Optional containing the HdfGroup if found, or Optional.empty()
+     */
+    private Optional<HdfGroup> findGroupByPath(String[] components, int index, HdfGroup currentGroup) {
+        if (index >= components.length || components[index].isEmpty()) {
+            return Optional.empty();
+        }
+
+        String currentComponent = components[index];
+
+        // If this is the last component, look for a group
+        if (index == components.length - 1) {
+            // Check if the current group matches the name
+            if (currentGroup.getGroupName().equals(currentComponent)) {
+                return Optional.of(currentGroup);
+            }
+            // Search for a matching group in the B-tree
+            for (Object bte : currentGroup.bTree.getEntries()) {
+                if (bte instanceof HdfBTreeSnodEntry) {
+                    HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) bte;
+                    for (HdfSymbolTableEntry ste : snodEntry.getSymbolTableNode().getSymbolTableEntries()) {
+                        if (ste.getCache() instanceof HdfSymbolTableEntryCacheGroupMetadata) {
+                            HdfGroup group = ((HdfSymbolTableEntryCacheGroupMetadata) ste.getCache()).getGroup();
+                            if (group.getGroupName().equals(currentComponent)) {
+                                return Optional.of(group);
+                            }
+                        }
+                    }
+                }
+            }
+            return Optional.empty();
+        }
+
+        // Otherwise, find the next group and recurse
+        for (Object bte : currentGroup.bTree.getEntries()) {
+            if (bte instanceof HdfBTreeSnodEntry) {
+                HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) bte;
+                for (HdfSymbolTableEntry ste : snodEntry.getSymbolTableNode().getSymbolTableEntries()) {
+                    if (ste.getCache() instanceof HdfSymbolTableEntryCacheGroupMetadata) {
+                        HdfGroup group = ((HdfSymbolTableEntryCacheGroupMetadata) ste.getCache()).getGroup();
+                        if (group.getGroupName().equals(currentComponent)) {
+                            return findGroupByPath(components, index + 1, group);
+                        }
+                    }
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
 }

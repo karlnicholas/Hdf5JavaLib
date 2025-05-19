@@ -1,41 +1,4 @@
-"C:\Program Files\Java\jdk-17\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2021.3.2\lib\idea_rt.jar=54639" -Dfile.encoding=UTF-8 -classpath C:\Users\karln\IdeaProjects\Hdf5JavaLib\target\classes;C:\Users\karln\.m2\repository\org\slf4j\slf4j-api\2.0.17\slf4j-api-2.0.17.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar org.hdf5javalib.redo.examples.read.HdfFixedPointRead
-13:50:32.170 [main] DEBUG org.hdf5javalib.redo.examples.read.HdfFixedPointRead -- rootGroup: HdfGroup{name=''
-objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
-SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
-bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=5, symbolTableEntries=
-[HdfSymbolTableEntry{linkNameOffset=40, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=HdfDataSet{, datasetName='vlen_double', hdfDatatype=VariableLengthDatatype{size=16, type='Sequence', padding='Null Terminate', charSet='ASCII'}, attributes=[], dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(40){hdfDatatype=VariableLengthDatatype{size=16, type='Sequence', padding='Null Terminate', charSet='ASCII'}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=0, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=6176, dimensionSizes=[16], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-03-30T22:48:11Z}
-NilMessage(136){}}, closed=false}}}, HdfSymbolTableEntry{linkNameOffset=24, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=HdfDataSet{, datasetName='vlen_float', hdfDatatype=VariableLengthDatatype{size=16, type='Sequence', padding='Null Terminate', charSet='ASCII'}, attributes=[], dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(40){hdfDatatype=VariableLengthDatatype{size=16, type='Sequence', padding='Null Terminate', charSet='ASCII'}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=0, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=6160, dimensionSizes=[16], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-03-30T22:48:11Z}
-NilMessage(136){}}, closed=false}}}, HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=HdfDataSet{, datasetName='vlen_int', hdfDatatype=VariableLengthDatatype{size=16, type='Sequence', padding='Null Terminate', charSet='ASCII'}, attributes=[], dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(32){hdfDatatype=VariableLengthDatatype{size=16, type='Sequence', padding='Null Terminate', charSet='ASCII'}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=0, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[16], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-03-30T22:48:11Z}
-NilMessage(144){}}, closed=false}}}, HdfSymbolTableEntry{linkNameOffset=72, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=HdfDataSet{, datasetName='vlen_short', hdfDatatype=VariableLengthDatatype{size=16, type='Sequence', padding='Null Terminate', charSet='ASCII'}, attributes=[], dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(32){hdfDatatype=VariableLengthDatatype{size=16, type='Sequence', padding='Null Terminate', charSet='ASCII'}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=0, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=8256, dimensionSizes=[16], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-03-30T22:48:11Z}
-NilMessage(144){}}, closed=false}}}, HdfSymbolTableEntry{linkNameOffset=56, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=HdfDataSet{, datasetName='vlen_string', hdfDatatype=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII'}, attributes=[], dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
-DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(32){hdfDatatype=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII'}}
-FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=0, fillValueDefined=1, size=0, fillValue=0 bytes}
-DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=8240, dimensionSizes=[16], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
-ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-03-30T22:48:11Z}
-NilMessage(144){}}, closed=false}}}]
-}}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=1, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=vlen_int, offset=8], 24=HdfLocalHeapDataValue[value=vlen_float, offset=24], 40=HdfLocalHeapDataValue[value=vlen_double, offset=40], 56=HdfLocalHeapDataValue[value=vlen_string, offset=56], 72=HdfLocalHeapDataValue[value=vlen_short, offset=72]}}}}
+
 === HDF File Allocation Layout ===
 Metadata End of File Offset: 800
 Data End of File Offset: 2048

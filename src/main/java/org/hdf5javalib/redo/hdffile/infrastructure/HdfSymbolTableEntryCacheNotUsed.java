@@ -50,4 +50,8 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
     public HdfObjectHeaderPrefixV1 getObjectHeader() {
         return dataSet.getDataObjectHeaderPrefix();
     }
+
+    public HdfDataSet getDataSet() {
+        return dataSet;
+    }
 }

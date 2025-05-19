@@ -265,7 +265,7 @@ public class HdfBTreeV1 extends AllocationRecord {
                     1,
                     new ArrayList<>(MAX_SNOD_ENTRIES),
                     hdfDataFile,
-                    group.getName()+":SNOD",
+                    group.getGroupName()+":SNOD",
                     snodOffset
             );
             targetEntry = new HdfBTreeSnodEntry(
@@ -363,7 +363,7 @@ public class HdfBTreeV1 extends AllocationRecord {
                 1,
                 new ArrayList<>(MAX_SNOD_ENTRIES),
                 hdfDataFile,
-                group.getName()+":SNOD",
+                group.getGroupName()+":SNOD",
                 newSnodOffset
         );
 
