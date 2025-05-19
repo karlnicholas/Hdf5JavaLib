@@ -34,9 +34,10 @@ public class HdfLocalHeapData extends AllocationRecord {
             HdfFixedPoint heapContentsOffset,
             HdfFixedPoint heapContentsSize,
             HdfFixedPoint freeListOffset,
-            Map<HdfFixedPoint, HdfLocalHeapDataValue> data
+            Map<HdfFixedPoint, HdfLocalHeapDataValue> data,
+            HdfDataFile hdfDataFile
     ) {
-        super(AllocationType.LOCAL_HEAP, "LOCALHEAP", heapContentsOffset, heapContentsSize);
+        super(AllocationType.LOCAL_HEAP, "LOCALHEAP", heapContentsOffset, heapContentsSize, hdfDataFile.getFileAllocation());
         this.heapContentsSize = heapContentsSize;
         this.freeListOffset = freeListOffset;
         this.data = data;
@@ -49,7 +50,7 @@ public class HdfLocalHeapData extends AllocationRecord {
      * @param hdfDataFile   hdfDataFile
      */
     public HdfLocalHeapData(HdfFixedPoint offset, HdfFixedPoint size, HdfDataFile hdfDataFile) {
-        super(AllocationType.LOCAL_HEAP, "LOCALHEAP", offset, size);
+        super(AllocationType.LOCAL_HEAP, "LOCALHEAP", offset, size, hdfDataFile.getFileAllocation());
         this.heapContentsSize = size;
         this.heapContentsOffset = offset;
         this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength());
@@ -112,7 +113,8 @@ public class HdfLocalHeapData extends AllocationRecord {
             SeekableByteChannel fileChannel,
             HdfFixedPoint dataSegmentSize,
             HdfFixedPoint freeListOffset,
-            HdfFixedPoint dataSegmentAddress
+            HdfFixedPoint dataSegmentAddress,
+            HdfDataFile hdfDataFile
     ) throws IOException {
 
         Map<HdfFixedPoint, HdfLocalHeapDataValue> data = new LinkedHashMap<>();
@@ -139,7 +141,7 @@ public class HdfLocalHeapData extends AllocationRecord {
             buffer.position((int) iOffset);
         }
 
-        return new HdfLocalHeapData(dataSegmentAddress, dataSegmentSize, freeListOffset, data);
+        return new HdfLocalHeapData(dataSegmentAddress, dataSegmentSize, freeListOffset, data, hdfDataFile);
     }
 
     public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfDataFile hdfDataFile) throws IOException {

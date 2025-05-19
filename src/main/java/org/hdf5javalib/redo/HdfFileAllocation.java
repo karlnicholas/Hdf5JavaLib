@@ -1,7 +1,6 @@
 package org.hdf5javalib.redo;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeV1;
 import org.hdf5javalib.redo.hdffile.metadata.HdfSuperblock;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
@@ -209,40 +208,35 @@ public class HdfFileAllocation {
 //        allocationRecords.add(initialLocalHeapRecord);
 //    }
 
-    // --- Allocation Methods ---
-    /**
-     * Allocates storage for a dataset's object header.
-     *
-     * @param datasetName the name of the dataset
-     * @return the offset of the allocated header
-     * @throws IllegalArgumentException if the dataset name is null or empty
-     * @throws IllegalStateException if the dataset is already allocated or an overlap occurs
-     */
-    public HdfFixedPoint allocateDatasetStorage(String datasetName) {
-        Objects.requireNonNull(datasetName, "Dataset name cannot be null");
-        if (datasetName.isEmpty()) throw new IllegalArgumentException("Dataset name cannot be empty");
-        if (datasetRecordsByName.containsKey(datasetName) && datasetRecordsByName.get(datasetName).containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
-            throw new IllegalStateException("Dataset '" + datasetName + "' already allocated");
-        }
-
-        HdfFixedPoint headerSize = HDF_DEFAULT_DATASET_HEADER_SIZE.clone();
-        if (checkForOverlap(metadataNextAvailableOffset, headerSize)) {
-            moveMetadataNextAvailableOffset(metadataNextAvailableOffset, headerSize);
-        }
-
-        HdfFixedPoint headerOffset = metadataNextAvailableOffset.clone();
-        AllocationRecord record = new AllocationRecord(
-                AllocationType.DATASET_OBJECT_HEADER,
-                "Dataset Header (" + datasetName + ")",
-                headerOffset,
-                headerSize
-        );
-        datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_OBJECT_HEADER, record);
-        allocationRecords.add(record);
-        metadataNextAvailableOffset.mutate(metadataNextAvailableOffset.add(headerSize));
-        updateMetadataOffset(metadataNextAvailableOffset);
-        return headerOffset;
-    }
+//    // --- Allocation Methods ---
+//    /**
+//     * Allocates storage for a dataset's object header.
+//     *
+//     * @param datasetName the name of the dataset
+//     * @return the offset of the allocated header
+//     * @throws IllegalArgumentException if the dataset name is null or empty
+//     * @throws IllegalStateException if the dataset is already allocated or an overlap occurs
+//     */
+//    public HdfFixedPoint allocateDatasetStorage(String datasetName) {
+//        Objects.requireNonNull(datasetName, "Dataset name cannot be null");
+//        if (datasetName.isEmpty()) throw new IllegalArgumentException("Dataset name cannot be empty");
+//        if (datasetRecordsByName.containsKey(datasetName) && datasetRecordsByName.get(datasetName).containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
+//            throw new IllegalStateException("Dataset '" + datasetName + "' already allocated");
+//        }
+//
+//        HdfFixedPoint headerSize = HDF_DEFAULT_DATASET_HEADER_SIZE.clone();
+//        if (checkForOverlap(metadataNextAvailableOffset, headerSize)) {
+//            moveMetadataNextAvailableOffset(metadataNextAvailableOffset, headerSize);
+//        }
+//
+//        HdfFixedPoint headerOffset = metadataNextAvailableOffset.clone();
+//        AllocationRecord record = new AllocationRecord(AllocationType.DATASET_OBJECT_HEADER, "Dataset Header (" + datasetName + ")", headerOffset, headerSize, hdfDataFile);
+//        datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_OBJECT_HEADER, record);
+//        allocationRecords.add(record);
+//        metadataNextAvailableOffset.mutate(metadataNextAvailableOffset.add(headerSize));
+//        updateMetadataOffset(metadataNextAvailableOffset);
+//        return headerOffset;
+//    }
 
     /**
      * Increases the size of a dataset's object header allocation.
@@ -296,9 +290,9 @@ public class HdfFileAllocation {
         }
 
         HdfFixedPoint offset = metadataNextAvailableOffset.clone();
-        AllocationRecord record = new AllocationRecord(AllocationType.SNOD, "SNOD Block " + (snodRecords.size() + 1), offset, HDF_SNOD_STORAGE_SIZE);
+        AllocationRecord record = new AllocationRecord(AllocationType.SNOD, "SNOD Block " + (snodRecords.size() + 1), offset, HDF_SNOD_STORAGE_SIZE, this);
         snodRecords.add(record);
-        allocationRecords.add(record);
+//        allocationRecords.add(record);
         metadataNextAvailableOffset.mutate(metadataNextAvailableOffset.add(HDF_SNOD_STORAGE_SIZE));
         updateMetadataOffset(metadataNextAvailableOffset);
         return offset;
@@ -324,9 +318,9 @@ public class HdfFileAllocation {
         }
 
         HdfFixedPoint dataOffset = dataNextAvailableOffset.clone();
-        AllocationRecord record = new AllocationRecord(AllocationType.DATASET_DATA, "Data Block (" + datasetName + ")", dataOffset, dataSize);
+        AllocationRecord record = new AllocationRecord(AllocationType.DATASET_DATA, "Data Block (" + datasetName + ")", dataOffset, dataSize, this);
         datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_DATA, record);
-        allocationRecords.add(record);
+//        allocationRecords.add(record);
         dataNextAvailableOffset.mutate(dataNextAvailableOffset.add(dataSize));
         updateDataOffset(dataNextAvailableOffset);
         return dataOffset;
@@ -356,9 +350,9 @@ public class HdfFileAllocation {
         }
 
         HdfFixedPoint continuationOffset = metadataNextAvailableOffset.clone();
-        AllocationRecord record = new AllocationRecord(AllocationType.DATASET_HEADER_CONTINUATION, "Continuation (" + datasetName + ")", continuationOffset, continuationSize);
+        AllocationRecord record = new AllocationRecord(AllocationType.DATASET_HEADER_CONTINUATION, "Continuation (" + datasetName + ")", continuationOffset, continuationSize, this);
         datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_HEADER_CONTINUATION, record);
-        allocationRecords.add(record);
+//        allocationRecords.add(record);
         metadataNextAvailableOffset.mutate(metadataNextAvailableOffset.add(continuationSize));
         updateMetadataOffset(metadataNextAvailableOffset);
         return continuationOffset;
@@ -377,9 +371,9 @@ public class HdfFileAllocation {
 
         HdfFixedPoint size = HDF_GLOBAL_HEAP_BLOCK_SIZE.clone();
         HdfFixedPoint offset = dataNextAvailableOffset.clone();
-        AllocationRecord record = new AllocationRecord(AllocationType.GLOBAL_HEAP_1, "Global Heap Block 1", offset, size);
+        AllocationRecord record = new AllocationRecord(AllocationType.GLOBAL_HEAP_1, "Global Heap Block 1", offset, size, this);
         globalHeapBlocks.put(AllocationType.GLOBAL_HEAP_1, record);
-        allocationRecords.add(record);
+//        allocationRecords.add(record);
         dataNextAvailableOffset.mutate(dataNextAvailableOffset.add(size));
         updateDataOffset(dataNextAvailableOffset);
         return offset;
@@ -398,9 +392,9 @@ public class HdfFileAllocation {
 
         HdfFixedPoint size = HDF_GLOBAL_HEAP_BLOCK_SIZE.clone();
         HdfFixedPoint offset = dataNextAvailableOffset.clone();
-        AllocationRecord record = new AllocationRecord(AllocationType.GLOBAL_HEAP_2, "Global Heap Block 2", offset, size);
+        AllocationRecord record = new AllocationRecord(AllocationType.GLOBAL_HEAP_2, "Global Heap Block 2", offset, size, this);
         globalHeapBlocks.put(AllocationType.GLOBAL_HEAP_2, record);
-        allocationRecords.add(record);
+//        allocationRecords.add(record);
         dataNextAvailableOffset.mutate(dataNextAvailableOffset.add(size));
         updateDataOffset(dataNextAvailableOffset);
         return offset;
@@ -448,9 +442,9 @@ public class HdfFileAllocation {
         activeRecord.setName("Abandoned Local Heap Contents (Offset " + activeRecord.getOffset() + ")");
 
         // Add new record
-        AllocationRecord newRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Expanded Local Heap Contents", newOffset, newSize);
+        AllocationRecord newRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Expanded Local Heap Contents", newOffset, newSize, this);
         localHeapRecords.add(newRecord);
-        allocationRecords.add(newRecord);
+//        allocationRecords.add(newRecord);
 
         metadataNextAvailableOffset.mutate(metadataNextAvailableOffset.add(newSize));
         updateMetadataOffset(metadataNextAvailableOffset);

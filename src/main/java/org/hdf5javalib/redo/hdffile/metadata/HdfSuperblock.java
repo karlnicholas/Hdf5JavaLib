@@ -126,7 +126,7 @@ public class HdfSuperblock extends AllocationRecord {
             FixedPointDatatype fixedPointDatatypeForOffset,
             FixedPointDatatype fixedPointDatatypeForLength
             ) {
-        super(AllocationType.SUPERBLOCK, name, offset, HdfWriteUtils.hdfFixedPointFromValue(HdfFileAllocation.SUPERBLOCK_SIZE, fixedPointDatatypeForLength));
+        super(AllocationType.SUPERBLOCK, name, offset, HdfWriteUtils.hdfFixedPointFromValue(HdfFileAllocation.SUPERBLOCK_SIZE, fixedPointDatatypeForLength), hdfDataFile.getFileAllocation());
 //        hdfDataFile.getFileAllocation().addAllocationBlock(this);
         this.version = version;
         this.freeSpaceVersion = freeSpaceVersion;
@@ -250,6 +250,7 @@ public class HdfSuperblock extends AllocationRecord {
                 fixedPointDatatypeForLength
         );
         hdfDataFile.setFileAllocation(new HdfFileAllocation(superblock));
+        hdfDataFile.getFileAllocation().addAllocationBlock(superblock);
         HdfSymbolTableEntry rootGroupSymbolTableEntry = HdfSymbolTableEntry.readFromSeekableByteChannel(fileChannel, hdfDataFile, null);
         superblock.setRootGroupSymbolTableEntry(rootGroupSymbolTableEntry);
         return superblock;

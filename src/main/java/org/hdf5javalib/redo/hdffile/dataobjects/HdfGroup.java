@@ -106,7 +106,9 @@ public class HdfGroup implements Closeable {
         localHeap = new HdfLocalHeap(
                 localHeapContentsSize,
                 fileAllocation.getCurrentLocalHeapContentsOffset(),
-                hdfDataFile, name+"heap");
+                hdfDataFile, name+"heap",
+                HdfFileAllocation.SUPERBLOCK_SIZE + HdfFileAllocation.OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE
+        );
 
         localHeap.addToHeap("");
 

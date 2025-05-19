@@ -55,9 +55,9 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
                                    HdfDataFile hdfDataFile, String name, HdfFixedPoint offset
     ) {
         super(AllocationType.DATASET_OBJECT_HEADER, name, offset,
-            HdfWriteUtils.hdfFixedPointFromValue(objectHeaderSize, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength())
+            HdfWriteUtils.hdfFixedPointFromValue(objectHeaderSize, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()),
+            hdfDataFile.getFileAllocation()
         );
-        hdfDataFile.getFileAllocation().addAllocationBlock(this);
         this.version = version;
         this.objectReferenceCount = objectReferenceCount;
         this.objectHeaderSize = objectHeaderSize;
