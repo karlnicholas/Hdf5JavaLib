@@ -135,7 +135,14 @@ public class CompoundDatatype implements HdfDatatype {
                 dimensionSizes[j] = buffer.getInt();
             }
 
-            CompoundMemberDatatype compoundMemberDatatype = new CompoundMemberDatatype(name, offset, dimensionality, dimensionPermutation, dimensionSizes, DatatypeMessage.getHdfDatatype(buffer));
+            CompoundMemberDatatype compoundMemberDatatype = new CompoundMemberDatatype(
+                    name,
+                    offset,
+                    dimensionality,
+                    dimensionPermutation,
+                    dimensionSizes,
+                    DatatypeMessage.getHdfDatatype(buffer)
+            );
 
             members.add(compoundMemberDatatype);
         }

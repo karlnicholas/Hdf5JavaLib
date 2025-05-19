@@ -108,7 +108,7 @@ public class FloatingPointDatatype implements HdfDatatype {
         int exponentSize = Byte.toUnsignedInt(buffer.get());
         int mantissaLocation = Byte.toUnsignedInt(buffer.get());
         int mantissaSize = Byte.toUnsignedInt(buffer.get());
-        int exponentBias = Byte.toUnsignedInt(buffer.get());
+        int exponentBias = buffer.getInt();
         return new FloatingPointDatatype(version, classBitField, size, bitOffset, bitPrecision, exponentLocation, exponentSize, mantissaLocation, mantissaSize, exponentBias);
     }
 
