@@ -81,6 +81,7 @@ public class HdfBTreeV1 extends AllocationRecord {
         super(AllocationType.BTREE_HEADER, name, offset,
             new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset())
         );
+        hdfDataFile.getFileAllocation().addAllocationBlock(this);
         this.signature = signature;
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;

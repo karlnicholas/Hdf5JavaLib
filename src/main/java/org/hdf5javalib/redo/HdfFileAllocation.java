@@ -1,6 +1,7 @@
 package org.hdf5javalib.redo;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeV1;
 import org.hdf5javalib.redo.hdffile.metadata.HdfSuperblock;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
@@ -643,9 +644,9 @@ public class HdfFileAllocation {
         List<AllocationRecord> sortedRecords = new ArrayList<>(allocationRecords);
         sortedRecords.sort(Comparator.comparingLong(ar->ar.getOffset().getInstance(Long.class)));
         for (AllocationRecord block : sortedRecords) {
-            String hexOffset = String.format("0x%08X", block.getOffset());
+            String hexOffset = String.format("0x%08X", block.getOffset().getInstance(Long.class));
             System.out.printf("%-12d | %-12s | %-8d | %-10s | %s%n",
-                    block.getOffset(), hexOffset, block.getSize(), block.getType().name(), block.getName());
+                    block.getOffset().getInstance(Long.class), hexOffset, block.getSize().getInstance(Long.class), block.getType().name(), block.getName());
         }
 
         // Detect gaps
@@ -677,9 +678,9 @@ public class HdfFileAllocation {
                     hasOverlap = true;
                     System.out.printf("Overlap detected between:%n");
                     System.out.printf("  %s (Offset: %d, Size: %d, End: %d)%n",
-                            record1.getName(), start1, record1.getSize(), end1);
+                            record1.getName(), start1, record1.getSize().getInstance(Long.class), end1);
                     System.out.printf("  %s (Offset: %d, Size: %d, End: %d)%n",
-                            record2.getName(), start2, record2.getSize(), end2);
+                            record2.getName(), start2, record2.getSize().getInstance(Long.class), end2);
                 }
             }
         }
@@ -869,6 +870,10 @@ public class HdfFileAllocation {
      */
     public Map<AllocationType, AllocationRecord> getDatasetAllocationInfo(String datasetName) {
         return datasetRecordsByName.getOrDefault(datasetName, Collections.emptyMap());
+    }
+
+    public void addAllocationBlock(AllocationRecord record) {
+        allocationRecords.add(record);
     }
 
 //    /**

@@ -52,6 +52,7 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
         super(AllocationType.SNOD, name, offset,
                 hdfDataFile.getFileAllocation().HDF_SNOD_STORAGE_SIZE
         );
+        hdfDataFile.getFileAllocation().addAllocationBlock(this);
         this.signature = signature;
         this.version = version;
         this.symbolTableEntries = symbolTableEntries;
