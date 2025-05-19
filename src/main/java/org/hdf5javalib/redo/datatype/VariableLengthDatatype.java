@@ -1,9 +1,12 @@
 package org.hdf5javalib.redo.datatype;
 
+import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
+import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.dataclass.HdfVariableLength;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.redo.utils.HdfReadUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -38,6 +41,7 @@ public class VariableLengthDatatype implements HdfDatatype {
     private HdfGlobalHeap globalHeap;
     /** The underlying datatype for the variable-length elements. */
     private final HdfDatatype hdfDatatype;
+    private final HdfDataFile hdfDataFile;
 
     /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<VariableLengthDatatype, ?>> CONVERTERS = new HashMap<>();
@@ -58,11 +62,12 @@ public class VariableLengthDatatype implements HdfDatatype {
      * @param size            the fixed size of the variable-length descriptor in bytes
      * @param hdfDatatype     the underlying datatype for the variable-length elements
      */
-    public VariableLengthDatatype(int classAndVersion, BitSet classBitField, int size, HdfDatatype hdfDatatype) {
+    public VariableLengthDatatype(int classAndVersion, BitSet classBitField, int size, HdfDatatype hdfDatatype, HdfDataFile hdfDataFile) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
         this.hdfDatatype = hdfDatatype;
+        this.hdfDataFile = hdfDataFile;
     }
 
     /**
@@ -74,8 +79,8 @@ public class VariableLengthDatatype implements HdfDatatype {
      * @param buffer          the ByteBuffer containing the datatype definition
      * @return a new VariableLengthDatatype instance parsed from the buffer
      */
-    public static VariableLengthDatatype parseVariableLengthDatatype(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
-        return new VariableLengthDatatype(classAndVersion, classBitField, size, DatatypeMessage.getHdfDatatype(buffer));
+    public static VariableLengthDatatype parseVariableLengthDatatype(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer, HdfDataFile hdfDataFile) {
+        return new VariableLengthDatatype(classAndVersion, classBitField, size, DatatypeMessage.getHdfDatatype(buffer, hdfDataFile), hdfDataFile);
     }
 
     /**
@@ -156,7 +161,7 @@ public class VariableLengthDatatype implements HdfDatatype {
     public String toString(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         int count = buffer.getInt();
-        long offset = buffer.getLong();
+        HdfFixedPoint offset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         int index = buffer.getInt();
 
         byte[] workingBytes = globalHeap.getDataBytes(offset, index);
@@ -175,7 +180,7 @@ public class VariableLengthDatatype implements HdfDatatype {
     private byte[][] toByteArrayArray(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         int count = buffer.getInt();
-        long offset = buffer.getLong();
+        HdfFixedPoint offset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         int index = buffer.getInt();
 
         byte[] workingBytes = globalHeap.getDataBytes(offset, index);
@@ -190,7 +195,7 @@ public class VariableLengthDatatype implements HdfDatatype {
     private Object toObjectArray(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         int count = buffer.getInt();
-        long offset = buffer.getLong();
+        HdfFixedPoint offset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         int index = buffer.getInt();
 
         byte[] workingBytes = globalHeap.getDataBytes(offset, index);

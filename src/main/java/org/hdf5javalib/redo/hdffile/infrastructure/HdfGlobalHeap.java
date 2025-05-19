@@ -82,7 +82,7 @@ public class HdfGlobalHeap {
      * @throws IllegalArgumentException if the object ID is 0 or invalid
      * @throws IllegalStateException if the heap or object is not found
      */
-    public byte[] getDataBytes(long heapOffset, int objectId) {
+    public byte[] getDataBytes(HdfFixedPoint heapOffset, int objectId) {
         if (objectId == 0) {
             throw new IllegalArgumentException("Cannot request data bytes for Global Heap Object ID 0 (null terminator)");
         }
@@ -428,7 +428,7 @@ public class HdfGlobalHeap {
          *
          * @param heapOffset the offset of the heap collection
          */
-        void initializeCallback(long heapOffset);
+        void initializeCallback(HdfFixedPoint heapOffset);
     }
 
     /**

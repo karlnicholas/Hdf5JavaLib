@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo;
 
+import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfSymbolTableEntryCacheGroupMetadata;
@@ -50,9 +51,9 @@ public class HdfFileReader implements HdfDataFile {
      *
      * @param offset the file offset where the global heap data begins
      */
-    private void initializeGlobalHeap(long offset) {
+    private void initializeGlobalHeap(HdfFixedPoint offset) {
         try {
-            fileChannel.position(offset);
+            fileChannel.position(offset.getInstance(Long.class));
             globalHeap.readFromSeekableByteChannel(fileChannel, this);
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
+import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfEnum;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
@@ -81,9 +82,9 @@ public class EnumDatatype implements HdfDatatype {
      * @return a new EnumDatatype instance parsed from the buffer
      */
     public static EnumDatatype parseEnumDatatype(int classAndVersion, BitSet classBitField,
-                                                 int size, ByteBuffer buffer) {
+                                                 int size, ByteBuffer buffer, HdfDataFile hdfDataFile) {
         // Base type is parsed from the buffer first, after size
-        HdfDatatype baseType = DatatypeMessage.getHdfDatatype(buffer);
+        HdfDatatype baseType = DatatypeMessage.getHdfDatatype(buffer, hdfDataFile);
 
         int numMembers = getNumberOfMembers(classBitField);
 

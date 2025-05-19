@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
+import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfArray;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
@@ -117,7 +118,7 @@ public class ArrayDatatype implements HdfDatatype {
      * @return a new ArrayDatatype instance parsed from the buffer
      */
     public static ArrayDatatype parseArrayDatatype(int classAndVersion, BitSet classBitField,
-                                                   int size, ByteBuffer buffer) {
+                                                   int size, ByteBuffer buffer, HdfDataFile hdfDataFile) {
         int dimensionality = Byte.toUnsignedInt(buffer.get()); // Unsigned byte
         buffer.get(new byte[3]); // Skip 3 reserved bytes (zero)
 
@@ -134,7 +135,7 @@ public class ArrayDatatype implements HdfDatatype {
         }
 
         // Parse base type
-        HdfDatatype baseType = DatatypeMessage.getHdfDatatype(buffer);
+        HdfDatatype baseType = DatatypeMessage.getHdfDatatype(buffer, hdfDataFile);
 
         return new ArrayDatatype(classAndVersion, classBitField, size, dimensionality,
                 dimensionSizes, permutationIndices, baseType);

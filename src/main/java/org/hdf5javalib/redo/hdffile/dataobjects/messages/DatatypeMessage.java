@@ -84,7 +84,7 @@ public class DatatypeMessage extends HdfMessage {
      */
     public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        HdfDatatype hdfDatatype = getHdfDatatype(buffer);
+        HdfDatatype hdfDatatype = getHdfDatatype(buffer, hdfDataFile);
         return new DatatypeMessage(hdfDatatype, flags, (short) data.length);
     }
 
@@ -94,7 +94,7 @@ public class DatatypeMessage extends HdfMessage {
      * @param buffer the ByteBuffer containing the datatype definition
      * @return the parsed HdfDatatype
      */
-    public static HdfDatatype getHdfDatatype(ByteBuffer buffer) {
+    public static HdfDatatype getHdfDatatype(ByteBuffer buffer, HdfDataFile hdfDataFile) {
         // Parse Version and Datatype Class (packed into a single byte)
         int classAndVersion = Byte.toUnsignedInt(buffer.get());
         byte[] classBits = new byte[3];
@@ -105,10 +105,10 @@ public class DatatypeMessage extends HdfMessage {
 
         // Parse Size (unsigned 4 bytes)
         int size = buffer.getInt();
-        return parseMessageDataType(classAndVersion, classBitField, size, buffer);
+        return parseMessageDataType(classAndVersion, classBitField, size, buffer, hdfDataFile);
     }
 
-    private static HdfDatatype parseMessageDataType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+    private static HdfDatatype parseMessageDataType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer, HdfDataFile hdfDataFile) {
         HdfDatatype.DatatypeClass dataTypeClass = HdfDatatype.DatatypeClass.fromValue(classAndVersion & 0x0F);
         return switch (dataTypeClass) {
             case FIXED -> parseFixedPointType(classAndVersion, classBitField, size, buffer);
@@ -117,11 +117,11 @@ public class DatatypeMessage extends HdfMessage {
             case STRING -> parseStringType(classAndVersion, classBitField, size, buffer);
             case BITFIELD -> parseBitFieldType(classAndVersion, classBitField, size, buffer);
             case OPAQUE -> parseOpaqueDatatype(classAndVersion, classBitField, size, buffer);
-            case COMPOUND -> new CompoundDatatype(classAndVersion, classBitField, size, buffer);
+            case COMPOUND -> new CompoundDatatype(classAndVersion, classBitField, size, buffer, hdfDataFile);
             case REFERENCE -> parseReferenceDatatype(classAndVersion, classBitField, size, buffer);
-            case ENUM -> parseEnumDatatype(classAndVersion, classBitField, size, buffer);
-            case VLEN -> parseVariableLengthDatatype(classAndVersion, classBitField, size, buffer);
-            case ARRAY -> parseArrayDatatype(classAndVersion, classBitField, size, buffer);
+            case ENUM -> parseEnumDatatype(classAndVersion, classBitField, size, buffer, hdfDataFile);
+            case VLEN -> parseVariableLengthDatatype(classAndVersion, classBitField, size, buffer, hdfDataFile);
+            case ARRAY -> parseArrayDatatype(classAndVersion, classBitField, size, buffer, hdfDataFile);
             default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
         };
     }

@@ -186,7 +186,7 @@ public class HdfDataSet implements Closeable {
         boolean requiresGlobalHeap = hdfDatatype.requiresGlobalHeap(false);
 
         // Create datatype and messages
-        HdfDatatype attributeType = createAttributeType(requiresGlobalHeap, value);
+        HdfDatatype attributeType = createAttributeType(requiresGlobalHeap, value, hdfDataFile);
         DatatypeMessage datatypeMessage = createDatatypeMessage(attributeType);
         DataspaceMessage dataspaceMessage = createDataspaceMessage();
 
@@ -229,7 +229,7 @@ public class HdfDataSet implements Closeable {
      * @param value             the attribute value
      * @return the created {@link HdfDatatype}
      */
-    private HdfDatatype createAttributeType(boolean requiresGlobalHeap, String value) {
+    private HdfDatatype createAttributeType(boolean requiresGlobalHeap, String value, HdfDataFile hdfDataFile) {
         if (requiresGlobalHeap) {
             FixedPointDatatype fixedType = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
@@ -240,7 +240,8 @@ public class HdfDataSet implements Closeable {
                     VariableLengthDatatype.createClassAndVersion(),
                     VariableLengthDatatype.createClassBitField(VariableLengthDatatype.Type.STRING, VariableLengthDatatype.PaddingType.NULL_TERMINATE,
                             VariableLengthDatatype.CharacterSet.ASCII),
-                    (short) 16, fixedType
+                    (short) 16, fixedType,
+                    hdfDataFile
             );
         }
         return new StringDatatype(
@@ -292,7 +293,8 @@ public class HdfDataSet implements Closeable {
                     VariableLengthDatatype.createClassAndVersion(),
                     VariableLengthDatatype.createClassBitField(VariableLengthDatatype.Type.STRING, VariableLengthDatatype.PaddingType.NULL_TERMINATE,
                             VariableLengthDatatype.CharacterSet.ASCII),
-                    (short) 16, attributeType
+                    (short) 16, attributeType,
+                    hdfDataFile
             );
             variableLengthType.setGlobalHeap(hdfDataFile.getGlobalHeap());
             byte[] globalHeapBytes = hdfDataFile.getGlobalHeap().addToHeap(

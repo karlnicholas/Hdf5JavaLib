@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
+import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfCompound;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
@@ -67,11 +68,11 @@ public class CompoundDatatype implements HdfDatatype {
      * @param size            the total size of the compound datatype in bytes
      * @param buffer          the ByteBuffer containing the datatype definition
      */
-    public CompoundDatatype(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+    public CompoundDatatype(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer, HdfDataFile hdfDataFile) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
-        readFromByteBuffer(buffer);
+        readFromByteBuffer(buffer, hdfDataFile);
     }
 
     /**
@@ -114,7 +115,7 @@ public class CompoundDatatype implements HdfDatatype {
         return value;
     }
 
-    private void readFromByteBuffer(ByteBuffer buffer) {
+    private void readFromByteBuffer(ByteBuffer buffer, HdfDataFile hdfDataFile) {
         this.members = new ArrayList<>();
         int numberOfMembers = extractNumberOfMembersFromBitSet();
         for (int i = 0; i < numberOfMembers; i++) {
@@ -141,7 +142,7 @@ public class CompoundDatatype implements HdfDatatype {
                     dimensionality,
                     dimensionPermutation,
                     dimensionSizes,
-                    DatatypeMessage.getHdfDatatype(buffer)
+                    DatatypeMessage.getHdfDatatype(buffer, hdfDataFile)
             );
 
             members.add(compoundMemberDatatype);
