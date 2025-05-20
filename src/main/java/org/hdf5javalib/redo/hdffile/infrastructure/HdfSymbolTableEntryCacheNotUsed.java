@@ -47,6 +47,11 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
     }
 
     @Override
+    public int getCacheType() {
+        return cacheType;
+    }
+
+    @Override
     public HdfObjectHeaderPrefixV1 getObjectHeader() {
         return dataSet.getDataObjectHeaderPrefix();
     }

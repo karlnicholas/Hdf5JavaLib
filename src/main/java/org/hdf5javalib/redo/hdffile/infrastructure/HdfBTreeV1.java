@@ -571,4 +571,8 @@ public class HdfBTreeV1 extends AllocationRecord {
         return entries;
     }
 
+    public int getNodeLevel() {
+        return nodeLevel;
+    }
+
 }

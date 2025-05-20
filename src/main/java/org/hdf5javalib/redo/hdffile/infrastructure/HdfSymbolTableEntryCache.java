@@ -8,6 +8,6 @@ public interface HdfSymbolTableEntryCache {
     void writeToBuffer(ByteBuffer buffer);
     @Override
     String toString();
-
+    int getCacheType();
     HdfObjectHeaderPrefixV1 getObjectHeader();
 }

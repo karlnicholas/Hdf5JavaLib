@@ -5,7 +5,6 @@ import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
-import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.utils.FlattenedArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,36 +77,36 @@ public class HdfFixedPointRead {
             HdfDataSet dataset = hdfFileReader.getRootGroup().getDataset("/Group1/Dataset1").orElseThrow();
             tryScalarDataSpliterator(channel, hdfFileReader, dataset);
         }
-//
-//        try {
-//            filePath = getResourcePath("vector.h5");
-//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-//                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                tryVectorSpliterator(channel, reader, reader.getRootGroup().getDataSets().get(0));
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        try {
-//            filePath = getResourcePath("weatherdata.h5");
-//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-//                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                tryMatrixSpliterator(channel, reader, reader.getRootGroup().getDataset("/weatherdata").orElseThrow());
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        try {
-//            filePath = getResourcePath("tictactoe_4d_state.h5");
-//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-//                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                display4DData(channel, reader, reader.getRootGroup().findDataset("game"));
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+
+        try {
+            filePath = getResourcePath("vector.h5");
+            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+                tryVectorSpliterator(channel, reader, reader.getRootGroup().getDataSets().get(0));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            filePath = getResourcePath("weatherdata.h5");
+            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+                tryMatrixSpliterator(channel, reader, reader.getRootGroup().getDataset("/weatherdata").orElseThrow());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            filePath = getResourcePath("tictactoe_4d_state.h5");
+            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+                display4DData(channel, reader, reader.getRootGroup().findDataset("game"));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -242,7 +241,7 @@ public class HdfFixedPointRead {
             for (int x = 0; x < shape[0]; x++) {
                 for (int y = 0; y < shape[1]; y++) {
                     for (int z = 0; z < shape[2]; z++) {
-                        System.out.print(x + " " + y + " " + z + ":" + s + ":" + FlattenedArrayUtils.getElement(flattenedData, shape, x, y, z, s) + " ");
+                        System.out.print(x + " " + y + " " + z + " " + s + " " + FlattenedArrayUtils.getElement(flattenedData, shape, x, y, z, s) + " ");
                         System.out.println();
                     }
                 }
@@ -272,4 +271,35 @@ public class HdfFixedPointRead {
         pieces.sort(Comparator.comparingInt(a -> a.coordinates[3]));
         pieces.forEach(entry -> System.out.printf("Coords %s → Value: %s%n", Arrays.toString(entry.coordinates), entry.value));
     }
+    /**
+     * Processes a 4D dataset using a TypedDataSource, demonstrating slicing and filtering.
+     *
+     * @param fileChannel the file channel for reading the HDF5 file
+     * @param hdfDataFile the HDF5 file context
+     * @param dataSet     the 4D dataset to process
+     * @throws IOException if an I/O error occurs
+     */
+    void displaySalesCube(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataSet dataSet) throws IOException {
+        TypedDataSource<Double> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, Double.class);
+        int[] shape = dataSource.getShape(); // Should be [60, 100, 50]
+        Double[][] sales2024Jan = (Double[][]) FlattenedArrayUtils.sliceStream(
+                dataSource.streamFlattened(),
+                shape,
+                new int[][]{{0}, {}, {}}, // Slice Time=2024-01 (index 0)
+                Double.class
+        );
+        System.out.println("Sales for January 2024:");
+        for (int z = 0; z < shape[1]; z++) {
+            for (int p = 0; p < shape[2]; p++) {
+                System.out.printf("Zip %d, Product %d: %.2f\n", z, p, sales2024Jan[z][p]);
+            }
+        }
+//        TypedDataSource<Double> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, Double.class);
+//        // Print all values in order
+//        final Double[] flattenedData = dataSource.readFlattened();
+//        int[] shape = dataSource.getShape();
+//        System.out.println("FlattenedData = ");
+//        System.out.println(Arrays.toString(flattenedData));
+//        System.out.println(Arrays.toString(shape));
+   }
 }

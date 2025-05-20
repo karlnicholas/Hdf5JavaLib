@@ -66,6 +66,11 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
     }
 
     @Override
+    public int getCacheType() {
+        return cacheType;
+    }
+
+    @Override
     public HdfObjectHeaderPrefixV1 getObjectHeader() {
         return group.getObjectHeader();
     }
