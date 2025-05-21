@@ -31,7 +31,7 @@ import static org.hdf5javalib.redo.HdfFileAllocation.*;
  * management.
  * </p>
  */
-public class HdfGroup implements Closeable {
+public class HdfGroup implements HdfDataObject, Closeable {
     private final HdfDataFile hdfDataFile;
     /** The name of the group. */
     private final String groupName;
@@ -44,6 +44,10 @@ public class HdfGroup implements Closeable {
 
     public HdfBTreeV1 getBTree() {
         return bTree;
+    }
+
+    public Optional<HdfBTreeV1> getBTreeOptionally() {
+        return Optional.of(bTree);
     }
 
     public HdfLocalHeap getLocalHeap() {
@@ -227,6 +231,11 @@ public class HdfGroup implements Closeable {
     public void close() throws IOException {
     }
 
+    @Override
+    public String getObjectName() {
+        return groupName;
+    }
+
     /**
      * Retrieves a dataset by its path.
      *
@@ -249,7 +258,9 @@ public class HdfGroup implements Closeable {
             return Optional.empty();
         }
 
-        return findDatasetByPath(components, 0, this);
+        return findTypeByPath(components, 0, this)
+                .filter(hdfDataObject -> hdfDataObject instanceof HdfDataSet)
+                .map(hdfDataObject -> (HdfDataSet) hdfDataObject);
     }
 
     /**
@@ -274,124 +285,116 @@ public class HdfGroup implements Closeable {
             return Optional.empty();
         }
 
-        return findGroupByPath(components, 0, this);
+        return findTypeByPath(components, 0, this)
+                .filter(hdfDataObject -> hdfDataObject instanceof HdfGroup)
+                .map(hdfDataObject -> (HdfGroup) hdfDataObject);
     }
 
     /**
-     * Helper method to recursively find a dataset by path components.
+     * Helper method to recursively find a group or dataset by path components.
      *
-     * @param components   the path components
-     * @param index        the current component index
-     * @param currentGroup the current group being searched
-     * @return an Optional containing the HdfDataSet if found, or Optional.empty()
+     * @param components      the path components
+     * @param index           the current component index
+     * @param currentInstance the current group or dataset being searched
+     * @return an Optional containing the HdfDataObject if found, or Optional.empty()
      */
-    private Optional<HdfDataSet> findDatasetByPath(String[] components, int index, HdfGroup currentGroup) {
-        if (index >= components.length || components[index].isEmpty()) {
+    private Optional<HdfDataObject> findTypeByPath(String[] components, int index, HdfDataObject currentInstance) {
+        if (index >= components.length || components[index].isEmpty() || currentInstance == null) {
             return Optional.empty();
         }
 
         String currentComponent = components[index];
-        HdfBTreeV1 bTree = currentGroup.bTree;
 
-        // If this is the last component, look for a dataset
+        // If this is the last component, check if currentInstance matches
         if (index == components.length - 1) {
-            if (bTree.getNodeLevel() == 0) { // Leaf node: process SNOD entries
-                for (HdfBTreeEntry bte : bTree.getEntries()) {
-                    HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) bte; // Safe cast: leaf nodes only have SNOD entries
-                    for (HdfSymbolTableEntry ste : snodEntry.getSymbolTableNode().getSymbolTableEntries()) {
-                        if (ste.getCache().getCacheType() == 0) { // Dataset cache
-                            HdfDataSet dataSet = ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet();
-                            if (dataSet.getDatasetName().equals(currentComponent)) {
-                                return Optional.of(dataSet);
+            if (currentInstance.getObjectName().equals(currentComponent)) {
+                return Optional.of(currentInstance);
+            }
+            // Check B-tree only if present (i.e., for groups)
+            return currentInstance.getBTreeOptionally()
+                    .filter(bTree -> bTree.getNodeLevel() == 0) // Only process leaf nodes
+                    .flatMap(bTree -> {
+                        for (HdfBTreeEntry bte : bTree.getEntries()) {
+                            HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) bte;
+                            for (HdfSymbolTableEntry ste : snodEntry.getSymbolTableNode().getSymbolTableEntries()) {
+                                if (ste.getCache().getCacheType() == 0) { // Dataset cache
+                                    HdfDataSet dataset = ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet();
+                                    if (dataset.getObjectName().equals(currentComponent)) {
+                                        return Optional.of(dataset);
+                                    }
+                                } else if (ste.getCache().getCacheType() == 1) { // Group cache
+                                    HdfGroup group = ((HdfSymbolTableEntryCacheGroupMetadata) ste.getCache()).getGroup();
+                                    if (group.getObjectName().equals(currentComponent)) {
+                                        return Optional.of(group);
+                                    }
+                                }
+                            }
+                        }
+                        return Optional.empty();
+                    });
+        }
+
+        // Otherwise, find the next group or dataset and recurse
+        return currentInstance.getBTreeOptionally()
+                .flatMap(bTree -> {
+                    if (bTree.getNodeLevel() == 0) { // Leaf node: process SNOD entries
+                        for (HdfBTreeEntry bte : bTree.getEntries()) {
+                            HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) bte;
+                            for (HdfSymbolTableEntry ste : snodEntry.getSymbolTableNode().getSymbolTableEntries()) {
+                                if (ste.getCache().getCacheType() == 0) { // Dataset cache
+                                    HdfDataSet dataset = ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet();
+                                    if (dataset.getObjectName().equals(currentComponent)) {
+                                        return findTypeByPath(components, index + 1, dataset);
+                                    }
+                                } else if (ste.getCache().getCacheType() == 1) { // Group cache
+                                    HdfGroup group = ((HdfSymbolTableEntryCacheGroupMetadata) ste.getCache()).getGroup();
+                                    if (group.getObjectName().equals(currentComponent)) {
+                                        return findTypeByPath(components, index + 1, group);
+                                    }
+                                }
+                            }
+                        }
+                    } else { // Internal node: recurse into child B-trees
+                        for (HdfBTreeEntry bte : bTree.getEntries()) {
+                            HdfBTreeChildBtreeEntry childBtreeEntry = (HdfBTreeChildBtreeEntry) bte;
+                            HdfBTreeV1 childBTree = childBtreeEntry.getChildBTree();
+                            Optional<HdfDataObject> result = findTypeInBTree(childBTree, components, index, currentComponent);
+                            if (result.isPresent()) {
+                                return result;
                             }
                         }
                     }
-                }
-            }
-            return Optional.empty(); // No datasets in internal nodes
-        }
-
-        // Otherwise, find the next group and recurse
-        if (bTree.getNodeLevel() == 0) { // Leaf node: process SNOD entries
-            for (HdfBTreeEntry bte : bTree.getEntries()) {
-                HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) bte; // Safe cast: leaf nodes only have SNOD entries
-                for (HdfSymbolTableEntry ste : snodEntry.getSymbolTableNode().getSymbolTableEntries()) {
-                    if (ste.getCache().getCacheType() == 1) { // Group cache
-                        HdfGroup group = ((HdfSymbolTableEntryCacheGroupMetadata) ste.getCache()).getGroup();
-                        if (group.getGroupName().equals(currentComponent)) {
-                            return findDatasetByPath(components, index + 1, group);
-                        }
-                    }
-                }
-            }
-        } else { // Internal node: recurse into child B-trees
-            for (HdfBTreeEntry bte : bTree.getEntries()) {
-                HdfBTreeChildBtreeEntry childBtreeEntry = (HdfBTreeChildBtreeEntry) bte; // Safe cast: internal nodes only have child B-tree entries
-                HdfBTreeV1 childBTree = childBtreeEntry.getChildBTree();
-                Optional<HdfDataSet> result = findDatasetInBTree(childBTree, components, index, currentComponent);
-                if (result.isPresent()) {
-                    return result;
-                }
-            }
-        }
-        return Optional.empty();
+                    return Optional.empty();
+                });
     }
 
-    /**
-     * Helper method to recursively find a group by path components.
-     *
-     * @param components   the path components
-     * @param index        the current component index
-     * @param currentGroup the current group being searched
-     * @return an Optional containing the HdfGroup if found, or Optional.empty()
-     */
-    private Optional<HdfGroup> findGroupByPath(String[] components, int index, HdfGroup currentGroup) {
-        if (index >= components.length || components[index].isEmpty()) {
+    private Optional<HdfDataObject> findTypeInBTree(HdfBTreeV1 bTree, String[] components, int index, String currentComponent) {
+        if (bTree == null || components == null || index >= components.length || currentComponent == null) {
             return Optional.empty();
         }
 
-        String currentComponent = components[index];
-        HdfBTreeV1 bTree = currentGroup.bTree;
-
-        // If this is the last component, look for a group
-        if (index == components.length - 1) {
-            if (currentGroup.getGroupName().equals(currentComponent)) {
-                return Optional.of(currentGroup);
-            }
-            if (bTree.getNodeLevel() == 0) { // Leaf node: process SNOD entries
-                for (HdfBTreeEntry bte : bTree.getEntries()) {
-                    HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) bte; // Safe cast: leaf nodes only have SNOD entries
-                    for (HdfSymbolTableEntry ste : snodEntry.getSymbolTableNode().getSymbolTableEntries()) {
-                        if (ste.getCache().getCacheType() == 1) { // Group cache
-                            HdfGroup group = ((HdfSymbolTableEntryCacheGroupMetadata) ste.getCache()).getGroup();
-                            if (group.getGroupName().equals(currentComponent)) {
-                                return Optional.of(group);
-                            }
-                        }
-                    }
-                }
-            }
-            return Optional.empty(); // No groups in internal nodes directly
-        }
-
-        // Otherwise, find the next group and recurse
         if (bTree.getNodeLevel() == 0) { // Leaf node: process SNOD entries
             for (HdfBTreeEntry bte : bTree.getEntries()) {
-                HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) bte; // Safe cast: leaf nodes only have SNOD entries
+                HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) bte;
                 for (HdfSymbolTableEntry ste : snodEntry.getSymbolTableNode().getSymbolTableEntries()) {
-                    if (ste.getCache().getCacheType() == 1) { // Group cache
+                    if (ste.getCache().getCacheType() == 0) { // Dataset cache
+                        HdfDataSet dataset = ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet();
+                        if (dataset.getObjectName().equals(currentComponent)) {
+                            return findTypeByPath(components, index + 1, dataset);
+                        }
+                    } else if (ste.getCache().getCacheType() == 1) { // Group cache
                         HdfGroup group = ((HdfSymbolTableEntryCacheGroupMetadata) ste.getCache()).getGroup();
-                        if (group.getGroupName().equals(currentComponent)) {
-                            return findGroupByPath(components, index + 1, group);
+                        if (group.getObjectName().equals(currentComponent)) {
+                            return findTypeByPath(components, index + 1, group);
                         }
                     }
                 }
             }
         } else { // Internal node: recurse into child B-trees
             for (HdfBTreeEntry bte : bTree.getEntries()) {
-                HdfBTreeChildBtreeEntry childBtreeEntry = (HdfBTreeChildBtreeEntry) bte; // Safe cast: internal nodes only have child B-tree entries
+                HdfBTreeChildBtreeEntry childBtreeEntry = (HdfBTreeChildBtreeEntry) bte;
                 HdfBTreeV1 childBTree = childBtreeEntry.getChildBTree();
-                Optional<HdfGroup> result = findGroupInBTree(childBTree, components, index, currentComponent);
+                Optional<HdfDataObject> result = findTypeInBTree(childBTree, components, index, currentComponent);
                 if (result.isPresent()) {
                     return result;
                 }
@@ -399,75 +402,4 @@ public class HdfGroup implements Closeable {
         }
         return Optional.empty();
     }
-
-    /**
-     * Helper method to search for a dataset in a B-tree (used for internal nodes).
-     *
-     * @param bTree            the B-tree to search
-     * @param components       the path components
-     * @param index            the current component index
-     * @param currentComponent the current path component
-     * @return an Optional containing the HdfDataSet if found, or Optional.empty()
-     */
-    private Optional<HdfDataSet> findDatasetInBTree(HdfBTreeV1 bTree, String[] components, int index, String currentComponent) {
-        if (bTree.getNodeLevel() == 0) { // Leaf node: process SNOD entries
-            for (HdfBTreeEntry bte : bTree.getEntries()) {
-                HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) bte; // Safe cast: leaf nodes only have SNOD entries
-                for (HdfSymbolTableEntry ste : snodEntry.getSymbolTableNode().getSymbolTableEntries()) {
-                    if (ste.getCache().getCacheType() == 1) { // Group cache
-                        HdfGroup group = ((HdfSymbolTableEntryCacheGroupMetadata) ste.getCache()).getGroup();
-                        if (group.getGroupName().equals(currentComponent)) {
-                            return findDatasetByPath(components, index + 1, group);
-                        }
-                    }
-                }
-            }
-        } else { // Internal node: recurse into child B-trees
-            for (HdfBTreeEntry bte : bTree.getEntries()) {
-                HdfBTreeChildBtreeEntry childBtreeEntry = (HdfBTreeChildBtreeEntry) bte; // Safe cast: internal nodes only have child B-tree entries
-                HdfBTreeV1 childBTree = childBtreeEntry.getChildBTree();
-                Optional<HdfDataSet> result = findDatasetInBTree(childBTree, components, index, currentComponent);
-                if (result.isPresent()) {
-                    return result;
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
-    /**
-     * Helper method to search for a group in a B-tree (used for internal nodes).
-     *
-     * @param bTree            the B-tree to search
-     * @param components       the path components
-     * @param index            the current component index
-     * @param currentComponent the current path component
-     * @return an Optional containing the HdfGroup if found, or Optional.empty()
-     */
-    private Optional<HdfGroup> findGroupInBTree(HdfBTreeV1 bTree, String[] components, int index, String currentComponent) {
-        if (bTree.getNodeLevel() == 0) { // Leaf node: process SNOD entries
-            for (HdfBTreeEntry bte : bTree.getEntries()) {
-                HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) bte; // Safe cast: leaf nodes only have SNOD entries
-                for (HdfSymbolTableEntry ste : snodEntry.getSymbolTableNode().getSymbolTableEntries()) {
-                    if (ste.getCache().getCacheType() == 1) { // Group cache
-                        HdfGroup group = ((HdfSymbolTableEntryCacheGroupMetadata) ste.getCache()).getGroup();
-                        if (group.getGroupName().equals(currentComponent)) {
-                            return findGroupByPath(components, index + 1, group);
-                        }
-                    }
-                }
-            }
-        } else { // Internal node: recurse into child B-trees
-            for (HdfBTreeEntry bte : bTree.getEntries()) {
-                HdfBTreeChildBtreeEntry childBtreeEntry = (HdfBTreeChildBtreeEntry) bte; // Safe cast: internal nodes only have child B-tree entries
-                HdfBTreeV1 childBTree = childBtreeEntry.getChildBTree();
-                Optional<HdfGroup> result = findGroupInBTree(childBTree, components, index, currentComponent);
-                if (result.isPresent()) {
-                    return result;
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
 }

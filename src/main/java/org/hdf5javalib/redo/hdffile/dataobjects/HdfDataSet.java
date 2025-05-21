@@ -13,6 +13,7 @@ import org.hdf5javalib.redo.datatype.HdfDatatype;
 import org.hdf5javalib.redo.datatype.StringDatatype;
 import org.hdf5javalib.redo.datatype.VariableLengthDatatype;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.*;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeV1;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
 import java.io.Closeable;
@@ -26,6 +27,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -38,7 +40,7 @@ import java.util.function.Supplier;
  * This class implements {@link Closeable} to ensure proper resource management.
  * </p>
  */
-public class HdfDataSet implements Closeable {
+public class HdfDataSet implements HdfDataObject, Closeable {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfDataSet.class);
     /** The HDF5 file context. */
     private final HdfDataFile hdfDataFile;
@@ -550,4 +552,14 @@ public class HdfDataSet implements Closeable {
     public HdfObjectHeaderPrefixV1 getDataObjectHeaderPrefix() {
         return dataObjectHeaderPrefix;
     }
+
+    @Override
+    public String getObjectName() {
+        return datasetName;
+    }
+
+    public Optional<HdfBTreeV1> getBTreeOptionally() {
+        return Optional.empty();
+    }
+
 }
