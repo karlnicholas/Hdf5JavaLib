@@ -243,24 +243,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
      * @return an Optional containing the HdfDataSet if found, or Optional.empty() if not found or invalid
      */
     public Optional<HdfDataSet> getDataset(String path) {
-        if (path == null || path.isEmpty()) {
-            return Optional.empty();
-        }
-
-        // Remove leading '/' if present
-        String cleanedPath = path.startsWith("/") ? path.substring(1) : path;
-        if (cleanedPath.isEmpty()) {
-            return Optional.empty();
-        }
-
-        String[] components = cleanedPath.split("/");
-        if (components.length == 0) {
-            return Optional.empty();
-        }
-
-        return findTypeByPath(components, 0, this)
-                .filter(hdfDataObject -> hdfDataObject instanceof HdfDataSet)
-                .map(hdfDataObject -> (HdfDataSet) hdfDataObject);
+        return getObjectByPath(path, HdfDataSet.class);
     }
 
     /**
@@ -270,24 +253,32 @@ public class HdfGroup implements HdfDataObject, Closeable {
      * @return an Optional containing the HdfGroup if found, or Optional.empty() if not found or invalid
      */
     public Optional<HdfGroup> getGroup(String path) {
+        return getObjectByPath(path, HdfGroup.class);
+    }
+
+    /**
+     * Helper method to retrieve an HdfDataObject by path, filtered by the specified type.
+     *
+     * @param path the path to the object (e.g., "/weatherdata" or "Group0/Dataset1")
+     * @param type the expected class type (HdfDataSet or HdfGroup)
+     * @param <T> the type of HdfDataObject to return
+     * @return an Optional containing the object if found and of the correct type, or Optional.empty()
+     */
+    private <T extends HdfDataObject> Optional<T> getObjectByPath(String path, Class<T> type) {
         if (path == null || path.isEmpty()) {
             return Optional.empty();
         }
-
-        // Remove leading '/' if present
         String cleanedPath = path.startsWith("/") ? path.substring(1) : path;
         if (cleanedPath.isEmpty()) {
             return Optional.empty();
         }
-
         String[] components = cleanedPath.split("/");
         if (components.length == 0) {
             return Optional.empty();
         }
-
         return findTypeByPath(components, 0, this)
-                .filter(hdfDataObject -> hdfDataObject instanceof HdfGroup)
-                .map(hdfDataObject -> (HdfGroup) hdfDataObject);
+                .filter(type::isInstance)
+                .map(type::cast);
     }
 
     /**
