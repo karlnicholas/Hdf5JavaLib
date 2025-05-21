@@ -50,7 +50,7 @@ public class HdfBTreeV1 extends AllocationRecord {
     /** The first key (key zero) of the node. */
     private final HdfFixedPoint keyZero;
     /** The list of B-Tree entries. */
-    private List<HdfBTreeEntry> entries;
+    private final List<HdfBTreeEntry> entries;
     /** The HDF5 file context. */
     private final HdfDataFile hdfDataFile;
 
@@ -280,7 +280,7 @@ public class HdfBTreeV1 extends AllocationRecord {
                     throw new IllegalStateException("Null dataset name for linkNameOffset: " + maxOffset);
                 }
                 String minName = mid == 0 ? "" : group.getDatasetNameByLinkNameOffset(entries.get(mid - 1).getKey());
-                if (minName == null && mid != 0) {
+                if (minName == null) {
                     throw new IllegalStateException("Null dataset name for previous linkNameOffset: " + entries.get(mid - 1).getKey());
                 }
                 if (name.compareTo(minName) > 0 && name.compareTo(maxName) <= 0) {
@@ -291,10 +291,9 @@ public class HdfBTreeV1 extends AllocationRecord {
             if (entryIndex >= entries.size()) {
                 return Optional.empty();
             }
-            if (!(entries.get(entryIndex) instanceof HdfBTreeChildBtreeEntry)) {
+            if (!(entries.get(entryIndex) instanceof HdfBTreeChildBtreeEntry childBtreeEntry)) {
                 throw new IllegalStateException("Expected HdfBTreeChildBtreeEntry at index " + entryIndex + ", found: " + entries.get(entryIndex).getClass().getName());
             }
-            HdfBTreeChildBtreeEntry childBtreeEntry = (HdfBTreeChildBtreeEntry) entries.get(entryIndex);
             HdfBTreeV1 childBTree = childBtreeEntry.getChildBTree();
             if (childBTree == null) {
                 throw new IllegalStateException("Null child B-tree for entry at index " + entryIndex);
@@ -406,10 +405,9 @@ public class HdfBTreeV1 extends AllocationRecord {
         if (entryIndex >= entries.size()) {
             return Optional.empty();
         }
-        if (!(entries.get(entryIndex) instanceof HdfBTreeSnodEntry)) {
+        if (!(entries.get(entryIndex) instanceof HdfBTreeSnodEntry snodEntry)) {
             throw new IllegalStateException("Expected HdfBTreeSnodEntry at index " + entryIndex + ", found: " + entries.get(entryIndex).getClass().getName());
         }
-        HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) entries.get(entryIndex);
         HdfGroupSymbolTableNode snod = snodEntry.getSymbolTableNode();
         if (snod == null || snod.getSymbolTableEntries() == null || snod.getSymbolTableEntries().isEmpty()) {
             return Optional.of(new SnodSearchResult(entryIndex, 0));
@@ -449,7 +447,7 @@ public class HdfBTreeV1 extends AllocationRecord {
         }
         HdfSymbolTableEntry ste = snod.getSymbolTableEntries().get(steIndex);
         String steName = group.getDatasetNameByLinkNameOffset(ste.getLinkNameOffset());
-        if (steName == null || !name.equals(steName)) {
+        if (!name.equals(steName)) {
             return Optional.empty();
         }
         return Optional.of(ste);
@@ -708,9 +706,4 @@ public class HdfBTreeV1 extends AllocationRecord {
     public List<HdfBTreeEntry> getEntries() {
         return entries;
     }
-
-    public int getNodeLevel() {
-        return nodeLevel;
-    }
-
 }
