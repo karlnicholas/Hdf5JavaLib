@@ -5,6 +5,7 @@ import org.hdf5javalib.redo.AllocationType;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.HdfFileAllocation;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
@@ -15,6 +16,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
@@ -49,7 +51,7 @@ public class HdfBTreeV1 extends AllocationRecord {
     /** The first key (key zero) of the node. */
     private final HdfFixedPoint keyZero;
     /** The list of B-Tree entries. */
-    private final List<HdfBTreeEntry> entries;
+    private List<HdfBTreeEntry> entries;
     /** The HDF5 file context. */
     private final HdfDataFile hdfDataFile;
 
@@ -238,6 +240,88 @@ public class HdfBTreeV1 extends AllocationRecord {
     }
 
     /**
+     * Finds an HdfDataObject by name in the B-tree using binary search.
+     *
+     * @param name the object name to find (dataset or group)
+     * @param group the parent group for resolving link name offsets
+     * @return an Optional containing the HdfDataObject if found, or Optional.empty()
+     * @throws IllegalStateException if name resolution fails or node structure is invalid
+     */
+    public Optional<HdfDataObject> findObjectByName(String name, HdfGroup group) {
+        if (name == null || name.isEmpty()) {
+            return Optional.empty();
+        }
+        if (nodeLevel == 0) {
+            // Leaf node: binary search for HdfBTreeSnodEntry
+            int entryIndex = binarySearchDatasetName(entries.size(), (mid) -> {
+                HdfBTreeEntry entry = entries.get(mid);
+                HdfFixedPoint maxOffset = entry.getKey();
+                String maxName = group.getDatasetNameByLinkNameOffset(maxOffset);
+                if (maxName == null) {
+                    throw new IllegalStateException("Null dataset name for linkNameOffset: " + maxOffset);
+                }
+                return name.compareTo(maxName);
+            });
+            if (entryIndex >= entries.size()) {
+                return Optional.empty();
+            }
+            HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) entries.get(entryIndex);
+            HdfGroupSymbolTableNode snod = snodEntry.getSymbolTableNode();
+            // Binary search within SNOD's symbol table entries
+            int steIndex = binarySearchDatasetName(snod.getSymbolTableEntries().size(), (mid) -> {
+                HdfSymbolTableEntry ste = snod.getSymbolTableEntries().get(mid);
+                HdfFixedPoint offset = ste.getLinkNameOffset();
+                String steName = group.getDatasetNameByLinkNameOffset(offset);
+                if (steName == null) {
+                    throw new IllegalStateException("Null dataset name for linkNameOffset: " + offset);
+                }
+                return name.compareTo(steName);
+            });
+            if (steIndex >= snod.getSymbolTableEntries().size()) {
+                return Optional.empty();
+            }
+            HdfSymbolTableEntry ste = snod.getSymbolTableEntries().get(steIndex);
+            if (ste.getCache().getCacheType() == 0) {
+                HdfDataSet dataset = ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet();
+                if (dataset.getObjectName().equals(name)) {
+                    return Optional.of(dataset);
+                }
+            } else if (ste.getCache().getCacheType() == 1) {
+                HdfGroup foundGroup = ((HdfSymbolTableEntryCacheGroupMetadata) ste.getCache()).getGroup();
+                if (foundGroup.getObjectName().equals(name)) {
+                    return Optional.of(foundGroup);
+                }
+            }
+            return Optional.empty();
+        } else {
+            // Internal node: binary search for HdfBTreeChildBtreeEntry
+            int entryIndex = binarySearchDatasetName(entries.size(), (mid) -> {
+                HdfFixedPoint maxOffset = entries.get(mid).getKey();
+                String maxName = group.getDatasetNameByLinkNameOffset(maxOffset);
+                if (maxName == null) {
+                    throw new IllegalStateException("Null dataset name for linkNameOffset: " + maxOffset);
+                }
+                // Compare with previous key (or empty string for first entry)
+                String minName = mid == 0 ? "" : group.getDatasetNameByLinkNameOffset(entries.get(mid - 1).getKey());
+                if (minName == null && mid != 0) {
+                    throw new IllegalStateException("Null dataset name for previous linkNameOffset: " + entries.get(mid - 1).getKey());
+                }
+                // Name must be > minName and <= maxName
+                if (name.compareTo(minName) > 0 && name.compareTo(maxName) <= 0) {
+                    return 0; // Found the range
+                }
+                return name.compareTo(maxName);
+            });
+            if (entryIndex >= entries.size()) {
+                return Optional.empty();
+            }
+            HdfBTreeChildBtreeEntry childBtreeEntry = (HdfBTreeChildBtreeEntry) entries.get(entryIndex);
+            HdfBTreeV1 childBTree = childBtreeEntry.getChildBTree();
+            return childBTree.findObjectByName(name, group);
+        }
+    }
+
+    /**
      * Adds a dataset to the B-Tree, inserting it into the appropriate symbol table node.
      *
      * @param linkNameOffset           the offset of the link name in the local heap
@@ -324,7 +408,7 @@ public class HdfBTreeV1 extends AllocationRecord {
      * @param compareNames a function to compare dataset names
      * @return the insertion point index
      */
-    private int binarySearchDatasetName(
+    private static int binarySearchDatasetName(
             int size,
             Function<Integer, Integer> compareNames
     ) {

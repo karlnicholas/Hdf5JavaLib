@@ -534,4 +534,52 @@ public class FixedPointDatatype implements HdfDatatype {
     public int getBitPrecision() {
         return bitPrecision;
     }
+    /**
+     * Compares this FixedPointDatatype to another object for equality.
+     *
+     * @param obj the object to compare with
+     * @return true if the objects are equal, false otherwise
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        FixedPointDatatype other = (FixedPointDatatype) obj;
+        if (classAndVersion != other.classAndVersion) {
+            return false;
+        }
+        if (size != other.size) {
+            return false;
+        }
+        if (bitOffset != other.bitOffset) {
+            return false;
+        }
+        if (bitPrecision != other.bitPrecision) {
+            return false;
+        }
+        if (classBitField == null ? other.classBitField != null : !classBitField.equals(other.classBitField)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Returns a hash code for this FixedPointDatatype.
+     *
+     * @return a hash code value consistent with equals
+     */
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + classAndVersion;
+        result = 31 * result + size;
+        result = 31 * result + bitOffset;
+        result = 31 * result + bitPrecision;
+        result = 31 * result + (classBitField != null ? classBitField.hashCode() : 0);
+        return result;
+    }
 }

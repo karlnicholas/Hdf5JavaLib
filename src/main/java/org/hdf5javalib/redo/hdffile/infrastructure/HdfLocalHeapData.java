@@ -182,6 +182,7 @@ public class HdfLocalHeapData extends AllocationRecord {
     }
 
     public String getStringAtOffset(HdfFixedPoint offset) {
-        return data.get(offset).value();
+        HdfLocalHeapDataValue x = data.get(offset);
+        return x.value();
     }
 }

@@ -223,7 +223,7 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         HdfFixedPoint that = (HdfFixedPoint) o;
-        return Arrays.equals(bytes, that.bytes) && Objects.equals(datatype, that.datatype);
+        return Arrays.equals(bytes, that.bytes) && datatype.equals(that.datatype);
     }
 
     @Override
