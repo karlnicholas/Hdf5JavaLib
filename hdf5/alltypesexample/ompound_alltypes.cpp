@@ -4,8 +4,8 @@
 #include <vector>
 #include <cstring>
 
-const char* FILENAME = "example.h5";
-const char* DATASET = "/compound_example";
+const char* FILENAME = "compound_alltypes.h5";
+const char* DATASET = "/compound_alltypes";
 
 int main() {
     // Define the struct that matches our compound type

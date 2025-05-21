@@ -32,7 +32,7 @@ int main() {
          << HOFFSET(Record, array) << ", " << HOFFSET(Record, variable_length) << endl;
 
     try {
-        H5File file("compound_example.h5", H5F_ACC_TRUNC);
+        H5File file("compound_alltypes.h5", H5F_ACC_TRUNC);
 
         // Create a simple dataset in the root group (like /dummy in example.h5)
         hsize_t dims[1] = {1};
