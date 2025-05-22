@@ -1,10 +1,10 @@
 package org.hdf5javalib.redo.examples.read;
 
-import org.hdf5javalib.HdfDataFile;
-import org.hdf5javalib.HdfFileReader;
-import org.hdf5javalib.dataclass.HdfCompound;
-import org.hdf5javalib.datasource.TypedDataSource;
-import org.hdf5javalib.file.HdfDataSet;
+import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.HdfFileReader;
+import org.hdf5javalib.redo.dataclass.HdfCompound;
+import org.hdf5javalib.redo.datasource.TypedDataSource;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -43,12 +43,12 @@ public class HdfCompoundRead {
             Path filePath = getResourcePath("compound_alltypes.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                try (HdfDataSet dataSet = reader.getRootGroup().findDataset("CompoundData")) {
+                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/dummy").orElseThrow()) {
                     displayData(channel, dataSet, reader);
                 }
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

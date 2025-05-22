@@ -4,6 +4,7 @@ import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfCompound;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
+import org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.lang.reflect.Field;
@@ -126,21 +127,36 @@ public class CompoundDatatype implements HdfDatatype {
             alignBufferTo8ByteBoundary(buffer, name.length() + 1);
 
             int offset = buffer.getInt();
-            int dimensionality = Byte.toUnsignedInt(buffer.get());
-            buffer.position(buffer.position() + 3); // Skip reserved bytes
-            int dimensionPermutation = buffer.getInt();
-            buffer.position(buffer.position() + 4); // Skip reserved bytes
+//            int dimensionality = Byte.toUnsignedInt(buffer.get());
+//            buffer.position(buffer.position() + 3); // Skip reserved bytes
+//            int dimensionPermutation = buffer.getInt();
+//            buffer.position(buffer.position() + 4); // Skip reserved bytes
+//
+//            int[] dimensionSizes = new int[4];
+//            for (int j = 0; j < 4; j++) {
+//                dimensionSizes[j] = buffer.getInt();
+//            }
+//
+//            CompoundMemberDatatype compoundMemberDatatype = new CompoundMemberDatatype(
+//                    name,
+//                    offset,
+//                    dimensionality,
+//                    dimensionPermutation,
+//                    dimensionSizes,
+//                    DatatypeMessage.getHdfDatatype(buffer, hdfDataFile)
+//            );
 
+            int dimensionality = 0;
             int[] dimensionSizes = new int[4];
             for (int j = 0; j < 4; j++) {
-                dimensionSizes[j] = buffer.getInt();
+                dimensionSizes[j] = 0;
             }
 
             CompoundMemberDatatype compoundMemberDatatype = new CompoundMemberDatatype(
                     name,
                     offset,
                     dimensionality,
-                    dimensionPermutation,
+                    0,
                     dimensionSizes,
                     DatatypeMessage.getHdfDatatype(buffer, hdfDataFile)
             );

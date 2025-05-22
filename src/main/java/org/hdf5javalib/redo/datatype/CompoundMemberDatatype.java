@@ -55,22 +55,17 @@ public class CompoundMemberDatatype implements HdfDatatype {
         sizeMessageData = switch(type.getDatatypeClass()) {
             case FIXED -> computeFixedMessageDataSize(name);
             case FLOAT -> computeFloatMessageDataSize(name);
+            case TIME -> computeTimeMessageDataSize(name);
             case STRING -> computeStringMessageDataSize(name);
+            case BITFIELD -> computeBitfieldMessageDataSize(name);
+            case OPAQUE -> computeOpaqueMessageDataSize(name);
+            case COMPOUND -> computeCompoundMessageDataSize(name);
+            case REFERENCE -> computeReferenceMessageDataSize(name);
+            case ENUM -> computeEnumMessageDataSize(name);
             case VLEN -> computeVariableLengthMessageDataSize(name);
-            default -> throw new IllegalStateException("Unexpected datatype class: " + type.getDatatypeClass());
+            case ARRAY -> computeArrayMessageDataSize(name);
         };
 //        log.debug("CompoundMemberDatatype {}", this);
-    }
-
-    private short computeFloatMessageDataSize(String name) {
-        if (!name.isEmpty()) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-
-
-            return (short) (name.length()+1 + padding + 40 + 12);
-        } else {
-            return 52;
-        }
     }
 
     private short computeFixedMessageDataSize(String name) {
@@ -79,6 +74,24 @@ public class CompoundMemberDatatype implements HdfDatatype {
             return (short) (name.length()+1 + padding + 40 + 4);
         } else {
             return 44;
+        }
+    }
+
+    private short computeFloatMessageDataSize(String name) {
+        if (!name.isEmpty()) {
+            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+            return (short) (name.length()+1 + padding + 40 + 12);
+        } else {
+            return 52;
+        }
+    }
+
+    private int computeTimeMessageDataSize(String name) {
+        if (!name.isEmpty()) {
+            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+            return (short) (name.length()+1 + padding + 40 + 2);
+        } else {
+            return 42;
         }
     }
 
@@ -91,12 +104,69 @@ public class CompoundMemberDatatype implements HdfDatatype {
         }
     }
 
-    private short computeVariableLengthMessageDataSize(String name) {
+    private int computeBitfieldMessageDataSize(String name) {
+        if (!name.isEmpty()) {
+            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+            return (short) (name.length()+1 + padding + 40 + 4);
+        } else {
+            return 44;
+        }
+    }
+
+    private int computeOpaqueMessageDataSize(String name) {
+        if (!name.isEmpty()) {
+            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+            return (short) (name.length()+1 + padding + 40 + 0);
+        } else {
+            return 40;
+        }
+    }
+
+    private int computeCompoundMessageDataSize(String name) {
+        if (!name.isEmpty()) {
+            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+            return (short) (name.length()+1 + padding + 40 + 0);
+        } else {
+            return 40;
+        }
+    }
+
+    private int computeReferenceMessageDataSize(String name) {
+        if (!name.isEmpty()) {
+            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+            return (short) (name.length()+1 + padding + 40 + 0);
+        } else {
+            return 40;
+        }
+    }
+
+    private int computeEnumMessageDataSize(String name) {
+        // dymanic based on stuff
         if (!name.isEmpty()) {
             int padding = (8 -  ((name.length()+1)% 8)) % 8;
             return (short) (name.length()+1 + padding + 40 + 12);
         } else {
             return 52;
+        }
+    }
+
+    private short computeVariableLengthMessageDataSize(String name) {
+        // parent type message
+        if (!name.isEmpty()) {
+            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+            return (short) (name.length()+1 + padding + 40 + 12);
+        } else {
+            return 52;
+        }
+    }
+
+    private int computeArrayMessageDataSize(String name) {
+        // dynamic based on stuff
+        if (!name.isEmpty()) {
+            int padding = (8 -  ((name.length()+1)% 8)) % 8;
+            return (short) (name.length()+1 + padding + 40 + 0);
+        } else {
+            return 40;
         }
     }
 

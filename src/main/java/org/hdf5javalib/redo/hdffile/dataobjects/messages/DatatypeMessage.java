@@ -122,7 +122,6 @@ public class DatatypeMessage extends HdfMessage {
             case ENUM -> parseEnumDatatype(classAndVersion, classBitField, size, buffer, hdfDataFile);
             case VLEN -> parseVariableLengthDatatype(classAndVersion, classBitField, size, buffer, hdfDataFile);
             case ARRAY -> parseArrayDatatype(classAndVersion, classBitField, size, buffer, hdfDataFile);
-            default -> throw new UnsupportedOperationException("Unsupported datatype class: " + dataTypeClass);
         };
     }
 

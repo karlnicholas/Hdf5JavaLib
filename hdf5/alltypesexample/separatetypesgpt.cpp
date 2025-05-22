@@ -20,7 +20,7 @@ int main() {
     file.createDataSet("/float", PredType::NATIVE_FLOAT, scalar).write(&float_val, PredType::NATIVE_FLOAT);
 
     // 3. Time (HDF5 Class 2 Time datatype)
-    int64_t time_val = 1672531200; // 2023-01-01T00:00:00Z
+    int64_t time_val = 1672531200; //
     hid_t time_tid = H5Tcreate(H5T_TIME, 8); // Create Time datatype with 8-byte size
     if (time_tid < 0) {
         throw H5::DataTypeIException("H5Tcreate", "Failed to create Time datatype");

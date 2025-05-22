@@ -105,7 +105,7 @@ public class HdfFixedPointRead {
             filePath = getResourcePath("tictactoe_4d_state.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                display4DData(channel, reader, reader.getRootGroup().findDataset("game"));
+                display4DData(channel, reader, reader.getRootGroup().getDataset("/game").orElseThrow());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -196,16 +196,16 @@ public class HdfGroup implements HdfDataObject, Closeable {
 
     }
 
-    public HdfDataSet findDataset(String datasetName) {
-        return bTree.getEntries().stream()
-                .filter(bte -> bte instanceof HdfBTreeSnodEntry)
-                .flatMap(bte -> ((HdfBTreeSnodEntry) bte).getSymbolTableNode().getSymbolTableEntries().stream())
-                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)
-                .map(ste -> ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet())
-                .filter(dataSet -> dataSet.getDatasetName().equalsIgnoreCase(datasetName))
-                .findFirst()
-                .orElse(null);
-    }
+//    public HdfDataSet findDataset(String datasetName) {
+//        return bTree.getEntries().stream()
+//                .filter(bte -> bte instanceof HdfBTreeSnodEntry)
+//                .flatMap(bte -> ((HdfBTreeSnodEntry) bte).getSymbolTableNode().getSymbolTableEntries().stream())
+//                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)
+//                .map(ste -> ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet())
+//                .filter(dataSet -> dataSet.getDatasetName().equalsIgnoreCase(datasetName))
+//                .findFirst()
+//                .orElse(null);
+//    }
 
     /**
      * Returns a string representation of the HdfGroup.
