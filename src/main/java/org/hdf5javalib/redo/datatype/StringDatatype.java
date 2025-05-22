@@ -134,49 +134,54 @@ public class StringDatatype implements HdfDatatype {
     }
 
     /**
-     * Converts the byte array to a string, handling padding and character set.
+     * Converts the byte array to a string, handling padding and termination based on the padding type.
      *
      * @param bytes the byte array to convert
      * @return the string representation, decoded using ASCII or UTF-8
      */
     public String toString(byte[] bytes) {
         byte[] workingBytes = getWorkingBytes(bytes);
+        int length = size;
 
-        // Count non-0x00 bytes
-        int validLength = 0;
-        for (int i = 0; i < size; i++) {
-            if (workingBytes[i] != 0x00) {
-                validLength++;
+        // Handle padding types
+        if (getPaddingType() == PaddingType.NULL_TERMINATE || getPaddingType() == PaddingType.NULL_PAD) {
+            // Find first NUL byte
+            for (int i = 0; i < size; i++) {
+                if (workingBytes[i] == 0x00) {
+                    length = i;
+                    break;
+                }
             }
         }
+        // SPACE_PAD: Use all bytes, including spaces
 
-        // Build array without 0x00
-        byte[] cleanBytes = new byte[validLength];
-        int pos = 0;
-        for (int i = 0; i < size; i++) {
-            if (workingBytes[i] != 0x00) {
-                cleanBytes[pos++] = workingBytes[i];
-            }
-        }
+        // Copy valid bytes
+        byte[] validBytes = new byte[length];
+        System.arraycopy(workingBytes, 0, validBytes, 0, length);
 
-        return new String(cleanBytes,
+        // Decode using character set
+        return new String(validBytes,
                 getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
     }
 
     /**
-     * Prepares a working byte array for string conversion, applying padding if needed.
+     * Prepares a working byte array for string conversion, applying padding based on the padding type.
      *
      * @param bytes the input byte array
-     * @return a byte array of the correct size, padded with spaces if necessary
+     * @return a byte array of the correct size, padded with NULs or spaces if necessary
      */
     public byte[] getWorkingBytes(byte[] bytes) {
         byte[] workingBytes = new byte[size];
         int workingEnd = Math.min(size, bytes.length);
         System.arraycopy(bytes, 0, workingBytes, 0, workingEnd);
 
-        // Pad with spaces if SPACE_PAD and bytes is shorter than size
-        if (getPaddingType() == PaddingType.SPACE_PAD && workingEnd < size) {
-            Arrays.fill(workingBytes, workingEnd, size, (byte) ' ');
+        // Apply padding based on padding type
+        if (workingEnd < size) {
+            if (getPaddingType() == PaddingType.NULL_PAD || getPaddingType() == PaddingType.NULL_TERMINATE) {
+                Arrays.fill(workingBytes, workingEnd, size, (byte) 0x00); // NUL padding
+            } else if (getPaddingType() == PaddingType.SPACE_PAD) {
+                Arrays.fill(workingBytes, workingEnd, size, (byte) ' '); // Space padding
+            }
         }
         return workingBytes;
     }

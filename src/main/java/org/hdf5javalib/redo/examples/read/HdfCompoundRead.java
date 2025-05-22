@@ -8,7 +8,6 @@ import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,7 +42,8 @@ public class HdfCompoundRead {
             Path filePath = getResourcePath("compound_alltypes.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/dummy").orElseThrow()) {
+                log.debug("Root Group: {} ", reader.getRootGroup());
+                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/myDataset").orElseThrow()) {
                     displayData(channel, dataSet, reader);
                 }
             }
@@ -67,149 +67,49 @@ public class HdfCompoundRead {
         return Paths.get(resourcePath);
     }
 
-    /**
-     * A data class representing a compound dataset record.
-     */
-    public static class CompoundExample {
-        /** The record ID. */
-        private Long recordId;
-        /** A fixed-length string. */
-        private String fixedStr;
-        /** A variable-length string. */
-        private String varStr;
-        /** A float value. */
-        private Float floatVal;
-        /** A double value. */
-        private Double doubleVal;
-        /** An 8-bit integer value. */
-        private Byte int8_Val;
-        /** A 16-bit integer value. */
-        private Short int16_Val;
-        /** A 32-bit integer value. */
-        private Integer int32_Val;
-        /** A 64-bit integer value. */
-        private Long int64_Val;
-        /** An unsigned 8-bit integer value. */
-        private Short uint8_Val;
-        /** An unsigned 16-bit integer value. */
-        private Integer uint16_Val;
-        /** An unsigned 32-bit integer value. */
-        private Long uint32_Val;
-        /** An unsigned 64-bit integer value. */
-        private BigInteger uint64_Val;
-        /** A scaled unsigned integer value as a BigDecimal. */
-        private BigDecimal scaledUintVal;
+    public record Record(
+            int fixedPoint,              // int32_t fixed_point
+            float floatingPoint,         // float floating_point
+            long time,                   // uint64_t time (Class 2 Time)
+            String string,               // char string[16]
+            byte bitField,               // uint8_t bit_field
+            byte[] opaque,               // uint8_t opaque[4]
+            Compound compound,           // nested struct compound
+            long reference,              // hobj_ref_t reference
+            Level enumerated,            // int enumerated (LOW, MEDIUM, HIGH)
+            int[] array,                 // int array[3]
+            int[] variableLength         // hvl_t variable_length
+    ) {
+        // Nested record for compound
+        public record Compound(
+                short nestedInt,          // int16_t nested_int
+                double nestedDouble      // double nested_double
+        ) {}
 
-        public Long getRecordId() {
-            return recordId;
+        // Enum for enumerated field
+        public enum Level {
+            LOW(0), MEDIUM(1), HIGH(2);
+            private final int value;
+            Level(int value) { this.value = value; }
+            public int getValue() { return value; }
         }
 
-        public void setRecordId(Long recordId) {
-            this.recordId = recordId;
-        }
-
-        public String getFixedStr() {
-            return fixedStr;
-        }
-
-        public void setFixedStr(String fixedStr) {
-            this.fixedStr = fixedStr;
-        }
-
-        public String getVarStr() {
-            return varStr;
-        }
-
-        public void setVarStr(String varStr) {
-            this.varStr = varStr;
-        }
-
-        public Float getFloatVal() {
-            return floatVal;
-        }
-
-        public void setFloatVal(Float floatVal) {
-            this.floatVal = floatVal;
-        }
-
-        public Double getDoubleVal() {
-            return doubleVal;
-        }
-
-        public void setDoubleVal(Double doubleVal) {
-            this.doubleVal = doubleVal;
-        }
-
-        public Byte getInt8_Val() {
-            return int8_Val;
-        }
-
-        public void setInt8_Val(Byte int8_Val) {
-            this.int8_Val = int8_Val;
-        }
-
-        public Short getInt16_Val() {
-            return int16_Val;
-        }
-
-        public void setInt16_Val(Short int16_Val) {
-            this.int16_Val = int16_Val;
-        }
-
-        public Integer getInt32_Val() {
-            return int32_Val;
-        }
-
-        public void setInt32_Val(Integer int32_Val) {
-            this.int32_Val = int32_Val;
-        }
-
-        public Long getInt64_Val() {
-            return int64_Val;
-        }
-
-        public void setInt64_Val(Long int64_Val) {
-            this.int64_Val = int64_Val;
-        }
-
-        public Short getUint8_Val() {
-            return uint8_Val;
-        }
-
-        public void setUint8_Val(Short uint8_Val) {
-            this.uint8_Val = uint8_Val;
-        }
-
-        public Integer getUint16_Val() {
-            return uint16_Val;
-        }
-
-        public void setUint16_Val(Integer uint16_Val) {
-            this.uint16_Val = uint16_Val;
-        }
-
-        public Long getUint32_Val() {
-            return uint32_Val;
-        }
-
-        public void setUint32_Val(Long uint32_Val) {
-            this.uint32_Val = uint32_Val;
-        }
-
-        public BigInteger getUint64_Val() {
-            return uint64_Val;
-        }
-
-        public void setUint64_Val(BigInteger uint64_Val) {
-            this.uint64_Val = uint64_Val;
-        }
-
-        public BigDecimal getScaledUintVal() {
-            return scaledUintVal;
-        }
-
-        public void setScaledUintVal(BigDecimal scaledUintVal) {
-            this.scaledUintVal = scaledUintVal;
+        // Canonical constructor for validation
+        public Record {
+            if (string == null || string.length() > 16) {
+                throw new IllegalArgumentException("string must be non-null and at most 16 characters");
+            }
+            // Pad string to 16 chars with NULs for HDF5
+            string = string.length() < 16 ? string + "\0".repeat(16 - string.length()) : string;
+            if (opaque == null || opaque.length != 4) {
+                throw new IllegalArgumentException("opaque must be a 4-byte array");
+            }
+            if (array == null || array.length != 3) {
+                throw new IllegalArgumentException("array must be a 3-element int array");
+            }
+            if (variableLength == null) {
+                throw new IllegalArgumentException("variableLength must be non-null");
+            }
         }
     }
 
@@ -232,15 +132,14 @@ public class HdfCompoundRead {
                 .limit(10)
                 .forEach(c -> System.out.println("Row: " + c.getMembers()));
 
-        System.out.println("Ten BigDecimals = " + new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class).streamVector()
-                .filter(c -> c.getMembers().get(0).getInstance(Long.class) < 1010)
-                .map(c -> c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
+//        System.out.println("Ten BigDecimals = " + new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class).streamVector()
+//                .filter(c -> c.getMembers().get(0).getInstance(Long.class) < 1010)
+//                .map(c -> c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
 
-        System.out.println("RecordId < 1010, custom class:");
-        new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, CompoundExample.class)
-                .streamVector()
-                .filter(c -> c.getRecordId() < 1010)
-                .forEach(c -> System.out.println("Row: " + c));
-        System.out.println("DONE");
+//        System.out.println("RecordId < 1010, custom class:");
+//        new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, Record.class)
+//                .streamVector()
+//                .forEach(c -> System.out.println("Row: " + c));
+//        System.out.println("DONE");
     }
 }

@@ -9,7 +9,7 @@ using namespace std;
 struct Record {
     int32_t fixed_point;         // 4 bytes, offset 0
     float floating_point;        // 4 bytes, offset 4
-    uint64_t time;                // 8 bytes, offset 8
+    uint64_t time;               // 8 bytes, offset 8
     char string[16];             // 16 bytes, offset 16
     uint8_t bit_field;           // 1 byte, offset 32
     uint8_t opaque[4];           // 4 bytes, offset 33
@@ -82,33 +82,36 @@ int main() {
         VarLenType vlen_type(PredType::NATIVE_INT);
         compound_type.insertMember("variable_length", HOFFSET(Record, variable_length), vlen_type);
 
-        // Create the dataset with the compound type
-        DataSpace dataspace(1, dims);
+        // Create the dataset with the compound type for 10 records
+        hsize_t dims_10[1] = {10};
+        DataSpace dataspace(1, dims_10);
         DataSet dataset = file.createDataSet("/myDataset", compound_type, dataspace);
 
-        // Prepare one record of data
-        Record data{};
-        data.fixed_point = 42;
-        data.floating_point = 3.14f;
-        data.time = 1698765432;
-        strcpy(data.string, "Hello HDF5!");
-        data.bit_field = 0b10101010; // 170, stored as a bitfield
-        memcpy(data.opaque, "ABCD", 4);
-        data.compound.nested_int = 123;
-        data.compound.nested_double = 2.718;
-        hid_t file_id = file.getId();
-        H5Rcreate(&data.reference, file_id, "/dummy", H5R_OBJECT, -1); // Point to /dummy dataset
-        data.enumerated = 1;
-        int vlen_data[3] = {10, 20, 30};
-        data.variable_length.p = vlen_data;
-        data.variable_length.len = 3;
-        data.array[0] = 1;
-        data.array[1] = 2;
-        data.array[2] = 3;
+        // Prepare 10 records of data
+        Record data[10];
+        int vlen_data[3] = {10, 20, 30}; // Shared variable-length data
+        for (int i = 0; i < 10; i++) {
+            data[i].fixed_point = 42;
+            data[i].floating_point = 3.14f;
+            data[i].time = 1698765432;
+            strcpy(data[i].string, "Hello HDF5!");
+            data[i].bit_field = 0b10101010; // 170
+            memcpy(data[i].opaque, "ABCD", 4);
+            data[i].compound.nested_int = 123;
+            data[i].compound.nested_double = 2.718;
+            hid_t file_id = file.getId();
+            H5Rcreate(&data[i].reference, file_id, "/dummy", H5R_OBJECT, -1);
+            data[i].enumerated = 1;
+            data[i].variable_length.p = vlen_data;
+            data[i].variable_length.len = 3;
+            data[i].array[0] = 1;
+            data[i].array[1] = 2;
+            data[i].array[2] = 3;
+        }
 
-        dataset.write(&data, compound_type);
+        dataset.write(data, compound_type);
 
-        cout << "HDF5 file created successfully with one compound record!" << endl;
+        cout << "HDF5 file created successfully with ten compound records!" << endl;
     }
     catch (Exception& e) {
         cerr << "Error: " << e.getDetailMsg() << endl;
