@@ -4,10 +4,13 @@ import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfCompound;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
-import org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.RecordComponent;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,7 +67,7 @@ public class CompoundDatatype implements HdfDatatype {
     /**
      * Constructs a CompoundDatatype by parsing from a ByteBuffer.
      *
-     * @param classAndVersion the class and version information for the datatype
+     * @param classAndVersion the class and version byte of the datatype
      * @param classBitField   a BitSet indicating the number of members
      * @param size            the total size of the compound datatype in bytes
      * @param buffer          the ByteBuffer containing the datatype definition
@@ -252,7 +255,7 @@ public class CompoundDatatype implements HdfDatatype {
      */
     @Override
     public int getSizeMessageData() {
-        short size = 8; // confused here for 0 and 8
+        short size = 8; // Header size
         for (CompoundMemberDatatype member : members) {
             size += member.getSizeMessageData();
         }
@@ -321,33 +324,89 @@ public class CompoundDatatype implements HdfDatatype {
     }
 
     /**
-     * Converts byte data to a POJO instance of the specified class using reflection.
+     * Converts byte data to a POJO or record instance of the specified class using reflection.
      *
-     * @param <T>   the type of the POJO to be created
-     * @param clazz the Class object representing the POJO type
+     * @param <T>   the type of the POJO or record to be created
+     * @param clazz the Class object representing the type
      * @param bytes the byte array containing the data
      * @return an instance of type T populated with data from the byte array
-     * @throws RuntimeException if reflection fails or a field is not found
+     * @throws RuntimeException if reflection fails or a field/constructor is not found
      */
     public <T> T toPOJO(Class<T> clazz, byte[] bytes) {
-        Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields()).collect(Collectors.toMap(Field::getName, f -> f));
-        Map<String, CompoundMemberDatatype> nameToMemberMap = members.stream().collect(Collectors.toMap(CompoundMemberDatatype::getName, compoundMember -> compoundMember));
+        Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields())
+                .collect(Collectors.toMap(Field::getName, f -> f));
+        Map<String, CompoundMemberDatatype> nameToMemberMap = members.stream()
+                .collect(Collectors.toMap(CompoundMemberDatatype::getName, m -> m));
+
         try {
-            T instance = clazz.getDeclaredConstructor().newInstance();
-            for (CompoundMemberDatatype member : nameToMemberMap.values()) {
-                Field field = nameToFieldMap.get(member.getName());
-                if (field == null) {
-                    throw new NoSuchFieldException(member.getName());
+            T instance;
+            if (clazz.isRecord()) {
+                // Handle records: Find the canonical constructor matching record components
+                RecordComponent[] components = clazz.getRecordComponents();
+                Class<?>[] paramTypes = Arrays.stream(components)
+                        .map(RecordComponent::getType)
+                        .toArray(Class<?>[]::new);
+                Constructor<T> constructor = clazz.getDeclaredConstructor(paramTypes);
+                constructor.setAccessible(true);
+                Object[] args = new Object[paramTypes.length];
+
+                // Map members to constructor parameters
+                for (int i = 0; i < components.length; i++) {
+                    String componentName = components[i].getName();
+                    CompoundMemberDatatype member = nameToMemberMap.get(componentName);
+                    if (member != null) {
+                        Object value = member.getInstance(paramTypes[i], Arrays.copyOfRange(
+                                bytes, member.getOffset(), member.getOffset() + member.getSize()));
+                        if (paramTypes[i].isAssignableFrom(value.getClass())) {
+                            args[i] = value;
+                        } else {
+                            args[i] = getDefaultValue(paramTypes[i]);
+                        }
+                    } else {
+                        args[i] = getDefaultValue(paramTypes[i]);
+                    }
                 }
-                field.setAccessible(true);
-                Object value = member.getInstance(field.getType(), Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset() + member.getSize()));
-                if (field.getType().isAssignableFrom(value.getClass())) {
-                    field.set(instance, value);
+                instance = constructor.newInstance(args);
+            } else {
+                // Handle regular classes: Try no-arg constructor, then fallback to field setting
+                Constructor<T> constructor;
+                try {
+                    constructor = clazz.getDeclaredConstructor();
+                    constructor.setAccessible(true);
+                    instance = constructor.newInstance();
+                } catch (NoSuchMethodException e) {
+                    // Fallback to a parameterized constructor (simplified)
+                    Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+                    constructor = (Constructor<T>) Arrays.stream(constructors)
+                            .filter(c -> c.getParameterCount() <= nameToMemberMap.size())
+                            .findFirst()
+                            .orElseThrow(() -> new NoSuchMethodException("No suitable constructor for " + clazz.getName()));
+                    constructor.setAccessible(true);
+                    Class<?>[] paramTypes = constructor.getParameterTypes();
+                    Object[] args = new Object[paramTypes.length];
+                    for (int i = 0; i < paramTypes.length; i++) {
+                        args[i] = getDefaultValue(paramTypes[i]);
+                    }
+                    instance = constructor.newInstance(args);
+                }
+
+                // Set fields for regular classes
+                for (CompoundMemberDatatype member : nameToMemberMap.values()) {
+                    Field field = nameToFieldMap.get(member.getName());
+                    if (field != null) {
+                        field.setAccessible(true);
+                        Object value = member.getInstance(field.getType(), Arrays.copyOfRange(
+                                bytes, member.getOffset(), member.getOffset() + member.getSize()));
+                        if (field.getType().isAssignableFrom(value.getClass())) {
+                            field.set(instance, value);
+                        }
+                    }
                 }
             }
             return instance;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException |
+                 InvocationTargetException e) {
+            throw new RuntimeException("Failed to create instance of " + clazz.getName(), e);
         }
     }
 
@@ -408,5 +467,52 @@ public class CompoundDatatype implements HdfDatatype {
 
     public List<CompoundMemberDatatype> getMembers() {
         return members;
+    }
+
+    // Helper to provide default values for parameters or fields, generic for any type
+    private Object getDefaultValue(Class<?> type) {
+        // Primitives
+        if (type == int.class) return 0;
+        if (type == float.class) return 0.0f;
+        if (type == double.class) return 0.0;
+        if (type == long.class) return 0L;
+        if (type == short.class) return (short) 0;
+        if (type == byte.class) return (byte) 0;
+        if (type == char.class) return (char) 0;
+        if (type == boolean.class) return false;
+
+        // Arrays
+        if (type.isArray()) {
+            return Array.newInstance(type.getComponentType(), 0); // Zero-length array
+        }
+
+        // Enums
+        if (type.isEnum()) {
+            Object[] constants = type.getEnumConstants();
+            return constants.length > 0 ? constants[0] : null; // First enum constant or null
+        }
+
+        // Records
+        if (type.isRecord()) {
+            try {
+                RecordComponent[] components = type.getRecordComponents();
+                Class<?>[] paramTypes = Arrays.stream(components)
+                        .map(RecordComponent::getType)
+                        .toArray(Class<?>[]::new);
+                Constructor<?> constructor = type.getDeclaredConstructor(paramTypes);
+                constructor.setAccessible(true);
+                Object[] args = new Object[paramTypes.length];
+                for (int i = 0; i < paramTypes.length; i++) {
+                    args[i] = getDefaultValue(paramTypes[i]); // Recursive call for nested types
+                }
+                return constructor.newInstance(args);
+            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException |
+                     InvocationTargetException e) {
+                return null; // Fallback to null if instantiation fails
+            }
+        }
+
+        // Other reference types (e.g., String, List, custom classes)
+        return null;
     }
 }

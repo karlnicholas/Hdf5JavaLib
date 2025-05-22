@@ -2,17 +2,17 @@ package org.hdf5javalib.redo.examples.read;
 
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.HdfFileReader;
-import org.hdf5javalib.redo.dataclass.HdfCompound;
+import org.hdf5javalib.redo.dataclass.*;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.BitSet;
 
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.
@@ -68,22 +68,22 @@ public class HdfCompoundRead {
     }
 
     public record Record(
-            int fixedPoint,              // int32_t fixed_point
-            float floatingPoint,         // float floating_point
-            long time,                   // uint64_t time (Class 2 Time)
+            Integer fixed_point,              // int32_t fixed_point
+            Float floating_point,         // float floating_point
+            Long time,                   // uint64_t time (Class 2 Time)
             String string,               // char string[16]
-            byte bitField,               // uint8_t bit_field
-            byte[] opaque,               // uint8_t opaque[4]
+            BitSet bit_field,               // uint8_t bit_field
+            HdfOpaque opaque,               // uint8_t opaque[4]
             Compound compound,           // nested struct compound
-            long reference,              // hobj_ref_t reference
-            Level enumerated,            // int enumerated (LOW, MEDIUM, HIGH)
-            int[] array,                 // int array[3]
-            int[] variableLength         // hvl_t variable_length
+            HdfReference reference,              // hobj_ref_t reference
+            HdfEnum enumerated,            // int enumerated (LOW, MEDIUM, HIGH)
+            HdfArray array,                 // int array[3]
+            HdfVariableLength variable_length         // hvl_t variable_length
     ) {
         // Nested record for compound
         public record Compound(
-                short nestedInt,          // int16_t nested_int
-                double nestedDouble      // double nested_double
+                Integer nested_int,          // int16_t nested_int
+                Double nested_double      // double nested_double
         ) {}
 
         // Enum for enumerated field
@@ -94,23 +94,23 @@ public class HdfCompoundRead {
             public int getValue() { return value; }
         }
 
-        // Canonical constructor for validation
-        public Record {
-            if (string == null || string.length() > 16) {
-                throw new IllegalArgumentException("string must be non-null and at most 16 characters");
-            }
-            // Pad string to 16 chars with NULs for HDF5
-            string = string.length() < 16 ? string + "\0".repeat(16 - string.length()) : string;
-            if (opaque == null || opaque.length != 4) {
-                throw new IllegalArgumentException("opaque must be a 4-byte array");
-            }
-            if (array == null || array.length != 3) {
-                throw new IllegalArgumentException("array must be a 3-element int array");
-            }
-            if (variableLength == null) {
-                throw new IllegalArgumentException("variableLength must be non-null");
-            }
-        }
+//        // Canonical constructor for validation
+//        public Record {
+//            if (string == null || string.length() > 16) {
+//                throw new IllegalArgumentException("string must be non-null and at most 16 characters");
+//            }
+//            // Pad string to 16 chars with NULs for HDF5
+//            string = string.length() < 16 ? string + "\0".repeat(16 - string.length()) : string;
+//            if (opaque == null || opaque.length != 4) {
+//                throw new IllegalArgumentException("opaque must be a 4-byte array");
+//            }
+//            if (array == null || array.length != 3) {
+//                throw new IllegalArgumentException("array must be a 3-element int array");
+//            }
+//            if (variableLength == null) {
+//                throw new IllegalArgumentException("variableLength must be non-null");
+//            }
+//        }
     }
 
     /**
@@ -136,10 +136,10 @@ public class HdfCompoundRead {
 //                .filter(c -> c.getMembers().get(0).getInstance(Long.class) < 1010)
 //                .map(c -> c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
 
-//        System.out.println("RecordId < 1010, custom class:");
-//        new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, Record.class)
-//                .streamVector()
-//                .forEach(c -> System.out.println("Row: " + c));
-//        System.out.println("DONE");
+        System.out.println("Custom record class:");
+        new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, Record.class)
+                .streamVector()
+                .forEach(c -> System.out.println("Row: " + c));
+        System.out.println("DONE");
     }
 }
