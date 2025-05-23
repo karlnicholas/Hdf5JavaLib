@@ -13,6 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.RecordComponent;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +38,14 @@ public class CompoundDatatype implements HdfDatatype {
     private final int size;
     /** The list of member datatypes defining the compound structure. */
     private List<CompoundMemberDatatype> members;
+
+    // Add these static fields to your CompoundDatatype class
+    private static final Map<Class<?>, Map<String, Field>> CLASS_FIELD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Constructor<?>> CLASS_CONSTRUCTOR_CACHE = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, RecordComponent[]> CLASS_RECORD_COMPONENTS_CACHE = new ConcurrentHashMap<>();
+
+    // Cache the member map per instance (since members don't change after construction)
+    private volatile Map<String, CompoundMemberDatatype> cachedMemberMap;
 
     /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<CompoundDatatype, ?>> CONVERTERS = new HashMap<>();
@@ -333,83 +342,147 @@ public class CompoundDatatype implements HdfDatatype {
      * @throws RuntimeException if reflection fails or a field/constructor is not found
      */
     public <T> T toPOJO(Class<T> clazz, byte[] bytes) {
-        Map<String, Field> nameToFieldMap = Arrays.stream(clazz.getDeclaredFields())
-                .collect(Collectors.toMap(Field::getName, f -> f));
-        Map<String, CompoundMemberDatatype> nameToMemberMap = members.stream()
-                .collect(Collectors.toMap(CompoundMemberDatatype::getName, m -> m));
+        if (bytes == null || bytes.length == 0) {
+            throw new IllegalArgumentException("Byte array cannot be null or empty");
+        }
+
+        // Get cached field map for the class
+        Map<String, Field> nameToFieldMap = CLASS_FIELD_CACHE.computeIfAbsent(clazz, c ->
+                Arrays.stream(c.getDeclaredFields())
+                        .collect(Collectors.toMap(Field::getName, f -> f)));
+
+        // Get cached member map (instance-level cache since members are per-instance)
+        Map<String, CompoundMemberDatatype> nameToMemberMap = getCachedMemberMap();
 
         try {
             T instance;
             if (clazz.isRecord()) {
-                // Handle records: Find the canonical constructor matching record components
-                RecordComponent[] components = clazz.getRecordComponents();
-                Class<?>[] paramTypes = Arrays.stream(components)
-                        .map(RecordComponent::getType)
-                        .toArray(Class<?>[]::new);
-                Constructor<T> constructor = clazz.getDeclaredConstructor(paramTypes);
-                constructor.setAccessible(true);
-                Object[] args = new Object[paramTypes.length];
-
-                // Map members to constructor parameters
-                for (int i = 0; i < components.length; i++) {
-                    String componentName = components[i].getName();
-                    CompoundMemberDatatype member = nameToMemberMap.get(componentName);
-                    if (member != null) {
-                        Object value = member.getInstance(paramTypes[i], Arrays.copyOfRange(
-                                bytes, member.getOffset(), member.getOffset() + member.getSize()));
-                        if (paramTypes[i].isAssignableFrom(value.getClass())) {
-                            args[i] = value;
-                        } else {
-                            args[i] = getDefaultValue(paramTypes[i]);
-                        }
-                    } else {
-                        args[i] = getDefaultValue(paramTypes[i]);
-                    }
-                }
-                instance = constructor.newInstance(args);
+                instance = createRecordInstance(clazz, bytes, nameToMemberMap);
             } else {
-                // Handle regular classes: Try no-arg constructor, then fallback to field setting
-                Constructor<T> constructor;
-                try {
-                    constructor = clazz.getDeclaredConstructor();
-                    constructor.setAccessible(true);
-                    instance = constructor.newInstance();
-                } catch (NoSuchMethodException e) {
-                    // Fallback to a parameterized constructor (simplified)
-                    Constructor<?>[] constructors = clazz.getDeclaredConstructors();
-                    constructor = (Constructor<T>) Arrays.stream(constructors)
-                            .filter(c -> c.getParameterCount() <= nameToMemberMap.size())
-                            .findFirst()
-                            .orElseThrow(() -> new NoSuchMethodException("No suitable constructor for " + clazz.getName()));
-                    constructor.setAccessible(true);
-                    Class<?>[] paramTypes = constructor.getParameterTypes();
-                    Object[] args = new Object[paramTypes.length];
-                    for (int i = 0; i < paramTypes.length; i++) {
-                        args[i] = getDefaultValue(paramTypes[i]);
-                    }
-                    instance = constructor.newInstance(args);
-                }
-
-                // Set fields for regular classes
-                for (CompoundMemberDatatype member : nameToMemberMap.values()) {
-                    Field field = nameToFieldMap.get(member.getName());
-                    if (field != null) {
-                        field.setAccessible(true);
-                        Object value = member.getInstance(field.getType(), Arrays.copyOfRange(
-                                bytes, member.getOffset(), member.getOffset() + member.getSize()));
-                        if (field.getType().isAssignableFrom(value.getClass())) {
-                            field.set(instance, value);
-                        }
-                    }
-                }
+                instance = createClassInstance(clazz, bytes, nameToFieldMap, nameToMemberMap);
             }
             return instance;
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException |
-                 InvocationTargetException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to create instance of " + clazz.getName(), e);
         }
     }
 
+    // Helper method to get cached member map
+    private Map<String, CompoundMemberDatatype> getCachedMemberMap() {
+        if (cachedMemberMap == null) {
+            synchronized (this) {
+                if (cachedMemberMap == null) {
+                    cachedMemberMap = members.stream()
+                            .collect(Collectors.toMap(CompoundMemberDatatype::getName, m -> m));
+                }
+            }
+        }
+        return cachedMemberMap;
+    }
+
+    // Extracted record creation logic with caching
+    private <T> T createRecordInstance(Class<T> clazz, byte[] bytes,
+                                       Map<String, CompoundMemberDatatype> nameToMemberMap)
+            throws Exception {
+
+        // Cache record components
+        RecordComponent[] components = CLASS_RECORD_COMPONENTS_CACHE.computeIfAbsent(clazz,
+                Class::getRecordComponents);
+
+        Class<?>[] paramTypes = Arrays.stream(components)
+                .map(RecordComponent::getType)
+                .toArray(Class<?>[]::new);
+
+        // Cache constructor
+        @SuppressWarnings("unchecked")
+        Constructor<T> constructor = (Constructor<T>) CLASS_CONSTRUCTOR_CACHE.computeIfAbsent(clazz, c -> {
+            try {
+                Constructor<T> ctor = clazz.getDeclaredConstructor(paramTypes);
+                ctor.setAccessible(true);
+                return ctor;
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException("No canonical constructor found for record: " + clazz.getName(), e);
+            }
+        });
+
+        Object[] args = new Object[paramTypes.length];
+        for (int i = 0; i < components.length; i++) {
+            String componentName = components[i].getName();
+            CompoundMemberDatatype member = nameToMemberMap.get(componentName);
+            if (member != null) {
+                Object value = member.getInstance(paramTypes[i], Arrays.copyOfRange(
+                        bytes, member.getOffset(), member.getOffset() + member.getSize()));
+                if (paramTypes[i].isAssignableFrom(value.getClass())) {
+                    args[i] = value;
+                } else {
+                    args[i] = getDefaultValue(paramTypes[i]);
+                }
+            } else {
+                args[i] = getDefaultValue(paramTypes[i]);
+            }
+        }
+        return constructor.newInstance(args);
+    }
+
+    // Extracted class creation logic with caching
+    private <T> T createClassInstance(Class<T> clazz, byte[] bytes,
+                                      Map<String, Field> nameToFieldMap,
+                                      Map<String, CompoundMemberDatatype> nameToMemberMap)
+            throws Exception {
+
+        // Cache no-arg constructor
+        @SuppressWarnings("unchecked")
+        Constructor<T> constructor = (Constructor<T>) CLASS_CONSTRUCTOR_CACHE.computeIfAbsent(clazz, c -> {
+            try {
+                Constructor<T> ctor = clazz.getDeclaredConstructor();
+                ctor.setAccessible(true);
+                return ctor;
+            } catch (NoSuchMethodException e) {
+                // Fallback to parameterized constructor
+                Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+                Constructor<?> fallback = Arrays.stream(constructors)
+                        .filter(ct -> ct.getParameterCount() <= nameToMemberMap.size())
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("No suitable constructor for " + clazz.getName()));
+                fallback.setAccessible(true);
+                return fallback;
+            }
+        });
+
+        T instance;
+        if (constructor.getParameterCount() == 0) {
+            instance = constructor.newInstance();
+        } else {
+            // Handle parameterized constructor
+            Class<?>[] paramTypes = constructor.getParameterTypes();
+            Object[] args = new Object[paramTypes.length];
+            for (int i = 0; i < paramTypes.length; i++) {
+                args[i] = getDefaultValue(paramTypes[i]);
+            }
+            instance = constructor.newInstance(args);
+        }
+
+        // Set fields - this part benefits from cached field map
+        for (CompoundMemberDatatype member : nameToMemberMap.values()) {
+            Field field = nameToFieldMap.get(member.getName());
+            if (field != null) {
+                field.setAccessible(true);
+                Object value = member.getInstance(field.getType(), Arrays.copyOfRange(
+                        bytes, member.getOffset(), member.getOffset() + member.getSize()));
+                if (field.getType().isAssignableFrom(value.getClass())) {
+                    field.set(instance, value);
+                }
+            }
+        }
+        return instance;
+    }
+
+    // Optional: Method to clear caches if needed (useful for testing or memory management)
+    public static void clearReflectionCaches() {
+        CLASS_FIELD_CACHE.clear();
+        CLASS_CONSTRUCTOR_CACHE.clear();
+        CLASS_RECORD_COMPONENTS_CACHE.clear();
+    }
     /**
      * Sets the global heap for this datatype and its members.
      *
