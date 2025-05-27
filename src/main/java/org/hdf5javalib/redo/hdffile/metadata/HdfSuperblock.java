@@ -225,9 +225,9 @@ public class HdfSuperblock extends AllocationRecord {
 
         // Parse addresses using HdfFixedPoint
         HdfFixedPoint baseAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
-        HdfFixedPoint freeSpaceAddress = HdfReadUtils.checkUndefined(buffer, offsetSize) ? fixedPointDatatypeForOffset.undefined(buffer) : HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
-        HdfFixedPoint endOfFileAddress = HdfReadUtils.checkUndefined(buffer, offsetSize) ? fixedPointDatatypeForOffset.undefined(buffer) : HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
-        HdfFixedPoint driverInformationAddress = HdfReadUtils.checkUndefined(buffer, offsetSize) ? fixedPointDatatypeForOffset.undefined(buffer) : HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+        HdfFixedPoint freeSpaceAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+        HdfFixedPoint endOfFileAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+        HdfFixedPoint driverInformationAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
         HdfFixedPoint hdfOffset = HdfWriteUtils.hdfFixedPointFromValue(offset, fixedPointDatatypeForOffset);
 
         HdfSuperblock superblock = new HdfSuperblock(

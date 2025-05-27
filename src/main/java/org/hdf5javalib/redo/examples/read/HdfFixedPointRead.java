@@ -5,7 +5,6 @@ import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
-import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.utils.FlattenedArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,45 +70,68 @@ public class HdfFixedPointRead {
      */
     void run() throws Exception {
         Path filePath = getResourcePath("dsgroup.h5");
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-            HdfFileReader hdfFileReader = new HdfFileReader(channel).readFile();
-            hdfFileReader.getFileAllocation().printBlocks();
-            log.debug("Root Group: {} ", hdfFileReader.getRootGroup());
-            HdfGroup group = hdfFileReader.getRootGroup().getGroup("/Group1").orElseThrow();
-            for ( HdfDataSet dataset: group.getDataSets()) {
-                tryScalarDataSpliterator(channel, hdfFileReader, dataset);
-            }
-        }
-
+//        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+//            HdfFileReader hdfFileReader = new HdfFileReader(channel).readFile();
+//            hdfFileReader.getFileAllocation().printBlocks();
+//            log.debug("Root Group: {} ", hdfFileReader.getRootGroup());
+//            HdfGroup group = hdfFileReader.getRootGroup().getGroup("/Group1").orElseThrow();
+//            for ( HdfDataSet dataset: group.getDataSets()) {
+//                tryScalarDataSpliterator(channel, hdfFileReader, dataset);
+//            }
+//        }
+//
         try {
-            filePath = getResourcePath("vector.h5");
+            filePath = getResourcePath("test.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                tryVectorSpliterator(channel, reader, reader.getRootGroup().getDataSets().get(0));
+                log.debug("rootGroup {} ",  reader.getRootGroup());
+                tryScalarDataSpliterator(channel, reader, reader.getRootGroup().getDataSets().get(0));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        try {
-            filePath = getResourcePath("weatherdata.h5");
-            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-                tryMatrixSpliterator(channel, reader, reader.getRootGroup().getDataset("/weatherdata").orElseThrow());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            filePath = getResourcePath("weatherdata.h5");
+//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+//                HdfFileReader reader = new HdfFileReader(channel).readFile();
+//                tryMatrixSpliterator(channel, reader, reader.getRootGroup().getDataset("/weatherdata").orElseThrow());
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        try {
+//            filePath = getResourcePath("tictactoe_4d_state.h5");
+//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+//                HdfFileReader reader = new HdfFileReader(channel).readFile();
+//                display4DData(channel, reader, reader.getRootGroup().getDataset("/game").orElseThrow());
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+    }
 
-        try {
-            filePath = getResourcePath("tictactoe_4d_state.h5");
-            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-                display4DData(channel, reader, reader.getRootGroup().getDataset("/game").orElseThrow());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    /**
+     * Processes a scalar dataset using a TypedDataSource.
+     *
+     * @param channel     the file channel for reading the HDF5 file
+     * @param hdfDataFile the HDF5 file context
+     * @param dataSet     the scalar dataset to process
+     * @throws IOException if an I/O error occurs
+     */
+    void tryDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataSet dataSet) throws IOException {
+        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, hdfDataFile, dataSet, BigInteger.class);
+        BigInteger allData = dataSource.readScalar();
+        System.out.println("Scalar dataset name = " + dataSet.getDatasetName());
+        System.out.println("Scalar readAll stats = " + Stream.of(allData)
+                .collect(Collectors.summarizingInt(BigInteger::intValue)));
+        System.out.println("Scalar streaming list = " + dataSource.streamScalar().toList());
+        System.out.println("Scalar parallelStreaming list = " + dataSource.parallelStreamScalar().toList());
+
+        new TypedDataSource<>(channel, hdfDataFile, dataSet, HdfFixedPoint.class).streamScalar().forEach(System.out::println);
+        new TypedDataSource<>(channel, hdfDataFile, dataSet, String.class).streamScalar().forEach(System.out::println);
+        new TypedDataSource<>(channel, hdfDataFile, dataSet, BigDecimal.class).streamScalar().forEach(System.out::println);
     }
 
     /**

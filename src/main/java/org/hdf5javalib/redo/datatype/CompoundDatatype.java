@@ -6,11 +6,7 @@ import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.RecordComponent;
+import java.lang.reflect.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -130,6 +126,7 @@ public class CompoundDatatype implements HdfDatatype {
 
     private void readFromByteBuffer(ByteBuffer buffer, HdfDataFile hdfDataFile) {
         this.members = new ArrayList<>();
+        byte version = (byte) (classAndVersion >>> 4 & 0x0F);
         int numberOfMembers = extractNumberOfMembersFromBitSet();
         for (int i = 0; i < numberOfMembers; i++) {
             buffer.mark();
@@ -139,36 +136,34 @@ public class CompoundDatatype implements HdfDatatype {
             alignBufferTo8ByteBoundary(buffer, name.length() + 1);
 
             int offset = buffer.getInt();
-//            int dimensionality = Byte.toUnsignedInt(buffer.get());
-//            buffer.position(buffer.position() + 3); // Skip reserved bytes
-//            int dimensionPermutation = buffer.getInt();
-//            buffer.position(buffer.position() + 4); // Skip reserved bytes
-//
-//            int[] dimensionSizes = new int[4];
-//            for (int j = 0; j < 4; j++) {
-//                dimensionSizes[j] = buffer.getInt();
-//            }
-//
-//            CompoundMemberDatatype compoundMemberDatatype = new CompoundMemberDatatype(
-//                    name,
-//                    offset,
-//                    dimensionality,
-//                    dimensionPermutation,
-//                    dimensionSizes,
-//                    DatatypeMessage.getHdfDatatype(buffer, hdfDataFile)
-//            );
-
-            int dimensionality = 0;
+            int dimensionality;
             int[] dimensionSizes = new int[4];
-            for (int j = 0; j < 4; j++) {
-                dimensionSizes[j] = 0;
+            int dimensionPermutation = 0;
+            if ( version == 1 ) {
+                dimensionality = Byte.toUnsignedInt(buffer.get());
+                buffer.position(buffer.position() + 3); // Skip reserved bytes
+                buffer.getInt();
+                buffer.position(buffer.position() + 4); // Skip reserved bytes
+
+                for (int j = 0; j < 4; j++) {
+                    dimensionSizes[j] = buffer.getInt();
+                }
+
+            } else if ( version == 2 ) {
+                dimensionality = 0;
+                for (int j = 0; j < 4; j++) {
+                    dimensionSizes[j] = 0;
+                }
+
+            } else {
+                throw new UnsupportedOperationException("Unsupported classAndVersion: " + classAndVersion);
             }
 
             CompoundMemberDatatype compoundMemberDatatype = new CompoundMemberDatatype(
                     name,
                     offset,
                     dimensionality,
-                    0,
+                    dimensionPermutation,
                     dimensionSizes,
                     DatatypeMessage.getHdfDatatype(buffer, hdfDataFile)
             );
@@ -247,6 +242,7 @@ public class CompoundDatatype implements HdfDatatype {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("CompoundDatatype {")
+                .append(" classAndVersion: ").append(classAndVersion)
                 .append(" classBitField: ").append(classBitField)
                 .append(", size: ").append(size)
                 .append(", ");

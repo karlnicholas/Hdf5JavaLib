@@ -186,8 +186,8 @@ public class HdfBTreeV1 extends AllocationRecord {
         int nodeLevel = Byte.toUnsignedInt(headerBuffer.get());
         int entriesUsed = Short.toUnsignedInt(headerBuffer.getShort());
 
-        HdfFixedPoint leftSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), headerBuffer);
-        HdfFixedPoint rightSiblingAddress = HdfReadUtils.checkUndefined(headerBuffer, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize()) ? hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(headerBuffer) : HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), headerBuffer);
+        HdfFixedPoint leftSiblingAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), headerBuffer);
+        HdfFixedPoint rightSiblingAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), headerBuffer);
 
         int entriesDataSize = hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength().getSize()
                 + (entriesUsed * (hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().getSize() + hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength().getSize()));

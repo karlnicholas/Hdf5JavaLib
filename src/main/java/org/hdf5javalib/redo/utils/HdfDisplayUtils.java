@@ -90,6 +90,35 @@ public class HdfDisplayUtils {
     }
 
     /**
+     * Displays vector data from a dataset.
+     * <p>
+     * Reads and prints the vector data from the dataset using both direct reading and
+     * streaming methods, formatting the output with type information and a comma-separated
+     * list of values.
+     * </p>
+     *
+     * @param fileChannel the seekable byte channel for reading the HDF5 file
+     * @param dataSet     the dataset to read from
+     * @param clazz       the class type of the data elements
+     * @param hdfDataFile the HDF5 file context
+     * @param <T>         the type of the data elements
+     * @throws IOException if an I/O error occurs
+     */
+    public static <T> void displayMatrixData(SeekableByteChannel fileChannel, HdfDataSet dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+        TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
+
+        T[][] resultArray = dataSource.readMatrix();
+        System.out.println(displayType(clazz, resultArray) + " read   = " + displayValue(resultArray));
+
+        System.out.print(displayType(clazz, resultArray) + " stream = [");
+        String joined = dataSource.streamMatrix()
+                .map(HdfDisplayUtils::displayValue)
+                .collect(Collectors.joining(", "));
+        System.out.print(joined);
+        System.out.println("]");
+    }
+
+    /**
      * Formats the type information for display.
      *
      * @param declaredType the declared type of the data

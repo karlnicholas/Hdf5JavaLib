@@ -126,19 +126,6 @@ public class FixedPointDatatype implements HdfDatatype {
     }
 
     /**
-     * Creates an undefined HdfFixedPoint instance from a ByteBuffer.
-     *
-     * @param buffer the ByteBuffer containing the undefined value data
-     * @return an HdfFixedPoint instance representing an undefined value
-     */
-    public HdfFixedPoint undefined(ByteBuffer buffer) {
-        HdfReadUtils.validateSize(size);
-        byte[] undefinedBytes = new byte[size];
-        buffer.get(undefinedBytes);
-        return new HdfFixedPoint(undefinedBytes, this);
-    }
-
-    /**
      * Writes the datatype definition to the provided ByteBuffer.
      *
      * @param buffer the ByteBuffer to write the datatype definition to
