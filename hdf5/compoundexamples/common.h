@@ -2,17 +2,28 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <hdf5.h>
-#include <cstdint> // Include for fixed-width integer types like uint64_t etc.
+#include <hdf5.h>   // For HOFFSET
+#include <stdint.h> // For fixed-width integer types like uint64_t
+#include <stddef.h> // For size_t
 
+// YOUR ORIGINAL MACROS FOR C++ to C++ SUCCESS
 #define FILENAME "compound_example.h5"
 #define DATASETNAME "CompoundData"
+// From your common_cpp.h that worked with the successful C++ reader/writer
+#define ATTRIBUTE_NAME_MACRO "GIT root revision"
 #define NUM_RECORDS 1000
 
 struct Record {
     uint64_t recordId;
     char fixedStr[10];
-    char* varStr; // MODIFIED: Changed from hvl_t to char* for VLEN string
+#ifdef __cplusplus
+    const char* varStr; // C++ uses const char* for VLEN string data pointer
+#else
+    // This C-side definition is for if a C program were to try and match
+    // this specific C++ memory layout (sizeof approx 88 bytes).
+    // This is NOT for C/C++ interop where C uses hvl_t.
+    char* varStr;
+#endif
     float floatVal;
     double doubleVal;
     int8_t int8_Val;
@@ -23,7 +34,7 @@ struct Record {
     uint32_t uint32_Val;
     int64_t int64_Val;
     uint64_t uint64_Val;
-    uint64_t scaledUintVal; // Represents data that is a scaled 
+    uint64_t scaledUintVal; // Application handles bitfield packing/unpacking
 };
 
 #endif // COMMON_H

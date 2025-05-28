@@ -39,11 +39,11 @@ public class HdfCompoundRead {
      */
     private void run() {
         try {
-            Path filePath = getResourcePath("compound_alltypes.h5");
+            Path filePath = getResourcePath("compound_example.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Root Group: {} ", reader.getRootGroup());
-                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/myDataset").orElseThrow()) {
+                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/CompoundData").orElseThrow()) {
                     displayData(channel, dataSet, reader);
                 }
             }
@@ -135,11 +135,11 @@ public class HdfCompoundRead {
 //        System.out.println("Ten BigDecimals = " + new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class).streamVector()
 //                .filter(c -> c.getMembers().get(0).getInstance(Long.class) < 1010)
 //                .map(c -> c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
-
-        System.out.println("Custom record class:");
-        new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, Record.class)
-                .streamVector()
-                .forEach(c -> System.out.println("Row: " + c));
-        System.out.println("DONE");
+//
+//        System.out.println("Custom record class:");
+//        new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, Record.class)
+//                .streamVector()
+//                .forEach(c -> System.out.println("Row: " + c));
+//        System.out.println("DONE");
     }
 }

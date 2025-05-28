@@ -40,28 +40,28 @@ public class HdfDimensionsRead {
     private void run() {
         try {
             Path filePath = getResourcePath("dimensions.h5");
+//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+//                HdfFileReader reader = new HdfFileReader(channel).readFile();
+//                log.debug("Root Group: {} ", reader.getRootGroup());
+//                try (HdfDataSet ds = reader.getRootGroup().getDataset("/scalar_dataset").orElseThrow()) {
+//                    displayScalarData(channel, ds, HdfFloatPoint.class, reader);
+//                }
+//                try (HdfDataSet ds = reader.getRootGroup().getDataset("/1d_dataset").orElseThrow()) {
+//                    displayVectorData(channel, ds, HdfFloatPoint.class, reader);
+//                }
+//                try (HdfDataSet ds = reader.getRootGroup().getDataset("/2d_dataset").orElseThrow()) {
+//                    displayMatrixData(channel, ds, HdfFloatPoint.class, reader);
+//                }
+//                try (HdfDataSet ds = reader.getRootGroup().getDataset("/2d_dataset_permuted").orElseThrow()) {
+//                    displayMatrixData(channel, ds, HdfFloatPoint.class, reader);
+//                }
+//            }
+            filePath = getResourcePath("array_datasets.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Root Group: {} ", reader.getRootGroup());
-                try (HdfDataSet ds = reader.getRootGroup().getDataset("/scalar_dataset").orElseThrow()) {
-                    displayScalarData(channel, ds, HdfFloatPoint.class, reader);
-                }
-                try (HdfDataSet ds = reader.getRootGroup().getDataset("/1d_dataset").orElseThrow()) {
-                    displayVectorData(channel, ds, HdfFloatPoint.class, reader);
-                }
-                try (HdfDataSet ds = reader.getRootGroup().getDataset("/2d_dataset").orElseThrow()) {
-                    displayMatrixData(channel, ds, HdfFloatPoint.class, reader);
-                }
-                try (HdfDataSet ds = reader.getRootGroup().getDataset("/2d_dataset_permuted").orElseThrow()) {
-                    displayMatrixData(channel, ds, HdfFloatPoint.class, reader);
-                }
-            }
-            filePath = getResourcePath("array.h5");
-            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-                log.debug("Root Group: {} ", reader.getRootGroup());
-                try (HdfDataSet ds = reader.getRootGroup().getDataset("/array_dataset").orElseThrow()) {
-                    displayScalarData(channel, ds, HdfArray.class, reader);
+                for( HdfDataSet ds : reader.getRootGroup().getDataSets() ) {
+                    displayScalarData(channel, ds, HdfData[].class, reader);
                 }
             }
         } catch (Exception e) {
