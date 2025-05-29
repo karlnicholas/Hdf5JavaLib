@@ -191,6 +191,9 @@ public class TypedDataSource<T> {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
         }
+        if ( HdfFixedPoint.compareToZero(dataset.getdimensionSizes()[0]) <= 0 )  {
+            throw new IllegalStateException("Dataset has no data");
+        }
         ByteBuffer buffer = readBytes(0, elementSize);
         return populateElement(buffer);
     }
@@ -205,6 +208,9 @@ public class TypedDataSource<T> {
     public Stream<T> streamScalar() {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
+        }
+        if ( HdfFixedPoint.compareToZero(dataset.getdimensionSizes()[0]) <= 0 )  {
+            throw new IllegalStateException("Dataset has no data");
         }
         try {
             return Stream.of(readScalar());

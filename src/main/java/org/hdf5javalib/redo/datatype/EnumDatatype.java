@@ -211,7 +211,7 @@ public class EnumDatatype implements HdfDatatype {
      */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
-        return required | false;
+        return required | baseType.requiresGlobalHeap(required);
     }
 
     /**
@@ -304,7 +304,7 @@ public class EnumDatatype implements HdfDatatype {
      */
     @Override
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {
-        // Empty implementation to satisfy interface
+        baseType.setGlobalHeap(globalHeap);
     }
 
     /**

@@ -316,6 +316,7 @@ public class VariableLengthDatatype implements HdfDatatype {
     @Override
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {
         this.globalHeap = globalHeap;
+        this.hdfDatatype.setGlobalHeap(globalHeap);
     }
 
     public HdfGlobalHeap getGlobalHeap() {

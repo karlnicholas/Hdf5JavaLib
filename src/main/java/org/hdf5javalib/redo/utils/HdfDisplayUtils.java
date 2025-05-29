@@ -1,11 +1,18 @@
 package org.hdf5javalib.redo.utils;
 
+import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.HdfFileReader;
+import org.hdf5javalib.redo.dataclass.HdfData;
+import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -34,6 +41,27 @@ public class HdfDisplayUtils {
         String ATTRIBUTE_NAME = "GIT root revision";
         String ATTRIBUTE_VALUE = "Revision: , URL: ";
         dataset.createAttribute(ATTRIBUTE_NAME, ATTRIBUTE_VALUE, hdfDataFile);
+    }
+    public static void displayData(SeekableByteChannel channel, HdfDataSet ds, HdfFileReader reader) throws Exception {
+        System.out.println(ds.getDatasetName());
+        if ( ds.hasDataspaceMessage() ) {
+            switch (ds.getDimensionality()) {
+                case 0:
+                    if (HdfFixedPoint.compareToZero(ds.getdimensionSizes()[0]) != 0) {
+                        displayScalarData(channel, ds, HdfData.class, reader);
+                    }
+                    break;
+                case 1:
+                    displayVectorData(channel, ds, HdfData.class, reader);
+                    break;
+                case 2:
+                    displayMatrixData(channel, ds, HdfData.class, reader);
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + ds.getDimensionality());
+
+            }
+        }
     }
 
     /**

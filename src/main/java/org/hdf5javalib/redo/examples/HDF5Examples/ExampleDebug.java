@@ -4,7 +4,6 @@ import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.*;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
-import org.hdf5javalib.redo.utils.HdfDisplayUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -26,8 +25,8 @@ import static org.hdf5javalib.redo.utils.HdfDisplayUtils.*;
  * dataset, as well as conversion to a custom Java class.
  * </p>
  */
-public class ExamplesRead {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ExamplesRead.class);
+public class ExampleDebug {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ExampleDebug.class);
 
     /**
      * Entry point for the application.
@@ -35,7 +34,7 @@ public class ExamplesRead {
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
-        new ExamplesRead().run();
+        new ExampleDebug().run();
     }
 
     /**
@@ -43,31 +42,17 @@ public class ExamplesRead {
      */
     private void run() {
         try {
-
-            // List all .h5 files in HDF5Examples resources directory
-            Path dirPath = Paths.get(ExamplesRead.class.getClassLoader().getResource("HDF5Examples").toURI());
-            Files.list(dirPath)
-                    .filter(p -> p.toString().endsWith(".h5"))
-                    .forEach(p -> {
-                        System.out.println("Running " + p.getFileName());
-                        displayFile(p);
-                    });
-        } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    public void displayFile(Path filePath) {
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-            HdfFileReader reader = new HdfFileReader(channel).readFile();
-            log.info("RootGroup: {}", reader.getRootGroup());
-            for (HdfDataSet ds : reader.getRootGroup().getDataSets()) {
-                HdfDisplayUtils.displayData(channel, ds, reader);
+            Path filePath = getResourcePath("HDF5Examples/h5ex_t_objref.h5");
+            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+                log.debug("Root Group: {} ", reader.getRootGroup());
+                reader.getFileAllocation().printBlocks();
+                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
+                    displayData(channel, dataSet, reader);
+                }
             }
         } catch (Exception e) {
-            System.out.println("Exception in displayFile: " + filePath);
-            e.printStackTrace(System.out);
+            throw new RuntimeException(e);
         }
     }
 

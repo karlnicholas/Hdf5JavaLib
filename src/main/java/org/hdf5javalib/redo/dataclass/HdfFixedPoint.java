@@ -88,6 +88,10 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
         return result;
     }
 
+    public static int compareToZero(HdfFixedPoint hdfFixedPoint) {
+        return compareToBytes(hdfFixedPoint.bytes, new byte[hdfFixedPoint.datatype.getSize()]);
+    }
+
     /**
      * Returns a copy of the byte array containing the fixed-point data.
      *

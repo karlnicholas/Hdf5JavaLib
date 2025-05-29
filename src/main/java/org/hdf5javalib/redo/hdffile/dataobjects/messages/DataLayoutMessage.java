@@ -179,7 +179,7 @@ public class DataLayoutMessage extends HdfMessage {
         return "DataLayoutMessage("+(getSizeMessageData()+8)+"){" +
                 "version=" + version +
                 ", layoutClass=" + layoutClass +
-                ", dataAddress=" + (layoutClass == 1 || layoutClass == 2 ? dataAddress : "N/A") +
+                ", dataAddress=" + (dataAddress.isUndefined() ? "<Undefined>": dataAddress) +
                 ", dimensionSizes=" + Arrays.toString(dimensionSizes) +
                 ", compactDataSize=" + (layoutClass == 0 ? compactDataSize : "N/A") +
                 ", compactData=" + (layoutClass == 0 ? Arrays.toString(compactData) : "N/A") +
