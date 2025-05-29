@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 /**
  * Demonstrates reading and processing fixed-point data from HDF5 files.
  * <p>
- * The {@code HdfFixedPointRead} class is an example application that reads
+ * The {@code FixedPointRead} class is an example application that reads
  * fixed-point datasets from HDF5 files with different dimensionalities (scalar,
  * vector, matrix, and 4D). It uses {@link TypedDataSource} to process the data,
  * showcasing various operations such as reading, streaming, flattening, slicing,

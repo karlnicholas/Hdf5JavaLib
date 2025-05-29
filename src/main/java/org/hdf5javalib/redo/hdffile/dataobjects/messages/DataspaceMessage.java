@@ -199,6 +199,10 @@ public class DataspaceMessage extends HdfMessage {
         return dimensions;
     }
 
+    public int getDimensionality() {
+        return dimensionality;
+    }
+
     /**
      * Enum representing flags for HDF5 dataspace messages.
      */

@@ -18,7 +18,7 @@ import java.nio.file.StandardOpenOption;
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.
  * <p>
- * The {@code HdfCompoundRead} class serves as an example application that reads
+ * The {@code CompoundRead} class serves as an example application that reads
  * a compound dataset from an HDF5 file, processes it using a {@link TypedDataSource},
  * and displays the results. It showcases filtering and mapping operations on the
  * dataset, as well as conversion to a custom Java class.

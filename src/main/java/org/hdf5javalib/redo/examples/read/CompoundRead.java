@@ -1,10 +1,12 @@
 package org.hdf5javalib.redo.examples.read;
 
+import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.*;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 
+import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,26 +14,24 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.BitSet;
 
-import static org.hdf5javalib.redo.utils.HdfDisplayUtils.*;
-
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.
  * <p>
- * The {@code HdfCompoundRead} class serves as an example application that reads
+ * The {@code CompoundRead} class serves as an example application that reads
  * a compound dataset from an HDF5 file, processes it using a {@link TypedDataSource},
  * and displays the results. It showcases filtering and mapping operations on the
  * dataset, as well as conversion to a custom Java class.
  * </p>
  */
-public class HdfDimensionsRead {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfDimensionsRead.class);
+public class CompoundRead {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CompoundRead.class);
     /**
      * Entry point for the application.
      *
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
-        new HdfDimensionsRead().run();
+        new CompoundRead().run();
     }
 
     /**
@@ -39,35 +39,20 @@ public class HdfDimensionsRead {
      */
     private void run() {
         try {
-            Path filePath = getResourcePath("dimensions.h5");
-//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-//                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                log.debug("Root Group: {} ", reader.getRootGroup());
-//                try (HdfDataSet ds = reader.getRootGroup().getDataset("/scalar_dataset").orElseThrow()) {
-//                    displayScalarData(channel, ds, HdfFloatPoint.class, reader);
-//                }
-//                try (HdfDataSet ds = reader.getRootGroup().getDataset("/1d_dataset").orElseThrow()) {
-//                    displayVectorData(channel, ds, HdfFloatPoint.class, reader);
-//                }
-//                try (HdfDataSet ds = reader.getRootGroup().getDataset("/2d_dataset").orElseThrow()) {
-//                    displayMatrixData(channel, ds, HdfFloatPoint.class, reader);
-//                }
-//                try (HdfDataSet ds = reader.getRootGroup().getDataset("/2d_dataset_permuted").orElseThrow()) {
-//                    displayMatrixData(channel, ds, HdfFloatPoint.class, reader);
-//                }
-//            }
-            filePath = getResourcePath("array_datasets.h5");
+            Path filePath = getResourcePath("compound_example.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Root Group: {} ", reader.getRootGroup());
-                for( HdfDataSet ds : reader.getRootGroup().getDataSets() ) {
-                    displayScalarData(channel, ds, HdfData[].class, reader);
+                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/CompoundData").orElseThrow()) {
+                    displayData(channel, dataSet, reader);
                 }
             }
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
     /**
      * Retrieves the file path for a resource.
      *
@@ -128,4 +113,33 @@ public class HdfDimensionsRead {
 //        }
     }
 
+    /**
+     * Displays data from a compound dataset using a TypedDataSource.
+     * <p>
+     * Reads the dataset, processes it as both raw HdfCompound and custom CompoundExample
+     * objects, and prints selected rows and filtered values.
+     * </p>
+     *
+     * @param seekableByteChannel the file channel for reading the HDF5 file
+     * @param dataSet             the compound dataset to process
+     * @param hdfDataFile         the HDF5 file context
+     * @throws IOException if an I/O error occurs
+     */
+    public void displayData(SeekableByteChannel seekableByteChannel, HdfDataSet dataSet, HdfDataFile hdfDataFile) throws IOException {
+        System.out.println("Ten Rows:");
+        new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class)
+                .streamVector()
+                .limit(10)
+                .forEach(c -> System.out.println("Row: " + c.getMembers()));
+
+//        System.out.println("Ten BigDecimals = " + new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class).streamVector()
+//                .filter(c -> c.getMembers().get(0).getInstance(Long.class) < 1010)
+//                .map(c -> c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
+//
+//        System.out.println("Custom record class:");
+//        new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, Record.class)
+//                .streamVector()
+//                .forEach(c -> System.out.println("Row: " + c));
+//        System.out.println("DONE");
+    }
 }

@@ -14,19 +14,19 @@ import java.nio.file.StandardOpenOption;
 /**
  * Demonstrates reading scalar datasets from an HDF5 file.
  * <p>
- * The {@code HdfTwentyScalarRead} class is an example application that reads
+ * The {@code TwentyScalarRead} class is an example application that reads
  * multiple scalar datasets from an HDF5 file and displays their values as
  * {@code Long} using {@link HdfDisplayUtils}.
  * </p>
  */
-public class HdfTwentyScalarRead {
+public class TwentyScalarRead {
     /**
      * Entry point for the application.
      *
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
-        new HdfTwentyScalarRead().run();
+        new TwentyScalarRead().run();
     }
 
     /**

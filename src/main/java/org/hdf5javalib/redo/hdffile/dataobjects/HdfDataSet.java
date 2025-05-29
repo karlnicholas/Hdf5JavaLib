@@ -562,4 +562,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
         return Optional.empty();
     }
 
+    public int getDimensionality() {
+        return dataObjectHeaderPrefix.findMessageByType(DataspaceMessage.class).orElseThrow().getDimensionality();
+    }
 }

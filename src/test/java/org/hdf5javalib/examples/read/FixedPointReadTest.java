@@ -21,7 +21,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class HdfFixedPointReadTest {
+public class FixedPointReadTest {
     private static final BigInteger[] VECTOR_EXPECTED = IntStream.rangeClosed(1, 1000)
             .mapToObj(BigInteger::valueOf)
             .toArray(BigInteger[]::new);

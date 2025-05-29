@@ -166,7 +166,7 @@ public class HdfStringRead {
    - Compile and run:
      ```bash
      mvn compile
-     java -cp target/classes org.hdf5javalib.examples.read.HdfCompoundRead
+     java -cp target/classes org.hdf5javalib.examples.read.CompoundRead
      ```
 
 2. **From Source**:
@@ -178,7 +178,7 @@ public class HdfStringRead {
    - Run examples:
      ```bash
      mvn compile
-     java -cp target/classes org.hdf5javalib.examples.read.HdfCompoundRead
+     java -cp target/classes org.hdf5javalib.examples.read.CompoundRead
      ```
 
 3. **Tips**:
