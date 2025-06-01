@@ -7,4 +7,9 @@ public class HdfDatasetRegionReference implements HdfReferenceInstance {
     public HdfDatasetRegionReference(byte[] bytes, ReferenceDatatype dt, boolean external) {
         this.external = external;
     }
+
+    @Override
+    public String toString() {
+        return "HdfDatasetRegionReference [external=" + external + "]";
+    }
 }

@@ -135,10 +135,11 @@ public class ReferenceDatatype implements HdfDatatype {
     }
 
     public String toString(byte[] bytes) {
-        if (bytes.length != size) throw new IllegalArgumentException("Byte array length mismatch");
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) sb.append(String.format("%02X", b));
-        return "Reference[" + getReferenceType(classBitField).description + "]=" + sb;
+//        if (bytes.length != size) throw new IllegalArgumentException("Byte array length mismatch");
+//        StringBuilder sb = new StringBuilder();
+//        for (byte b : bytes) sb.append(String.format("%02X", b));
+//        return "Reference[" + getReferenceType(classBitField).description + "]=" + sb;
+        return getInstance(HdfReferenceInstance.class, bytes).toString();
     }
 
     @Override
