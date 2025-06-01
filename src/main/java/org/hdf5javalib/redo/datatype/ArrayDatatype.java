@@ -50,6 +50,7 @@ public class ArrayDatatype implements HdfDatatype {
     private final int[] permutationIndices;
     /** The base datatype of the array elements. */
     private final HdfDatatype baseType;
+    private final HdfDataFile dataFile;
 
     /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<ArrayDatatype, ?>> CONVERTERS = new HashMap<>();
@@ -65,23 +66,24 @@ public class ArrayDatatype implements HdfDatatype {
     /**
      * Constructs an ArrayDatatype representing an HDF5 array datatype.
      *
-     * @param classAndVersion      The class and version information for the datatype.
-     * @param classBitField        A BitSet containing class-specific bit field information.
-     * @param size                 The total size of the array datatype in bytes.
-     * @param dimensionality       The number of dimensions in the array (must be at least 1).
-     * @param dimensionSizes       An array specifying the size of each dimension.
-     * @param permutationIndices   An array specifying the permutation indices for the dimensions (must be in canonical order: 0, 1, ..., n-1).
-     * @param baseType             The base datatype of the array elements.
+     * @param classAndVersion    The class and version information for the datatype.
+     * @param classBitField      A BitSet containing class-specific bit field information.
+     * @param size               The total size of the array datatype in bytes.
+     * @param dimensionality     The number of dimensions in the array (must be at least 1).
+     * @param dimensionSizes     An array specifying the size of each dimension.
+     * @param permutationIndices An array specifying the permutation indices for the dimensions (must be in canonical order: 0, 1, ..., n-1).
+     * @param baseType           The base datatype of the array elements.
+     * @param dataFile
      * @throws IllegalArgumentException if:
-     *         <ul>
-     *           <li>dimensionality is less than 1</li>
-     *           <li>the length of dimensionSizes or permutationIndices does not match dimensionality</li>
-     *           <li>the total size does not match the product of dimension sizes and base type size</li>
-     *           <li>permutationIndices are not in canonical order (0, 1, ..., n-1)</li>
-     *         </ul>
+     *                                  <ul>
+     *                                    <li>dimensionality is less than 1</li>
+     *                                    <li>the length of dimensionSizes or permutationIndices does not match dimensionality</li>
+     *                                    <li>the total size does not match the product of dimension sizes and base type size</li>
+     *                                    <li>permutationIndices are not in canonical order (0, 1, ..., n-1)</li>
+     *                                  </ul>
      */
     public ArrayDatatype(int classAndVersion, BitSet classBitField, int size, int dimensionality,
-                         int[] dimensionSizes, int[] permutationIndices, HdfDatatype baseType) {
+                         int[] dimensionSizes, int[] permutationIndices, HdfDatatype baseType, HdfDataFile dataFile) {
         if (dimensionality < 1) {
             throw new IllegalArgumentException("Dimensionality must be at least 1");
         }
@@ -106,6 +108,7 @@ public class ArrayDatatype implements HdfDatatype {
         this.dimensionSizes = dimensionSizes.clone();
         this.permutationIndices = permutationIndices.clone();
         this.baseType = baseType;
+        this.dataFile = dataFile;
     }
 
     /**
@@ -138,7 +141,7 @@ public class ArrayDatatype implements HdfDatatype {
         HdfDatatype baseType = DatatypeMessage.getHdfDatatype(buffer, hdfDataFile);
 
         return new ArrayDatatype(classAndVersion, classBitField, size, dimensionality,
-                dimensionSizes, permutationIndices, baseType);
+                dimensionSizes, permutationIndices, baseType, hdfDataFile);
     }
 
     /**
@@ -227,6 +230,11 @@ public class ArrayDatatype implements HdfDatatype {
         }
         sb.append("]");
         return sb.toString();
+    }
+
+    @Override
+    public HdfDataFile getDataFile() {
+        return dataFile;
     }
 
     /**

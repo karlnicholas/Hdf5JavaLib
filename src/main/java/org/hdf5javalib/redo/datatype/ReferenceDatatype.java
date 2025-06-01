@@ -1,19 +1,27 @@
 package org.hdf5javalib.redo.datatype;
 
+import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfReference;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.redo.reference.HdfAttributeReference;
+import org.hdf5javalib.redo.reference.HdfDatasetRegionReference;
+import org.hdf5javalib.redo.reference.HdfObjectReference;
+import org.hdf5javalib.redo.reference.HdfReferenceInstance;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hdf5javalib.file.dataobject.message.datatype.ReferenceDatatype.getTypeValue;
+
 /** HDF5 Reference Datatype (Class 7) for objects, dataset regions, or attributes. */
 public class ReferenceDatatype implements HdfDatatype {
     private final int classAndVersion;
     private final BitSet classBitField;
     private final int size;
+    private final HdfDataFile dataFile;
 
     public enum ReferenceType {
         OBJECT1(0, "Object Reference (H5R_OBJECT1)"),
@@ -45,22 +53,34 @@ public class ReferenceDatatype implements HdfDatatype {
     private static final Map<Class<?>, HdfConverter<ReferenceDatatype, ?>> CONVERTERS = new HashMap<>();
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
-        CONVERTERS.put(HdfReference.class, (bytes, dt) -> new HdfReference(bytes, dt));
-        CONVERTERS.put(HdfData.class, (bytes, dt) -> new HdfReference(bytes, dt));
+        CONVERTERS.put(HdfReference.class, HdfReference::new);
+        CONVERTERS.put(HdfData.class, HdfReference::new);
+        CONVERTERS.put(HdfReferenceInstance.class, (bytes, dt)->dt.toHdfReferenceInstance(bytes, dt));
         CONVERTERS.put(byte[].class, (bytes, dt) -> bytes.clone());
     }
 
-    public ReferenceDatatype(int classAndVersion, BitSet classBitField, int size) {
+    private HdfReferenceInstance toHdfReferenceInstance(byte[] bytes, ReferenceDatatype dt) {
+        return switch (getReferenceType(classBitField)) {
+            case OBJECT1 -> new HdfObjectReference(bytes, dt, false);
+            case DATASET_REGION1 -> new HdfDatasetRegionReference(bytes, dt, false);
+            case OBJECT2 -> new HdfObjectReference(bytes, dt, (bytes[1] & 0x01) == 1);
+            case DATASET_REGION2 -> new HdfDatasetRegionReference(bytes, dt, (bytes[1] & 0x01) == 1);
+            case ATTR -> new HdfAttributeReference(bytes, dt, (bytes[1] & 0x01) == 1);
+        };
+    }
+
+    public ReferenceDatatype(int classAndVersion, BitSet classBitField, int size, HdfDataFile dataFile) {
         int typeValue = getTypeValue(classBitField);
         if (typeValue > 4) throw new IllegalArgumentException("Invalid reference type: " + typeValue);
 
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
+        this.dataFile = dataFile;
     }
 
-    public static ReferenceDatatype parseReferenceDatatype(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
-        return new ReferenceDatatype(classAndVersion, classBitField, size);
+    public static ReferenceDatatype parseReferenceDatatype(int classAndVersion, BitSet classBitField, int size, ByteBuffer ignoredBuffer, HdfDataFile dataFile) {
+        return new ReferenceDatatype(classAndVersion, classBitField, size, dataFile);
     }
 
     public static BitSet createClassBitField(ReferenceType type) {
@@ -74,27 +94,43 @@ public class ReferenceDatatype implements HdfDatatype {
         return (byte) (7 << 4);
     }
 
-    public static int getTypeValue(BitSet classBitField) {
-        int value = 0;
-        for (int i = 0; i < 4; i++) if (classBitField.get(i)) value |= 1 << i;
-        return value;
-    }
-
-    public ReferenceType getReferenceType() {
+//    public static int getTypeValue(BitSet classBitField) {
+//        int value = 0;
+//        for (int i = 0; i < 4; i++) if (classBitField.get(i)) value |= 1 << i;
+//        return value;
+//    }
+//
+    public static ReferenceType getReferenceType(BitSet classBitField) {
         return ReferenceType.fromValue(getTypeValue(classBitField));
     }
 
+    /**
+     * Converts byte data to an instance of the specified class using registered converters.
+     *
+     * @param <T>   the type of the instance to be created
+     * @param clazz the Class object representing the target type
+     * @param bytes the byte array containing the data
+     * @return an instance of type T created from the byte array
+     * @throws UnsupportedOperationException if no suitable converter is found for the specified class
+     */
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
-        if (bytes.length != size) throw new IllegalArgumentException("Byte array length mismatch");
+        @SuppressWarnings("unchecked")
         HdfConverter<ReferenceDatatype, T> converter = (HdfConverter<ReferenceDatatype, T>) CONVERTERS.get(clazz);
-        if (converter != null) return clazz.cast(converter.convert(bytes, this));
+        if (converter != null) {
+            return clazz.cast(converter.convert(bytes, this));
+        }
+        for (Map.Entry<Class<?>, HdfConverter<ReferenceDatatype, ?>> entry : CONVERTERS.entrySet()) {
+            if (entry.getKey().isAssignableFrom(clazz)) {
+                return clazz.cast(entry.getValue().convert(bytes, this));
+            }
+        }
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
     @Override
     public boolean requiresGlobalHeap(boolean required) {
-        ReferenceType type = getReferenceType();
+        ReferenceType type = getReferenceType(classBitField);
         return required || type == ReferenceType.DATASET_REGION1 || type == ReferenceType.DATASET_REGION2;
     }
 
@@ -102,7 +138,12 @@ public class ReferenceDatatype implements HdfDatatype {
         if (bytes.length != size) throw new IllegalArgumentException("Byte array length mismatch");
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) sb.append(String.format("%02X", b));
-        return "Reference[" + getReferenceType().description + "]=" + sb;
+        return "Reference[" + getReferenceType(classBitField).description + "]=" + sb;
+    }
+
+    @Override
+    public HdfDataFile getDataFile() {
+        return dataFile;
     }
 
     @Override
@@ -132,7 +173,7 @@ public class ReferenceDatatype implements HdfDatatype {
         return "ReferenceDatatype{size=" + size
                 + ", version=" + version
                 + (version == 4 ? ", encoding=" + getEncoding() : "")
-                + ", type=" + getReferenceType().description + "}";
+                + ", type=" + getReferenceType(classBitField).description + "}";
     }
 
     private String getEncoding() {

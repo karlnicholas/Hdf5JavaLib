@@ -154,8 +154,8 @@ public class DataLayoutMessage extends HdfMessage {
                 FixedPointDatatype fourByteFixedPointDatatype = new FixedPointDatatype(
                         FixedPointDatatype.createClassAndVersion(),
                         FixedPointDatatype.createClassBitField(false, false, false, false),
-                        4, (short) 0, (short) (4*8)
-                );
+                        4, (short) 0, (short) (4*8),
+                        hdfDataFile);
                 byte[] fourByteBytes = new byte[4];
                 buffer.get(fourByteBytes);
                 datasetElementSize = fourByteFixedPointDatatype.getInstance(HdfFixedPoint.class, fourByteBytes);

@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
+import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
@@ -30,6 +31,7 @@ public class StringDatatype implements HdfDatatype {
     private final BitSet classBitField;
     /** The fixed size of the string in bytes. */
     private final int size;
+    private final HdfDataFile dataFile;
 
     /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<StringDatatype, ?>> CONVERTERS = new HashMap<>();
@@ -46,11 +48,13 @@ public class StringDatatype implements HdfDatatype {
      * @param classAndVersion the class and version information for the datatype
      * @param classBitField   a BitSet containing class-specific bit field information
      * @param size            the fixed size of the string in bytes
+     * @param dataFile
      */
-    public StringDatatype(int classAndVersion, BitSet classBitField, int size) {
+    public StringDatatype(int classAndVersion, BitSet classBitField, int size, HdfDataFile dataFile) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
+        this.dataFile = dataFile;
     }
 
     /**
@@ -62,8 +66,8 @@ public class StringDatatype implements HdfDatatype {
      * @param ignoredBuffer   the ByteBuffer (ignored as string datatype has no properties)
      * @return a new StringDatatype instance
      */
-    public static StringDatatype parseStringType(int classAndVersion, BitSet classBitField, int size, ByteBuffer ignoredBuffer) {
-        return new StringDatatype(classAndVersion, classBitField, size);
+    public static StringDatatype parseStringType(int classAndVersion, BitSet classBitField, int size, ByteBuffer ignoredBuffer, HdfDataFile dataFile) {
+        return new StringDatatype(classAndVersion, classBitField, size, dataFile);
     }
 
     /**
@@ -162,6 +166,11 @@ public class StringDatatype implements HdfDatatype {
         // Decode using character set
         return new String(validBytes,
                 getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public HdfDataFile getDataFile() {
+        return dataFile;
     }
 
     /**

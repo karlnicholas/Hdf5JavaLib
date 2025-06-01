@@ -111,14 +111,14 @@ public class DatatypeMessage extends HdfMessage {
     private static HdfDatatype parseMessageDataType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer, HdfDataFile hdfDataFile) {
         HdfDatatype.DatatypeClass dataTypeClass = HdfDatatype.DatatypeClass.fromValue(classAndVersion & 0x0F);
         return switch (dataTypeClass) {
-            case FIXED -> parseFixedPointType(classAndVersion, classBitField, size, buffer);
-            case FLOAT -> parseFloatingPointType(classAndVersion, classBitField, size, buffer);
-            case TIME -> parseTimeType(classAndVersion, classBitField, size, buffer);
-            case STRING -> parseStringType(classAndVersion, classBitField, size, buffer);
-            case BITFIELD -> parseBitFieldType(classAndVersion, classBitField, size, buffer);
-            case OPAQUE -> parseOpaqueDatatype(classAndVersion, classBitField, size, buffer);
+            case FIXED -> parseFixedPointType(classAndVersion, classBitField, size, buffer, hdfDataFile);
+            case FLOAT -> parseFloatingPointType(classAndVersion, classBitField, size, buffer, hdfDataFile);
+            case TIME -> parseTimeType(classAndVersion, classBitField, size, buffer, hdfDataFile);
+            case STRING -> parseStringType(classAndVersion, classBitField, size, buffer, hdfDataFile);
+            case BITFIELD -> parseBitFieldType(classAndVersion, classBitField, size, buffer, hdfDataFile);
+            case OPAQUE -> parseOpaqueDatatype(classAndVersion, classBitField, size, buffer, hdfDataFile);
             case COMPOUND -> new CompoundDatatype(classAndVersion, classBitField, size, buffer, hdfDataFile);
-            case REFERENCE -> parseReferenceDatatype(classAndVersion, classBitField, size, buffer);
+            case REFERENCE -> parseReferenceDatatype(classAndVersion, classBitField, size, buffer, hdfDataFile);
             case ENUM -> parseEnumDatatype(classAndVersion, classBitField, size, buffer, hdfDataFile);
             case VLEN -> parseVariableLengthDatatype(classAndVersion, classBitField, size, buffer, hdfDataFile);
             case ARRAY -> parseArrayDatatype(classAndVersion, classBitField, size, buffer, hdfDataFile);

@@ -234,7 +234,7 @@ public class ReferenceDatatype implements HdfDatatype {
         for (byte b : bytes) {
             sb.append(String.format("%02X", b));
         }
-        return "Reference[" + getReferenceType().description + "]=" + sb.toString();
+        return "Reference[" + getReferenceType().description + "]=" + sb;
     }
 
     /**

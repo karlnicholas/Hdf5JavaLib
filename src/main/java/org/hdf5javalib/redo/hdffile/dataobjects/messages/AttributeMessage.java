@@ -95,7 +95,7 @@ public class AttributeMessage extends HdfMessage {
         byte[] nameBytes = new byte[nameSize];
         buffer.get(nameBytes);
         BitSet bitSet = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
-        HdfString name = new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, nameSize));
+        HdfString name = new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, nameSize,hdfDataFile ));
         // get padding bytes
         int padding = (8 - (nameSize % 8)) % 8;
         byte[] paddingBytes = new byte[padding];

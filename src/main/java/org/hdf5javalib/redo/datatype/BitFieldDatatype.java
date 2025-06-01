@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
+import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfBitField;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
@@ -31,6 +32,7 @@ public class BitFieldDatatype implements HdfDatatype {
     private final int bitOffset;
     /** The number of bits of precision. */
     private final int bitPrecision;
+    private final HdfDataFile hdfDataFile;
 
     /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<BitFieldDatatype, ?>> CONVERTERS = new HashMap<>();
@@ -50,13 +52,15 @@ public class BitFieldDatatype implements HdfDatatype {
      * @param size            the total size of the bitfield datatype in bytes
      * @param bitOffset       the bit offset of the first significant bit
      * @param bitPrecision    the number of bits of precision
+     * @param hdfDataFile
      */
-    public BitFieldDatatype(int classAndVersion, BitSet classBitField, int size, int bitOffset, int bitPrecision) {
+    public BitFieldDatatype(int classAndVersion, BitSet classBitField, int size, int bitOffset, int bitPrecision, HdfDataFile hdfDataFile) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
         this.bitOffset = bitOffset;
         this.bitPrecision = bitPrecision;
+        this.hdfDataFile = hdfDataFile;
     }
 
     /**
@@ -68,10 +72,10 @@ public class BitFieldDatatype implements HdfDatatype {
      * @param buffer          the ByteBuffer containing the datatype definition
      * @return a new BitFieldDatatype instance parsed from the buffer
      */
-    public static BitFieldDatatype parseBitFieldType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+    public static BitFieldDatatype parseBitFieldType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer, HdfDataFile hdfDataFile) {
         int bitOffset = Short.toUnsignedInt(buffer.getShort());
         int bitPrecision = Short.toUnsignedInt(buffer.getShort());
-        return new BitFieldDatatype(classAndVersion, classBitField, size, bitOffset, bitPrecision);
+        return new BitFieldDatatype(classAndVersion, classBitField, size, bitOffset, bitPrecision, hdfDataFile);
     }
 
     /**
@@ -235,6 +239,11 @@ public class BitFieldDatatype implements HdfDatatype {
             sb.append(bitSet.get(i) ? "1" : "0");
         }
         return sb.toString();
+    }
+
+    @Override
+    public HdfDataFile getDataFile() {
+        return hdfDataFile;
     }
 
     /**

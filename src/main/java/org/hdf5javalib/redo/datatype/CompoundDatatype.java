@@ -34,6 +34,7 @@ public class CompoundDatatype implements HdfDatatype {
     private final int size;
     /** The list of member datatypes defining the compound structure. */
     private List<CompoundMemberDatatype> members;
+    private final HdfDataFile dataFile;
 
     // Add these static fields to your CompoundDatatype class
     private static final Map<Class<?>, Map<String, Field>> CLASS_FIELD_CACHE = new ConcurrentHashMap<>();
@@ -62,11 +63,12 @@ public class CompoundDatatype implements HdfDatatype {
      * @param size            the total size of the compound datatype in bytes
      * @param members         the list of member datatypes
      */
-    public CompoundDatatype(int classAndVersion, BitSet classBitField, int size, List<CompoundMemberDatatype> members) {
+    public CompoundDatatype(int classAndVersion, BitSet classBitField, int size, List<CompoundMemberDatatype> members, HdfDataFile dataFile) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
         this.members = new ArrayList<>(members); // Deep copy to avoid external modification
+        this.dataFile = dataFile;
     }
 
     /**
@@ -77,11 +79,12 @@ public class CompoundDatatype implements HdfDatatype {
      * @param size            the total size of the compound datatype in bytes
      * @param buffer          the ByteBuffer containing the datatype definition
      */
-    public CompoundDatatype(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer, HdfDataFile hdfDataFile) {
+    public CompoundDatatype(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer, HdfDataFile dataFile) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
-        readFromByteBuffer(buffer, hdfDataFile);
+        this.dataFile = dataFile;
+        readFromByteBuffer(buffer, dataFile);
     }
 
     /**
@@ -165,7 +168,8 @@ public class CompoundDatatype implements HdfDatatype {
                     dimensionality,
                     dimensionPermutation,
                     dimensionSizes,
-                    DatatypeMessage.getHdfDatatype(buffer, hdfDataFile)
+                    DatatypeMessage.getHdfDatatype(buffer, hdfDataFile),
+                    hdfDataFile
             );
 
             members.add(compoundMemberDatatype);
@@ -502,6 +506,11 @@ public class CompoundDatatype implements HdfDatatype {
         return members.stream().map(m ->
                 m.toString(Arrays.copyOfRange(bytes, m.getOffset(), m.getOffset() + m.getSize()))
         ).collect(Collectors.joining(", "));
+    }
+
+    @Override
+    public HdfDataFile getDataFile() {
+        return dataFile;
     }
 
     /**

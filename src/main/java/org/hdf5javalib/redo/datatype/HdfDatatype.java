@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
+import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
@@ -85,6 +86,8 @@ public interface HdfDatatype {
      * @return a string representation of the byte array
      */
     String toString(byte[] bytes);
+
+    HdfDataFile getDataFile();
 
     /**
      * Enum representing the possible HDF5 datatype classes.

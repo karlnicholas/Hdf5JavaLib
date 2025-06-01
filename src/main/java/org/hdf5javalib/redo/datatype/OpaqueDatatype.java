@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
+import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfOpaque;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
@@ -31,6 +32,7 @@ public class OpaqueDatatype implements HdfDatatype {
     private final int size;
     /** The NUL-terminated ASCII tag, padded to an 8-byte multiple. */
     private final String asciiTag;
+    private final HdfDataFile dataFile;
 
     /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<OpaqueDatatype, ?>> CONVERTERS = new HashMap<>();
@@ -48,9 +50,11 @@ public class OpaqueDatatype implements HdfDatatype {
      * @param classBitField   a BitSet indicating the length of the ASCII tag
      * @param size            the size of the opaque data in bytes
      * @param asciiTag        the NUL-terminated ASCII tag
+     * @param dataFile
      * @throws IllegalArgumentException if the ASCII tag length exceeds the bit field specification
      */
-    public OpaqueDatatype(int classAndVersion, BitSet classBitField, int size, String asciiTag) {
+    public OpaqueDatatype(int classAndVersion, BitSet classBitField, int size, String asciiTag, HdfDataFile dataFile) {
+        this.dataFile = dataFile;
         int tagLength = getTagLength(classBitField); // Length including NUL, per bit field
         int actualLength = asciiTag.getBytes(StandardCharsets.US_ASCII).length + 1; // String length + NUL
         if (actualLength > tagLength) {
@@ -74,7 +78,7 @@ public class OpaqueDatatype implements HdfDatatype {
      * @throws IllegalArgumentException if the ASCII tag is not NUL-terminated within the specified length
      */
     public static OpaqueDatatype parseOpaqueDatatype(int classAndVersion, BitSet classBitField,
-                                                     int size, ByteBuffer buffer) {
+                                                     int size, ByteBuffer buffer, HdfDataFile dataFile) {
         int tagLength = getTagLength(classBitField); // Length including NUL, before padding
         int paddedLength = (tagLength + 7) & ~7;     // Round up to next 8-byte multiple
         byte[] tagBytes = new byte[paddedLength];
@@ -88,7 +92,7 @@ public class OpaqueDatatype implements HdfDatatype {
         }
         String asciiTag = new String(tagBytes, 0, nullIndex, StandardCharsets.US_ASCII);
 
-        return new OpaqueDatatype(classAndVersion, classBitField, size, asciiTag);
+        return new OpaqueDatatype(classAndVersion, classBitField, size, asciiTag, dataFile);
     }
 
     /**
@@ -209,6 +213,11 @@ public class OpaqueDatatype implements HdfDatatype {
             sb.append("... (truncated)");
         }
         return sb.toString();
+    }
+
+    @Override
+    public HdfDataFile getDataFile() {
+        return dataFile;
     }
 
     /**

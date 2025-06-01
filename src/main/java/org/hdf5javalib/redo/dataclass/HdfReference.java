@@ -39,7 +39,7 @@ public class HdfReference implements HdfData {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) sb.append(String.format("%02X", b));
-        String base = "Reference[" + datatype.getReferenceType().getDescription() + "]=" + sb;
+        String base = "Reference[" + ReferenceDatatype.getReferenceType(datatype.getClassBitField()).getDescription() + "]=" + sb;
         return base;
     }
 

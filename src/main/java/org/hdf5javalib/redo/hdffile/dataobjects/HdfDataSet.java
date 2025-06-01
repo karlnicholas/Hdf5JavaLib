@@ -206,7 +206,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
                 new HdfString(name.getBytes(StandardCharsets.US_ASCII),
                         new StringDatatype(StringDatatype.createClassAndVersion(),
                                 StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE,
-                                        StringDatatype.CharacterSet.ASCII), name.length() + 1)),
+                                        StringDatatype.CharacterSet.ASCII), name.length() + 1, hdfDataFile)),
                 datatypeMessage,
                 dataspaceMessage,
                 null,
@@ -236,7 +236,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
             FixedPointDatatype fixedType = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
                     FixedPointDatatype.createClassBitField(false, false, false, false),
-                    1, (short) 0, (short) 8
+                    1, (short) 0, (short) 8, hdfDataFile
             );
             return new VariableLengthDatatype(
                     VariableLengthDatatype.createClassAndVersion(),
@@ -250,7 +250,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
                 StringDatatype.createClassAndVersion(),
                 StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE,
                         StringDatatype.CharacterSet.ASCII),
-                (short) value.length()
+                (short) value.length(), hdfDataFile
         );
     }
 

@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
+import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
@@ -37,6 +38,7 @@ public class FixedPointDatatype implements HdfDatatype {
     private final int bitOffset;
     /** The number of bits of precision. */
     private final int bitPrecision;
+    private final HdfDataFile dataFile;
 
     /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<FixedPointDatatype, ?>> CONVERTERS = new HashMap<>();
@@ -61,13 +63,15 @@ public class FixedPointDatatype implements HdfDatatype {
      * @param size            the total size of the datatype in bytes
      * @param bitOffset       the bit offset of the first significant bit
      * @param bitPrecision    the number of bits of precision
+     * @param dataFile
      */
-    public FixedPointDatatype(int classAndVersion, BitSet classBitField, int size, int bitOffset, int bitPrecision) {
+    public FixedPointDatatype(int classAndVersion, BitSet classBitField, int size, int bitOffset, int bitPrecision, HdfDataFile dataFile) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
         this.bitOffset = bitOffset;
         this.bitPrecision = bitPrecision;
+        this.dataFile = dataFile;
     }
 
     /**
@@ -79,10 +83,10 @@ public class FixedPointDatatype implements HdfDatatype {
      * @param buffer          the ByteBuffer containing the datatype definition
      * @return a new FixedPointDatatype instance parsed from the buffer
      */
-    public static FixedPointDatatype parseFixedPointType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+    public static FixedPointDatatype parseFixedPointType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer, HdfDataFile dataFile) {
         int bitOffset = Short.toUnsignedInt(buffer.getShort());
         int bitPrecision = Short.toUnsignedInt(buffer.getShort());
-        return new FixedPointDatatype(classAndVersion, classBitField, size, bitOffset, bitPrecision);
+        return new FixedPointDatatype(classAndVersion, classBitField, size, bitOffset, bitPrecision, dataFile);
     }
 
     /**
@@ -482,6 +486,11 @@ public class FixedPointDatatype implements HdfDatatype {
     @Override
     public String toString(byte[] bytes) {
         return toBigDecimal(bytes).toString();
+    }
+
+    @Override
+    public HdfDataFile getDataFile() {
+        return dataFile;
     }
 
     /**

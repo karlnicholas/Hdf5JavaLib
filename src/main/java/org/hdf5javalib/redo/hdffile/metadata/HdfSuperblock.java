@@ -213,11 +213,11 @@ public class HdfSuperblock extends AllocationRecord {
         FixedPointDatatype fixedPointDatatypeForOffset = new FixedPointDatatype(
                 FixedPointDatatype.createClassAndVersion(),
                 FixedPointDatatype.createClassBitField(false, false, false, false),
-                offsetSize, (short) 0, (short) (8*offsetSize));
+                offsetSize, (short) 0, (short) (8*offsetSize), hdfDataFile);
         FixedPointDatatype fixedPointDatatypeForLength = new FixedPointDatatype(
                 FixedPointDatatype.createClassAndVersion(),
                 FixedPointDatatype.createClassBitField(false, false, false, false),
-                lengthSize, (short) 0, (short) (8*lengthSize));
+                lengthSize, (short) 0, (short) (8*lengthSize), hdfDataFile);
 
         int groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
         int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());

@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
+import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
@@ -33,6 +34,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
     private final HdfDatatype type;
     /** The size of the message data for this member in bytes. */
     private final int sizeMessageData;
+    private final HdfDataFile dataFile;
 
     /**
      * Constructs a CompoundMemberDatatype for an HDF5 compound datatype member.
@@ -45,13 +47,14 @@ public class CompoundMemberDatatype implements HdfDatatype {
      * @param type               the base datatype of the member
      * @throws IllegalStateException if the datatype class is not supported
      */
-    public CompoundMemberDatatype(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, HdfDatatype type) {
+    public CompoundMemberDatatype(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, HdfDatatype type, HdfDataFile dataFile) {
         this.name = name;
         this.offset = offset;
         this.dimensionality = dimensionality;
         this.dimensionPermutation = dimensionPermutation;
         this.dimensionSizes = dimensionSizes;
         this.type = type;
+        this.dataFile = dataFile;
         sizeMessageData = switch(type.getDatatypeClass()) {
             case FIXED -> computeFixedMessageDataSize(name);
             case FLOAT -> computeFloatMessageDataSize(name);
@@ -293,6 +296,11 @@ public class CompoundMemberDatatype implements HdfDatatype {
     @Override
     public String toString(byte[] bytes) {
         return type.toString(bytes);
+    }
+
+    @Override
+    public HdfDataFile getDataFile() {
+        return dataFile;
     }
 
     @Override

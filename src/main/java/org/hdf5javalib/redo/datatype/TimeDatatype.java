@@ -1,5 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
+import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfTime;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
@@ -31,6 +32,7 @@ public class TimeDatatype implements HdfDatatype {
     private final int size;
     /** The number of bits of precision. */
     private final int bitPrecision;
+    private final HdfDataFile dataFile;
 
     /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<TimeDatatype, ?>> CONVERTERS = new HashMap<>();
@@ -50,12 +52,14 @@ public class TimeDatatype implements HdfDatatype {
      * @param classBitField   a BitSet containing class-specific bit field information
      * @param size            the size of the time data in bytes
      * @param bitPrecision    the number of bits of precision
+     * @param dataFile
      */
-    public TimeDatatype(int classAndVersion, BitSet classBitField, int size, int bitPrecision) {
+    public TimeDatatype(int classAndVersion, BitSet classBitField, int size, int bitPrecision, HdfDataFile dataFile) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
         this.bitPrecision = bitPrecision;
+        this.dataFile = dataFile;
     }
 
     /**
@@ -67,9 +71,9 @@ public class TimeDatatype implements HdfDatatype {
      * @param buffer          the ByteBuffer containing the datatype definition
      * @return a new TimeDatatype instance parsed from the buffer
      */
-    public static TimeDatatype parseTimeType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer) {
+    public static TimeDatatype parseTimeType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer, HdfDataFile dataFile) {
         int bitPrecision = Short.toUnsignedInt(buffer.getShort());
-        return new TimeDatatype(classAndVersion, classBitField, size, bitPrecision);
+        return new TimeDatatype(classAndVersion, classBitField, size, bitPrecision, dataFile);
     }
 
     /**
@@ -208,6 +212,11 @@ public class TimeDatatype implements HdfDatatype {
      */
     public String toString(byte[] bytes) {
         return toLong(bytes).toString();
+    }
+
+    @Override
+    public HdfDataFile getDataFile() {
+        return dataFile;
     }
 
     /**

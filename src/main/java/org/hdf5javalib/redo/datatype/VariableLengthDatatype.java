@@ -177,6 +177,11 @@ public class VariableLengthDatatype implements HdfDatatype {
         }
     }
 
+    @Override
+    public HdfDataFile getDataFile() {
+        return hdfDataFile;
+    }
+
     private byte[][] toByteArrayArray(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         int count = buffer.getInt();

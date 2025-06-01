@@ -35,6 +35,7 @@ public class EnumDatatype implements HdfDatatype {
     private final String[] names;
     /** The packed array of enumeration values. */
     private final byte[] values;
+    private final HdfDataFile dataFile;
 
     /** Map of converters for transforming byte data to specific Java types. */
     private static final Map<Class<?>, HdfConverter<EnumDatatype, ?>> CONVERTERS = new HashMap<>();
@@ -54,10 +55,12 @@ public class EnumDatatype implements HdfDatatype {
      * @param baseType        the base integer datatype for values
      * @param names           the array of enumeration names
      * @param values          the packed array of enumeration values
+     * @param dataFile
      * @throws IllegalArgumentException if the number of names or values does not match the specification
      */
     public EnumDatatype(int classAndVersion, BitSet classBitField, int size,
-                        HdfDatatype baseType, String[] names, byte[] values) {
+                        HdfDatatype baseType, String[] names, byte[] values, HdfDataFile dataFile) {
+        this.dataFile = dataFile;
         if (names.length != getNumberOfMembers(classBitField)) {
             throw new IllegalArgumentException("Number of names doesn't match classBitField specification");
         }
@@ -115,7 +118,7 @@ public class EnumDatatype implements HdfDatatype {
         byte[] values = new byte[numMembers * size];
         buffer.get(values);
 
-        return new EnumDatatype(classAndVersion, classBitField, size, baseType, names, values);
+        return new EnumDatatype(classAndVersion, classBitField, size, baseType, names, values, hdfDataFile);
     }
 
     /**
@@ -224,6 +227,11 @@ public class EnumDatatype implements HdfDatatype {
     public String toString(byte[] bytes) {
         int valueIndex = findValueIndex(bytes);
         return valueIndex >= 0 ? names[valueIndex] : "undefined";
+    }
+
+    @Override
+    public HdfDataFile getDataFile() {
+        return dataFile;
     }
 
     private int findValueIndex(byte[] bytes) {
