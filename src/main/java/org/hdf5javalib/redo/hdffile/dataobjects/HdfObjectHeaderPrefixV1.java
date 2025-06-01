@@ -307,4 +307,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
     public List<HdfMessage> getHeaderMessages() {
         return headerMessages;
     }
+    public AllocationRecord getAllocationRecord() {
+        return this;
+    }
 }

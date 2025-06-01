@@ -42,7 +42,7 @@ public class ExampleDebug {
      */
     private void run() {
         try {
-            Path filePath = getResourcePath("HDF5Examples/h5ex_t_objref.h5");
+            Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Root Group: {} ", reader.getRootGroup());
