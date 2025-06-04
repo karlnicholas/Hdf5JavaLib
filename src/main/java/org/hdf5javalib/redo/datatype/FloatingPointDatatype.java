@@ -229,46 +229,84 @@ public class FloatingPointDatatype implements HdfDatatype {
         return toDoubleValue(bytes);
     }
 
-    private double toDoubleValue(byte[] buffer) {
-        if (buffer.length != size) {
-            throw new IllegalArgumentException("Buffer size (" + buffer.length + ") must match datatype size (" + size + ")");
+    public double toDoubleValue(byte[] rawBuffer) {
+        // 1. Read 'size' bytes into 'overallBits' assuming LITTLE_ENDIAN.
+        long overallBits = 0L;
+        // This loop will throw ArrayIndexOutOfBoundsException if rawBuffer.length < this.size
+        for (int i = 0; i < this.size; i++) {
+            overallBits |= ((long) (rawBuffer[i] & 0xFF)) << (i * 8);
         }
 
-        // Determine byte order from classBitField
-        ByteOrder order = getByteOrder();
-        ByteBuffer bb = ByteBuffer.wrap(buffer).order(order);
+        // 2. Apply bitOffset and mask to bitPrecision.
+        long workingBits = overallBits >>> this.bitOffset;
 
-        // Convert buffer to long (up to 64 bits) for bit manipulation
-        long bits = 0;
-        if (size <= 4) {
-            bits = bb.getInt() & 0xFFFFFFFFL; // 32-bit unsigned
-        } else if (size <= 8) {
-            bits = bb.getLong();
+        if (this.bitPrecision < 64 && this.bitPrecision > 0) { // bitPrecision=0 would be 1L<<0 -1 = 0 mask
+            long precisionMask = (1L << this.bitPrecision) - 1;
+            workingBits &= precisionMask;
+        } else if (this.bitPrecision == 0) {
+            workingBits = 0; // No bits of precision means value is effectively zero before interpretation
+        }
+        // If bitPrecision >= 64, workingBits uses all 64 bits of the long.
+
+        // 3. Extract components.
+        int sign = 1;
+        if (this.bitPrecision > 0) { // Avoid 1L << -1 if bitPrecision is 0
+            long signBitMaskInWindow = 1L << (this.bitPrecision - 1);
+            if ((workingBits & signBitMaskInWindow) != 0) {
+                sign = -1;
+            }
+        }
+
+        long rawExponent = 0;
+        if (this.exponentSize > 0) {
+            long exponentFieldMask = (this.exponentSize >= 64) ? -1L : ((1L << this.exponentSize) - 1);
+            rawExponent = (workingBits >>> this.exponentLocation) & exponentFieldMask;
+        }
+
+        long rawMantissa = 0;
+        if (this.mantissaSize > 0) {
+            long mantissaFieldMask = (this.mantissaSize >= 64) ? -1L : ((1L << this.mantissaSize) - 1);
+            rawMantissa = (workingBits >>> this.mantissaLocation) & mantissaFieldMask;
+        }
+
+        // --- Numerical Interpretation ---
+        boolean allExponentBitsSet = this.exponentSize > 0 && rawExponent == ((1L << this.exponentSize) - 1);
+
+        if (allExponentBitsSet) {
+            if (rawMantissa != 0) return Double.NaN;
+            return (sign == 1) ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+        }
+
+        int exponent = (int) (rawExponent - this.exponentBias);
+
+        boolean isDenormalizedSource = (this.exponentSize > 0 && rawExponent == 0 && rawMantissa != 0);
+        boolean isTrueZero = ( (this.exponentSize == 0 || rawExponent == 0) &&
+                (this.mantissaSize == 0 || rawMantissa == 0) );
+
+
+        if (isTrueZero) return sign * 0.0;
+
+        double mantissaValue;
+        if (isDenormalizedSource) {
+            mantissaValue = (this.mantissaSize == 0) ? 0.0 : (double) rawMantissa / (1L << this.mantissaSize);
+            exponent = 1 - this.exponentBias;
         } else {
-            throw new UnsupportedOperationException("Size > 8 bytes not supported");
+            // Normalized number: implicit leading 1
+            // If mantissaSize is 0, this implies 1.0 for the fractional part.
+            // If mantissaSize > 0, it's 1.fractional_part
+            mantissaValue = (this.mantissaSize == 0 && this.exponentSize == 0 && this.bitPrecision > 0 && rawMantissa == 0 && rawExponent == 0) ? 0.0 : 1.0; // if only sign bit, it's +/- value based on exp=0, man=0
+            if(this.mantissaSize > 0) {
+                mantissaValue = 1.0 + (double) rawMantissa / (1L << this.mantissaSize);
+            } else if (this.exponentSize == 0 && this.bitPrecision > 0 && rawMantissa == 0 && rawExponent == 0) {
+                // If there's only a sign bit defined by bitPrecision=1, expSize=0, manSize=0.
+                // e.g. descriptor (1,0,1, 0,0,0,0, 0) -> S * 1.0 * 2^(0 - 0) -> S * 1.0
+                // This case needs careful thought if mantissaSize is truly 0.
+                // Standard interpretation is that if a number is not denormalized and not zero,
+                // it has an implicit 1. So mantissaValue should be 1.0.
+                mantissaValue = 1.0;
+            }
+
         }
-
-        // Shift bits to align with datatype.getBitOffset()
-        bits >>>= bitOffset; // Unsigned right shift to discard lower bits
-
-        // Extract sign bit (from signLocation in classBitField bits 8-15)
-        int signLocation = getSignLocation();
-        long signMask = 1L << signLocation;
-        int sign = (bits & signMask) != 0 ? -1 : 1;
-
-        // Extract exponent
-        long exponentMask = (1L << exponentSize) - 1;
-        long rawExponent = (bits >>> exponentLocation) & exponentMask;
-        int exponent = (int) (rawExponent - exponentBias);
-
-        // Extract mantissa
-        long mantissaMask = (1L << mantissaSize) - 1;
-        long mantissa = (bits >>> mantissaLocation) & mantissaMask;
-
-        // Assume normalized number (implied leading 1, common in HDF5 float spec)
-        double mantissaValue = 1.0 + (double) mantissa / (1L << mantissaSize); // Normalize mantissa
-
-        // Combine: sign * mantissa * 2^exponent
         return sign * mantissaValue * Math.pow(2, exponent);
     }
 

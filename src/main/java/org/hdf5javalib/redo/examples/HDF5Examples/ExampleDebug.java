@@ -5,8 +5,6 @@ import org.hdf5javalib.redo.dataclass.*;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,12 +40,15 @@ public class ExampleDebug {
      */
     private void run() {
         try {
-            Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
+            Path filePath = getResourcePath("HDF5Examples/h5ex_t_objref.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Root Group: {} ", reader.getRootGroup());
                 reader.getFileAllocation().printBlocks();
-                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
+//                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
+//                    displayData(channel, dataSet, reader);
+//                }
+                for(HdfDataSet dataSet: reader.getRootGroup().getDataSets()) {
                     displayData(channel, dataSet, reader);
                 }
             }
