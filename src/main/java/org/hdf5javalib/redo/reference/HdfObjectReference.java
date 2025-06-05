@@ -76,8 +76,6 @@ public class HdfObjectReference implements HdfReferenceInstance {
                     });
                 });
             }
-        } else {
-            localHdfFixedPoint = null;
         }
         this.dataspaceSelectionInstance = dataspaceSelectionReference.get();
         this.hdfDataObject = localHdfDataObject.get();

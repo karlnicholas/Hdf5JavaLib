@@ -16,47 +16,34 @@ public class HdfSelectionHyperSlab extends HdfDataspaceSelectionInstance {
         this.startOffsets = startOffsets;
         this.endOffsets = endOffsets;
     }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("HdfSelectionHyperSlab{")
-                .append("version=").append(version)
-                .append(", length=").append(length)
-                .append(", rank=").append(rank)
-                .append(", numBlocks=").append(numBlocks)
-                .append(", startOffsets=[");
+        sb.append("HdfSelectionHyperSlab{v=").append(version)
+                .append(",l=").append(length)
+                .append(",r=").append(rank)
+                .append(",n=").append(numBlocks)
+                .append(",b=[");
 
-        // Format startOffsets
-        for (int i = 0; i < startOffsets.length; i++) {
-            sb.append("[");
-            for (int j = 0; j < startOffsets[i].length; j++) {
-                sb.append(startOffsets[i][j]);
-                if (j < startOffsets[i].length - 1) {
-                    sb.append(", ");
+        if (numBlocks <= 0 || startOffsets == null || endOffsets == null) {
+            sb.append("]");
+        } else {
+            for (int u = 0; u < numBlocks; u++) {
+                if (u > 0) sb.append(",");
+                sb.append("B").append(u + 1).append(":(");
+                for (int n = 0; n < rank; n++) {
+                    sb.append(n > 0 ? "," : "").append(startOffsets[n][u]);
                 }
+                sb.append(")(");
+                for (int n = 0; n < rank; n++) {
+                    sb.append(n > 0 ? "," : "").append(endOffsets[n][u]);
+                }
+                sb.append(")");
             }
             sb.append("]");
-            if (i < startOffsets.length - 1) {
-                sb.append(", ");
-            }
         }
-        sb.append("], endOffsets=[");
-
-        // Format endOffsets
-        for (int i = 0; i < endOffsets.length; i++) {
-            sb.append("[");
-            for (int j = 0; j < endOffsets[i].length; j++) {
-                sb.append(endOffsets[i][j]);
-                if (j < endOffsets[i].length - 1) {
-                    sb.append(", ");
-                }
-            }
-            sb.append("]");
-            if (i < endOffsets.length - 1) {
-                sb.append(", ");
-            }
-        }
-        sb.append("]}");
+        sb.append("}");
         return sb.toString();
     }
 }

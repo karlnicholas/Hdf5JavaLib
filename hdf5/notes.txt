@@ -1,6 +1,6 @@
-"C:\Program Files\Java\jdk-17\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2021.3.2\lib\idea_rt.jar=53291" -Dfile.encoding=UTF-8 -classpath C:\Users\karln\IdeaProjects\Hdf5JavaLib\target\classes;C:\Users\karln\.m2\repository\org\slf4j\slf4j-api\2.0.17\slf4j-api-2.0.17.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead
+"C:\Program Files\Java\jdk-17\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2021.3.2\lib\idea_rt.jar=53721" -Dfile.encoding=UTF-8 -classpath C:\Users\karln\IdeaProjects\Hdf5JavaLib\target\classes;C:\Users\karln\.m2\repository\org\slf4j\slf4j-api\2.0.17\slf4j-api-2.0.17.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead
 Running h5ex_t_array.h5
-16:18:46.340 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.569 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -17,7 +17,7 @@ DS1
 HdfData(HdfData[]) read   = [[0, 0, 0, 0, 0, 0, -1, -2, -3, -4, 0, -2, -4, -6, -8], [0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 2, 1, 0, -1, -2], [0, 2, 4, 6, 8, 2, 3, 4, 5, 6, 4, 4, 4, 4, 4], [0, 3, 6, 9, 12, 3, 5, 7, 9, 11, 6, 7, 8, 9, 10]]
 HdfData(HdfData[]) stream = [[0, 0, 0, 0, 0, 0, -1, -2, -3, -4, 0, -2, -4, -6, -8], [0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 2, 1, 0, -1, -2], [0, 2, 4, 6, 8, 2, 3, 4, 5, 6, 4, 4, 4, 4, 4], [0, 3, 6, 9, 12, 3, 5, 7, 9, 11, 6, 7, 8, 9, 10]]
 Running h5ex_t_arrayatt.h5
-16:18:46.433 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.663 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -34,7 +34,7 @@ AttributeMessage(568){version=1, name='A1', value='[0, 0, 0, 0, 0, 0, -1, -2, -3
 localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
 DS1
 Running h5ex_t_bit.h5
-16:18:46.442 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.672 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -51,7 +51,7 @@ DS1
 HdfData(HdfData[][]) read   = [[00000000, 01010011, 10100010, 11110001, 00000000, 01010011, 10100010], [01000100, 10010100, 11100100, 00110100, 01000100, 10010100, 11100100], [10001000, 11011001, 00101010, 01111011, 10001000, 11011001, 00101010], [11001100, 00011110, 01101100, 10111110, 11001100, 00011110, 01101100]]
 HdfData(HdfData[][]) stream = [[00000000, 01010011, 10100010, 11110001, 00000000, 01010011, 10100010], [01000100, 10010100, 11100100, 00110100, 01000100, 10010100, 11100100], [10001000, 11011001, 00101010, 01111011, 10001000, 11011001, 00101010], [11001100, 00011110, 01101100, 10111110, 11001100, 00011110, 01101100]]
 Running h5ex_t_bitatt.h5
-16:18:46.449 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.680 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -67,7 +67,7 @@ NilMessage(40){}}, closed=false}}}]
 localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
 DS1
 Running h5ex_t_cmpd.h5
-16:18:46.465 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.702 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1192", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -91,7 +91,7 @@ DS1
 HdfData(HdfData[]) read   = [1153, Exterior (static), 1.1920392515278585E-14, 3.070733824170739E90, 1184, Intake, -9.539767610322231E-233, 4.6672614692633455E-62, 1027, Intake manifold, 4.667261468365516E-62, 7.688168983161245E284, 1313, Exhaust manifold, -2.439312392945428E19, -1.4959242067111115E114]
 HdfData(HdfData[]) stream = [1153, Exterior (static), 1.1920392515278585E-14, 3.070733824170739E90, 1184, Intake, -9.539767610322231E-233, 4.6672614692633455E-62, 1027, Intake manifold, 4.667261468365516E-62, 7.688168983161245E284, 1313, Exhaust manifold, -2.439312392945428E19, -1.4959242067111115E114]
 Running h5ex_t_cmpdatt.h5
-16:18:46.479 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.723 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -108,7 +108,7 @@ AttributeMessage(512){version=1, name='A1', value='1153, Exterior (static), 1.19
 localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
 DS1
 Running h5ex_t_commit.h5
-16:18:46.480 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.724 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1096", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -126,7 +126,7 @@ Member{name='Pressure (inHg)', offset=32, dimensionality=0, dimensionPermutation
 localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=Sensor_Type, offset=8]}}}}
 Sensor_Type
 Running h5ex_t_cpxcmpd.h5
-16:18:46.492 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.746 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
@@ -187,7 +187,7 @@ HdfData(HdfData[]) stream = [[1153, Exterior (static), 53.23, 24.57, 1184, Intak
 	hdfDataObject=ObjectName: Land_Vehicles
 ], HdfDatasetRegionReference [external=false]]
 Running h5ex_t_cpxcmpdatt.h5
-16:18:46.507 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.765 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
@@ -227,7 +227,7 @@ HdfData(HdfData[][]) read   = [[66.80000000000001, 66.9, 67.0, 67.10000000000001
 HdfData(HdfData[][]) stream = [[66.80000000000001, 66.9, 67.0, 67.10000000000001, 67.2, 67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9], [66.9, 67.0, 67.1, 67.2, 67.3, 67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0], [67.0, 67.1, 67.19999999999999, 67.3, 67.39999999999999, 67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1], [67.10000000000001, 67.2, 67.3, 67.4, 67.5, 67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2], [67.2, 67.3, 67.39999999999999, 67.5, 67.6, 67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3], [67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4], [67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5], [67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6], [67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7], [67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8], [67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9], [67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0], [68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1], [68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2], [68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3], [68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4], [68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5], [68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6], [68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7], [68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8], [68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9], [68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0], [69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1], [69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2], [69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3], [69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4], [69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5], [69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1, 72.19999999999999, 72.3, 72.39999999999999, 72.5, 72.6], [69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2, 72.3, 72.4, 72.5, 72.60000000000001, 72.7], [69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3, 72.39999999999999, 72.5, 72.6, 72.7, 72.8], [69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4, 72.5, 72.60000000000001, 72.7, 72.80000000000001, 72.9], [69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5, 72.6, 72.7, 72.8, 72.9, 73.0]]
 DS1
 Running h5ex_t_enum.h5
-16:18:46.512 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.771 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -244,7 +244,7 @@ DS1
 HdfData(HdfData[][]) read   = [[SOLID, SOLID, SOLID, SOLID, SOLID, SOLID, SOLID], [SOLID, LIQUID, GAS, PLASMA, SOLID, LIQUID, GAS], [SOLID, GAS, SOLID, GAS, SOLID, GAS, SOLID], [SOLID, PLASMA, GAS, LIQUID, SOLID, PLASMA, GAS]]
 HdfData(HdfData[][]) stream = [[SOLID, SOLID, SOLID, SOLID, SOLID, SOLID, SOLID], [SOLID, LIQUID, GAS, PLASMA, SOLID, LIQUID, GAS], [SOLID, GAS, SOLID, GAS, SOLID, GAS, SOLID], [SOLID, PLASMA, GAS, LIQUID, SOLID, PLASMA, GAS]]
 Running h5ex_t_enumatt.h5
-16:18:46.513 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.773 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -261,7 +261,7 @@ AttributeMessage(184){version=1, name='A1', value='SOLID'}}, closed=false}}}]
 localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
 DS1
 Running h5ex_t_float.h5
-16:18:46.514 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.774 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -278,7 +278,7 @@ DS1
 HdfData(HdfData[][]) read   = [[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0], [2.0, 1.6666666666666665, 2.4, 3.2857142857142856, 4.222222222222222, 5.181818181818182, 6.153846153846154], [4.0, 2.333333333333333, 2.8, 3.571428571428571, 4.444444444444445, 5.363636363636363, 6.3076923076923075], [6.0, 3.0, 3.2, 3.857142857142857, 4.666666666666667, 5.545454545454545, 6.461538461538462]]
 HdfData(HdfData[][]) stream = [[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0], [2.0, 1.6666666666666665, 2.4, 3.2857142857142856, 4.222222222222222, 5.181818181818182, 6.153846153846154], [4.0, 2.333333333333333, 2.8, 3.571428571428571, 4.444444444444445, 5.363636363636363, 6.3076923076923075], [6.0, 3.0, 3.2, 3.857142857142857, 4.666666666666667, 5.545454545454545, 6.461538461538462]]
 Running h5ex_t_floatatt.h5
-16:18:46.515 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.775 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -295,7 +295,7 @@ AttributeMessage(312){version=1, name='A1', value='0.0'}}, closed=false}}}]
 localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
 DS1
 Running h5ex_t_int.h5
-16:18:46.516 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.777 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -312,7 +312,7 @@ DS1
 HdfData(HdfData[][]) read   = [[0, -1, -2, -3, -4, -5, -6], [0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6], [0, 2, 4, 6, 8, 10, 12]]
 HdfData(HdfData[][]) stream = [[0, -1, -2, -3, -4, -5, -6], [0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6], [0, 2, 4, 6, 8, 10, 12]]
 Running h5ex_t_intatt.h5
-16:18:46.518 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.779 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -329,7 +329,7 @@ AttributeMessage(304){version=1, name='A1', value='0'}}, closed=false}}}]
 localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
 DS1
 Running h5ex_t_objref.h5
-16:18:46.520 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.780 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=3, symbolTableEntries=
@@ -357,27 +357,27 @@ HdfData(HdfData[]) read   = [HdfObjectReference [
 	external=false, 
 	referenceType=Object Reference (H5R_OBJECT2)
 	hdfDataObject=ObjectName: G1
-	dataspaceSelectionInstance=dataspaceSelectionInstance not decoded
+	dataspaceSelectionInstance=no Dataspace Selection
 ], HdfObjectReference [
 	external=false, 
 	referenceType=Object Reference (H5R_OBJECT2)
 	hdfDataObject=ObjectName: DS2
-	dataspaceSelectionInstance=dataspaceSelectionInstance not decoded
+	dataspaceSelectionInstance=no Dataspace Selection
 ]]
 HdfData(HdfData[]) stream = [HdfObjectReference [
 	external=false, 
 	referenceType=Object Reference (H5R_OBJECT2)
 	hdfDataObject=ObjectName: G1
-	dataspaceSelectionInstance=dataspaceSelectionInstance not decoded
+	dataspaceSelectionInstance=no Dataspace Selection
 ], HdfObjectReference [
 	external=false, 
 	referenceType=Object Reference (H5R_OBJECT2)
 	hdfDataObject=ObjectName: DS2
-	dataspaceSelectionInstance=dataspaceSelectionInstance not decoded
+	dataspaceSelectionInstance=no Dataspace Selection
 ]]
 DS2
 Running h5ex_t_objrefatt.h5
-16:18:46.521 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.782 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=3, symbolTableEntries=
@@ -385,7 +385,7 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 	external=false, 
 	referenceType=Object Reference (H5R_OBJECT2)
 	hdfDataObject=ObjectName: G1
-	dataspaceSelectionInstance=dataspaceSelectionInstance not decoded
+	dataspaceSelectionInstance=no Dataspace Selection
 ]'}], dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
 DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
@@ -396,7 +396,7 @@ AttributeMessage(96){version=1, name='A1', value='HdfObjectReference [
 	external=false, 
 	referenceType=Object Reference (H5R_OBJECT2)
 	hdfDataObject=ObjectName: G1
-	dataspaceSelectionInstance=dataspaceSelectionInstance not decoded
+	dataspaceSelectionInstance=no Dataspace Selection
 ]'}
 NilMessage(56){}}, closed=false}}}, HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=HdfDataSet{, datasetName='DS2', hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}, attributes=[], dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
@@ -414,7 +414,7 @@ localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, 
 DS1
 DS2
 Running h5ex_t_opaque.h5
-16:18:46.529 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.787 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -431,7 +431,7 @@ DS1
 HdfData(HdfData[]) read   = [4F504151554530, 4F504151554531, 4F504151554532, 4F504151554533]
 HdfData(HdfData[]) stream = [4F504151554530, 4F504151554531, 4F504151554532, 4F504151554533]
 Running h5ex_t_opaqueatt.h5
-16:18:46.531 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.790 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -447,7 +447,7 @@ NilMessage(48){}}, closed=false}}}]
 localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
 DS1
 Running h5ex_t_regref.h5
-16:18:46.532 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.791 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=2, symbolTableEntries=
@@ -476,7 +476,24 @@ HdfData(HdfData[]) read   = [HdfObjectReference [
 	external=false, 
 	referenceType=Object Reference (H5R_OBJECT2)
 	hdfDataObject=ObjectName: DS2
-	dataspaceSelectionInstance=HdfSelectionHyperSlab{version=1, length=72, rank=2, numBlocks=4, startOffsets=[[0, 0, 2, 2], [0, 11, 0, 11]], endOffsets=[[0, 0, 2, 2], [2, 13, 2, 13]]}
+	dataspaceSelectionInstance=HdfSelectionHyperSlab{version=1, length=72, rank=2, numBlocks=4, startOffsets=[
+Starting Offset #1 for Block #1: 0
+Starting Offset #2 for Block #1: 0
+Ending Offset #1 for Block #1: 0
+Ending Offset #2 for Block #1: 2
+Starting Offset #1 for Block #2: 0
+Starting Offset #2 for Block #2: 11
+Ending Offset #1 for Block #2: 0
+Ending Offset #2 for Block #2: 13
+Starting Offset #1 for Block #3: 2
+Starting Offset #2 for Block #3: 0
+Ending Offset #1 for Block #3: 2
+Ending Offset #2 for Block #3: 2
+Starting Offset #1 for Block #4: 2
+Starting Offset #2 for Block #4: 11
+Ending Offset #1 for Block #4: 2
+Ending Offset #2 for Block #4: 13
+]}
 ]]
 HdfData(HdfData[]) stream = [HdfObjectReference [
 	external=false, 
@@ -487,13 +504,30 @@ HdfData(HdfData[]) stream = [HdfObjectReference [
 	external=false, 
 	referenceType=Object Reference (H5R_OBJECT2)
 	hdfDataObject=ObjectName: DS2
-	dataspaceSelectionInstance=HdfSelectionHyperSlab{version=1, length=72, rank=2, numBlocks=4, startOffsets=[[0, 0, 2, 2], [0, 11, 0, 11]], endOffsets=[[0, 0, 2, 2], [2, 13, 2, 13]]}
+	dataspaceSelectionInstance=HdfSelectionHyperSlab{version=1, length=72, rank=2, numBlocks=4, startOffsets=[
+Starting Offset #1 for Block #1: 0
+Starting Offset #2 for Block #1: 0
+Ending Offset #1 for Block #1: 0
+Ending Offset #2 for Block #1: 2
+Starting Offset #1 for Block #2: 0
+Starting Offset #2 for Block #2: 11
+Ending Offset #1 for Block #2: 0
+Ending Offset #2 for Block #2: 13
+Starting Offset #1 for Block #3: 2
+Starting Offset #2 for Block #3: 0
+Ending Offset #1 for Block #3: 2
+Ending Offset #2 for Block #3: 2
+Starting Offset #1 for Block #4: 2
+Starting Offset #2 for Block #4: 11
+Ending Offset #1 for Block #4: 2
+Ending Offset #2 for Block #4: 13
+]}
 ]]
 DS2
 HdfData(HdfData[][]) read   = [[84, 104, 101, 32, 113, 117, 105, 99, 107, 32, 98, 114, 111, 119, 110, 0], [102, 111, 120, 32, 106, 117, 109, 112, 115, 32, 111, 118, 101, 114, 32, 0], [116, 104, 101, 32, 53, 32, 108, 97, 122, 121, 32, 100, 111, 103, 115, 0]]
 HdfData(HdfData[][]) stream = [[84, 104, 101, 32, 113, 117, 105, 99, 107, 32, 98, 114, 111, 119, 110, 0], [102, 111, 120, 32, 106, 117, 109, 112, 115, 32, 111, 118, 101, 114, 32, 0], [116, 104, 101, 32, 53, 32, 108, 97, 122, 121, 32, 100, 111, 103, 115, 0]]
 Running h5ex_t_regrefatt.h5
-16:18:46.534 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.799 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=2, symbolTableEntries=
@@ -528,7 +562,7 @@ DS2
 HdfData(HdfData[][]) read   = [[84, 104, 101, 32, 113, 117, 105, 99, 107, 32, 98, 114, 111, 119, 110, 0], [102, 111, 120, 32, 106, 117, 109, 112, 115, 32, 111, 118, 101, 114, 32, 0], [116, 104, 101, 32, 53, 32, 108, 97, 122, 121, 32, 100, 111, 103, 115, 0]]
 HdfData(HdfData[][]) stream = [[84, 104, 101, 32, 113, 117, 105, 99, 107, 32, 98, 114, 111, 119, 110, 0], [102, 111, 120, 32, 106, 117, 109, 112, 115, 32, 111, 118, 101, 114, 32, 0], [116, 104, 101, 32, 53, 32, 108, 97, 122, 121, 32, 100, 111, 103, 115, 0]]
 Running h5ex_t_string.h5
-16:18:46.536 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.800 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -545,7 +579,7 @@ DS1
 HdfData(HdfData[]) read   = [Parting, is such, sweet  , sorrow.]
 HdfData(HdfData[]) stream = [Parting, is such, sweet  , sorrow.]
 Running h5ex_t_stringatt.h5
-16:18:46.537 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.802 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -561,7 +595,7 @@ NilMessage(64){}}, closed=false}}}]
 localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
 DS1
 Running h5ex_t_vlen.h5
-16:18:46.538 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.803 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -578,7 +612,7 @@ DS1
 HdfData(HdfData[]) read   = [[3, 2, 1], [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144]]
 HdfData(HdfData[]) stream = [[3, 2, 1], [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144]]
 Running h5ex_t_vlenatt.h5
-16:18:46.539 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.804 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -594,7 +628,7 @@ NilMessage(48){}}, closed=false}}}]
 localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
 DS1
 Running h5ex_t_vlstring.h5
-16:18:46.540 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.805 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -611,7 +645,7 @@ DS1
 HdfData(HdfData[]) read   = [Parting, is such, sweet, sorrow.]
 HdfData(HdfData[]) stream = [Parting, is such, sweet, sorrow.]
 Running h5ex_t_vlstringatt.h5
-16:18:46.541 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+16:50:57.806 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
