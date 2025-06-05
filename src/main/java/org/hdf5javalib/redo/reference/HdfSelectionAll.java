@@ -7,6 +7,6 @@ public class HdfSelectionAll extends HdfDataspaceSelectionInstance {
     }
     @Override
     public String toString() {
-        return "HdfSelectPoints{v=" + version + "}";
+        return "HdfSelectPointsV1{v=" + version + "}";
     }
 }

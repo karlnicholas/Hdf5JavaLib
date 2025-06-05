@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.reference;
 
-public class HdfSelectionHyperSlab extends HdfDataspaceSelectionInstance {
+public class HdfSelectionHyperSlabV1 extends HdfDataspaceSelectionInstance {
     private final int version;
     private final int length;
     private final int rank;
@@ -8,7 +8,7 @@ public class HdfSelectionHyperSlab extends HdfDataspaceSelectionInstance {
     private final int[][] startOffsets;
     private final int[][] endOffsets;
 
-    public HdfSelectionHyperSlab(int version, int length, int rank, int numBlocks, int[][] startOffsets, int[][] endOffsets) {
+    public HdfSelectionHyperSlabV1(int version, int length, int rank, int numBlocks, int[][] startOffsets, int[][] endOffsets) {
         this.version = version;
         this.length = length;
         this.rank = rank;
@@ -20,7 +20,7 @@ public class HdfSelectionHyperSlab extends HdfDataspaceSelectionInstance {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("HdfSelectionHyperSlab{v=").append(version)
+        sb.append("HdfSelectionHyperSlabV1{v=").append(version)
                 .append(",l=").append(length)
                 .append(",r=").append(rank)
                 .append(",n=").append(numBlocks)
@@ -29,15 +29,15 @@ public class HdfSelectionHyperSlab extends HdfDataspaceSelectionInstance {
         if (numBlocks <= 0 || startOffsets == null || endOffsets == null) {
             sb.append("]");
         } else {
-            for (int u = 0; u < numBlocks; u++) {
-                if (u > 0) sb.append(",");
-                sb.append("B").append(u + 1).append(":(");
-                for (int n = 0; n < rank; n++) {
-                    sb.append(n > 0 ? "," : "").append(startOffsets[n][u]);
+            for (int b = 0; b < numBlocks; b++) {
+                if (b > 0) sb.append(",");
+                sb.append("B").append(b + 1).append(":(");
+                for (int r = 0; r < rank; r++) {
+                    sb.append(r > 0 ? "," : "").append(startOffsets[b][r]);
                 }
                 sb.append(")(");
-                for (int n = 0; n < rank; n++) {
-                    sb.append(n > 0 ? "," : "").append(endOffsets[n][u]);
+                for (int r = 0; r < rank; r++) {
+                    sb.append(r > 0 ? "," : "").append(endOffsets[b][r]);
                 }
                 sb.append(")");
             }
