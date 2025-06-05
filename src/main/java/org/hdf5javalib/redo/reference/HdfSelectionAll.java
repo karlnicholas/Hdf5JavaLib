@@ -1,8 +1,8 @@
 package org.hdf5javalib.redo.reference;
 
-public class HdfSelectionNone extends HdfDataspaceSelectionInstance {
+public class HdfSelectionAll extends HdfDataspaceSelectionInstance {
     private final int version;
-    public HdfSelectionNone(int version) {
+    public HdfSelectionAll(int version) {
         this.version = version;
     }
     @Override

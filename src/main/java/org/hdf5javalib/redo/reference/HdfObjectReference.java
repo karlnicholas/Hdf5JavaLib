@@ -36,7 +36,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
                 if ( bytes[0] == 0x02) {
                     int size = Byte.toUnsignedInt(bytes[2]);
                     localHdfFixedPoint = new HdfFixedPoint(Arrays.copyOfRange(bytes, 3, 3 + size), superblock.getFixedPointDatatypeForOffset());
-                } else {
+                } else if ( bytes[0] == 0x03) {
                     FixedPointDatatype offsetSpec = dt.getDataFile().getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset();
                     int offsetSize = offsetSpec.getSize();
                     ByteBuffer bb = ByteBuffer.wrap(bytes, 2+4+offsetSize, bytes.length - (2+4+offsetSize)).order(ByteOrder.LITTLE_ENDIAN);
@@ -52,6 +52,28 @@ public class HdfObjectReference implements HdfReferenceInstance {
                     int selectionType = heapBytes.getInt();
                     dataspaceSelectionReference.set(HdfDataspaceSelectionInstance.parseSelectionInfo(heapBytes));
                     localHdfFixedPoint = datasetReferenced;
+                } else if ( bytes[0] == 0x04) {
+                    FixedPointDatatype offsetSpec = dt.getDataFile().getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset();
+                    int offsetSize = offsetSpec.getSize();
+                    ByteBuffer bb = ByteBuffer.wrap(bytes, 2+4+offsetSize, bytes.length - (2+4+offsetSize)).order(ByteOrder.LITTLE_ENDIAN);
+                    HdfFixedPoint heapOffset = new HdfFixedPoint(Arrays.copyOfRange(bytes, 2+4, 2+4+offsetSize) , offsetSpec);
+                    int index = bb.getInt();
+                    byte[] dataBytes = dt.getDataFile().getGlobalHeap().getDataBytes(heapOffset, index);
+                    ByteBuffer heapBytes = ByteBuffer.wrap(dataBytes).order(ByteOrder.LITTLE_ENDIAN);
+                    int tokenLength = Byte.toUnsignedInt(heapBytes.get());
+                    byte[] datasetReferenceBytes = new byte[tokenLength];
+                    heapBytes.get(datasetReferenceBytes);
+                    HdfFixedPoint datasetReferenced = new HdfFixedPoint(datasetReferenceBytes, offsetSpec);
+                    long length = Integer.toUnsignedLong(heapBytes.getInt());
+                    int nameLength = heapBytes.getInt();
+                    byte[] nameBytes = new byte[nameLength];
+                    heapBytes.get(nameBytes);
+                    String attributeName = new String(nameBytes);
+                    HdfSelectionAttribute selectionAttribute = new HdfSelectionAttribute(attributeName);
+                    dataspaceSelectionReference.set(selectionAttribute);
+                    localHdfFixedPoint = datasetReferenced;
+                } else {
+                    throw new IllegalArgumentException("Invalid reference type");
                 }
             } else {
                 throw new IllegalArgumentException("Unsupported reference type: " + dt.getClassBitField());

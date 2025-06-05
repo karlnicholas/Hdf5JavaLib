@@ -18,27 +18,26 @@ public class HdfSelectPoints extends HdfDataspaceSelectionInstance {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("HdfSelectPoints{")
-                .append("version=").append(version)
-                .append(", length=").append(length)
-                .append(", rank=").append(rank)
-                .append(", numPoints=").append(numPoints)
-                .append(", values=[");
+        sb.append("HdfSelectPoints{v=").append(version)
+                .append(",l=").append(length)
+                .append(",r=").append(rank)
+                .append(",n=").append(numPoints)
+                .append(",p=[");
 
-        for (int i = 0; i < values.length; i++) {
-            sb.append("[");
-            for (int j = 0; j < values[i].length; j++) {
-                sb.append(values[i][j]);
-                if (j < values[i].length - 1) {
-                    sb.append(", ");
+        if (numPoints <= 0 || values == null) {
+            sb.append("]");
+        } else {
+            for (int i = 0; i < numPoints; i++) {
+                if (i > 0) sb.append(",");
+                sb.append("P").append(i + 1).append(":(");
+                for (int j = 0; j < rank; j++) {
+                    sb.append(j > 0 ? "," : "").append(values[i][j]);
                 }
+                sb.append(")");
             }
             sb.append("]");
-            if (i < values.length - 1) {
-                sb.append(", ");
-            }
         }
-        sb.append("]}");
+        sb.append("}");
         return sb.toString();
     }
 }
