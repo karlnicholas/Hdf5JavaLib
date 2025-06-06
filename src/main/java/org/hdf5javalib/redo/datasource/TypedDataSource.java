@@ -105,7 +105,7 @@ public class TypedDataSource<T> {
         }
         ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
         synchronized (channel) {
-            channel.position(dataset.getDataAddress().getInstance(Long.class) + offset);
+            channel.position(dataset.getDataAddress().orElseThrow().getInstance(Long.class) + offset);
             int bytesRead = channel.read(buffer);
             if (bytesRead != size) {
                 throw new IOException("Failed to read the expected number of bytes: read " + bytesRead + ", expected " + size);
@@ -191,7 +191,7 @@ public class TypedDataSource<T> {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
         }
-        if ( HdfFixedPoint.compareToZero(dataset.getdimensionSizes()[0]) <= 0 )  {
+        if ( HdfFixedPoint.compareToZero(dataset.getdimensionSizes().orElseThrow()[0]) <= 0 )  {
             throw new IllegalStateException("Dataset has no data");
         }
         ByteBuffer buffer = readBytes(0, elementSize);
@@ -209,7 +209,7 @@ public class TypedDataSource<T> {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
         }
-        if ( HdfFixedPoint.compareToZero(dataset.getdimensionSizes()[0]) <= 0 )  {
+        if ( HdfFixedPoint.compareToZero(dataset.getdimensionSizes().orElseThrow()[0]) <= 0 )  {
             throw new IllegalStateException("Dataset has no data");
         }
         try {

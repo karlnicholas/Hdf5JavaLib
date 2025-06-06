@@ -3,11 +3,16 @@ package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfString;
-import org.hdf5javalib.redo.dataclass.HdfVariableLength;
+import org.hdf5javalib.redo.datatype.ArrayDatatype;
+import org.hdf5javalib.redo.datatype.HdfDatatype;
 import org.hdf5javalib.redo.datatype.StringDatatype;
+import org.hdf5javalib.redo.datatype.VariableLengthDatatype;
+import org.hdf5javalib.redo.utils.HdfDataHolder;
 
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.BitSet;
 
 /**
@@ -48,7 +53,7 @@ public class AttributeMessage extends HdfMessage {
     /** The dataspace defining the dimensionality and size of the attribute's value. */
     private final DataspaceMessage dataspaceMessage;
     /** The actual value of the attribute. */
-    private HdfData value;
+    private HdfDataHolder value;
 
     /**
      * Constructs an AttributeMessage with the specified components.
@@ -61,7 +66,7 @@ public class AttributeMessage extends HdfMessage {
      * @param flags             message flags
      * @param sizeMessageData   the size of the message data in bytes
      */
-    public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfData value, int flags, int sizeMessageData) {
+    public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfDataHolder value, int flags, int sizeMessageData) {
         super(MessageType.AttributeMessage, sizeMessageData, flags);
         this.version = version;
         this.datatypeMessage = datatypeMessage;
@@ -122,11 +127,63 @@ public class AttributeMessage extends HdfMessage {
 
         int dtDataSize = dt.getHdfDatatype().getSize();
         dt.getHdfDatatype().setGlobalHeap(hdfDataFile.getGlobalHeap());
-        byte[] dataBytes = new byte[dtDataSize];
-        buffer.get(dataBytes);
-        HdfData value = dt.getHdfDatatype().getInstance(HdfData.class, dataBytes);
+        int dimensionality = ds.getDimensionality();
+        int[] dimensions = Arrays.stream(ds.getDimensions()).mapToInt(dim -> dim.getInstance(Long.class).intValue()).toArray();
 
-        return new AttributeMessage(version, name, dt, ds, value, flags, (short)data.length);
+        // Assuming ds is an HDF5 dataset, dt is its datatype, buffer is a ByteBuffer, dtDataSize is element size
+        // Case 1: Scalar data (dimensionality is 0)
+        if (dimensionality == 0) {
+            byte[] dataBytes = new byte[dtDataSize];
+            buffer.get(dataBytes);
+            HdfData scalarValue = dt.getHdfDatatype().getInstance(HdfData.class, dataBytes);
+            return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofScalar(scalarValue), flags, (short)data.length);
+        }
+
+        // Case 2: Array data (dimensionality is 1 or more)
+
+        // Step 1: Create the n-dimensional array dynamically.
+        // Array.newInstance() is the key. It can create an array of any type with any dimensions.
+        // Example: Array.newInstance(HdfData.class, 2, 3) creates a HdfData[2][3]
+        Object multiDimArray = Array.newInstance(HdfData.class, dimensions);
+
+        // Step 2: Populate the array recursively from the flat buffer.
+        populateArray(multiDimArray, dimensions, 0, buffer, dt.getHdfDatatype(), dtDataSize);
+
+        return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofArray(multiDimArray, dimensions), flags, (short)data.length);
+
+    }
+    /**
+     * A recursive helper method to populate an n-dimensional array from a flat ByteBuffer.
+     * It works by iterating through the dimensions one by one.
+     *
+     * @param currentArray The array (or sub-array) to populate at the current level of recursion.
+     * @param dimensions   The full shape of the top-level array.
+     * @param depth        The current dimension index we are processing (0 for the outermost).
+     * @param buffer       The single ByteBuffer to read all data from.
+     * @param dt           The datatype object.
+     * @param dtDataSize   The size of a single element.
+     */
+    private static void populateArray(Object currentArray, int[] dimensions, int depth, ByteBuffer buffer, HdfDatatype dt, int dtDataSize) {
+        // Base Case: We've recursed to the innermost dimension.
+        // The 'currentArray' is now a 1D array (HdfData[]) that we can fill directly.
+        if (depth == dimensions.length - 1) {
+            int size = dimensions[depth];
+            for (int i = 0; i < size; i++) {
+                byte[] dataBytes = new byte[dtDataSize];
+                buffer.get(dataBytes);
+                HdfData value = dt.getInstance(HdfData.class, dataBytes);
+                Array.set(currentArray, i, value); // Set the value in the 1D array
+            }
+        } else {
+            // Recursive Step: We are in an outer dimension.
+            // 'currentArray' is an array of arrays (e.g., HdfData[][]).
+            // We need to iterate through it and make a recursive call for each sub-array.
+            int size = dimensions[depth];
+            for (int i = 0; i < size; i++) {
+                Object subArray = Array.get(currentArray, i); // Get the next sub-array
+                populateArray(subArray, dimensions, depth + 1, buffer, dt, dtDataSize);
+            }
+        }
     }
 
     /**
@@ -181,16 +238,16 @@ public class AttributeMessage extends HdfMessage {
         position = buffer.position();
         buffer.position((position + 7) & ~7);
 
-        if ( value instanceof HdfVariableLength) {
-            value.writeValueToByteBuffer(buffer);
-        } else if ( value instanceof HdfString){
-            value.writeValueToByteBuffer(buffer);
-        } else {
-            throw new RuntimeException("Unsupported datatype");
-        }
+//        if ( value instanceof HdfVariableLength) {
+//            value.writeValueToByteBuffer(buffer);
+//        } else if ( value instanceof HdfString){
+//            value.writeValueToByteBuffer(buffer);
+//        } else {
+//            throw new RuntimeException("Unsupported datatype");
+//        }
     }
 
-    public void setValue(HdfData value) {
-        this.value = value;
-    }
+//    public void setValue(HdfData value) {
+//        this.value = value;
+//    }
 }

@@ -57,13 +57,14 @@ public class HdfDataSet implements HdfDataObject, Closeable {
 
     @Override
     public String toString() {
-        return "HdfDataSet{" +
-                ", datasetName='" + datasetName + '\'' +
-                ", hdfDatatype=" + hdfDatatype +
-                ", attributes=" + attributes +
-                ", dataObjectHeaderPrefix=" + dataObjectHeaderPrefix +
-                ", closed=" + closed +
-                '}';
+        Optional<HdfFixedPoint> dataAddress = getDataAddress();
+        return "\r\nHdfDataSet@" + ( dataAddress.isEmpty() ? "<Undefined>" : dataAddress.get().isUndefined() ? "<Undefined>" : dataAddress.get().toString()) + "{" +
+                ",\r\n\tdatasetName='" + datasetName + '\'' +
+                ",\r\n\thdfDatatype=" + hdfDatatype +
+//                ",\r\n\tattributes=" + attributes +
+                ",\r\n\tdataObjectHeaderPrefix=" + dataObjectHeaderPrefix +
+                ",\r\n\tclosed=" + closed +
+                "\r\n\t}";
     }
 
     /**
@@ -219,7 +220,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
 
         // Set attribute value
         HdfData attributeValue = createAttributeValue(value, attributeType, requiresGlobalHeap, hdfDataFile);
-        attributeMessage.setValue(attributeValue);
+//        attributeMessage.setValue(attributeValue);
 
         return attributeMessage;
     }
@@ -271,10 +272,9 @@ public class HdfDataSet implements HdfDataObject, Closeable {
      * @return the created {@link DataspaceMessage}
      */
     private DataspaceMessage createDataspaceMessage() {
-        HdfFixedPoint[] hdfDimensions = {};
         short dataSpaceMessageSize = 8;
         return new DataspaceMessage(
-                1, 0, DataspaceMessage.buildFlagSet(hdfDimensions.length > 0, false),
+                1, 0, DataspaceMessage.buildFlagSet(false, false),
                 null, null, false, (byte) 0, dataSpaceMessageSize
         );
     }
@@ -353,7 +353,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
     @Override
     public void close() throws IOException {
         if (closed) return;
-        if (hdfDataFile.getFileAllocation().getDatasetAllocationInfo(datasetName).size() == 0) return;
+        if (hdfDataFile.getFileAllocation().getDatasetAllocationInfo(datasetName).isEmpty()) return;
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         Map<AllocationType, AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
         long headerSize = allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getSize().getInstance(Long.class);
@@ -468,6 +468,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
      * @param bufferSupplier the supplier providing ByteBuffer instances
      * @throws IOException if an I/O error occurs
      */
+    @SuppressWarnings("resource")
     public void write(Supplier<ByteBuffer> bufferSupplier) throws IOException {
         Map<AllocationType, AllocationRecord> allocationInfo = hdfDataFile.getFileAllocation().getDatasetAllocationInfo(datasetName);
         hdfDataFile.getSeekableByteChannel().position(allocationInfo.get(AllocationType.DATASET_DATA).getOffset().getInstance(Long.class));
@@ -485,6 +486,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
      * @param buffer the ByteBuffer containing the data
      * @throws IOException if an I/O error occurs
      */
+    @SuppressWarnings("resource")
     public void write(ByteBuffer buffer) throws IOException {
         Map<AllocationType, AllocationRecord> allocationInfo = hdfDataFile.getFileAllocation().getDatasetAllocationInfo(datasetName);
         hdfDataFile.getSeekableByteChannel().position(allocationInfo.get(AllocationType.DATASET_DATA).getOffset().getInstance(Long.class));
@@ -498,8 +500,9 @@ public class HdfDataSet implements HdfDataObject, Closeable {
      *
      * @return the {@link HdfFixedPoint} representing the data address
      */
-    public HdfFixedPoint getDataAddress() {
-        return dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class).orElseThrow().getDataAddress();
+    public Optional<HdfFixedPoint> getDataAddress() {
+        return dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class)
+                .flatMap(dataLayoutMessage -> Optional.ofNullable(dataLayoutMessage.getDataAddress()));
     }
 
     /**
@@ -507,8 +510,9 @@ public class HdfDataSet implements HdfDataObject, Closeable {
      *
      * @return an array of {@link HdfFixedPoint} representing the dimension sizes
      */
-    public HdfFixedPoint[] getdimensionSizes() {
-        return dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class).orElseThrow().getDimensionSizes();
+    public Optional<HdfFixedPoint[]> getdimensionSizes() {
+        return dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class)
+                .flatMap(dataLayoutMessage -> Optional.ofNullable(dataLayoutMessage.getDimensionSizes()));
     }
 
     /**

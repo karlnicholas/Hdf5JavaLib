@@ -281,7 +281,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
         // Parse header messages
         for (HdfMessage message : headerMessages) {
             String ms = message.toString();
-            builder.append("\r\n").append(ms);
+            builder.append("\r\n\t\t").append(ms);
         }
         builder.append("}");
 
