@@ -128,7 +128,6 @@ public class AttributeMessage extends HdfMessage {
         int dtDataSize = dt.getHdfDatatype().getSize();
         dt.getHdfDatatype().setGlobalHeap(hdfDataFile.getGlobalHeap());
         int dimensionality = ds.getDimensionality();
-        int[] dimensions = Arrays.stream(ds.getDimensions()).mapToInt(dim -> dim.getInstance(Long.class).intValue()).toArray();
 
         // Assuming ds is an HDF5 dataset, dt is its datatype, buffer is a ByteBuffer, dtDataSize is element size
         // Case 1: Scalar data (dimensionality is 0)
@@ -140,6 +139,7 @@ public class AttributeMessage extends HdfMessage {
         }
 
         // Case 2: Array data (dimensionality is 1 or more)
+        int[] dimensions = Arrays.stream(ds.getDimensions()).mapToInt(dim -> dim.getInstance(Long.class).intValue()).toArray();
 
         // Step 1: Create the n-dimensional array dynamically.
         // Array.newInstance() is the key. It can create an array of any type with any dimensions.
