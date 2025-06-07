@@ -1,4 +1,4 @@
-package org.hdf5javalib.redo.reference;
+package org.hdf5javalib.redo.dataclass.reference;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;

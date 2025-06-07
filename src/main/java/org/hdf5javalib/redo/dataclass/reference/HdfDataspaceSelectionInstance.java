@@ -1,8 +1,8 @@
-package org.hdf5javalib.redo.reference;
+package org.hdf5javalib.redo.dataclass.reference;
 
 import java.nio.ByteBuffer;
 
-import static org.hdf5javalib.redo.reference.HdfDataspaceSelectionInstance.HdfSelectionType.*;
+import static org.hdf5javalib.redo.dataclass.reference.HdfDataspaceSelectionInstance.HdfSelectionType.*;
 
 public abstract class HdfDataspaceSelectionInstance {
     public enum HdfSelectionType {

@@ -1,4 +1,4 @@
-package org.hdf5javalib.redo.reference;
+package org.hdf5javalib.redo.dataclass.reference;
 
 public class HdfSelectionAttribute extends HdfDataspaceSelectionInstance {
     private final String attributeName;

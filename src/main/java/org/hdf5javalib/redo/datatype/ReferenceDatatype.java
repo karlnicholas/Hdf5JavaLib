@@ -4,10 +4,10 @@ import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfReference;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
-import org.hdf5javalib.redo.reference.HdfAttributeReference;
-import org.hdf5javalib.redo.reference.HdfDatasetRegionReference;
-import org.hdf5javalib.redo.reference.HdfObjectReference;
-import org.hdf5javalib.redo.reference.HdfReferenceInstance;
+import org.hdf5javalib.redo.dataclass.reference.HdfAttributeReference;
+import org.hdf5javalib.redo.dataclass.reference.HdfDatasetRegionReference;
+import org.hdf5javalib.redo.dataclass.reference.HdfObjectReference;
+import org.hdf5javalib.redo.dataclass.reference.HdfReferenceInstance;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;

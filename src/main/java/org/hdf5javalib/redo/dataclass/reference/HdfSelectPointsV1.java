@@ -1,15 +1,15 @@
-package org.hdf5javalib.redo.reference;
+package org.hdf5javalib.redo.dataclass.reference;
 
-public class HdfSelectPointsV2 extends HdfDataspaceSelectionInstance {
+public class HdfSelectPointsV1 extends HdfDataspaceSelectionInstance {
     private final int version;
-    private final int encodedSize;
+    private final int length;
     private final int rank;
     private final long numPoints;
-    private final long[][] values;
+    private final int[][] values;
 
-    public HdfSelectPointsV2(int version, int encodedSize, int rank, long numPoints, long[][] values) {
+    public HdfSelectPointsV1(int version, int length, int rank, long numPoints, int[][] values) {
         this.version = version;
-        this.encodedSize = encodedSize;
+        this.length = length;
         this.rank = rank;
         this.numPoints = numPoints;
         this.values = values;
