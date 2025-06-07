@@ -5,6 +5,7 @@ import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.utils.FlattenedArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,18 +71,18 @@ public class FixedPointRead {
      */
     void run() throws Exception {
         Path filePath = getResourcePath("dsgroup.h5");
-//        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-//            HdfFileReader hdfFileReader = new HdfFileReader(channel).readFile();
-//            hdfFileReader.getFileAllocation().printBlocks();
-//            log.debug("Root Group: {} ", hdfFileReader.getRootGroup());
-//            HdfGroup group = hdfFileReader.getRootGroup().getGroup("/Group1").orElseThrow();
-//            for ( HdfDataSet dataset: group.getDataSets()) {
-//                tryScalarDataSpliterator(channel, hdfFileReader, dataset);
-//            }
-//        }
-//
+        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+            HdfFileReader hdfFileReader = new HdfFileReader(channel).readFile();
+            hdfFileReader.getFileAllocation().printBlocks();
+            log.debug("Root Group: {} ", hdfFileReader.getRootGroup());
+            HdfGroup group = hdfFileReader.getRootGroup().getGroup("/Group1").orElseThrow();
+            for ( HdfDataSet dataset: group.getDataSets()) {
+                tryScalarDataSpliterator(channel, hdfFileReader, dataset);
+            }
+        }
+
         try {
-            filePath = getResourcePath("test.h5");
+            filePath = getResourcePath("scalar.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("rootGroup {} ",  reader.getRootGroup());
@@ -91,25 +92,25 @@ public class FixedPointRead {
             throw new RuntimeException(e);
         }
 
-//        try {
-//            filePath = getResourcePath("weatherdata.h5");
-//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-//                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                tryMatrixSpliterator(channel, reader, reader.getRootGroup().getDataset("/weatherdata").orElseThrow());
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        try {
-//            filePath = getResourcePath("tictactoe_4d_state.h5");
-//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-//                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                display4DData(channel, reader, reader.getRootGroup().getDataset("/game").orElseThrow());
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+        try {
+            filePath = getResourcePath("weatherdata.h5");
+            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+                tryMatrixSpliterator(channel, reader, reader.getRootGroup().getDataset("/weatherdata").orElseThrow());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            filePath = getResourcePath("tictactoe_4d_state.h5");
+            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+                display4DData(channel, reader, reader.getRootGroup().getDataset("/game").orElseThrow());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
