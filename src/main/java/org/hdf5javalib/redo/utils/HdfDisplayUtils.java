@@ -1,6 +1,5 @@
 package org.hdf5javalib.redo.utils;
 
-import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.HdfData;
@@ -10,9 +9,6 @@ import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 

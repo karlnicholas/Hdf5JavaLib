@@ -573,4 +573,8 @@ public class HdfDataSet implements HdfDataObject, Closeable {
     public boolean hasDataspaceMessage() {
         return dataObjectHeaderPrefix.findMessageByType(DataspaceMessage.class).isPresent();
     }
+
+    public List<AttributeMessage> getAttributeMessages() {
+        return attributes;
+    }
 }

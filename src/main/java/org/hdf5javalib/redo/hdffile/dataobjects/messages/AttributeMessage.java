@@ -3,10 +3,8 @@ package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 import org.hdf5javalib.redo.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfString;
-import org.hdf5javalib.redo.datatype.ArrayDatatype;
 import org.hdf5javalib.redo.datatype.HdfDatatype;
 import org.hdf5javalib.redo.datatype.StringDatatype;
-import org.hdf5javalib.redo.datatype.VariableLengthDatatype;
 import org.hdf5javalib.redo.utils.HdfDataHolder;
 
 import java.lang.reflect.Array;
@@ -53,7 +51,7 @@ public class AttributeMessage extends HdfMessage {
     /** The dataspace defining the dimensionality and size of the attribute's value. */
     private final DataspaceMessage dataspaceMessage;
     /** The actual value of the attribute. */
-    private HdfDataHolder value;
+    private final HdfDataHolder hdfDataHolder;
 
     /**
      * Constructs an AttributeMessage with the specified components.
@@ -62,17 +60,17 @@ public class AttributeMessage extends HdfMessage {
      * @param name              the name of the attribute
      * @param datatypeMessage   the datatype of the attribute's value
      * @param dataspaceMessage  the dataspace defining the attribute's value dimensions
-     * @param value             the actual attribute value
+     * @param hdfDataHolder             the actual attribute value
      * @param flags             message flags
      * @param sizeMessageData   the size of the message data in bytes
      */
-    public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfDataHolder value, int flags, int sizeMessageData) {
+    public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfDataHolder hdfDataHolder, int flags, int sizeMessageData) {
         super(MessageType.AttributeMessage, sizeMessageData, flags);
         this.version = version;
         this.datatypeMessage = datatypeMessage;
         this.dataspaceMessage = dataspaceMessage;
         this.name = name;
-        this.value = value;
+        this.hdfDataHolder = hdfDataHolder;
     }
 
     /**
@@ -196,7 +194,7 @@ public class AttributeMessage extends HdfMessage {
         return "AttributeMessage("+(getSizeMessageData()+8)+"){" +
                 "version=" + version +
                 ", name='" + name + '\'' +
-                ", value='" + value + '\'' +
+                ", value='" + hdfDataHolder + '\'' +
                 '}';
     }
 
@@ -245,6 +243,10 @@ public class AttributeMessage extends HdfMessage {
 //        } else {
 //            throw new RuntimeException("Unsupported datatype");
 //        }
+    }
+
+    public HdfDataHolder getHdfDataHolder() {
+        return hdfDataHolder;
     }
 
 //    public void setValue(HdfData value) {

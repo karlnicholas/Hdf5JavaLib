@@ -15,8 +15,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.BitSet;
 
-import static org.hdf5javalib.redo.utils.HdfDisplayUtils.*;
-
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.
  * <p>
