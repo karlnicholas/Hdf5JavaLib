@@ -266,8 +266,11 @@ public class VariableLengthDatatype implements HdfDatatype {
         return "VariableLengthDatatype{" +
                 "size=" + size +
                 ", type='" + getType().name + '\'' +
-                ", padding='" + getPaddingType().name + '\'' +
-                ", charSet='" + getCharacterSet().name + '\'' +
+                ( getType() == Type.STRING ? (
+                    ", padding='" + getPaddingType().name + '\'' +
+                    ", charSet='" + getCharacterSet().name + '\'')
+                : "" ) +
+                ", hdfDatatype='" + hdfDatatype + '\'' +
                 '}';
     }
 

@@ -13,6 +13,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.BitSet;
 
 import static org.hdf5javalib.redo.utils.HdfDisplayUtils.displayData;
+import static org.hdf5javalib.redo.utils.HdfDisplayUtils.displayScalarData;
 import static org.hdf5javalib.redo.utils.HdfReadUtils.getResourcePath;
 
 /**
@@ -46,12 +47,12 @@ public class ReferenceRead {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Root Group: {} ", reader.getRootGroup());
                 reader.getFileAllocation().printBlocks();
-                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
-                    displayReference(channel, dataSet, reader);
-                }
-//                for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
+//                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
 //                    displayReference(channel, dataSet, reader);
 //                }
+                for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
+                    displayData(channel, dataSet, reader);
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

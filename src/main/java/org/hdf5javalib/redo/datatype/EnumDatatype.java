@@ -340,7 +340,7 @@ public class EnumDatatype implements HdfDatatype {
         return "EnumDatatype{" +
                 "size=" + size +
                 ", numMembers=" + names.length +
-                ", baseType=" + hdfDatatype +
+                ", hdfDatatype=" + hdfDatatype +
                 '}';
     }
 

@@ -360,7 +360,7 @@ public class ArrayDatatype implements HdfDatatype {
                 ", dimensionality=" + dimensionality +
                 ", dimensionSizes=" + Arrays.toString(dimensionSizes) +
                 ", permutationIndices=" + Arrays.toString(permutationIndices) +
-                ", baseType=" + hdfDatatype +
+                ", hdfDatatype=" + hdfDatatype +
                 '}';
     }
 
