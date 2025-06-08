@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
@@ -25,16 +25,25 @@ import java.util.Map;
  * @see HdfGlobalHeap
  */
 public class StringDatatype implements HdfDatatype {
-    /** The class and version information for the datatype (class 3, version 1). */
+    /**
+     * The class and version information for the datatype (class 3, version 1).
+     */
     private final int classAndVersion;
-    /** A BitSet containing class-specific bit field information (padding type and character set). */
+    /**
+     * A BitSet containing class-specific bit field information (padding type and character set).
+     */
     private final BitSet classBitField;
-    /** The fixed size of the string in bytes. */
+    /**
+     * The fixed size of the string in bytes.
+     */
     private final int size;
     private final HdfDataFile dataFile;
 
-    /** Map of converters for transforming byte data to specific Java types. */
+    /**
+     * Map of converters for transforming byte data to specific Java types.
+     */
     private static final Map<Class<?>, HdfConverter<StringDatatype, ?>> CONVERTERS = new HashMap<>();
+
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfString.class, HdfString::new);
@@ -78,7 +87,7 @@ public class StringDatatype implements HdfDatatype {
      * @return a BitSet encoding the padding type and character set
      */
     public static BitSet createClassBitField(PaddingType paddingType, CharacterSet charSet) {
-        return BitSet.valueOf(new long[] {((long) charSet.value << 4) + paddingType.value});
+        return BitSet.valueOf(new long[]{((long) charSet.value << 4) + paddingType.value});
     }
 
     /**
@@ -273,31 +282,57 @@ public class StringDatatype implements HdfDatatype {
                 "Space characters are added to the end of the value during conversions from short values to long values, " +
                         "but conversion in the opposite direction simply truncates the value. This is the Fortran representation of the string."),
 
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_3(3, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_4(4, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_5(5, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_6(6, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_7(7, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_8(8, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_9(9, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_10(10, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_11(11, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_12(12, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_13(13, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_14(14, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_15(15, "Reserved", "Reserved for future use.");
 
         private final int value;
@@ -349,33 +384,61 @@ public class StringDatatype implements HdfDatatype {
          * UTF-8 character set.
          */
         UTF8(1, "UTF-8", "Unicode Transformation Format, 8-bit"),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_2(2, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_3(3, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_4(4, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_5(5, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_6(6, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_7(7, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_8(8, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_9(9, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_10(10, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_11(11, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_12(12, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_13(13, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_14(14, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_15(15, "Reserved", "Reserved for future use.");
 
         private final int value;
@@ -439,7 +502,8 @@ public class StringDatatype implements HdfDatatype {
      * @param grok the HdfGlobalHeap to set
      */
     @Override
-    public void setGlobalHeap(HdfGlobalHeap grok) {}
+    public void setGlobalHeap(HdfGlobalHeap grok) {
+    }
 
     /**
      * Returns the class and version byte for this datatype.

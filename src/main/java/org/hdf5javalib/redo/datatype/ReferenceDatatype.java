@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfReference;
 import org.hdf5javalib.redo.dataclass.reference.HdfAttributeReference;
@@ -16,7 +16,9 @@ import java.util.Map;
 
 import static org.hdf5javalib.file.dataobject.message.datatype.ReferenceDatatype.getTypeValue;
 
-/** HDF5 Reference Datatype (Class 7) for objects, dataset regions, or attributes. */
+/**
+ * HDF5 Reference Datatype (Class 7) for objects, dataset regions, or attributes.
+ */
 public class ReferenceDatatype implements HdfDatatype {
     private final int classAndVersion;
     private final BitSet classBitField;
@@ -38,9 +40,13 @@ public class ReferenceDatatype implements HdfDatatype {
             this.description = description;
         }
 
-        public int getValue() { return value; }
+        public int getValue() {
+            return value;
+        }
 
-        public String getDescription() { return description; }
+        public String getDescription() {
+            return description;
+        }
 
         public static ReferenceType fromValue(int value) {
             for (ReferenceType type : values()) {
@@ -51,11 +57,12 @@ public class ReferenceDatatype implements HdfDatatype {
     }
 
     private static final Map<Class<?>, HdfConverter<ReferenceDatatype, ?>> CONVERTERS = new HashMap<>();
+
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfReference.class, HdfReference::new);
         CONVERTERS.put(HdfData.class, HdfReference::new);
-        CONVERTERS.put(HdfReferenceInstance.class, (bytes, dt)->dt.toHdfReferenceInstance(bytes, dt));
+        CONVERTERS.put(HdfReferenceInstance.class, (bytes, dt) -> dt.toHdfReferenceInstance(bytes, dt));
         CONVERTERS.put(byte[].class, (bytes, dt) -> bytes.clone());
     }
 
@@ -94,7 +101,7 @@ public class ReferenceDatatype implements HdfDatatype {
         return (byte) (7 << 4);
     }
 
-//    public static int getTypeValue(BitSet classBitField) {
+    //    public static int getTypeValue(BitSet classBitField) {
 //        int value = 0;
 //        for (int i = 0; i < 4; i++) if (classBitField.get(i)) value |= 1 << i;
 //        return value;
@@ -163,14 +170,16 @@ public class ReferenceDatatype implements HdfDatatype {
     }
 
     @Override
-    public void writeDefinitionToByteBuffer(ByteBuffer buffer) {}
+    public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
+    }
 
     @Override
-    public void setGlobalHeap(HdfGlobalHeap globalHeap) {}
+    public void setGlobalHeap(HdfGlobalHeap globalHeap) {
+    }
 
     @Override
     public String toString() {
-        int version = (0xF & (getClassAndVersion()>>>4));
+        int version = (0xF & (getClassAndVersion() >>> 4));
         return "ReferenceDatatype{size=" + size
                 + ", version=" + version
                 + (version == 4 ? ", encoding=" + getEncoding() : "")

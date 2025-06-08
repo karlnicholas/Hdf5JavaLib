@@ -1,9 +1,9 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
-import org.hdf5javalib.redo.AllocationRecord;
-import org.hdf5javalib.redo.AllocationType;
-import org.hdf5javalib.redo.HdfDataFile;
-import org.hdf5javalib.redo.HdfFileAllocation;
+import org.hdf5javalib.redo.hdffile.AllocationRecord;
+import org.hdf5javalib.redo.hdffile.AllocationType;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
@@ -15,20 +15,29 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class HdfLocalHeapData extends AllocationRecord {
-    /** The offset to the heap's data segment in the file. */
+    /**
+     * The offset to the heap's data segment in the file.
+     */
     private HdfFixedPoint heapContentsOffset;
-    /** The size of the heap's data segment. */
+    /**
+     * The size of the heap's data segment.
+     */
     private HdfFixedPoint heapContentsSize;
-    /** The offset to the free list within the heap. */
+    /**
+     * The offset to the free list within the heap.
+     */
     private final HdfFixedPoint freeListOffset;
-    /** Map of localHeap data by offsets */
+    /**
+     * Map of localHeap data by offsets
+     */
     private final Map<HdfFixedPoint, HdfLocalHeapDataValue> data;
 
     /**
      * for reading
-     * @param heapContentsOffset    heapContentsOffset
-     * @param heapContentsSize  heapContentsSize
-     * @param data              data
+     *
+     * @param heapContentsOffset heapContentsOffset
+     * @param heapContentsSize   heapContentsSize
+     * @param data               data
      */
     public HdfLocalHeapData(
             HdfFixedPoint heapContentsOffset,
@@ -38,7 +47,7 @@ public class HdfLocalHeapData extends AllocationRecord {
             HdfDataFile hdfDataFile,
             String objectName
     ) {
-        super(AllocationType.LOCAL_HEAP, objectName+":Local Heap Data", heapContentsOffset, heapContentsSize, hdfDataFile.getFileAllocation());
+        super(AllocationType.LOCAL_HEAP, objectName + ":Local Heap Data", heapContentsOffset, heapContentsSize, hdfDataFile.getFileAllocation());
         this.heapContentsSize = heapContentsSize;
         this.freeListOffset = freeListOffset;
         this.data = data;
@@ -46,9 +55,10 @@ public class HdfLocalHeapData extends AllocationRecord {
 
     /**
      * for writing
-     * @param offset    offset
-     * @param size      size
-     * @param hdfDataFile   hdfDataFile
+     *
+     * @param offset      offset
+     * @param size        size
+     * @param hdfDataFile hdfDataFile
      */
     public HdfLocalHeapData(HdfFixedPoint offset, HdfFixedPoint size, HdfDataFile hdfDataFile) {
         super(AllocationType.LOCAL_HEAP, "LOCALHEAP2", offset, size, hdfDataFile.getFileAllocation());
@@ -127,11 +137,11 @@ public class HdfLocalHeapData extends AllocationRecord {
         fileChannel.read(buffer);
         buffer.flip();
         long iFreeListOffset = freeListOffset.getInstance(Long.class);
-        if ( iFreeListOffset == 1 ) {
+        if (iFreeListOffset == 1) {
             iFreeListOffset = dataSegmentSize.getInstance(Long.class);
         }
         long iOffset = 0;
-        while ( buffer.position() < iFreeListOffset ) {
+        while (buffer.position() < iFreeListOffset) {
             long iStart = iOffset;
             // Find the null terminator
             while (iOffset < heapData.length && heapData[Math.toIntExact(iOffset)] != 0) {

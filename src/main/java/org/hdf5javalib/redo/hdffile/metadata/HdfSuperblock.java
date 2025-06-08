@@ -1,9 +1,9 @@
 package org.hdf5javalib.redo.hdffile.metadata;
 
-import org.hdf5javalib.redo.AllocationRecord;
-import org.hdf5javalib.redo.AllocationType;
-import org.hdf5javalib.redo.HdfDataFile;
-import org.hdf5javalib.redo.HdfFileAllocation;
+import org.hdf5javalib.redo.hdffile.AllocationRecord;
+import org.hdf5javalib.redo.hdffile.AllocationType;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfSymbolTableEntry;
@@ -69,7 +69,7 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * based on the HDF5 file specification.</p>
  */
 public class HdfSuperblock extends AllocationRecord {
-    private static final byte[] FILE_SIGNATURE = new byte[] { (byte) 0x89, 'H', 'D', 'F', '\r', '\n', 0x1A, '\n' };
+    private static final byte[] FILE_SIGNATURE = new byte[]{(byte) 0x89, 'H', 'D', 'F', '\r', '\n', 0x1A, '\n'};
 
     private final int version;
     private final int freeSpaceVersion;
@@ -94,19 +94,19 @@ public class HdfSuperblock extends AllocationRecord {
     /**
      * Constructs a Superblock with the specified metadata.
      *
-     * @param version                    the superblock version
-     * @param freeSpaceVersion           the free space storage version
-     * @param rootGroupVersion           the root group symbol table entry version
-     * @param sharedHeaderVersion        the shared object header format version
-     * @param sizeOfOffsets,             the number of bytes used to store addresses
-     * @param sizeOfLengths,             he number of bytes used to store the size of an object.
-     * @param groupLeafNodeK             the B-tree group leaf node K value
-     * @param groupInternalNodeK         the B-tree group internal node K value
-     * @param baseAddress                the base address for relative addressing
-     * @param addressFileFreeSpaceInfo   the address of the free space manager
-     * @param endOfFileAddress           the end-of-file address
-     * @param driverInformationAddress   the address of the driver information block
-     * @param hdfDataFile                the HDF5 file context
+     * @param version                  the superblock version
+     * @param freeSpaceVersion         the free space storage version
+     * @param rootGroupVersion         the root group symbol table entry version
+     * @param sharedHeaderVersion      the shared object header format version
+     * @param sizeOfOffsets,           the number of bytes used to store addresses
+     * @param sizeOfLengths,           he number of bytes used to store the size of an object.
+     * @param groupLeafNodeK           the B-tree group leaf node K value
+     * @param groupInternalNodeK       the B-tree group internal node K value
+     * @param baseAddress              the base address for relative addressing
+     * @param addressFileFreeSpaceInfo the address of the free space manager
+     * @param endOfFileAddress         the end-of-file address
+     * @param driverInformationAddress the address of the driver information block
+     * @param hdfDataFile              the HDF5 file context
      */
     public HdfSuperblock(
             int version,
@@ -125,7 +125,7 @@ public class HdfSuperblock extends AllocationRecord {
             String name, HdfFixedPoint offset,
             FixedPointDatatype fixedPointDatatypeForOffset,
             FixedPointDatatype fixedPointDatatypeForLength
-            ) {
+    ) {
         super(AllocationType.SUPERBLOCK, name, offset, HdfWriteUtils.hdfFixedPointFromValue(HdfFileAllocation.SUPERBLOCK_SIZE, fixedPointDatatypeForLength), hdfDataFile.getFileAllocation());
 //        hdfDataFile.getFileAllocation().addAllocationBlock(this);
         this.version = version;
@@ -156,7 +156,7 @@ public class HdfSuperblock extends AllocationRecord {
      * @param fileChannel the seekable byte channel to read from
      * @param hdfDataFile the HDF5 file context
      * @return the constructed HdfSuperblock instance
-     * @throws IOException if an I/O error occurs
+     * @throws IOException              if an I/O error occurs
      * @throws IllegalArgumentException if the file signature is invalid or the version is unsupported
      */
     public static HdfSuperblock readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws Exception {
@@ -213,11 +213,11 @@ public class HdfSuperblock extends AllocationRecord {
         FixedPointDatatype fixedPointDatatypeForOffset = new FixedPointDatatype(
                 FixedPointDatatype.createClassAndVersion(),
                 FixedPointDatatype.createClassBitField(false, false, false, false),
-                offsetSize, (short) 0, (short) (8*offsetSize), hdfDataFile);
+                offsetSize, (short) 0, (short) (8 * offsetSize), hdfDataFile);
         FixedPointDatatype fixedPointDatatypeForLength = new FixedPointDatatype(
                 FixedPointDatatype.createClassAndVersion(),
                 FixedPointDatatype.createClassBitField(false, false, false, false),
-                lengthSize, (short) 0, (short) (8*lengthSize), hdfDataFile);
+                lengthSize, (short) 0, (short) (8 * lengthSize), hdfDataFile);
 
         int groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
         int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());

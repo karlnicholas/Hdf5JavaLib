@@ -1,9 +1,9 @@
 package org.hdf5javalib.redo.hdffile.dataobjects;
 
-import org.hdf5javalib.redo.AllocationRecord;
-import org.hdf5javalib.redo.AllocationType;
-import org.hdf5javalib.redo.HdfDataFile;
-import org.hdf5javalib.redo.HdfFileAllocation;
+import org.hdf5javalib.redo.hdffile.AllocationRecord;
+import org.hdf5javalib.redo.hdffile.AllocationType;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.ObjectHeaderContinuationMessage;
@@ -30,33 +30,41 @@ import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.readM
  * </p>
  */
 public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
-    /** The version of the object header (1 byte). */
+    /**
+     * The version of the object header (1 byte).
+     */
     private final int version;
 
-    /** The reference count for the object (4 bytes). */
+    /**
+     * The reference count for the object (4 bytes).
+     */
     private final long objectReferenceCount;
 
-    /** The size of the object header (4 bytes). */
+    /**
+     * The size of the object header (4 bytes).
+     */
     private final long objectHeaderSize;
 
-    /** The list of header messages associated with the object. */
+    /**
+     * The list of header messages associated with the object.
+     */
     private final List<HdfMessage> headerMessages;
 
 
     /**
      * Constructs an HdfObjectHeaderPrefixV1 with application-defined values.
      *
-     * @param version             the version of the object header
+     * @param version              the version of the object header
      * @param objectReferenceCount the reference count for the object
-     * @param objectHeaderSize    the size of the object header
-     * @param headerMessages      the list of header messages
+     * @param objectHeaderSize     the size of the object header
+     * @param headerMessages       the list of header messages
      */
     public HdfObjectHeaderPrefixV1(int version, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> headerMessages,
                                    HdfDataFile hdfDataFile, String name, HdfFixedPoint offset
     ) {
         super(AllocationType.DATASET_OBJECT_HEADER, name, offset,
-            HdfWriteUtils.hdfFixedPointFromValue(objectHeaderSize+16, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()),
-            hdfDataFile.getFileAllocation()
+                HdfWriteUtils.hdfFixedPointFromValue(objectHeaderSize + 16, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()),
+                hdfDataFile.getFileAllocation()
         );
         this.version = version;
         this.objectReferenceCount = objectReferenceCount;
@@ -74,7 +82,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
      * @param fileChannel the seekable byte channel to read from
      * @param hdfDataFile the HDF5 file context
      * @return the constructed HdfObjectHeaderPrefixV1 instance
-     * @throws IOException if an I/O error occurs
+     * @throws IOException              if an I/O error occurs
      * @throws IllegalArgumentException if reserved fields are non-zero
      */
     public static HdfObjectHeaderPrefixV1 readFromSeekableByteChannel(
@@ -120,7 +128,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
 
         // Create the instance
         return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages,
-                hdfDataFile, objectName+":Object Header",
+                hdfDataFile, objectName + ":Object Header",
                 HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
     }
 
@@ -134,7 +142,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
      *
      * @param seekableByteChannel the byte channel to write to
      * @param fileAllocation      the file allocation manager
-     * @throws IOException if an I/O error occurs
+     * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the buffer overflows
      */
     public void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
@@ -307,6 +315,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
     public List<HdfMessage> getHeaderMessages() {
         return headerMessages;
     }
+
     public AllocationRecord getAllocationRecord() {
         return this;
     }

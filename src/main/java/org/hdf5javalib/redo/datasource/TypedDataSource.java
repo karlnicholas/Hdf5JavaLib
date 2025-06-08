@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datasource;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DataspaceMessage;
@@ -32,24 +32,34 @@ import java.util.stream.StreamSupport;
  * @see HdfDataFile
  */
 public class TypedDataSource<T> {
-    /** The HDF5 dataset being accessed. */
+    /**
+     * The HDF5 dataset being accessed.
+     */
     private final HdfDataSet dataset;
-    /** The channel for reading data from the HDF5 file. */
+    /**
+     * The channel for reading data from the HDF5 file.
+     */
     private final SeekableByteChannel channel;
-    /** The Java class of the data elements. */
+    /**
+     * The Java class of the data elements.
+     */
     private final Class<T> dataClass;
-    /** The dimensions of the dataset. */
+    /**
+     * The dimensions of the dataset.
+     */
     private final int[] dimensions;
-    /** The size of each data element in bytes. */
+    /**
+     * The size of each data element in bytes.
+     */
     private final int elementSize;
 
     /**
      * Constructs a TypedDataSource for the specified dataset and data type.
      *
-     * @param channel    the SeekableByteChannel for reading the HDF5 file
+     * @param channel     the SeekableByteChannel for reading the HDF5 file
      * @param hdfDataFile the HDF5 file context for global heap and other resources
-     * @param dataset    the HDF5 dataset to read from
-     * @param dataClass  the Java class of the data elements
+     * @param dataset     the HDF5 dataset to read from
+     * @param dataClass   the Java class of the data elements
      * @throws NullPointerException if any parameter is null
      */
     public TypedDataSource(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataSet dataset, Class<T> dataClass) {
@@ -96,7 +106,7 @@ public class TypedDataSource<T> {
      * @param offset the starting offset in the dataset
      * @param size   the number of bytes to read
      * @return a ByteBuffer containing the read data
-     * @throws IOException if an I/O error occurs
+     * @throws IOException              if an I/O error occurs
      * @throws IllegalArgumentException if the size exceeds Integer.MAX_VALUE
      */
     private ByteBuffer readBytes(long offset, long size) throws IOException {
@@ -184,14 +194,14 @@ public class TypedDataSource<T> {
      * Reads a scalar (0D) value from the dataset.
      *
      * @return the scalar value
-     * @throws IOException if an I/O error occurs
+     * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 0D
      */
     public T readScalar() throws IOException {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
         }
-        if ( HdfFixedPoint.compareToZero(dataset.getdimensionSizes().orElseThrow()[0]) <= 0 )  {
+        if (HdfFixedPoint.compareToZero(dataset.getdimensionSizes().orElseThrow()[0]) <= 0) {
             throw new IllegalStateException("Dataset has no data");
         }
         ByteBuffer buffer = readBytes(0, elementSize);
@@ -202,14 +212,14 @@ public class TypedDataSource<T> {
      * Streams a scalar (0D) value from the dataset.
      *
      * @return a Stream containing the scalar value
-     * @throws UncheckedIOException if an I/O error occurs
+     * @throws UncheckedIOException  if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 0D
      */
     public Stream<T> streamScalar() {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
         }
-        if ( HdfFixedPoint.compareToZero(dataset.getdimensionSizes().orElseThrow()[0]) <= 0 )  {
+        if (HdfFixedPoint.compareToZero(dataset.getdimensionSizes().orElseThrow()[0]) <= 0) {
             throw new IllegalStateException("Dataset has no data");
         }
         try {
@@ -223,7 +233,7 @@ public class TypedDataSource<T> {
      * Streams a scalar (0D) value from the dataset (non-parallel).
      *
      * @return a Stream containing the scalar value
-     * @throws UncheckedIOException if an I/O error occurs
+     * @throws UncheckedIOException  if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 0D
      */
     public Stream<T> parallelStreamScalar() {
@@ -236,7 +246,7 @@ public class TypedDataSource<T> {
      * Reads a vector (1D) from the dataset.
      *
      * @return the vector as an array
-     * @throws IOException if an I/O error occurs
+     * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 1D
      */
     public T[] readVector() throws IOException {
@@ -280,7 +290,7 @@ public class TypedDataSource<T> {
      * Reads a matrix (2D) from the dataset.
      *
      * @return the matrix as a 2D array
-     * @throws IOException if an I/O error occurs
+     * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 2D
      */
     public T[][] readMatrix() throws IOException {
@@ -327,7 +337,7 @@ public class TypedDataSource<T> {
      * Reads a tensor (3D) from the dataset.
      *
      * @return the tensor as a 3D array
-     * @throws IOException if an I/O error occurs
+     * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 3D
      */
     public T[][][] readTensor() throws IOException {

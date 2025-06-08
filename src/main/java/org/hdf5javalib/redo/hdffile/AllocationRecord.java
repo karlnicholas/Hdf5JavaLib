@@ -1,4 +1,4 @@
-package org.hdf5javalib.redo;
+package org.hdf5javalib.redo.hdffile;
 
 // --- Helper Classes ---
 
@@ -38,61 +38,79 @@ public class AllocationRecord {
      *
      * @return the allocation type
      */
-    public AllocationType getType() { return type; }
+    public AllocationType getType() {
+        return type;
+    }
 
     /**
      * Gets the name of the allocation.
      *
      * @return the allocation name
      */
-    public String getName() { return name; }
+    public String getName() {
+        return name;
+    }
 
     /**
      * Gets the starting offset of the allocation.
      *
      * @return the offset
      */
-    public HdfFixedPoint getOffset() { return offset; }
+    public HdfFixedPoint getOffset() {
+        return offset;
+    }
 
     /**
      * Gets the size of the allocation.
      *
      * @return the size
      */
-    public HdfFixedPoint getSize() { return size; }
+    public HdfFixedPoint getSize() {
+        return size;
+    }
 
     /**
      * Sets the allocation type.
      *
      * @param type the allocation type
      */
-    public void setType(AllocationType type) { this.type = type; }
+    public void setType(AllocationType type) {
+        this.type = type;
+    }
 
     /**
      * Sets the name of the allocation.
      *
      * @param name the allocation name
      */
-    public void setName(String name) { this.name = name; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
     /**
      * Sets the starting offset of the allocation.
      *
      * @param offset the offset
      */
-    public void setOffset(HdfFixedPoint offset) { this.offset = offset; }
+    public void setOffset(HdfFixedPoint offset) {
+        this.offset = offset;
+    }
 
     /**
      * Sets the size of the allocation.
      *
      * @param size the size
      */
-    public void setSize(HdfFixedPoint size) { this.size = size; }
+    public void setSize(HdfFixedPoint size) {
+        this.size = size;
+    }
 
     /**
      * Sets the size of the allocation.
      *
      * @param size the size
      */
-    public void setSize(long size) { this.size = HdfWriteUtils.hdfFixedPointFromValue(size, this.size.getDatatype()); }
+    public void setSize(long size) {
+        this.size = HdfWriteUtils.hdfFixedPointFromValue(size, this.size.getDatatype());
+    }
 }

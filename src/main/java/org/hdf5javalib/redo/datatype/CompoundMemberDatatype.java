@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
@@ -20,31 +20,45 @@ import java.util.BitSet;
  * @see DatatypeMessage
  */
 public class CompoundMemberDatatype implements HdfDatatype {
-    /** The name of the compound member. */
+    /**
+     * The name of the compound member.
+     */
     private final String name;
-    /** The byte offset of the member within the compound datatype. */
+    /**
+     * The byte offset of the member within the compound datatype.
+     */
     private final int offset;
-    /** The number of dimensions for the member, if an array. */
+    /**
+     * The number of dimensions for the member, if an array.
+     */
     private final int dimensionality;
-    /** The dimension permutation index for the member. */
+    /**
+     * The dimension permutation index for the member.
+     */
     private final int dimensionPermutation;
-    /** The sizes of each dimension, if an array. */
+    /**
+     * The sizes of each dimension, if an array.
+     */
     private final int[] dimensionSizes;
-    /** The base datatype of the member. */
+    /**
+     * The base datatype of the member.
+     */
     private final HdfDatatype type;
-    /** The size of the message data for this member in bytes. */
+    /**
+     * The size of the message data for this member in bytes.
+     */
     private final int sizeMessageData;
     private final HdfDataFile dataFile;
 
     /**
      * Constructs a CompoundMemberDatatype for an HDF5 compound datatype member.
      *
-     * @param name               the name of the member
-     * @param offset             the byte offset within the compound datatype
-     * @param dimensionality     the number of dimensions, if an array
+     * @param name                 the name of the member
+     * @param offset               the byte offset within the compound datatype
+     * @param dimensionality       the number of dimensions, if an array
      * @param dimensionPermutation the dimension permutation index
-     * @param dimensionSizes     the sizes of each dimension
-     * @param type               the base datatype of the member
+     * @param dimensionSizes       the sizes of each dimension
+     * @param type                 the base datatype of the member
      * @throws IllegalStateException if the datatype class is not supported
      */
     public CompoundMemberDatatype(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, HdfDatatype type, HdfDataFile dataFile) {
@@ -55,7 +69,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
         this.dimensionSizes = dimensionSizes;
         this.type = type;
         this.dataFile = dataFile;
-        sizeMessageData = switch(type.getDatatypeClass()) {
+        sizeMessageData = switch (type.getDatatypeClass()) {
             case FIXED -> computeFixedMessageDataSize(name);
             case FLOAT -> computeFloatMessageDataSize(name);
             case TIME -> computeTimeMessageDataSize(name);
@@ -73,8 +87,8 @@ public class CompoundMemberDatatype implements HdfDatatype {
 
     private short computeFixedMessageDataSize(String name) {
         if (!name.isEmpty()) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 40 + 4);
+            int padding = (8 - ((name.length() + 1) % 8)) % 8;
+            return (short) (name.length() + 1 + padding + 40 + 4);
         } else {
             return 44;
         }
@@ -82,8 +96,8 @@ public class CompoundMemberDatatype implements HdfDatatype {
 
     private short computeFloatMessageDataSize(String name) {
         if (!name.isEmpty()) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 40 + 12);
+            int padding = (8 - ((name.length() + 1) % 8)) % 8;
+            return (short) (name.length() + 1 + padding + 40 + 12);
         } else {
             return 52;
         }
@@ -91,8 +105,8 @@ public class CompoundMemberDatatype implements HdfDatatype {
 
     private int computeTimeMessageDataSize(String name) {
         if (!name.isEmpty()) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 40 + 2);
+            int padding = (8 - ((name.length() + 1) % 8)) % 8;
+            return (short) (name.length() + 1 + padding + 40 + 2);
         } else {
             return 42;
         }
@@ -100,8 +114,8 @@ public class CompoundMemberDatatype implements HdfDatatype {
 
     private short computeStringMessageDataSize(String name) {
         if (!name.isEmpty()) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 40 + 0);
+            int padding = (8 - ((name.length() + 1) % 8)) % 8;
+            return (short) (name.length() + 1 + padding + 40 + 0);
         } else {
             return 40;
         }
@@ -109,8 +123,8 @@ public class CompoundMemberDatatype implements HdfDatatype {
 
     private int computeBitfieldMessageDataSize(String name) {
         if (!name.isEmpty()) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 40 + 4);
+            int padding = (8 - ((name.length() + 1) % 8)) % 8;
+            return (short) (name.length() + 1 + padding + 40 + 4);
         } else {
             return 44;
         }
@@ -118,8 +132,8 @@ public class CompoundMemberDatatype implements HdfDatatype {
 
     private int computeOpaqueMessageDataSize(String name) {
         if (!name.isEmpty()) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 40 + 0);
+            int padding = (8 - ((name.length() + 1) % 8)) % 8;
+            return (short) (name.length() + 1 + padding + 40 + 0);
         } else {
             return 40;
         }
@@ -127,8 +141,8 @@ public class CompoundMemberDatatype implements HdfDatatype {
 
     private int computeCompoundMessageDataSize(String name) {
         if (!name.isEmpty()) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 40 + 0);
+            int padding = (8 - ((name.length() + 1) % 8)) % 8;
+            return (short) (name.length() + 1 + padding + 40 + 0);
         } else {
             return 40;
         }
@@ -136,8 +150,8 @@ public class CompoundMemberDatatype implements HdfDatatype {
 
     private int computeReferenceMessageDataSize(String name) {
         if (!name.isEmpty()) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 40 + 0);
+            int padding = (8 - ((name.length() + 1) % 8)) % 8;
+            return (short) (name.length() + 1 + padding + 40 + 0);
         } else {
             return 40;
         }
@@ -146,8 +160,8 @@ public class CompoundMemberDatatype implements HdfDatatype {
     private int computeEnumMessageDataSize(String name) {
         // dymanic based on stuff
         if (!name.isEmpty()) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 40 + 12);
+            int padding = (8 - ((name.length() + 1) % 8)) % 8;
+            return (short) (name.length() + 1 + padding + 40 + 12);
         } else {
             return 52;
         }
@@ -156,8 +170,8 @@ public class CompoundMemberDatatype implements HdfDatatype {
     private short computeVariableLengthMessageDataSize(String name) {
         // parent type message
         if (!name.isEmpty()) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 40 + 12);
+            int padding = (8 - ((name.length() + 1) % 8)) % 8;
+            return (short) (name.length() + 1 + padding + 40 + 12);
         } else {
             return 52;
         }
@@ -166,8 +180,8 @@ public class CompoundMemberDatatype implements HdfDatatype {
     private int computeArrayMessageDataSize(String name) {
         // dynamic based on stuff
         if (!name.isEmpty()) {
-            int padding = (8 -  ((name.length()+1)% 8)) % 8;
-            return (short) (name.length()+1 + padding + 40 + 0);
+            int padding = (8 - ((name.length() + 1) % 8)) % 8;
+            return (short) (name.length() + 1 + padding + 40 + 0);
         } else {
             return 40;
         }
@@ -198,15 +212,15 @@ public class CompoundMemberDatatype implements HdfDatatype {
      */
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
         buffer.put(name.getBytes(StandardCharsets.US_ASCII));
-        buffer.put((byte)0);
-        int paddingSize = (8 -  ((name.length()+1)% 8)) % 8;
+        buffer.put((byte) 0);
+        int paddingSize = (8 - ((name.length() + 1) % 8)) % 8;
         buffer.put(new byte[paddingSize]);
         buffer.putInt(offset);
-        buffer.put((byte)dimensionality);
+        buffer.put((byte) dimensionality);
         buffer.put(new byte[3]);
         buffer.putInt(dimensionPermutation);
         buffer.put(new byte[4]);
-        for( int ds: dimensionSizes) {
+        for (int ds : dimensionSizes) {
             buffer.putInt(ds);
         }
 

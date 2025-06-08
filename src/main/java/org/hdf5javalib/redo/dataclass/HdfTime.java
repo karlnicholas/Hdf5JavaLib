@@ -17,9 +17,13 @@ import java.nio.ByteBuffer;
  * @see TimeDatatype
  */
 public class HdfTime implements HdfData {
-    /** The raw byte array containing the time data. */
+    /**
+     * The raw byte array containing the time data.
+     */
     private final byte[] bytes;
-    /** The TimeDatatype defining the time structure, size, and format. */
+    /**
+     * The TimeDatatype defining the time structure, size, and format.
+     */
     private final TimeDatatype datatype;
 
     /**

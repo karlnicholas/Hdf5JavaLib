@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.dataclass.HdfVariableLength;
@@ -31,20 +31,33 @@ import java.util.Map;
  * @see HdfGlobalHeap
  */
 public class VariableLengthDatatype implements HdfDatatype {
-    /** The class and version information for the datatype (class 9, version 1). */
+    /**
+     * The class and version information for the datatype (class 9, version 1).
+     */
     private final int classAndVersion;
-    /** A BitSet containing class-specific bit field information (type, padding, character set). */
+    /**
+     * A BitSet containing class-specific bit field information (type, padding, character set).
+     */
     private final BitSet classBitField;
-    /** The fixed size of the variable-length descriptor in bytes. */
+    /**
+     * The fixed size of the variable-length descriptor in bytes.
+     */
     private final int size;
-    /** The global heap for accessing variable-length data. */
+    /**
+     * The global heap for accessing variable-length data.
+     */
     private HdfGlobalHeap globalHeap;
-    /** The underlying datatype for the variable-length elements. */
+    /**
+     * The underlying datatype for the variable-length elements.
+     */
     private final HdfDatatype hdfDatatype;
     private final HdfDataFile hdfDataFile;
 
-    /** Map of converters for transforming byte data to specific Java types. */
+    /**
+     * Map of converters for transforming byte data to specific Java types.
+     */
     private static final Map<Class<?>, HdfConverter<VariableLengthDatatype, ?>> CONVERTERS = new HashMap<>();
+
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfVariableLength.class, HdfVariableLength::new);
@@ -93,7 +106,7 @@ public class VariableLengthDatatype implements HdfDatatype {
      */
     public static BitSet createClassBitField(Type type, PaddingType paddingType, CharacterSet charSet) {
         long bitfield = ((long) charSet.value << 8) | ((long) paddingType.value << 4) | type.value;
-        return BitSet.valueOf(new long[] {bitfield});
+        return BitSet.valueOf(new long[]{bitfield});
     }
 
     /**
@@ -171,7 +184,7 @@ public class VariableLengthDatatype implements HdfDatatype {
             int datatypeSize = hdfDatatype.getSize();
             String[] resultArray = new String[count];
             for (int i = 0; i < count; i++) {
-                resultArray[i] = hdfDatatype.getInstance(String.class, Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1 ) * datatypeSize));
+                resultArray[i] = hdfDatatype.getInstance(String.class, Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize));
             }
             return Arrays.toString(resultArray);
         }
@@ -342,33 +355,61 @@ public class VariableLengthDatatype implements HdfDatatype {
          */
         STRING(1, "String", "Unicode Transformation Format, 8-bit"),
 
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_2(2, "Reserved", "Reserved for future use."),
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_3(3, "Reserved", "Reserved for future use."),
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_4(4, "Reserved", "Reserved for future use."),
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_5(5, "Reserved", "Reserved for future use."),
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_6(6, "Reserved", "Reserved for future use."),
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_7(7, "Reserved", "Reserved for future use."),
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_8(8, "Reserved", "Reserved for future use."),
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_9(9, "Reserved", "Reserved for future use."),
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_10(10, "Reserved", "Reserved for future use."),
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_11(11, "Reserved", "Reserved for future use."),
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_12(12, "Reserved", "Reserved for future use."),
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_13(13, "Reserved", "Reserved for future use."),
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_14(14, "Reserved", "Reserved for future use."),
-        /** Reserved type for future use. */
+        /**
+         * Reserved type for future use.
+         */
         RESERVED_15(15, "Reserved", "Reserved for future use.");
 
         private final int value;
@@ -427,31 +468,57 @@ public class VariableLengthDatatype implements HdfDatatype {
          */
         SPACE_PAD(2, "Space Pad", "Space characters are added to the end..."),
 
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_3(3, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_4(4, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_5(5, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_6(6, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_7(7, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_8(8, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_9(9, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_10(10, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_11(11, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_12(12, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_13(13, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_14(14, "Reserved", "Reserved for future use."),
-        /** Reserved padding type for future use. */
+        /**
+         * Reserved padding type for future use.
+         */
         RESERVED_15(15, "Reserved", "Reserved for future use.");
 
         private final int value;
@@ -503,33 +570,61 @@ public class VariableLengthDatatype implements HdfDatatype {
          * UTF-8 character set.
          */
         UTF8(1, "UTF-8", "Unicode Transformation Format, 8-bit"),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_2(2, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_3(3, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_4(4, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_5(5, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_6(6, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_7(7, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_8(8, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_9(9, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_10(10, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_11(11, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_12(12, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_13(13, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_14(14, "Reserved", "Reserved for future use."),
-        /** Reserved character set for future use. */
+        /**
+         * Reserved character set for future use.
+         */
         RESERVED_15(15, "Reserved", "Reserved for future use.");
 
         private final int value;

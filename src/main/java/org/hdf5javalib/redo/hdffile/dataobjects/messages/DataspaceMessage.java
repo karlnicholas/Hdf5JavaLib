@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 
@@ -32,17 +32,29 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfDataFile
  */
 public class DataspaceMessage extends HdfMessage {
-    /** The version of the dataspace message format. */
+    /**
+     * The version of the dataspace message format.
+     */
     private final int version;
-    /** The number of dimensions (rank). */
+    /**
+     * The number of dimensions (rank).
+     */
     private final int dimensionality;
-    /** A BitSet indicating the presence of maximum dimensions or permutation indices. */
+    /**
+     * A BitSet indicating the presence of maximum dimensions or permutation indices.
+     */
     private final BitSet flags;
-    /** The sizes of each dimension. */
+    /**
+     * The sizes of each dimension.
+     */
     private final HdfFixedPoint[] dimensions;
-    /** The maximum sizes of each dimension, if present. */
+    /**
+     * The maximum sizes of each dimension, if present.
+     */
     private final HdfFixedPoint[] maxDimensions;
-    /** Indicates whether maximum dimensions are present. */
+    /**
+     * Indicates whether maximum dimensions are present.
+     */
     private final boolean hasMaxDimensions;
 
     /**
@@ -180,7 +192,7 @@ public class DataspaceMessage extends HdfMessage {
     /**
      * Builds a BitSet representing the dataspace flags.
      *
-     * @param maxDimensionsPresent     true if maximum dimensions are present
+     * @param maxDimensionsPresent      true if maximum dimensions are present
      * @param permutationIndicesPresent true if permutation indices are present
      * @return a BitSet encoding the specified flags
      */

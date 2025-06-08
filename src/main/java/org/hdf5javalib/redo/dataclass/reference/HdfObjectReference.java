@@ -29,18 +29,18 @@ public class HdfObjectReference implements HdfReferenceInstance {
         HdfFixedPoint localHdfFixedPoint;
         HdfSuperblock superblock = dt.getDataFile().getFileAllocation().getSuperblock();
         referenceType = ReferenceDatatype.getReferenceType(dt.getClassBitField());
-        if ( !external) {
-            if ( referenceType ==  ReferenceDatatype.ReferenceType.OBJECT1) {
+        if (!external) {
+            if (referenceType == ReferenceDatatype.ReferenceType.OBJECT1) {
                 localHdfFixedPoint = new HdfFixedPoint(bytes, superblock.getFixedPointDatatypeForOffset());
-            } else if ( referenceType == ReferenceDatatype.ReferenceType.OBJECT2) {
-                if ( bytes[0] == 0x02) {
+            } else if (referenceType == ReferenceDatatype.ReferenceType.OBJECT2) {
+                if (bytes[0] == 0x02) {
                     int size = Byte.toUnsignedInt(bytes[2]);
                     localHdfFixedPoint = new HdfFixedPoint(Arrays.copyOfRange(bytes, 3, 3 + size), superblock.getFixedPointDatatypeForOffset());
-                } else if ( bytes[0] == 0x03) {
+                } else if (bytes[0] == 0x03) {
                     FixedPointDatatype offsetSpec = dt.getDataFile().getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset();
                     int offsetSize = offsetSpec.getSize();
-                    ByteBuffer bb = ByteBuffer.wrap(bytes, 2+4+offsetSize, bytes.length - (2+4+offsetSize)).order(ByteOrder.LITTLE_ENDIAN);
-                    HdfFixedPoint heapOffset = new HdfFixedPoint(Arrays.copyOfRange(bytes, 2+4, 2+4+offsetSize) , offsetSpec);
+                    ByteBuffer bb = ByteBuffer.wrap(bytes, 2 + 4 + offsetSize, bytes.length - (2 + 4 + offsetSize)).order(ByteOrder.LITTLE_ENDIAN);
+                    HdfFixedPoint heapOffset = new HdfFixedPoint(Arrays.copyOfRange(bytes, 2 + 4, 2 + 4 + offsetSize), offsetSpec);
                     int index = bb.getInt();
                     byte[] dataBytes = dt.getDataFile().getGlobalHeap().getDataBytes(heapOffset, index);
                     ByteBuffer heapBytes = ByteBuffer.wrap(dataBytes).order(ByteOrder.LITTLE_ENDIAN);
@@ -52,11 +52,11 @@ public class HdfObjectReference implements HdfReferenceInstance {
                     int selectionType = heapBytes.getInt();
                     dataspaceSelectionReference.set(HdfDataspaceSelectionInstance.parseSelectionInfo(heapBytes));
                     localHdfFixedPoint = datasetReferenced;
-                } else if ( bytes[0] == 0x04) {
+                } else if (bytes[0] == 0x04) {
                     FixedPointDatatype offsetSpec = dt.getDataFile().getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset();
                     int offsetSize = offsetSpec.getSize();
-                    ByteBuffer bb = ByteBuffer.wrap(bytes, 2+4+offsetSize, bytes.length - (2+4+offsetSize)).order(ByteOrder.LITTLE_ENDIAN);
-                    HdfFixedPoint heapOffset = new HdfFixedPoint(Arrays.copyOfRange(bytes, 2+4, 2+4+offsetSize) , offsetSpec);
+                    ByteBuffer bb = ByteBuffer.wrap(bytes, 2 + 4 + offsetSize, bytes.length - (2 + 4 + offsetSize)).order(ByteOrder.LITTLE_ENDIAN);
+                    HdfFixedPoint heapOffset = new HdfFixedPoint(Arrays.copyOfRange(bytes, 2 + 4, 2 + 4 + offsetSize), offsetSpec);
                     int index = bb.getInt();
                     byte[] dataBytes = dt.getDataFile().getGlobalHeap().getDataBytes(heapOffset, index);
                     ByteBuffer heapBytes = ByteBuffer.wrap(dataBytes).order(ByteOrder.LITTLE_ENDIAN);
@@ -78,18 +78,18 @@ public class HdfObjectReference implements HdfReferenceInstance {
             } else {
                 throw new IllegalArgumentException("Unsupported reference type: " + dt.getClassBitField());
             }
-            if ( localHdfFixedPoint != null ) {
+            if (localHdfFixedPoint != null) {
                 // TODO: btree search logic
                 HdfSymbolTableEntry rootSte = dt.getDataFile().getFileAllocation().getSuperblock().getRootGroupSymbolTableEntry();
                 HdfBTreeV1 btree = ((HdfSymbolTableEntryCacheGroupMetadata) rootSte.getCache()).getBtree();
-                btree.mapOffsetToSnod().values().forEach(snod->{
-                    snod.getSymbolTableEntries().forEach(ste->{
+                btree.mapOffsetToSnod().values().forEach(snod -> {
+                    snod.getSymbolTableEntries().forEach(ste -> {
                         HdfFixedPoint objectOffset = ste.getObjectHeader().getOffset();
-                        if ( objectOffset.compareTo(localHdfFixedPoint) == 0) {
+                        if (objectOffset.compareTo(localHdfFixedPoint) == 0) {
                             HdfSymbolTableEntryCache cache = ste.getCache();
-                            if ( cache.getCacheType() == 0) {
+                            if (cache.getCacheType() == 0) {
                                 localHdfDataObject.set(((HdfSymbolTableEntryCacheNotUsed) cache).getDataSet());
-                            } else if ( cache.getCacheType() == 1) {
+                            } else if (cache.getCacheType() == 1) {
                                 localHdfDataObject.set(((HdfSymbolTableEntryCacheGroupMetadata) cache).getGroup());
                             } else {
                                 throw new IllegalStateException("reference type not a good type: " + cache.getCacheType());
@@ -108,9 +108,9 @@ public class HdfObjectReference implements HdfReferenceInstance {
         return "HdfObjectReference [\r\n\texternal=" + external + ", "
                 + "\r\n\treferenceType=" + referenceType.getDescription()
                 + "\r\n\thdfDataObject=" + (hdfDataObject == null ? "ObjectId not decoded" : "ObjectName: " + hdfDataObject.getObjectName())
-                + ( referenceType.getValue() > ReferenceDatatype.ReferenceType.DATASET_REGION1.getValue() ?
-                    "\r\n\tdataspaceSelectionInstance=" + (dataspaceSelectionInstance == null ? "no Dataspace Selection" : dataspaceSelectionInstance)
-                            : "" )
+                + (referenceType.getValue() > ReferenceDatatype.ReferenceType.DATASET_REGION1.getValue() ?
+                "\r\n\tdataspaceSelectionInstance=" + (dataspaceSelectionInstance == null ? "no Dataspace Selection" : dataspaceSelectionInstance)
+                : "")
                 + "\r\n]";
 
     }

@@ -18,9 +18,13 @@ import java.nio.ByteBuffer;
  * @see EnumDatatype
  */
 public class HdfEnum implements HdfData {
-    /** The raw byte array containing the enumeration data. */
+    /**
+     * The raw byte array containing the enumeration data.
+     */
     private final byte[] bytes;
-    /** The EnumDatatype defining the enumeration structure, values, and format. */
+    /**
+     * The EnumDatatype defining the enumeration structure, values, and format.
+     */
     private final EnumDatatype datatype;
 
     /**

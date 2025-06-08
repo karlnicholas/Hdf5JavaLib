@@ -1,4 +1,4 @@
-package org.hdf5javalib.redo;
+package org.hdf5javalib.redo.hdffile;
 
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 

@@ -7,7 +7,9 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
 
-/** HDF5 reference data structure (Class 7) for objects, dataset regions, or attributes. */
+/**
+ * HDF5 reference data structure (Class 7) for objects, dataset regions, or attributes.
+ */
 public class HdfReference implements HdfData {
     private final byte[] bytes;
     private final ReferenceDatatype datatype;

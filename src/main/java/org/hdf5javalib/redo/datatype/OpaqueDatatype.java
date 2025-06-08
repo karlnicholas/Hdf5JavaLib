@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfOpaque;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
@@ -24,18 +24,29 @@ import java.util.Map;
  * @see HdfGlobalHeap
  */
 public class OpaqueDatatype implements HdfDatatype {
-    /** The class and version information for the datatype (class 5, version 1). */
+    /**
+     * The class and version information for the datatype (class 5, version 1).
+     */
     private final int classAndVersion;
-    /** A BitSet indicating the length of the ASCII tag. */
+    /**
+     * A BitSet indicating the length of the ASCII tag.
+     */
     private final BitSet classBitField;
-    /** The size of the opaque data in bytes. */
+    /**
+     * The size of the opaque data in bytes.
+     */
     private final int size;
-    /** The NUL-terminated ASCII tag, padded to an 8-byte multiple. */
+    /**
+     * The NUL-terminated ASCII tag, padded to an 8-byte multiple.
+     */
     private final String asciiTag;
     private final HdfDataFile dataFile;
 
-    /** Map of converters for transforming byte data to specific Java types. */
+    /**
+     * Map of converters for transforming byte data to specific Java types.
+     */
     private static final Map<Class<?>, HdfConverter<OpaqueDatatype, ?>> CONVERTERS = new HashMap<>();
+
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfOpaque.class, HdfOpaque::new);

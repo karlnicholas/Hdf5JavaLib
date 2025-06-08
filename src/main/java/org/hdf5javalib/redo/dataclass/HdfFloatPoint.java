@@ -18,9 +18,13 @@ import java.nio.ByteBuffer;
  * @see FloatingPointDatatype
  */
 public class HdfFloatPoint implements HdfData {
-    /** The raw byte array containing the floating-point data. */
+    /**
+     * The raw byte array containing the floating-point data.
+     */
     private final byte[] bytes;
-    /** The FloatingPointDatatype defining the floating-point structure, size, and format. */
+    /**
+     * The FloatingPointDatatype defining the floating-point structure, size, and format.
+     */
     private final FloatingPointDatatype datatype;
 
     /**

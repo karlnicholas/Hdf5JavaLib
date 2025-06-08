@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfFloatPoint;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
@@ -24,30 +24,53 @@ import java.util.Map;
  * @see HdfGlobalHeap
  */
 public class FloatingPointDatatype implements HdfDatatype {
-    /** The class and version information for the datatype (class 1, version 1). */
+    /**
+     * The class and version information for the datatype (class 1, version 1).
+     */
     private final int classAndVersion;
-    /** A BitSet containing class-specific bit field information (byte order, padding, sign location). */
+    /**
+     * A BitSet containing class-specific bit field information (byte order, padding, sign location).
+     */
     private final BitSet classBitField;
-    /** The total size of the floating-point datatype in bytes. */
+    /**
+     * The total size of the floating-point datatype in bytes.
+     */
     private final int size;
-    /** The bit offset of the first significant bit. */
+    /**
+     * The bit offset of the first significant bit.
+     */
     private final int bitOffset;
-    /** The total number of bits of precision. */
+    /**
+     * The total number of bits of precision.
+     */
     private final int bitPrecision;
-    /** The bit position of the exponent. */
+    /**
+     * The bit position of the exponent.
+     */
     private final int exponentLocation;
-    /** The size of the exponent in bits. */
+    /**
+     * The size of the exponent in bits.
+     */
     private final int exponentSize;
-    /** The bit position of the mantissa. */
+    /**
+     * The bit position of the mantissa.
+     */
     private final int mantissaLocation;
-    /** The size of the mantissa in bits. */
+    /**
+     * The size of the mantissa in bits.
+     */
     private final int mantissaSize;
-    /** The exponent bias value. */
+    /**
+     * The exponent bias value.
+     */
     private final int exponentBias;
     private final HdfDataFile dataFile;
 
-    /** Map of converters for transforming byte data to specific Java types. */
+    /**
+     * Map of converters for transforming byte data to specific Java types.
+     */
     private static final Map<Class<?>, HdfConverter<FloatingPointDatatype, ?>> CONVERTERS = new HashMap<>();
+
     static {
         CONVERTERS.put(Double.class, (bytes, dt) -> dt.toDouble(bytes));
         CONVERTERS.put(Float.class, (bytes, dt) -> dt.toFloat(bytes));
@@ -99,10 +122,10 @@ public class FloatingPointDatatype implements HdfDatatype {
     /**
      * Parses an HDF5 floating-point datatype from a ByteBuffer as per the HDF5 specification.
      *
-     * @param version         the version byte of the datatype
-     * @param classBitField   the BitSet containing class-specific bit field information
-     * @param size            the total size of the datatype in bytes
-     * @param buffer          the ByteBuffer containing the datatype definition
+     * @param version       the version byte of the datatype
+     * @param classBitField the BitSet containing class-specific bit field information
+     * @param size          the total size of the datatype in bytes
+     * @param buffer        the ByteBuffer containing the datatype definition
      * @return a new FloatingPointDatatype instance parsed from the buffer
      */
     public static FloatingPointDatatype parseFloatingPointType(int version, BitSet classBitField, int size, ByteBuffer buffer, HdfDataFile dataFile) {
@@ -209,7 +232,7 @@ public class FloatingPointDatatype implements HdfDatatype {
      *
      * @param bytes the byte array to convert
      * @return the Float value
-     * @throws IllegalArgumentException if the byte array size does not match the datatype size
+     * @throws IllegalArgumentException      if the byte array size does not match the datatype size
      * @throws UnsupportedOperationException if the datatype size is not supported
      */
     public Float toFloat(byte[] bytes) {
@@ -222,7 +245,7 @@ public class FloatingPointDatatype implements HdfDatatype {
      *
      * @param bytes the byte array to convert
      * @return the Double value
-     * @throws IllegalArgumentException if the byte array size does not match the datatype size
+     * @throws IllegalArgumentException      if the byte array size does not match the datatype size
      * @throws UnsupportedOperationException if the datatype size is not supported
      */
     public Double toDouble(byte[] bytes) {
@@ -280,8 +303,8 @@ public class FloatingPointDatatype implements HdfDatatype {
         int exponent = (int) (rawExponent - this.exponentBias);
 
         boolean isDenormalizedSource = (this.exponentSize > 0 && rawExponent == 0 && rawMantissa != 0);
-        boolean isTrueZero = ( (this.exponentSize == 0 || rawExponent == 0) &&
-                (this.mantissaSize == 0 || rawMantissa == 0) );
+        boolean isTrueZero = ((this.exponentSize == 0 || rawExponent == 0) &&
+                (this.mantissaSize == 0 || rawMantissa == 0));
 
 
         if (isTrueZero) return sign * 0.0;
@@ -295,7 +318,7 @@ public class FloatingPointDatatype implements HdfDatatype {
             // If mantissaSize is 0, this implies 1.0 for the fractional part.
             // If mantissaSize > 0, it's 1.fractional_part
             mantissaValue = (this.mantissaSize == 0 && this.exponentSize == 0 && this.bitPrecision > 0 && rawMantissa == 0 && rawExponent == 0) ? 0.0 : 1.0; // if only sign bit, it's +/- value based on exp=0, man=0
-            if(this.mantissaSize > 0) {
+            if (this.mantissaSize > 0) {
                 mantissaValue = 1.0 + (double) rawMantissa / (1L << this.mantissaSize);
             } else if (this.exponentSize == 0 && this.bitPrecision > 0 && rawMantissa == 0 && rawExponent == 0) {
                 // If there's only a sign bit defined by bitPrecision=1, expSize=0, manSize=0.
@@ -314,7 +337,7 @@ public class FloatingPointDatatype implements HdfDatatype {
      * Determines the byte order from the class bit field.
      *
      * @return the ByteOrder (LITTLE_ENDIAN, BIG_ENDIAN, or VAX_ENDIAN)
-     * @throws IllegalArgumentException if the byte order is reserved
+     * @throws IllegalArgumentException      if the byte order is reserved
      * @throws UnsupportedOperationException if VAX-endian is specified
      */
     public ByteOrder getByteOrder() {
@@ -378,7 +401,8 @@ public class FloatingPointDatatype implements HdfDatatype {
      * @param grok the HdfGlobalHeap to set
      */
     @Override
-    public void setGlobalHeap(HdfGlobalHeap grok) {}
+    public void setGlobalHeap(HdfGlobalHeap grok) {
+    }
 
     /**
      * Converts the byte array to a string representation using Float or Double.
@@ -421,11 +445,17 @@ public class FloatingPointDatatype implements HdfDatatype {
          * Enum for byte order.
          */
         public enum ByteOrder {
-            /** Little-endian byte order (bit 0 = 0, bit 6 = 0). */
+            /**
+             * Little-endian byte order (bit 0 = 0, bit 6 = 0).
+             */
             LITTLE_ENDIAN(0b00),
-            /** Big-endian byte order (bit 0 = 1, bit 6 = 0). */
+            /**
+             * Big-endian byte order (bit 0 = 1, bit 6 = 0).
+             */
             BIG_ENDIAN(0b01),
-            /** VAX-endian byte order (bit 0 = 1, bit 6 = 1; not supported). */
+            /**
+             * VAX-endian byte order (bit 0 = 1, bit 6 = 1; not supported).
+             */
             VAX_ENDIAN(0b11);
 
             private final int value;
@@ -448,13 +478,21 @@ public class FloatingPointDatatype implements HdfDatatype {
          * Enum for mantissa normalization.
          */
         public enum MantissaNormalization {
-            /** No mantissa normalization (bits 4-5 = 00). */
+            /**
+             * No mantissa normalization (bits 4-5 = 00).
+             */
             NONE(0),
-            /** Mantissa always set (bits 4-5 = 01). */
+            /**
+             * Mantissa always set (bits 4-5 = 01).
+             */
             ALWAYS_SET(1),
-            /** Mantissa implied set (bits 4-5 = 10). */
+            /**
+             * Mantissa implied set (bits 4-5 = 10).
+             */
             IMPLIED_SET(2),
-            /** Reserved mantissa normalization (bits 4-5 = 11). */
+            /**
+             * Reserved mantissa normalization (bits 4-5 = 11).
+             */
             RESERVED(3);
 
             private final int value;
@@ -476,12 +514,12 @@ public class FloatingPointDatatype implements HdfDatatype {
         /**
          * Creates a BitSet from the given HDF5 floating-point datatype properties.
          *
-         * @param byteOrder      the byte order (LITTLE_ENDIAN, BIG_ENDIAN, VAX_ENDIAN)
-         * @param lowPad         true for low bits padding, false otherwise
-         * @param highPad        true for high bits padding, false otherwise
-         * @param internalPad    true for internal bits padding, false otherwise
-         * @param mantissaNorm   the mantissa normalization type
-         * @param signLocation   the sign bit position (0–255)
+         * @param byteOrder    the byte order (LITTLE_ENDIAN, BIG_ENDIAN, VAX_ENDIAN)
+         * @param lowPad       true for low bits padding, false otherwise
+         * @param highPad      true for high bits padding, false otherwise
+         * @param internalPad  true for internal bits padding, false otherwise
+         * @param mantissaNorm the mantissa normalization type
+         * @param signLocation the sign bit position (0–255)
          * @return a 24-bit BitSet representing the class bit field
          * @throws IllegalArgumentException if the sign location is not 0–255
          */

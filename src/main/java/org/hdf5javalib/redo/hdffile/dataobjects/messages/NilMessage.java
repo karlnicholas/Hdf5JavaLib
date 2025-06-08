@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 
 import java.nio.ByteBuffer;
 
@@ -64,7 +64,7 @@ public class NilMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "NilMessage("+(getSizeMessageData()+8)+"){}";
+        return "NilMessage(" + (getSizeMessageData() + 8) + "){}";
     }
 
     /**

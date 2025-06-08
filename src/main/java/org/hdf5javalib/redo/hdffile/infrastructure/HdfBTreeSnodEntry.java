@@ -16,14 +16,16 @@ import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
  * @see HdfBTreeV1
  */
 public class HdfBTreeSnodEntry extends HdfBTreeEntry {
-    /** The symbol table node payload, non-null for leaf entries (nodeLevel == 0). */
+    /**
+     * The symbol table node payload, non-null for leaf entries (nodeLevel == 0).
+     */
     private final HdfGroupSymbolTableNode symbolTableNode;
 
     /**
      * Constructs an HdfBTreeEntry for a leaf node, pointing to a symbol table node.
      *
      * @param key             the key for the entry
-     * @param childPointer     the address of the symbol table node
+     * @param childPointer    the address of the symbol table node
      * @param symbolTableNode the symbol table node payload
      */
     public HdfBTreeSnodEntry(HdfFixedPoint key, HdfFixedPoint childPointer, HdfGroupSymbolTableNode symbolTableNode) {

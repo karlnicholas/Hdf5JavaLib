@@ -1,9 +1,9 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
-import org.hdf5javalib.redo.AllocationRecord;
-import org.hdf5javalib.redo.AllocationType;
-import org.hdf5javalib.redo.HdfDataFile;
-import org.hdf5javalib.redo.HdfFileAllocation;
+import org.hdf5javalib.redo.hdffile.AllocationRecord;
+import org.hdf5javalib.redo.hdffile.AllocationType;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
@@ -35,37 +35,55 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfBTreeEntry
  */
 public class HdfBTreeV1 extends AllocationRecord {
-    /** The signature of the B-Tree node ("TREE"). */
+    /**
+     * The signature of the B-Tree node ("TREE").
+     */
     private final String signature;
-    /** The type of the node (0 for group B-Tree). */
+    /**
+     * The type of the node (0 for group B-Tree).
+     */
     private final int nodeType;
-    /** The level of the node (0 for leaf, >0 for internal). */
+    /**
+     * The level of the node (0 for leaf, >0 for internal).
+     */
     private final int nodeLevel;
-    /** The number of entries used in the node. */
+    /**
+     * The number of entries used in the node.
+     */
     private int entriesUsed;
-    /** The address of the left sibling node. */
+    /**
+     * The address of the left sibling node.
+     */
     private final HdfFixedPoint leftSiblingAddress;
-    /** The address of the right sibling node. */
+    /**
+     * The address of the right sibling node.
+     */
     private final HdfFixedPoint rightSiblingAddress;
-    /** The first key (key zero) of the node. */
+    /**
+     * The first key (key zero) of the node.
+     */
     private final HdfFixedPoint keyZero;
-    /** The list of B-Tree entries. */
+    /**
+     * The list of B-Tree entries.
+     */
     private final List<HdfBTreeEntry> entries;
-    /** The HDF5 file context. */
+    /**
+     * The HDF5 file context.
+     */
     private final HdfDataFile hdfDataFile;
 
     /**
      * Constructs an HdfBTreeV1 with all fields specified.
      *
-     * @param signature         the signature of the B-Tree node ("TREE")
-     * @param nodeType          the type of the node (0 for group B-Tree)
-     * @param nodeLevel         the level of the node (0 for leaf, >0 for internal)
-     * @param entriesUsed       the number of entries used in the node
-     * @param leftSiblingAddress the address of the left sibling node
+     * @param signature           the signature of the B-Tree node ("TREE")
+     * @param nodeType            the type of the node (0 for group B-Tree)
+     * @param nodeLevel           the level of the node (0 for leaf, >0 for internal)
+     * @param entriesUsed         the number of entries used in the node
+     * @param leftSiblingAddress  the address of the left sibling node
      * @param rightSiblingAddress the address of the right sibling node
-     * @param keyZero           the first key of the node
-     * @param entries           the list of B-Tree entries
-     * @param hdfDataFile       the HDF5 file context
+     * @param keyZero             the first key of the node
+     * @param entries             the list of B-Tree entries
+     * @param hdfDataFile         the HDF5 file context
      */
     public HdfBTreeV1(
             String signature,
@@ -80,7 +98,7 @@ public class HdfBTreeV1 extends AllocationRecord {
             String name, HdfFixedPoint offset
     ) {
         super(AllocationType.BTREE_HEADER, name, offset,
-            new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
+                new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
                 hdfDataFile.getFileAllocation()
         );
         this.signature = signature;
@@ -97,12 +115,12 @@ public class HdfBTreeV1 extends AllocationRecord {
     /**
      * Constructs an HdfBTreeV1 with minimal fields for a new node.
      *
-     * @param signature         the signature of the B-Tree node ("TREE")
-     * @param nodeType          the type of the node (0 for group B-Tree)
-     * @param nodeLevel         the level of the node (0 for leaf, >0 for internal)
-     * @param leftSiblingAddress the address of the left sibling node
+     * @param signature           the signature of the B-Tree node ("TREE")
+     * @param nodeType            the type of the node (0 for group B-Tree)
+     * @param nodeLevel           the level of the node (0 for leaf, >0 for internal)
+     * @param leftSiblingAddress  the address of the left sibling node
      * @param rightSiblingAddress the address of the right sibling node
-     * @param hdfDataFile       the HDF5 file context
+     * @param hdfDataFile         the HDF5 file context
      */
     public HdfBTreeV1(
             String signature,
@@ -149,19 +167,19 @@ public class HdfBTreeV1 extends AllocationRecord {
     /**
      * Recursively reads an HdfBTreeV1 from a file channel, handling cycles.
      *
-     * @param fileChannel the file channel to read from
-     * @param nodeAddress the address of the current node
+     * @param fileChannel  the file channel to read from
+     * @param nodeAddress  the address of the current node
      * @param visitedNodes a map of visited node addresses to detect cycles
      * @param hdfDataFile  the HDF5 file context
      * @return the constructed HdfBTreeV1 instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
     private static HdfBTreeV1 readFromSeekableByteChannelRecursive(SeekableByteChannel fileChannel,
-                                                           long nodeAddress,
-                                                           HdfDataFile hdfDataFile,
-                                                           HdfLocalHeap localHeap,
-                                                           String objectName,
-                                                           Map<Long, HdfBTreeV1> visitedNodes
+                                                                   long nodeAddress,
+                                                                   HdfDataFile hdfDataFile,
+                                                                   HdfLocalHeap localHeap,
+                                                                   String objectName,
+                                                                   Map<Long, HdfBTreeV1> visitedNodes
     ) throws Exception {
         if (visitedNodes.containsKey(nodeAddress)) {
             throw new IllegalStateException("Cycle detected or node re-visited: BTree node address "
@@ -200,7 +218,7 @@ public class HdfBTreeV1 extends AllocationRecord {
         List<HdfBTreeEntry> entries = new ArrayList<>(entriesUsed);
 
         HdfBTreeV1 currentNode = new HdfBTreeV1(signature, nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries, hdfDataFile,
-                objectName+":Btree", HdfWriteUtils.hdfFixedPointFromValue(nodeAddress, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
+                objectName + ":Btree", HdfWriteUtils.hdfFixedPointFromValue(nodeAddress, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
         visitedNodes.put(nodeAddress, currentNode);
 
         for (int i = 0; i < entriesUsed; i++) {
@@ -241,11 +259,11 @@ public class HdfBTreeV1 extends AllocationRecord {
     /**
      * Finds an HdfDataObject by name in the B-tree using binary search.
      *
-     * @param name the object name to find (dataset or group)
+     * @param name  the object name to find (dataset or group)
      * @param group the parent group for resolving link name offsets
      * @return an Optional containing the HdfDataObject if found, or Optional.empty()
      * @throws IllegalArgumentException if name is null or empty
-     * @throws IllegalStateException if name resolution fails or node structure is invalid
+     * @throws IllegalStateException    if name resolution fails or node structure is invalid
      */
     public Optional<HdfDataObject> findObjectByName(String name, HdfGroup group) {
         if (name == null || name.isEmpty()) {
@@ -306,10 +324,10 @@ public class HdfBTreeV1 extends AllocationRecord {
      * Adds a dataset to the B-tree, inserting it into the appropriate symbol table node.
      *
      * @param linkNameOffset the offset of the link name in the local heap
-     * @param dataset the dataset
-     * @param group the parent group containing the dataset
+     * @param dataset        the dataset
+     * @param group          the parent group containing the dataset
      * @throws IllegalArgumentException if dataset name or linkNameOffset is null or empty
-     * @throws IllegalStateException if called on a non-leaf node or node structure is invalid
+     * @throws IllegalStateException    if called on a non-leaf node or node structure is invalid
      */
     public void addDataset(HdfFixedPoint linkNameOffset, HdfDataSet dataset, HdfGroup group) {
         if (dataset == null || dataset.getDatasetName() == null || dataset.getDatasetName().isEmpty()) {
@@ -388,7 +406,7 @@ public class HdfBTreeV1 extends AllocationRecord {
     /**
      * Finds the HdfBTreeSnodEntry and insertion index for a given object name using binary search.
      *
-     * @param name the object name to search for
+     * @param name  the object name to search for
      * @param group the parent group for resolving link name offsets
      * @return an Optional containing the SnodSearchResult with entry index and insertion index, or Optional.empty()
      * @throws IllegalStateException if name resolution fails
@@ -427,7 +445,7 @@ public class HdfBTreeV1 extends AllocationRecord {
     /**
      * Finds the HdfSymbolTableEntry for a given object name using binary search.
      *
-     * @param name the object name to search for
+     * @param name  the object name to search for
      * @param group the parent group for resolving link name offsets
      * @return an Optional containing the HdfSymbolTableEntry if found, or Optional.empty()
      * @throws IllegalStateException if name resolution fails or node structure is invalid
@@ -456,7 +474,7 @@ public class HdfBTreeV1 extends AllocationRecord {
     /**
      * Performs a binary search to find the insertion point for a dataset name.
      *
-     * @param size        the size of the list to search
+     * @param size         the size of the list to search
      * @param compareNames a function to compare dataset names
      * @return the insertion point index
      */
@@ -490,7 +508,7 @@ public class HdfBTreeV1 extends AllocationRecord {
     private void splitSnod(int targetEntryIndex, HdfFileAllocation fileAllocation, HdfGroup group) {
         final int MAX_SNOD_ENTRIES = 8;
         HdfBTreeEntry targetEntry = entries.get(targetEntryIndex);
-        HdfGroupSymbolTableNode targetSnod = ((HdfBTreeSnodEntry)targetEntry).getSymbolTableNode();
+        HdfGroupSymbolTableNode targetSnod = ((HdfBTreeSnodEntry) targetEntry).getSymbolTableNode();
         List<HdfSymbolTableEntry> symbolTableEntries = targetSnod.getSymbolTableEntries();
 
         // Create new SNOD
@@ -499,7 +517,7 @@ public class HdfBTreeV1 extends AllocationRecord {
                 1,
                 new ArrayList<>(MAX_SNOD_ENTRIES),
                 hdfDataFile,
-                group.getGroupName()+":SNOD",
+                group.getGroupName() + ":SNOD",
                 newSnodOffset
         );
 
@@ -584,7 +602,7 @@ public class HdfBTreeV1 extends AllocationRecord {
      */
     public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(
-                new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()).getInstance(Long.class).intValue())
+                        new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()).getInstance(Long.class).intValue())
                 .order(ByteOrder.LITTLE_ENDIAN);
         buffer.put(signature.getBytes());
         buffer.put((byte) nodeType);
@@ -647,9 +665,9 @@ public class HdfBTreeV1 extends AllocationRecord {
         }
 
         // Leaf node
-        if (node.nodeLevel == 0 ) {
+        if (node.nodeLevel == 0) {
             for (HdfBTreeEntry entry : entries) {
-                HdfGroupSymbolTableNode snod = ((HdfBTreeSnodEntry)entry).getSymbolTableNode();
+                HdfGroupSymbolTableNode snod = ((HdfBTreeSnodEntry) entry).getSymbolTableNode();
                 if (snod != null) {
                     long offset = entry.getChildPointer().getInstance(Long.class);
                     if (offset != -1L) {
@@ -659,7 +677,7 @@ public class HdfBTreeV1 extends AllocationRecord {
             }
         } else {
             for (HdfBTreeEntry entry : entries) {
-                HdfBTreeV1 childBTree = ((HdfBTreeChildBtreeEntry)entry).getChildBTree();
+                HdfBTreeV1 childBTree = ((HdfBTreeChildBtreeEntry) entry).getChildBTree();
                 if (childBTree != null) {
                     collectSnodsRecursively(childBTree, map);
                 }
@@ -680,8 +698,8 @@ public class HdfBTreeV1 extends AllocationRecord {
         sb.append(", nodeType=").append(nodeType);
         sb.append(", nodeLevel=").append(nodeLevel);
         sb.append(", entriesUsed=").append(entriesUsed);
-        sb.append(", leftSiblingAddress=").append(leftSiblingAddress.isUndefined()?"undefined":leftSiblingAddress);
-        sb.append(", rightSiblingAddress=").append(rightSiblingAddress.isUndefined()?"undefined":rightSiblingAddress);
+        sb.append(", leftSiblingAddress=").append(leftSiblingAddress.isUndefined() ? "undefined" : leftSiblingAddress);
+        sb.append(", rightSiblingAddress=").append(rightSiblingAddress.isUndefined() ? "undefined" : rightSiblingAddress);
         sb.append(", keyZero=").append(keyZero);
         sb.append(", entries=[");
         if (entries != null && !entries.isEmpty()) {

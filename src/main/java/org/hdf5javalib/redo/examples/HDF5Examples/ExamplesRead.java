@@ -51,11 +51,12 @@ public class ExamplesRead {
                         displayFile(p);
                     });
         } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
     public void displayFile(Path filePath) {
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();

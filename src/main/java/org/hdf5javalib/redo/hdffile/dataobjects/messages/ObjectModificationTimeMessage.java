@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -33,9 +33,13 @@ import java.time.Instant;
  * @see HdfDataFile
  */
 public class ObjectModificationTimeMessage extends HdfMessage {
-    /** The version of the modification time message format. */
+    /**
+     * The version of the modification time message format.
+     */
     private final int version;
-    /** The modification time as seconds since the UNIX epoch. */
+    /**
+     * The modification time as seconds since the UNIX epoch.
+     */
     private final long secondsAfterEpoch;
 
     /**
@@ -73,7 +77,7 @@ public class ObjectModificationTimeMessage extends HdfMessage {
         long secondsAfterEpoch = Integer.toUnsignedLong(buffer.getInt());
 
         // Return a constructed instance of ObjectModificationTimeMessage
-        return new ObjectModificationTimeMessage(version, secondsAfterEpoch, flags, (short)data.length);
+        return new ObjectModificationTimeMessage(version, secondsAfterEpoch, flags, (short) data.length);
     }
 
     /**
@@ -83,7 +87,7 @@ public class ObjectModificationTimeMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "ObjectModificationTimeMessage("+(getSizeMessageData()+8)+"){" +
+        return "ObjectModificationTimeMessage(" + (getSizeMessageData() + 8) + "){" +
                 "version=" + version +
                 ", secondsAfterEpoch=" + Instant.ofEpochSecond(secondsAfterEpoch).toString() +
                 '}';

@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
@@ -28,20 +28,33 @@ import java.util.Map;
  * @see HdfReadUtils
  */
 public class FixedPointDatatype implements HdfDatatype {
-    /** The class and version information for the datatype (class 0, version 1). */
+    /**
+     * The class and version information for the datatype (class 0, version 1).
+     */
     private final int classAndVersion;
-    /** A BitSet containing class-specific bit field information (byte order, padding, signedness). */
+    /**
+     * A BitSet containing class-specific bit field information (byte order, padding, signedness).
+     */
     private final BitSet classBitField;
-    /** The total size of the fixed-point datatype in bytes. */
+    /**
+     * The total size of the fixed-point datatype in bytes.
+     */
     private final int size;
-    /** The bit offset of the first significant bit. */
+    /**
+     * The bit offset of the first significant bit.
+     */
     private final int bitOffset;
-    /** The number of bits of precision. */
+    /**
+     * The number of bits of precision.
+     */
     private final int bitPrecision;
     private final HdfDataFile dataFile;
 
-    /** Map of converters for transforming byte data to specific Java types. */
+    /**
+     * Map of converters for transforming byte data to specific Java types.
+     */
     private static final Map<Class<?>, HdfConverter<FixedPointDatatype, ?>> CONVERTERS = new HashMap<>();
+
     static {
         CONVERTERS.put(BigDecimal.class, (bytes, dt) -> dt.toBigDecimal(bytes));
         CONVERTERS.put(BigInteger.class, (bytes, dt) -> dt.toBigInteger(bytes));
@@ -220,7 +233,7 @@ public class FixedPointDatatype implements HdfDatatype {
      *
      * @param bytes the byte array to convert
      * @return the Long value
-     * @throws IllegalStateException if bitOffset is not zero
+     * @throws IllegalStateException    if bitOffset is not zero
      * @throws IllegalArgumentException if the byte array length or size is invalid for Long
      */
     public long toLong(byte[] bytes) {
@@ -228,7 +241,7 @@ public class FixedPointDatatype implements HdfDatatype {
             throw new IllegalStateException("Cannot convert to Long: bitOffset must be 0, got " + bitOffset);
         }
         if (bytes.length > 8 || size > 8 || bytes.length != size) {
-            throw new IllegalArgumentException("Bytes or size wrong for Long, got " + bytes.length+":"+size);
+            throw new IllegalArgumentException("Bytes or size wrong for Long, got " + bytes.length + ":" + size);
         }
 
         long value = 0;
@@ -237,7 +250,7 @@ public class FixedPointDatatype implements HdfDatatype {
                 value = (value << 8) | (bytes[i] & 0xFF);
             }
         } else {
-            for (int i = size-1; i >= 0; i--) {
+            for (int i = size - 1; i >= 0; i--) {
                 value = (value << 8) | (bytes[i] & 0xFF);
             }
         }
@@ -249,7 +262,7 @@ public class FixedPointDatatype implements HdfDatatype {
      *
      * @param bytes the byte array to convert
      * @return the Integer value
-     * @throws IllegalStateException if bitOffset is not zero
+     * @throws IllegalStateException    if bitOffset is not zero
      * @throws IllegalArgumentException if the byte array length or size is invalid for Integer
      */
     public int toInteger(byte[] bytes) {
@@ -257,7 +270,7 @@ public class FixedPointDatatype implements HdfDatatype {
             throw new IllegalStateException("Cannot convert to Integer: bitOffset must be 0, got " + bitOffset);
         }
         if (bytes.length > 4 || size > 4 || bytes.length != size) {
-            throw new IllegalArgumentException("Bytes or size wrong for Integer, got " + bytes.length+":"+size);
+            throw new IllegalArgumentException("Bytes or size wrong for Integer, got " + bytes.length + ":" + size);
         }
 
         int value = 0;
@@ -266,7 +279,7 @@ public class FixedPointDatatype implements HdfDatatype {
                 value = (value << 8) | (bytes[i] & 0xFF);
             }
         } else {
-            for (int i = size-1; i >= 0; i--) {
+            for (int i = size - 1; i >= 0; i--) {
                 value = (value << 8) | (bytes[i] & 0xFF);
             }
         }
@@ -279,7 +292,7 @@ public class FixedPointDatatype implements HdfDatatype {
      *
      * @param bytes the byte array to convert
      * @return the Short value
-     * @throws IllegalStateException if bitOffset is not zero
+     * @throws IllegalStateException    if bitOffset is not zero
      * @throws IllegalArgumentException if the byte array length or size is invalid for Short
      */
     public short toShort(byte[] bytes) {
@@ -287,7 +300,7 @@ public class FixedPointDatatype implements HdfDatatype {
             throw new IllegalStateException("Cannot convert to Short: bitOffset must be 0, got " + bitOffset);
         }
         if (bytes.length > 2 || size > 2 || bytes.length != size) {
-            throw new IllegalArgumentException("Bytes or size wrong for Short, got " + bytes.length+":"+size);
+            throw new IllegalArgumentException("Bytes or size wrong for Short, got " + bytes.length + ":" + size);
         }
 
         short value = 0;
@@ -296,7 +309,7 @@ public class FixedPointDatatype implements HdfDatatype {
                 value = (short) ((value << 8) | (bytes[i] & 0xFF));
             }
         } else {
-            for (int i = size-1; i >= 0; i--) {
+            for (int i = size - 1; i >= 0; i--) {
                 value = (short) ((value << 8) | (bytes[i] & 0xFF));
             }
         }
@@ -308,7 +321,7 @@ public class FixedPointDatatype implements HdfDatatype {
      *
      * @param bytes the byte array to convert
      * @return the Byte value
-     * @throws IllegalStateException if bitOffset is not zero
+     * @throws IllegalStateException    if bitOffset is not zero
      * @throws IllegalArgumentException if the byte array length or size is invalid for Byte
      */
     public byte toByte(byte[] bytes) {
@@ -316,7 +329,7 @@ public class FixedPointDatatype implements HdfDatatype {
             throw new IllegalStateException("Cannot convert to Byte: bitOffset must be 0, got " + bitOffset);
         }
         if (bytes.length > 1 || size > 1 || bytes.length != size) {
-            throw new IllegalArgumentException("Bytes or size wrong for Byte, got " + bytes.length+":"+size);
+            throw new IllegalArgumentException("Bytes or size wrong for Byte, got " + bytes.length + ":" + size);
         }
 
         return bytes[0];
@@ -475,7 +488,8 @@ public class FixedPointDatatype implements HdfDatatype {
      * @param grok the HdfGlobalHeap to set
      */
     @Override
-    public void setGlobalHeap(HdfGlobalHeap grok) {}
+    public void setGlobalHeap(HdfGlobalHeap grok) {
+    }
 
     /**
      * Converts the byte array to a string representation using BigDecimal.
@@ -530,6 +544,7 @@ public class FixedPointDatatype implements HdfDatatype {
     public int getBitPrecision() {
         return bitPrecision;
     }
+
     /**
      * Compares this FixedPointDatatype to another object for equality.
      *

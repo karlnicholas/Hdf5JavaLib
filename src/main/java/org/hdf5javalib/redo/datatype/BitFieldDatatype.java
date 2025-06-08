@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfBitField;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
@@ -22,20 +22,33 @@ import java.util.Map;
  * @see HdfGlobalHeap
  */
 public class BitFieldDatatype implements HdfDatatype {
-    /** The class and version information for the datatype (class 4, version 1). */
+    /**
+     * The class and version information for the datatype (class 4, version 1).
+     */
     private final int classAndVersion;
-    /** A BitSet containing class-specific bit field information (byte order and padding). */
+    /**
+     * A BitSet containing class-specific bit field information (byte order and padding).
+     */
     private final BitSet classBitField;
-    /** The total size of the bitfield datatype in bytes. */
+    /**
+     * The total size of the bitfield datatype in bytes.
+     */
     private final int size;
-    /** The bit offset of the first significant bit. */
+    /**
+     * The bit offset of the first significant bit.
+     */
     private final int bitOffset;
-    /** The number of bits of precision. */
+    /**
+     * The number of bits of precision.
+     */
     private final int bitPrecision;
     private final HdfDataFile hdfDataFile;
 
-    /** Map of converters for transforming byte data to specific Java types. */
+    /**
+     * Map of converters for transforming byte data to specific Java types.
+     */
     private static final Map<Class<?>, HdfConverter<BitFieldDatatype, ?>> CONVERTERS = new HashMap<>();
+
     static {
         CONVERTERS.put(BitSet.class, (bytes, dt) -> dt.toBitSet(bytes));
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
@@ -81,9 +94,9 @@ public class BitFieldDatatype implements HdfDatatype {
     /**
      * Creates a BitSet representing the class bit field for an HDF5 bitfield datatype.
      *
-     * @param bigEndian   true for big-endian byte order, false for little-endian
-     * @param loPadValue  the low padding value (0 or 1)
-     * @param hiPadValue  the high padding value (0 or 1)
+     * @param bigEndian  true for big-endian byte order, false for little-endian
+     * @param loPadValue the low padding value (0 or 1)
+     * @param hiPadValue the high padding value (0 or 1)
      * @return a 24-bit BitSet with byte order and padding settings
      * @throws IllegalArgumentException if loPadValue or hiPadValue is not 0 or 1
      */
@@ -293,7 +306,8 @@ public class BitFieldDatatype implements HdfDatatype {
      * @param grok the HdfGlobalHeap to set
      */
     @Override
-    public void setGlobalHeap(HdfGlobalHeap grok) {}
+    public void setGlobalHeap(HdfGlobalHeap grok) {
+    }
 
     /**
      * Returns a string representation of this BitFieldDatatype.

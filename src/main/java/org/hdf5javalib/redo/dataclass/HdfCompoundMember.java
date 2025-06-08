@@ -20,9 +20,13 @@ import java.nio.ByteBuffer;
  * @see CompoundMemberDatatype
  */
 public class HdfCompoundMember implements HdfData {
-    /** The CompoundMemberDatatype defining the member's structure and format. */
+    /**
+     * The CompoundMemberDatatype defining the member's structure and format.
+     */
     private final CompoundMemberDatatype datatype;
-    /** The raw byte array containing the compound member data. */
+    /**
+     * The raw byte array containing the compound member data.
+     */
     private final byte[] bytes;
 
     /**

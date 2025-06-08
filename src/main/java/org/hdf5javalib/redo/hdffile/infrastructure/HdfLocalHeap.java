@@ -1,9 +1,9 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
-import org.hdf5javalib.redo.AllocationRecord;
-import org.hdf5javalib.redo.AllocationType;
-import org.hdf5javalib.redo.HdfDataFile;
-import org.hdf5javalib.redo.HdfFileAllocation;
+import org.hdf5javalib.redo.hdffile.AllocationRecord;
+import org.hdf5javalib.redo.hdffile.AllocationType;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
@@ -31,13 +31,21 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfFileAllocation
  */
 public class HdfLocalHeap extends AllocationRecord {
-    /** The signature of the local heap ("HEAP"). */
+    /**
+     * The signature of the local heap ("HEAP").
+     */
     private final String signature;
-    /** The version of the local heap format. */
+    /**
+     * The version of the local heap format.
+     */
     private final int version;
-    /** The HDF5 file context. */
+    /**
+     * The HDF5 file context.
+     */
     private final HdfDataFile hdfDataFile;
-    /** The raw byte array containing the heap's data. */
+    /**
+     * The raw byte array containing the heap's data.
+     */
     private final HdfLocalHeapData heapData;
 
     public HdfFixedPoint getFreeListOffset() {
@@ -83,9 +91,9 @@ public class HdfLocalHeap extends AllocationRecord {
      */
     public HdfLocalHeap(HdfFixedPoint heapContentsSize, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, String name, long heapOffset) {
         super(AllocationType.LOCAL_HEAP_HEADER, name,
-            HdfWriteUtils.hdfFixedPointFromValue(heapOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
-            hdfDataFile.getFileAllocation().HDF_INITIAL_LOCAL_HEAP_CONTENTS_SIZE,
-            hdfDataFile.getFileAllocation());
+                HdfWriteUtils.hdfFixedPointFromValue(heapOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
+                hdfDataFile.getFileAllocation().HDF_INITIAL_LOCAL_HEAP_CONTENTS_SIZE,
+                hdfDataFile.getFileAllocation());
         this.signature = "HEAP";
         this.version = 0;
         this.hdfDataFile = hdfDataFile;
@@ -109,7 +117,7 @@ public class HdfLocalHeap extends AllocationRecord {
      * @param fileChannel the file channel to read from
      * @param hdfDataFile the HDF5 file context
      * @return the constructed HdfLocalHeap
-     * @throws IOException if an I/O error occurs
+     * @throws IOException              if an I/O error occurs
      * @throws IllegalArgumentException if the heap signature or reserved bytes are invalid
      */
     public static HdfLocalHeap readFromSeekableByteChannel(
@@ -164,7 +172,7 @@ public class HdfLocalHeap extends AllocationRecord {
                 dataSegmentSize,
                 dataSegmentAddress,
                 hdfDataFile, hdfLocalHeapData,
-                objectName+":Local Heap Header", heapOffset);
+                objectName + ":Local Heap Header", heapOffset);
     }
 
     /**
@@ -192,7 +200,7 @@ public class HdfLocalHeap extends AllocationRecord {
         return "HdfLocalHeap{" +
                 "signature='" + signature + '\'' +
                 ", version=" + version +
-                ", heapData=" + heapData +'}';
+                ", heapData=" + heapData + '}';
     }
 
     /**

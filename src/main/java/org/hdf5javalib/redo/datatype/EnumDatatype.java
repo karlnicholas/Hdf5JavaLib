@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfEnum;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
@@ -23,22 +23,37 @@ import java.util.*;
  * @see DatatypeMessage
  */
 public class EnumDatatype implements HdfDatatype {
-    /** The class and version information for the datatype (class 8, version 1 or 2). */
+    /**
+     * The class and version information for the datatype (class 8, version 1 or 2).
+     */
     private final int classAndVersion;
-    /** A BitSet indicating the number of enumeration members. */
+    /**
+     * A BitSet indicating the number of enumeration members.
+     */
     private final BitSet classBitField;
-    /** The size of each enumeration value in bytes, matching the base type. */
+    /**
+     * The size of each enumeration value in bytes, matching the base type.
+     */
     private final int size;
-    /** The base integer datatype for enumeration values. */
+    /**
+     * The base integer datatype for enumeration values.
+     */
     private final HdfDatatype baseType;
-    /** The array of enumeration names. */
+    /**
+     * The array of enumeration names.
+     */
     private final String[] names;
-    /** The packed array of enumeration values. */
+    /**
+     * The packed array of enumeration values.
+     */
     private final byte[] values;
     private final HdfDataFile dataFile;
 
-    /** Map of converters for transforming byte data to specific Java types. */
+    /**
+     * Map of converters for transforming byte data to specific Java types.
+     */
     private static final Map<Class<?>, HdfConverter<EnumDatatype, ?>> CONVERTERS = new HashMap<>();
+
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfEnum.class, HdfEnum::new);

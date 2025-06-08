@@ -48,7 +48,7 @@ public class ExampleDebug {
 //                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
 //                    displayData(channel, dataSet, reader);
 //                }
-                for(HdfDataSet dataSet: reader.getRootGroup().getDataSets()) {
+                for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
                     displayData(channel, dataSet, reader);
                 }
             }

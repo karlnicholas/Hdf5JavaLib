@@ -48,7 +48,7 @@ public class ArrayAttributeRead {
 //                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
 //                    displayData(channel, dataSet, reader);
 //                }
-                for(HdfDataSet dataSet: reader.getRootGroup().getDataSets()) {
+                for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
                     displayAttributes(dataSet);
                 }
             }
@@ -64,10 +64,10 @@ public class ArrayAttributeRead {
             dataHolder.iterator().forEachRemaining(System.out::println);
             // individual elements of a matrix
             int[] dimensions = dataHolder.getDimensions();
-            for(int i=0; i < dimensions[0]; ++i) {
+            for (int i = 0; i < dimensions[0]; ++i) {
                 HdfData row = dataHolder.get(i);
                 HdfData[] columns = row.getInstance(HdfData[].class);
-                for(int j=0; j < columns.length; ++j) {
+                for (int j = 0; j < columns.length; ++j) {
                     System.out.print(columns[j] + " ");
                 }
                 System.out.println();

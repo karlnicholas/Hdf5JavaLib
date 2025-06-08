@@ -1,4 +1,4 @@
-package org.hdf5javalib.redo;
+package org.hdf5javalib.redo.hdffile;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.metadata.HdfSuperblock;
@@ -39,7 +39,7 @@ public class HdfFileAllocation {
         return dataNextAvailableOffset;
     }
 
-//    /**
+    //    /**
 //     * Defines the types of allocation blocks used in an HDF5 file.
 //     * <p>
 //     * Each enum constant represents a specific type of storage block, with associated metadata
@@ -111,15 +111,25 @@ public class HdfFileAllocation {
     public final HdfFixedPoint HDF_SNOD_STORAGE_SIZE;
     public final HdfFixedPoint HDF_ALIGNMENT_BOUNDARY;
     // --- Storage ---
-    /** Maps dataset names to their allocation records by type. */
+    /**
+     * Maps dataset names to their allocation records by type.
+     */
     private final Map<String, Map<AllocationType, AllocationRecord>> datasetRecordsByName = new LinkedHashMap<>();
-    /** List of symbol table node (SNOD) allocation records. */
+    /**
+     * List of symbol table node (SNOD) allocation records.
+     */
     private final List<AllocationRecord> snodRecords = new ArrayList<>();
-    /** Maps global heap block types to their allocation records. */
+    /**
+     * Maps global heap block types to their allocation records.
+     */
     private final Map<AllocationType, AllocationRecord> globalHeapBlocks = new HashMap<>();
-    /** List of all allocation records. */
+    /**
+     * List of all allocation records.
+     */
     private final List<AllocationRecord> allocationRecords = new ArrayList<>();
-    /** List of local heap allocation records (active and abandoned). */
+    /**
+     * List of local heap allocation records (active and abandoned).
+     */
     private final List<AllocationRecord> localHeapRecords = new ArrayList<>();
 
     // --- Fixed Allocations ---
@@ -133,12 +143,17 @@ public class HdfFileAllocation {
     }
 
     // --- Dynamic Tracking ---
-    /** The next available offset in the metadata region. */
+    /**
+     * The next available offset in the metadata region.
+     */
     private HdfFixedPoint metadataNextAvailableOffset;
-    /** The next available offset in the data region. */
+    /**
+     * The next available offset in the data region.
+     */
     private HdfFixedPoint dataNextAvailableOffset;
 
     // --- Constructor ---
+
     /**
      * Initializes a new HDF5 file allocation manager.
      * <p>
@@ -191,13 +206,13 @@ public class HdfFileAllocation {
 //            HdfSuperblock superblock
 //    ) {
 //
-        // Initialize fixed structures
+    // Initialize fixed structures
 //        superblockRecord = new AllocationRecord(AllocationType.SUPERBLOCK, "Superblock", SUPERBLOCK_OFFSET, SUPERBLOCK_SIZE);
 //        objectHeaderPrefixRecord = new AllocationRecord(AllocationType.GROUP_OBJECT_HEADER, "Object Header Prefix", SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE, OBJECT_HEADER_PREFIX_SIZE);
 //        btreeRecord = new AllocationRecord(AllocationType.BTREE_HEADER, "B-tree (Node + Storage)", objectHeaderPrefixRecord.getOffset() + OBJECT_HEADER_PREFIX_SIZE, BTREE_NODE_SIZE + BTREE_STORAGE_SIZE);
 //        localHeapHeaderRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, "Local Heap Header", btreeRecord.getOffset() + (BTREE_NODE_SIZE + BTREE_STORAGE_SIZE), LOCAL_HEAP_HEADER_SIZE);
 
-        // Initialize local heap
+    // Initialize local heap
 //        AllocationRecord initialLocalHeapRecord = new AllocationRecord(AllocationType.LOCAL_HEAP, "Initial Local Heap Contents", localHeapHeaderRecord.getOffset() + LOCAL_HEAP_HEADER_SIZE, INITIAL_LOCAL_HEAP_CONTENTS_SIZE);
 //        this.superblock = superblock;
 //        localHeapRecords.add(initialLocalHeapRecord);
@@ -241,10 +256,10 @@ public class HdfFileAllocation {
     /**
      * Increases the size of a dataset's object header allocation.
      *
-     * @param datasetName      the name of the dataset
+     * @param datasetName        the name of the dataset
      * @param newTotalHeaderSize the new size of the header
      * @throws IllegalArgumentException if the new size is not larger than the current size
-     * @throws IllegalStateException if the dataset is not found
+     * @throws IllegalStateException    if the dataset is not found
      */
     public void increaseHeaderAllocation(String datasetName, HdfFixedPoint newTotalHeaderSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
@@ -255,7 +270,7 @@ public class HdfFileAllocation {
 
         AllocationRecord record = datasetAllocs.get(AllocationType.DATASET_OBJECT_HEADER);
         HdfFixedPoint oldSize = record.getSize();
-        if (newTotalHeaderSize.compareTo(oldSize) <= 0 ) {
+        if (newTotalHeaderSize.compareTo(oldSize) <= 0) {
             throw new IllegalArgumentException("New size must be greater than current size");
         }
 
@@ -267,8 +282,8 @@ public class HdfFileAllocation {
 
         // Update metadataNextAvailableOffset
 //        metadataNextAvailableOffset = Math.max(metadataNextAvailableOffset, record.getOffset() + newTotalHeaderSize);
-        HdfFixedPoint newMetadataNextAvailableOffset = new HdfFixedPoint(record.getOffset().add(newTotalHeaderSize),metadataNextAvailableOffset.getDatatype());
-        metadataNextAvailableOffset = metadataNextAvailableOffset.compareTo(newMetadataNextAvailableOffset) > 0 ? metadataNextAvailableOffset: newMetadataNextAvailableOffset;
+        HdfFixedPoint newMetadataNextAvailableOffset = new HdfFixedPoint(record.getOffset().add(newTotalHeaderSize), metadataNextAvailableOffset.getDatatype());
+        metadataNextAvailableOffset = metadataNextAvailableOffset.compareTo(newMetadataNextAvailableOffset) > 0 ? metadataNextAvailableOffset : newMetadataNextAvailableOffset;
         updateMetadataOffset(metadataNextAvailableOffset);
     }
 
@@ -305,7 +320,7 @@ public class HdfFileAllocation {
      * @param dataSize    the size of the data block
      * @return the offset of the allocated data block
      * @throws IllegalArgumentException if the data size is negative
-     * @throws IllegalStateException if the dataset or data block is already allocated
+     * @throws IllegalStateException    if the dataset or data block is already allocated
      */
     public HdfFixedPoint allocateAndSetDataBlock(String datasetName, HdfFixedPoint dataSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
@@ -329,11 +344,11 @@ public class HdfFileAllocation {
     /**
      * Allocates a continuation block for a dataset's object header.
      *
-     * @param datasetName     the name of the dataset
+     * @param datasetName      the name of the dataset
      * @param continuationSize the size of the continuation block
      * @return the offset of the allocated continuation block
      * @throws IllegalArgumentException if the continuation size is not positive
-     * @throws IllegalStateException if the dataset or continuation block is already allocated
+     * @throws IllegalStateException    if the dataset or continuation block is already allocated
      */
     public HdfFixedPoint allocateAndSetContinuationBlock(String datasetName, HdfFixedPoint continuationSize) {
         Objects.requireNonNull(datasetName, "Dataset name cannot be null");
@@ -479,6 +494,7 @@ public class HdfFileAllocation {
 //    }
 //
     // --- Global Heap Methods ---
+
     /**
      * Checks if any global heap blocks are allocated.
      *
@@ -504,6 +520,7 @@ public class HdfFileAllocation {
     }
 
     // --- Offset and Overlap Management ---
+
     /**
      * Updates the metadata next available offset and adjusts the data offset if necessary.
      *
@@ -511,7 +528,7 @@ public class HdfFileAllocation {
      */
     private void updateMetadataOffset(HdfFixedPoint newOffset) {
         metadataNextAvailableOffset = newOffset.clone();
-        if (metadataNextAvailableOffset.compareTo(dataNextAvailableOffset) >= 0  &&
+        if (metadataNextAvailableOffset.compareTo(dataNextAvailableOffset) >= 0 &&
                 !isDataBlocksAllocated() &&
                 globalHeapBlocks.isEmpty()) {
             dataNextAvailableOffset = metadataNextAvailableOffset.clone();
@@ -527,7 +544,7 @@ public class HdfFileAllocation {
     private void updateDataOffset(HdfFixedPoint newOffset) {
         dataNextAvailableOffset = newOffset.clone();
         if (metadataNextAvailableOffset.compareTo(HDF_MIN_DATA_OFFSET_THRESHOLD) >= 0 &&
-                metadataNextAvailableOffset.compareTo(dataNextAvailableOffset) < 0 ) {
+                metadataNextAvailableOffset.compareTo(dataNextAvailableOffset) < 0) {
             metadataNextAvailableOffset = dataNextAvailableOffset.clone();
         }
     }
@@ -544,7 +561,7 @@ public class HdfFileAllocation {
         for (AllocationRecord record : allocationRecords) {
 //            long recordEnd = record.getOffset() + record.getSize() - 1;
             HdfFixedPoint recordEnd = new HdfFixedPoint(HdfFixedPoint.minusOneBytes(HdfFixedPoint.addBytes(record.getOffset().getBytes(), record.getSize().getBytes())), record.getOffset().getDatatype());
-            if (offset.compareTo(recordEnd) <= 0  && end.compareTo(record.getOffset()) >= 0 ) {
+            if (offset.compareTo(recordEnd) <= 0 && end.compareTo(record.getOffset()) >= 0) {
                 return true; // Overlap detected
             }
         }
@@ -555,7 +572,7 @@ public class HdfFileAllocation {
      * Moves the metadata next available offset to avoid overlaps.
      *
      * @param currentOffset the current offset
-     * @param size         the size of the allocation
+     * @param size          the size of the allocation
      */
     private void moveMetadataNextAvailableOffset(HdfFixedPoint currentOffset, HdfFixedPoint size) {
 //        long newOffset = Math.max(currentOffset, dataNextAvailableOffset);
@@ -576,7 +593,7 @@ public class HdfFileAllocation {
      */
     private void moveDataNextAvailableOffset(HdfFixedPoint newMetadataOffset) {
         HdfFixedPoint diff = HdfWriteUtils.hdfFixedPointFromValue(0, superblock.getFixedPointDatatypeForOffset());
-        for (AllocationRecord record: allocationRecords) {
+        for (AllocationRecord record : allocationRecords) {
             if (record.getType() == AllocationType.DATASET_DATA || record.getType() == AllocationType.GLOBAL_HEAP_1) {
                 if (diff.getInstance(Long.class) == 0) {
                     diff.mutate(newMetadataOffset.minus(record.getOffset()));
@@ -604,7 +621,7 @@ public class HdfFileAllocation {
         HdfFixedPoint snodEnd = new HdfFixedPoint(HdfFixedPoint.minusOneBytes(snodOffset.add(HDF_SNOD_STORAGE_SIZE)), headerOffset.getDatatype());
         HdfFixedPoint headerEnd = new HdfFixedPoint(HdfFixedPoint.minusOneBytes(headerOffset.add(headerSize)), headerOffset.getDatatype());
 
-        if (headerOffset.compareTo(snodEnd) <= 0  && headerEnd.compareTo(snodOffset) >= 0) {
+        if (headerOffset.compareTo(snodEnd) <= 0 && headerEnd.compareTo(snodOffset) >= 0) {
             // Overlap detected, move SNOD
             HdfFixedPoint newSnodOffset = new HdfFixedPoint(headerOffset.add(headerSize), headerOffset.getDatatype());
             if (checkForOverlap(newSnodOffset, HDF_SNOD_STORAGE_SIZE)) {
@@ -624,6 +641,7 @@ public class HdfFileAllocation {
     }
 
     // --- Debugging ---
+
     /**
      * Prints the current allocation layout with gap and overlap analysis.
      */
@@ -636,7 +654,7 @@ public class HdfFileAllocation {
 
         System.out.println("Offset (Dec) | Offset (Hex) | Size     | Type       | Name");
         List<AllocationRecord> sortedRecords = new ArrayList<>(allocationRecords);
-        sortedRecords.sort(Comparator.comparingLong(ar->ar.getOffset().getInstance(Long.class)));
+        sortedRecords.sort(Comparator.comparingLong(ar -> ar.getOffset().getInstance(Long.class)));
         for (AllocationRecord block : sortedRecords) {
             String hexOffset = String.format("0x%08X", block.getOffset().getInstance(Long.class));
             System.out.printf("%-12d | %-12s | %-8d | %-10s | %s%n",
@@ -660,7 +678,8 @@ public class HdfFileAllocation {
         boolean hasOverlap = false;
         for (int i = 0; i < sortedRecords.size(); i++) {
             AllocationRecord record1 = sortedRecords.get(i);
-            long start1 = record1.getOffset().getInstance(Long.class);;
+            long start1 = record1.getOffset().getInstance(Long.class);
+            ;
             long end1 = start1 + record1.getSize().getInstance(Long.class) - 1;
 
             for (int j = i + 1; j < sortedRecords.size(); j++) {
@@ -735,13 +754,14 @@ public class HdfFileAllocation {
 //    }
 //
     // --- Getters ---
+
     /**
      * Retrieves the end-of-file offset.
      *
      * @return the maximum of metadata and data next available offsets
      */
     public HdfFixedPoint getEndOfFileOffset() {
-        return metadataNextAvailableOffset.compareTo(dataNextAvailableOffset) > 0 ? metadataNextAvailableOffset: dataNextAvailableOffset;
+        return metadataNextAvailableOffset.compareTo(dataNextAvailableOffset) > 0 ? metadataNextAvailableOffset : dataNextAvailableOffset;
     }
 
 //    /**
@@ -762,6 +782,7 @@ public class HdfFileAllocation {
 ////        return btreeRecord.getSize();
 ////    }
 //
+
     /**
      * Retrieves the offset of the first global heap block.
      *
@@ -836,8 +857,10 @@ public class HdfFileAllocation {
 ////        return objectHeaderPrefixRecord.getOffset();
 ////    }
 //
+
     /**
      * Retrieves the number of local heap blocks allocated.
+     *
      * @return the number of local heap blocks allocated
      */
     public int getSnodAllocationCount() {

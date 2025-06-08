@@ -24,9 +24,13 @@ import java.nio.ByteBuffer;
  * @see StringDatatype
  */
 public class HdfString implements HdfData {
-    /** The raw byte array containing the string data, without null termination. */
+    /**
+     * The raw byte array containing the string data, without null termination.
+     */
     private final byte[] bytes;
-    /** The StringDatatype defining the string structure, encoding, and format. */
+    /**
+     * The StringDatatype defining the string structure, encoding, and format.
+     */
     private final StringDatatype datatype;
 
     /**

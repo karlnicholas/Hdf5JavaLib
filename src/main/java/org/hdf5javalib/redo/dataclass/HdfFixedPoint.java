@@ -23,9 +23,13 @@ import java.util.Objects;
  * @see FixedPointDatatype
  */
 public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
-    /** The raw byte array containing the fixed-point data. */
+    /**
+     * The raw byte array containing the fixed-point data.
+     */
     private final byte[] bytes;
-    /** The FixedPointDatatype defining the fixed-point structure, size, and format. */
+    /**
+     * The FixedPointDatatype defining the fixed-point structure, size, and format.
+     */
     private final FixedPointDatatype datatype;
 
     /**
@@ -111,7 +115,7 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
      * @return true if the value is undefined, false otherwise
      */
     public boolean isUndefined() {
-        for(byte b : bytes) {
+        for (byte b : bytes) {
             if (b != (byte) 0xFF) {
                 return false;
             }
@@ -276,7 +280,7 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
     }
 
     public static byte[] minusBytes(byte[] firstBytes, byte[] secondBytes) {
-        if(firstBytes.length != secondBytes.length) {
+        if (firstBytes.length != secondBytes.length) {
             throw new IllegalArgumentException("Byte arrays must be the same length");
         }
         byte[] result = new byte[firstBytes.length]; // Output size matches datatype
@@ -347,7 +351,7 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
             result[0] = 0; // Clear byte[0]
         }
         if (bytes.length > 1) {
-            result[1] &= (byte)0xF8; // Clear lower 3 bits of byte[1]
+            result[1] &= (byte) 0xF8; // Clear lower 3 bits of byte[1]
         }
         return result;
     }

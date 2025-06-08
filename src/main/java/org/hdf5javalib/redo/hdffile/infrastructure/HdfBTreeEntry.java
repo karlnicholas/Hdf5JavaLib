@@ -16,16 +16,20 @@ import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
  * @see HdfBTreeV1
  */
 public abstract class HdfBTreeEntry {
-    /** The key for this B-Tree entry, linkNameOffset. */
+    /**
+     * The key for this B-Tree entry, linkNameOffset.
+     */
     private HdfFixedPoint key;
-    /** The address of the child node (symbol table node or child B-Tree). */
+    /**
+     * The address of the child node (symbol table node or child B-Tree).
+     */
     private final HdfFixedPoint childPointer;
 
     /**
      * Constructs an HdfBTreeEntry for a leaf node, pointing to a symbol table node.
      *
-     * @param key             the key for the entry
-     * @param childPointer     the address of the symbol table node
+     * @param key          the key for the entry
+     * @param childPointer the address of the symbol table node
      */
     public HdfBTreeEntry(HdfFixedPoint key, HdfFixedPoint childPointer) {
         this.key = key;
@@ -75,7 +79,7 @@ public abstract class HdfBTreeEntry {
      */
     @Override
     public String toString() {
-        return "key=\"+key\", childPointer=\""+childPointer+"\"";
+        return "key=\"+key\", childPointer=\"" + childPointer + "\"";
     }
 
     public void setKey(HdfFixedPoint key) {

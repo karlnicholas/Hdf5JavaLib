@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.examples.read;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
@@ -39,6 +39,7 @@ import java.util.stream.Stream;
  */
 public class FixedPointRead {
     private static final Logger log = LoggerFactory.getLogger(FixedPointRead.class);
+
     /**
      * Entry point for the application.
      *
@@ -76,7 +77,7 @@ public class FixedPointRead {
             hdfFileReader.getFileAllocation().printBlocks();
             log.debug("Root Group: {} ", hdfFileReader.getRootGroup());
             HdfGroup group = hdfFileReader.getRootGroup().getGroup("/Group1").orElseThrow();
-            for ( HdfDataSet dataset: group.getDataSets()) {
+            for (HdfDataSet dataset : group.getDataSets()) {
                 tryScalarDataSpliterator(channel, hdfFileReader, dataset);
             }
         }
@@ -85,7 +86,7 @@ public class FixedPointRead {
             filePath = getResourcePath("scalar.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                log.debug("rootGroup {} ",  reader.getRootGroup());
+                log.debug("rootGroup {} ", reader.getRootGroup());
                 tryScalarDataSpliterator(channel, reader, reader.getRootGroup().getDataSets().get(0));
             }
         } catch (IOException e) {
@@ -175,7 +176,7 @@ public class FixedPointRead {
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
         final BigInteger[] flattenedData = dataSource.readFlattened();
         int[] shape = dataSource.getShape();
-        System.out.println("Vector flattenedData stats = " + IntStream.rangeClosed(0, FlattenedArrayUtils.totalSize(shape)-1)
+        System.out.println("Vector flattenedData stats = " + IntStream.rangeClosed(0, FlattenedArrayUtils.totalSize(shape) - 1)
                 .mapToObj(i -> FlattenedArrayUtils.getElement(flattenedData, shape, i))
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
         System.out.print("FlattenedData Streamed Reduced = ");
@@ -297,6 +298,7 @@ public class FixedPointRead {
         pieces.sort(Comparator.comparingInt(a -> a.coordinates[3]));
         pieces.forEach(entry -> System.out.printf("Coords %s → Value: %s%n", Arrays.toString(entry.coordinates), entry.value));
     }
+
     /**
      * Processes a 4D dataset using a TypedDataSource, demonstrating slicing and filtering.
      *
@@ -327,5 +329,5 @@ public class FixedPointRead {
 //        System.out.println("FlattenedData = ");
 //        System.out.println(Arrays.toString(flattenedData));
 //        System.out.println(Arrays.toString(shape));
-   }
+    }
 }

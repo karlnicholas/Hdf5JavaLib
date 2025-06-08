@@ -12,4 +12,5 @@ import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
  * @param value  the string value stored in the local heap
  * @param offset the offset in the local heap where the value is stored
  */
-public record HdfLocalHeapDataValue(String value, HdfFixedPoint offset) {}
+public record HdfLocalHeapDataValue(String value, HdfFixedPoint offset) {
+}

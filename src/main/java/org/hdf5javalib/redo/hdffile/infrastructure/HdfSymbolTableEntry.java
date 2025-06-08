@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
@@ -26,17 +26,21 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see FixedPointDatatype
  */
 public class HdfSymbolTableEntry {
-    /** The offset of the link name in the local heap. */
+    /**
+     * The offset of the link name in the local heap.
+     */
     private final HdfFixedPoint linkNameOffset;
-    /** The offset of the object's header in the file. */
+    /**
+     * The offset of the object's header in the file.
+     */
     private final HdfObjectHeaderPrefixV1 objectHeader;
     private final HdfSymbolTableEntryCache cache;
 
     /**
      * Constructs an HdfSymbolTableEntry for cache type 1 with B-Tree and local heap offsets.
      *
-     * @param linkNameOffset      the offset of the link name in the local heap
-     * @param cache               the cache type instance for this Symbol Table Entry.
+     * @param linkNameOffset the offset of the link name in the local heap
+     * @param cache          the cache type instance for this Symbol Table Entry.
      */
     public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfSymbolTableEntryCache cache) {
         this.linkNameOffset = linkNameOffset;
@@ -47,14 +51,14 @@ public class HdfSymbolTableEntry {
     /**
      * Reads an HdfSymbolTableEntry from a file channel.
      *
-     * @param fileChannel                the file channel to read from
+     * @param fileChannel the file channel to read from
      * @param hdfDataFile the HdfDataFile offset fields
      * @return the constructed HdfSymbolTableEntry
      * @throws IOException if an I/O error occurs
      */
     public static HdfSymbolTableEntry readFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile, 
+            HdfDataFile hdfDataFile,
             HdfLocalHeap localHeap
     ) throws Exception {
         // Read the fixed-point values for linkNameOffset and objectHeaderAddress

@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfArray;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
@@ -36,24 +36,41 @@ import java.util.Map;
  * @see DatatypeMessage
  */
 public class ArrayDatatype implements HdfDatatype {
-    /** The class and version information for the datatype (class 10, version 2). */
+    /**
+     * The class and version information for the datatype (class 10, version 2).
+     */
     private final int classAndVersion;
-    /** A BitSet containing class-specific bit field information (currently unused). */
+    /**
+     * A BitSet containing class-specific bit field information (currently unused).
+     */
     private final BitSet classBitField;
-    /** The total size of the array datatype in bytes. */
+    /**
+     * The total size of the array datatype in bytes.
+     */
     private final int size;
-    /** The number of dimensions in the array. */
+    /**
+     * The number of dimensions in the array.
+     */
     private final int dimensionality;
-    /** The size of each dimension, in slowest-to-fastest order. */
+    /**
+     * The size of each dimension, in slowest-to-fastest order.
+     */
     private final int[] dimensionSizes;
-    /** The permutation indices for dimensions (must be 0, 1, ..., n-1). */
+    /**
+     * The permutation indices for dimensions (must be 0, 1, ..., n-1).
+     */
     private final int[] permutationIndices;
-    /** The base datatype of the array elements. */
+    /**
+     * The base datatype of the array elements.
+     */
     private final HdfDatatype baseType;
     private final HdfDataFile dataFile;
 
-    /** Map of converters for transforming byte data to specific Java types. */
+    /**
+     * Map of converters for transforming byte data to specific Java types.
+     */
     private static final Map<Class<?>, HdfConverter<ArrayDatatype, ?>> CONVERTERS = new HashMap<>();
+
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfArray.class, HdfArray::new);

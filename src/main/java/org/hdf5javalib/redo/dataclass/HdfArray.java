@@ -17,9 +17,13 @@ import java.nio.ByteBuffer;
  * @see ArrayDatatype
  */
 public class HdfArray implements HdfData {
-    /** The raw byte array containing the array data. */
+    /**
+     * The raw byte array containing the array data.
+     */
     private final byte[] bytes;
-    /** The ArrayDatatype defining the array's structure and format. */
+    /**
+     * The ArrayDatatype defining the array's structure and format.
+     */
     private final ArrayDatatype datatype;
 
     /**

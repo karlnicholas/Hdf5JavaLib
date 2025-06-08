@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 
@@ -34,18 +34,22 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfDataFile
  */
 public class SymbolTableMessage extends HdfMessage {
-    /** The file offset of the B-Tree indexing the group’s entries. */
+    /**
+     * The file offset of the B-Tree indexing the group’s entries.
+     */
     private final HdfFixedPoint bTreeAddress;
-    /** The file offset of the local heap storing names of the group’s entries. */
+    /**
+     * The file offset of the local heap storing names of the group’s entries.
+     */
     private final HdfFixedPoint localHeapAddress;
 
     /**
      * Constructs a SymbolTableMessage with the specified components.
      *
-     * @param bTreeAddress    the file offset of the B-Tree
+     * @param bTreeAddress     the file offset of the B-Tree
      * @param localHeapAddress the file offset of the local heap
-     * @param flags           message flags
-     * @param sizeMessageData the size of the message data in bytes
+     * @param flags            message flags
+     * @param sizeMessageData  the size of the message data in bytes
      */
     public SymbolTableMessage(HdfFixedPoint bTreeAddress, HdfFixedPoint localHeapAddress, int flags, int sizeMessageData) {
         super(MessageType.SymbolTableMessage, sizeMessageData, flags);
@@ -89,7 +93,7 @@ public class SymbolTableMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "SymbolTableMessage("+(getSizeMessageData()+8)+"){" +
+        return "SymbolTableMessage(" + (getSizeMessageData() + 8) + "){" +
                 "bTreeAddress=" + bTreeAddress.getInstance(Long.class) +
                 ", localHeapAddress=" + localHeapAddress.getInstance(Long.class) +
                 '}';

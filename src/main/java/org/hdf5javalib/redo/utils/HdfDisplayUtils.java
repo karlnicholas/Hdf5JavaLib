@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.utils;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
@@ -38,9 +38,10 @@ public class HdfDisplayUtils {
         String ATTRIBUTE_VALUE = "Revision: , URL: ";
         dataset.createAttribute(ATTRIBUTE_NAME, ATTRIBUTE_VALUE, hdfDataFile);
     }
+
     public static void displayData(SeekableByteChannel channel, HdfDataSet ds, HdfFileReader reader) throws Exception {
         System.out.println(ds.getDatasetName());
-        if ( ds.hasDataspaceMessage() ) {
+        if (ds.hasDataspaceMessage()) {
             switch (ds.getDimensionality()) {
                 case 0:
                     if (HdfFixedPoint.compareToZero(ds.getdimensionSizes().orElseThrow()[0]) != 0) {

@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.datatype.HdfDatatype;
@@ -42,27 +42,37 @@ import java.util.BitSet;
  * @see DataspaceMessage
  */
 public class AttributeMessage extends HdfMessage {
-    /** The version of the attribute message format. */
+    /**
+     * The version of the attribute message format.
+     */
     private final int version;
-    /** The name of the attribute. */
+    /**
+     * The name of the attribute.
+     */
     private final HdfString name;
-    /** The datatype of the attribute's value. */
+    /**
+     * The datatype of the attribute's value.
+     */
     private final DatatypeMessage datatypeMessage;
-    /** The dataspace defining the dimensionality and size of the attribute's value. */
+    /**
+     * The dataspace defining the dimensionality and size of the attribute's value.
+     */
     private final DataspaceMessage dataspaceMessage;
-    /** The actual value of the attribute. */
+    /**
+     * The actual value of the attribute.
+     */
     private final HdfDataHolder hdfDataHolder;
 
     /**
      * Constructs an AttributeMessage with the specified components.
      *
-     * @param version           the version of the attribute message format
-     * @param name              the name of the attribute
-     * @param datatypeMessage   the datatype of the attribute's value
-     * @param dataspaceMessage  the dataspace defining the attribute's value dimensions
-     * @param hdfDataHolder             the actual attribute value
-     * @param flags             message flags
-     * @param sizeMessageData   the size of the message data in bytes
+     * @param version          the version of the attribute message format
+     * @param name             the name of the attribute
+     * @param datatypeMessage  the datatype of the attribute's value
+     * @param dataspaceMessage the dataspace defining the attribute's value dimensions
+     * @param hdfDataHolder    the actual attribute value
+     * @param flags            message flags
+     * @param sizeMessageData  the size of the message data in bytes
      */
     public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfDataHolder hdfDataHolder, int flags, int sizeMessageData) {
         super(MessageType.AttributeMessage, sizeMessageData, flags);
@@ -76,9 +86,9 @@ public class AttributeMessage extends HdfMessage {
     /**
      * Parses an AttributeMessage from the provided data and file context.
      *
-     * @param flags         message flags
-     * @param data          the byte array containing the message data
-     * @param hdfDataFile   the HDF5 file context for global heap and other resources
+     * @param flags       message flags
+     * @param data        the byte array containing the message data
+     * @param hdfDataFile the HDF5 file context for global heap and other resources
      * @return a new AttributeMessage instance parsed from the data
      */
     public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
@@ -98,7 +108,7 @@ public class AttributeMessage extends HdfMessage {
         byte[] nameBytes = new byte[nameSize];
         buffer.get(nameBytes);
         BitSet bitSet = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
-        HdfString name = new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, nameSize,hdfDataFile ));
+        HdfString name = new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, nameSize, hdfDataFile));
         // get padding bytes
         int padding = (8 - (nameSize % 8)) % 8;
         byte[] paddingBytes = new byte[padding];
@@ -133,7 +143,7 @@ public class AttributeMessage extends HdfMessage {
             byte[] dataBytes = new byte[dtDataSize];
             buffer.get(dataBytes);
             HdfData scalarValue = dt.getHdfDatatype().getInstance(HdfData.class, dataBytes);
-            return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofScalar(scalarValue), flags, (short)data.length);
+            return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofScalar(scalarValue), flags, (short) data.length);
         }
 
         // Case 2: Array data (dimensionality is 1 or more)
@@ -147,9 +157,10 @@ public class AttributeMessage extends HdfMessage {
         // Step 2: Populate the array recursively from the flat buffer.
         populateArray(multiDimArray, dimensions, 0, buffer, dt.getHdfDatatype(), dtDataSize);
 
-        return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofArray(multiDimArray, dimensions), flags, (short)data.length);
+        return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofArray(multiDimArray, dimensions), flags, (short) data.length);
 
     }
+
     /**
      * A recursive helper method to populate an n-dimensional array from a flat ByteBuffer.
      * It works by iterating through the dimensions one by one.
@@ -191,7 +202,7 @@ public class AttributeMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "AttributeMessage("+(getSizeMessageData()+8)+"){" +
+        return "AttributeMessage(" + (getSizeMessageData() + 8) + "){" +
                 "version=" + version +
                 ", name='" + name + '\'' +
                 ", value='" + hdfDataHolder + '\'' +

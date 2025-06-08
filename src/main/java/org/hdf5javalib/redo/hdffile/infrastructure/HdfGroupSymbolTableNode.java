@@ -1,8 +1,8 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
-import org.hdf5javalib.redo.AllocationRecord;
-import org.hdf5javalib.redo.AllocationType;
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.AllocationRecord;
+import org.hdf5javalib.redo.hdffile.AllocationType;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
@@ -27,11 +27,17 @@ import java.util.List;
  * @see HdfSymbolTableEntry
  */
 public class HdfGroupSymbolTableNode extends AllocationRecord {
-    /** The signature of the symbol table node ("SNOD"). */
+    /**
+     * The signature of the symbol table node ("SNOD").
+     */
     private final String signature;
-    /** The version of the symbol table node format. */
+    /**
+     * The version of the symbol table node format.
+     */
     private final int version;
-    /** The list of symbol table entries. */
+    /**
+     * The list of symbol table entries.
+     */
     private final List<HdfSymbolTableEntry> symbolTableEntries;
 
     /**
@@ -61,7 +67,7 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
      * @param fileChannel the file channel to read from
      * @param hdfDataFile the HDF5 file context
      * @return the constructed HdfGroupSymbolTableNode
-     * @throws IOException if an I/O error occurs or the SNOD signature is invalid
+     * @throws IOException              if an I/O error occurs or the SNOD signature is invalid
      * @throws IllegalArgumentException if the SNOD signature is invalid
      */
     public static HdfGroupSymbolTableNode readFromSeekableByteChannel(
@@ -107,7 +113,7 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
                 version,
                 symbolTableEntries,
                 hdfDataFile,
-                objectName+":Snod",
+                objectName + ":Snod",
                 HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()));
     }
 

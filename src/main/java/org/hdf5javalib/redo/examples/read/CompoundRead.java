@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.examples.read;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.*;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
@@ -25,6 +25,7 @@ import java.util.BitSet;
  */
 public class CompoundRead {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CompoundRead.class);
+
     /**
      * Entry point for the application.
      *
@@ -84,14 +85,21 @@ public class CompoundRead {
         public record Compound(
                 Integer nested_int,          // int16_t nested_int
                 Double nested_double      // double nested_double
-        ) {}
+        ) {
+        }
 
         // Enum for enumerated field
         public enum Level {
             LOW(0), MEDIUM(1), HIGH(2);
             private final int value;
-            Level(int value) { this.value = value; }
-            public int getValue() { return value; }
+
+            Level(int value) {
+                this.value = value;
+            }
+
+            public int getValue() {
+                return value;
+            }
         }
 
 //        // Canonical constructor for validation

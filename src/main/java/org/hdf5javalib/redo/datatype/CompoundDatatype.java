@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfCompound;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
@@ -26,13 +26,21 @@ import java.util.stream.Collectors;
  * @see DatatypeMessage
  */
 public class CompoundDatatype implements HdfDatatype {
-    /** The class and version information for the datatype (class 6, version 1). */
+    /**
+     * The class and version information for the datatype (class 6, version 1).
+     */
     private final int classAndVersion;
-    /** A BitSet indicating the number of members in the compound datatype. */
+    /**
+     * A BitSet indicating the number of members in the compound datatype.
+     */
     private final BitSet classBitField;
-    /** The total size of the compound datatype in bytes. */
+    /**
+     * The total size of the compound datatype in bytes.
+     */
     private final int size;
-    /** The list of member datatypes defining the compound structure. */
+    /**
+     * The list of member datatypes defining the compound structure.
+     */
     private List<CompoundMemberDatatype> members;
     private final HdfDataFile dataFile;
 
@@ -44,8 +52,11 @@ public class CompoundDatatype implements HdfDatatype {
     // Cache the member map per instance (since members don't change after construction)
     private volatile Map<String, CompoundMemberDatatype> cachedMemberMap;
 
-    /** Map of converters for transforming byte data to specific Java types. */
+    /**
+     * Map of converters for transforming byte data to specific Java types.
+     */
     private static final Map<Class<?>, HdfConverter<CompoundDatatype, ?>> CONVERTERS = new HashMap<>();
+
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
         CONVERTERS.put(HdfCompound.class, HdfCompound::new);
@@ -142,7 +153,7 @@ public class CompoundDatatype implements HdfDatatype {
             int dimensionality;
             int[] dimensionSizes = new int[4];
             int dimensionPermutation = 0;
-            if ( version == 1 ) {
+            if (version == 1) {
                 dimensionality = Byte.toUnsignedInt(buffer.get());
                 buffer.position(buffer.position() + 3); // Skip reserved bytes
                 buffer.getInt();
@@ -152,7 +163,7 @@ public class CompoundDatatype implements HdfDatatype {
                     dimensionSizes[j] = buffer.getInt();
                 }
 
-            } else if ( version == 2 ) {
+            } else if (version == 2) {
                 dimensionality = 0;
                 for (int j = 0; j < 4; j++) {
                     dimensionSizes[j] = 0;
@@ -290,7 +301,7 @@ public class CompoundDatatype implements HdfDatatype {
      * @param bytes the byte array containing the data
      * @return an instance of type T created from the byte array
      * @throws UnsupportedOperationException if no suitable converter is found and POJO conversion is not applicable
-     * @throws IllegalArgumentException if POJO conversion fails
+     * @throws IllegalArgumentException      if POJO conversion fails
      */
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
@@ -483,6 +494,7 @@ public class CompoundDatatype implements HdfDatatype {
         CLASS_CONSTRUCTOR_CACHE.clear();
         CLASS_RECORD_COMPONENTS_CACHE.clear();
     }
+
     /**
      * Sets the global heap for this datatype and its members.
      *

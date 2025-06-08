@@ -40,11 +40,11 @@ public abstract class HdfDataspaceSelectionInstance {
 
     public static HdfDataspaceSelectionInstance parseSelectionInfo(ByteBuffer remaingData) {
         HdfSelectionType selectionType = fromValue(remaingData.getInt());
-        if ( selectionType == H5S_SEL_NONE ) {
+        if (selectionType == H5S_SEL_NONE) {
             int version = remaingData.getInt();
             return new HdfSelectionNone(version);
         }
-        if ( selectionType == H5S_SEL_POINTS ) {
+        if (selectionType == H5S_SEL_POINTS) {
             int version = remaingData.getInt();
             if (version == 1) {
                 remaingData.getInt();
@@ -73,16 +73,16 @@ public abstract class HdfDataspaceSelectionInstance {
             } else {
                 throw new IllegalArgumentException("Invalid selection type: " + selectionType);
             }
-        } else if ( selectionType == H5S_SEL_HYPERSLABS ) {
+        } else if (selectionType == H5S_SEL_HYPERSLABS) {
             int version = remaingData.getInt();
-            if ( version == 1 ) {
+            if (version == 1) {
                 remaingData.getInt();
                 int length = remaingData.getInt();
                 int rank = remaingData.getInt();
                 int numBlocks = remaingData.getInt();
                 int[][] startOffsets = new int[numBlocks][rank];
                 int[][] endOffsets = new int[numBlocks][rank];
-                for( int bnum = 0; bnum < numBlocks; bnum++ ) {
+                for (int bnum = 0; bnum < numBlocks; bnum++) {
                     for (int rnum = 0; rnum < rank; rnum++) {
                         startOffsets[bnum][rnum] = remaingData.getInt();
                     }
@@ -91,7 +91,7 @@ public abstract class HdfDataspaceSelectionInstance {
                     }
                 }
                 return new HdfSelectionHyperSlabV1(version, length, rank, numBlocks, startOffsets, endOffsets);
-            } else if ( version == 2 ) {
+            } else if (version == 2) {
                 int flags = remaingData.get();
                 int length = remaingData.getInt();
                 int rank = remaingData.getInt();
@@ -99,34 +99,34 @@ public abstract class HdfDataspaceSelectionInstance {
                 long[] stride = new long[rank];
                 long[] count = new long[rank];
                 long[] block = new long[rank];
-                for( int s = 0; s < rank; s++ ) {
+                for (int s = 0; s < rank; s++) {
                     start[s] = remaingData.getLong();
                     stride[s] = remaingData.getLong();
                     count[s] = remaingData.getLong();
                     block[s] = remaingData.getLong();
                 }
                 return new HdfSelectionHyperSlabV2(version, flags, length, rank, start, stride, count, block);
-            } else if ( version == 3 ) {
+            } else if (version == 3) {
                 int flags = remaingData.get();
-                int encodeSize =  remaingData.get();
+                int encodeSize = remaingData.get();
                 int rank = remaingData.getInt();
-                if ( flags == 0 ) {
+                if (flags == 0) {
                     long[] start = new long[rank];
                     long[] stride = new long[rank];
                     long[] count = new long[rank];
                     long[] block = new long[rank];
-                    for( int s = 0; s < rank; s++ ) {
+                    for (int s = 0; s < rank; s++) {
                         start[s] = getSizeEncodedValue(encodeSize, remaingData);
                         stride[s] = getSizeEncodedValue(encodeSize, remaingData);
                         count[s] = getSizeEncodedValue(encodeSize, remaingData);
                         block[s] = getSizeEncodedValue(encodeSize, remaingData);
                     }
                     return new HdfSelectionHyperSlabV3Regular(version, flags, encodeSize, rank, start, stride, count, block);
-                } else if ( flags == 1 ) {
+                } else if (flags == 1) {
                     long numBlocks = getSizeEncodedValue(encodeSize, remaingData);
                     long[][] startOffsets = new long[Math.toIntExact(numBlocks)][rank];
                     long[][] endOffsets = new long[Math.toIntExact(numBlocks)][rank];
-                    for( int bnum = 0; bnum < numBlocks; bnum++ ) {
+                    for (int bnum = 0; bnum < numBlocks; bnum++) {
                         for (int rnum = 0; rnum < rank; rnum++) {
                             startOffsets[bnum][rnum] = getSizeEncodedValue(encodeSize, remaingData);
                         }
@@ -141,7 +141,7 @@ public abstract class HdfDataspaceSelectionInstance {
             } else {
                 throw new IllegalArgumentException("Invalid selection type: " + selectionType);
             }
-        } else if (  selectionType == H5S_SEL_ALL ) {
+        } else if (selectionType == H5S_SEL_ALL) {
             int version = remaingData.getInt();
             return new HdfSelectionAll(version);
         } else {

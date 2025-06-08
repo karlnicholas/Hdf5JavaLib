@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -55,11 +55,17 @@ import java.util.List;
  */
 public abstract class HdfMessage {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfMessage.class);
-    /** The type of the message. */
+    /**
+     * The type of the message.
+     */
     private final MessageType messageType;
-    /** The size of the message data in bytes, including padding. */
+    /**
+     * The size of the message data in bytes, including padding.
+     */
     private int sizeMessageData;
-    /** The message flags indicating properties like constancy or shareability. */
+    /**
+     * The message flags indicating properties like constancy or shareability.
+     */
     private final int messageFlags;
 
     /**
@@ -99,9 +105,9 @@ public abstract class HdfMessage {
     /**
      * Reads and parses a list of HdfMessages from the provided file channel.
      *
-     * @param fileChannel    the SeekableByteChannel to read from
+     * @param fileChannel      the SeekableByteChannel to read from
      * @param objectHeaderSize the size of the object header in bytes
-     * @param hdfDataFile    the HDF5 file context for additional resources
+     * @param hdfDataFile      the HDF5 file context for additional resources
      * @return a list of parsed HdfMessage instances
      * @throws IOException if an I/O error occurs
      */
@@ -123,7 +129,7 @@ public abstract class HdfMessage {
             buffer.get(messageData);
 
             HdfMessage hdfMessage = createMessageInstance(type, flags, messageData, hdfDataFile);
-            log.trace("Read: hdfMessage.sizeMessageData() + 8 = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData()+8);
+            log.trace("Read: hdfMessage.sizeMessageData() + 8 = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData() + 8);
             // Add the message to the list
             messages.add(hdfMessage);
         }
@@ -149,9 +155,11 @@ public abstract class HdfMessage {
             case FillValueMessage -> FillValueMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case DataLayoutMessage -> DataLayoutMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case AttributeMessage -> AttributeMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case ObjectHeaderContinuationMessage -> ObjectHeaderContinuationMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case ObjectHeaderContinuationMessage ->
+                    ObjectHeaderContinuationMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case SymbolTableMessage -> SymbolTableMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case ObjectModificationTimeMessage -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case ObjectModificationTimeMessage ->
+                    ObjectModificationTimeMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case BtreeKValuesMessage -> BTreeKValuesMessage.parseHeaderMessage(flags, data, hdfDataFile);
             default -> throw new IllegalArgumentException("Unknown message type: " + type);
         };
@@ -160,9 +168,9 @@ public abstract class HdfMessage {
     /**
      * Parses a continuation message block to retrieve additional HdfMessages.
      *
-     * @param fileChannel                the SeekableByteChannel to read from
+     * @param fileChannel                     the SeekableByteChannel to read from
      * @param objectHeaderContinuationMessage the continuation message defining the block
-     * @param hdfDataFile                the HDF5 file context for additional resources
+     * @param hdfDataFile                     the HDF5 file context for additional resources
      * @return a list of parsed HdfMessage instances from the continuation block
      * @throws IOException if an I/O error occurs
      */
@@ -335,6 +343,7 @@ public abstract class HdfMessage {
 
         /**
          * Returns the numeric value of the message type.
+         *
          * @return short of value
          */
         public int getValue() {

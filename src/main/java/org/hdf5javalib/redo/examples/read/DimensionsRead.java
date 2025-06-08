@@ -25,6 +25,7 @@ import static org.hdf5javalib.redo.utils.HdfDisplayUtils.displayScalarData;
  */
 public class DimensionsRead {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DimensionsRead.class);
+
     /**
      * Entry point for the application.
      *
@@ -60,7 +61,7 @@ public class DimensionsRead {
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Root Group: {} ", reader.getRootGroup());
-                for( HdfDataSet ds : reader.getRootGroup().getDataSets() ) {
+                for (HdfDataSet ds : reader.getRootGroup().getDataSets()) {
                     displayScalarData(channel, ds, HdfData[].class, reader);
                 }
             }
@@ -68,6 +69,7 @@ public class DimensionsRead {
             throw new RuntimeException(e);
         }
     }
+
     /**
      * Retrieves the file path for a resource.
      *
@@ -99,14 +101,21 @@ public class DimensionsRead {
         public record Compound(
                 Integer nested_int,          // int16_t nested_int
                 Double nested_double      // double nested_double
-        ) {}
+        ) {
+        }
 
         // Enum for enumerated field
         public enum Level {
             LOW(0), MEDIUM(1), HIGH(2);
             private final int value;
-            Level(int value) { this.value = value; }
-            public int getValue() { return value; }
+
+            Level(int value) {
+                this.value = value;
+            }
+
+            public int getValue() {
+                return value;
+            }
         }
 
 //        // Canonical constructor for validation

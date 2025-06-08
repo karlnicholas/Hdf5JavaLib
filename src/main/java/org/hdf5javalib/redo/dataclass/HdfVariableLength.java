@@ -18,9 +18,13 @@ import java.nio.ByteBuffer;
  * @see VariableLengthDatatype
  */
 public class HdfVariableLength implements HdfData {
-    /** The raw byte array containing the variable-length data. */
+    /**
+     * The raw byte array containing the variable-length data.
+     */
     private final byte[] bytes;
-    /** The VariableLengthDatatype defining the data structure and format. */
+    /**
+     * The VariableLengthDatatype defining the data structure and format.
+     */
     private final VariableLengthDatatype datatype;
 
     /**

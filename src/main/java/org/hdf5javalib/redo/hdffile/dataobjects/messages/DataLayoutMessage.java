@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
@@ -52,33 +52,47 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfDataFile
  */
 public class DataLayoutMessage extends HdfMessage {
-    /** The version of the data layout message format. */
+    /**
+     * The version of the data layout message format.
+     */
     private final int version;
-    /** The layout class (0: Contiguous, 1: Chunked, 2: Compact). */
+    /**
+     * The layout class (0: Contiguous, 1: Chunked, 2: Compact).
+     */
     private final int layoutClass;
-    /** The file address where data begins (for Contiguous or Chunked). */
+    /**
+     * The file address where data begins (for Contiguous or Chunked).
+     */
     private HdfFixedPoint dataAddress;
-    /** The dimensions of the dataset or chunks (for Contiguous or Chunked). */
+    /**
+     * The dimensions of the dataset or chunks (for Contiguous or Chunked).
+     */
     private final HdfFixedPoint[] dimensionSizes;
-    /** The size of the compact data (for Compact). */
+    /**
+     * The size of the compact data (for Compact).
+     */
     private final int compactDataSize;
-    /** The raw data stored in the message (for Compact). */
+    /**
+     * The raw data stored in the message (for Compact).
+     */
     private final byte[] compactData;
-    /** The size of each dataset element (for Chunked). */
+    /**
+     * The size of each dataset element (for Chunked).
+     */
     private final HdfFixedPoint datasetElementSize;
 
     /**
      * Constructs a DataLayoutMessage with the specified components.
      *
-     * @param version             the version of the data layout message format
-     * @param layoutClass         the layout class (0: Contiguous, 1: Chunked, 2: Compact)
-     * @param dataAddress         the file address for data (Contiguous or Chunked)
-     * @param dimensionSizes      the dimensions of the dataset or chunks (Contiguous or Chunked)
-     * @param compactDataSize     the size of compact data (Compact)
-     * @param compactData         the raw data (Compact)
-     * @param datasetElementSize  the size of each dataset element (Chunked)
-     * @param flags               message flags
-     * @param sizeMessageData     the size of the message data in bytes
+     * @param version            the version of the data layout message format
+     * @param layoutClass        the layout class (0: Contiguous, 1: Chunked, 2: Compact)
+     * @param dataAddress        the file address for data (Contiguous or Chunked)
+     * @param dimensionSizes     the dimensions of the dataset or chunks (Contiguous or Chunked)
+     * @param compactDataSize    the size of compact data (Compact)
+     * @param compactData        the raw data (Compact)
+     * @param datasetElementSize the size of each dataset element (Chunked)
+     * @param flags              message flags
+     * @param sizeMessageData    the size of the message data in bytes
      */
     public DataLayoutMessage(
             int version,
@@ -154,7 +168,7 @@ public class DataLayoutMessage extends HdfMessage {
                 FixedPointDatatype fourByteFixedPointDatatype = new FixedPointDatatype(
                         FixedPointDatatype.createClassAndVersion(),
                         FixedPointDatatype.createClassBitField(false, false, false, false),
-                        4, (short) 0, (short) (4*8),
+                        4, (short) 0, (short) (4 * 8),
                         hdfDataFile);
                 byte[] fourByteBytes = new byte[4];
                 buffer.get(fourByteBytes);
@@ -166,7 +180,7 @@ public class DataLayoutMessage extends HdfMessage {
         }
 
         // Return a constructed instance of DataLayoutMessage
-        return new DataLayoutMessage(version, layoutClass, dataAddress, dimensionSizes, compactDataSize, compactData, datasetElementSize, flags, (short)data.length);
+        return new DataLayoutMessage(version, layoutClass, dataAddress, dimensionSizes, compactDataSize, compactData, datasetElementSize, flags, (short) data.length);
     }
 
     /**
@@ -176,10 +190,10 @@ public class DataLayoutMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "DataLayoutMessage("+(getSizeMessageData()+8)+"){" +
+        return "DataLayoutMessage(" + (getSizeMessageData() + 8) + "){" +
                 "version=" + version +
                 ", layoutClass=" + layoutClass +
-                ", dataAddress=" + (dataAddress.isUndefined() ? "<Undefined>": dataAddress) +
+                ", dataAddress=" + (dataAddress.isUndefined() ? "<Undefined>" : dataAddress) +
                 ", dimensionSizes=" + Arrays.toString(dimensionSizes) +
                 ", compactDataSize=" + (layoutClass == 0 ? compactDataSize : "N/A") +
                 ", compactData=" + (layoutClass == 0 ? Arrays.toString(compactData) : "N/A") +
@@ -249,10 +263,10 @@ public class DataLayoutMessage extends HdfMessage {
         /**
          * Constructs a ChunkedStorage instance.
          *
-         * @param version     the version of the chunked storage message
-         * @param rank        the number of dimensions (rank)
-         * @param chunkSizes  the sizes of each chunk dimension
-         * @param address     the file address of the chunked data
+         * @param version    the version of the chunked storage message
+         * @param rank       the number of dimensions (rank)
+         * @param chunkSizes the sizes of each chunk dimension
+         * @param address    the file address of the chunked data
          */
         public ChunkedStorage(int version, int rank, long[] chunkSizes, HdfFixedPoint address) {
             this.version = version;

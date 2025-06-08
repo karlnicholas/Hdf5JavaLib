@@ -70,7 +70,7 @@ public class FlattenedArrayUtils {
      * @param shape   the shape of the array
      * @param indices the multi-dimensional indices
      * @return the element at the specified indices
-     * @throws IllegalArgumentException if the number of indices doesn’t match the shape
+     * @throws IllegalArgumentException  if the number of indices doesn’t match the shape
      * @throws IndexOutOfBoundsException if an index is out of bounds
      */
     public static <T> T getElement(T[] data, int[] shape, int... indices) {
@@ -101,7 +101,7 @@ public class FlattenedArrayUtils {
      * @param shape   the shape of the array
      * @param value   the value to set
      * @param indices the multi-dimensional indices
-     * @throws IllegalArgumentException if the number of indices doesn’t match the shape
+     * @throws IllegalArgumentException  if the number of indices doesn’t match the shape
      * @throws IndexOutOfBoundsException if an index is out of bounds
      */
     public static <T> void setElement(T[] data, int[] shape, T value, int... indices) {
@@ -131,10 +131,10 @@ public class FlattenedArrayUtils {
      * specified type.
      * </p>
      *
-     * @param <T>     the type of elements in the stream and the resulting array
-     * @param stream  the Stream of elements representing the flattened data
-     * @param shape   an array of integers defining the dimensions [d1, d2, ..., dN]
-     * @param clazz   the Class object representing the type of elements in the array
+     * @param <T>    the type of elements in the stream and the resulting array
+     * @param stream the Stream of elements representing the flattened data
+     * @param shape  an array of integers defining the dimensions [d1, d2, ..., dN]
+     * @param clazz  the Class object representing the type of elements in the array
      * @return an Object representing the N-D array (e.g., int[] for N=1, int[][] for N=2, etc.)
      */
     public static <T> Object streamToNDArray(Stream<T> stream, int[] shape, Class<T> clazz) {
@@ -171,10 +171,10 @@ public class FlattenedArrayUtils {
     /**
      * Sets a value in a multi-dimensional array at the specified coordinates.
      *
-     * @param <T>    the type of the value to set
-     * @param array  the multi-dimensional array
-     * @param coord  the coordinates
-     * @param value  the value to set
+     * @param <T>   the type of the value to set
+     * @param array the multi-dimensional array
+     * @param coord the coordinates
+     * @param value the value to set
      */
     public static <T> void setValue(Object array, int[] coord, T value) {
         Object current = array;
@@ -442,10 +442,10 @@ public class FlattenedArrayUtils {
     /**
      * Scans a flattened stream and collects matching values into a list of coordinate/value/flatIndex records.
      *
-     * @param <T>     the type of elements in the stream
-     * @param stream  the input stream of values
-     * @param shape   the shape of the array (used to compute coordinates)
-     * @param filter  predicate to match values
+     * @param <T>    the type of elements in the stream
+     * @param stream the input stream of values
+     * @param shape  the shape of the array (used to compute coordinates)
+     * @param filter predicate to match values
      * @return a list of MatchingEntry objects with coordinates, flat index, and value
      */
     public static <T> List<MatchingEntry<T>> filterToCoordinateList(
@@ -470,11 +470,17 @@ public class FlattenedArrayUtils {
      * Record to hold the results of coordinate-wise matching.
      */
     public static class MatchingEntry<T> {
-        /** The multi-dimensional coordinates of the matched value. */
+        /**
+         * The multi-dimensional coordinates of the matched value.
+         */
         public final int[] coordinates;
-        /** The flat index in the array. */
+        /**
+         * The flat index in the array.
+         */
         public final int flatIndex;
-        /** The matched value. */
+        /**
+         * The matched value.
+         */
         public final T value;
 
         /**

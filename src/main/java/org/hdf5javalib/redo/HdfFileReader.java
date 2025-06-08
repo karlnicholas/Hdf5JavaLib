@@ -1,6 +1,8 @@
 package org.hdf5javalib.redo;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfSymbolTableEntryCacheGroupMetadata;
@@ -22,13 +24,19 @@ public class HdfFileReader implements HdfDataFile {
 //    /** The superblock containing metadata about the HDF5 file. */
 //    private HdfSuperblock superblock;
 
-    /** The seekable byte channel for reading the HDF5 file. */
+    /**
+     * The seekable byte channel for reading the HDF5 file.
+     */
     private final SeekableByteChannel fileChannel;
 
-    /** The global heap for storing variable-length data. */
+    /**
+     * The global heap for storing variable-length data.
+     */
     private final HdfGlobalHeap globalHeap;
 
-    /** The file allocation manager for tracking storage blocks. */
+    /**
+     * The file allocation manager for tracking storage blocks.
+     */
     private HdfFileAllocation fileAllocation;
 
     /**
@@ -174,7 +182,7 @@ public class HdfFileReader implements HdfDataFile {
     }
 
     public HdfGroup getRootGroup() {
-        return ((HdfSymbolTableEntryCacheGroupMetadata)fileAllocation.getSuperblock().getRootGroupSymbolTableEntry().getCache())
+        return ((HdfSymbolTableEntryCacheGroupMetadata) fileAllocation.getSuperblock().getRootGroupSymbolTableEntry().getCache())
                 .getGroup();
     }
 }

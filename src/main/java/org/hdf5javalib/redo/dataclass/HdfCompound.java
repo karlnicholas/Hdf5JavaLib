@@ -20,11 +20,17 @@ import java.util.List;
  * @see CompoundDatatype
  */
 public class HdfCompound implements HdfData {
-    /** The CompoundDatatype defining the compound structure and member specifications. */
+    /**
+     * The CompoundDatatype defining the compound structure and member specifications.
+     */
     private final CompoundDatatype datatype;
-    /** The raw byte array containing the compound data. */
+    /**
+     * The raw byte array containing the compound data.
+     */
     private final byte[] bytes;
-    /** The list of compound members, each encapsulating a portion of the byte data. */
+    /**
+     * The list of compound members, each encapsulating a portion of the byte data.
+     */
     private final List<HdfCompoundMember> members;
 
     /**

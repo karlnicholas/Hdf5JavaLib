@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.datatype.CompoundDatatype;
 import org.hdf5javalib.redo.datatype.HdfDatatype;
 
@@ -59,7 +59,9 @@ import static org.hdf5javalib.redo.datatype.VariableLengthDatatype.parseVariable
  * @see HdfDatatype
  */
 public class DatatypeMessage extends HdfMessage {
-    /** The HDF5 datatype describing the data. */
+    /**
+     * The HDF5 datatype describing the data.
+     */
     private final HdfDatatype hdfDatatype;
 
     /**
@@ -132,7 +134,7 @@ public class DatatypeMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "DatatypeMessage("+(getSizeMessageData()+8)+"){hdfDatatype=" + hdfDatatype + '}';
+        return "DatatypeMessage(" + (getSizeMessageData() + 8) + "){hdfDatatype=" + hdfDatatype + '}';
     }
 
     /**
@@ -158,7 +160,7 @@ public class DatatypeMessage extends HdfMessage {
     /**
      * Writes the properties of an HdfDatatype to the provided ByteBuffer.
      *
-     * @param buffer     the ByteBuffer to write the datatype properties to
+     * @param buffer      the ByteBuffer to write the datatype properties to
      * @param hdfDatatype the HdfDatatype to write
      */
     public static void writeDatatypeProperties(ByteBuffer buffer, HdfDatatype hdfDatatype) {

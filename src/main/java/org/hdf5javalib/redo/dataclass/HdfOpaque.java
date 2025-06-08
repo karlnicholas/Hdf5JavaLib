@@ -17,9 +17,13 @@ import java.nio.ByteBuffer;
  * @see OpaqueDatatype
  */
 public class HdfOpaque implements HdfData {
-    /** The raw byte array containing the opaque data. */
+    /**
+     * The raw byte array containing the opaque data.
+     */
     private final byte[] bytes;
-    /** The OpaqueDatatype defining the data size and format. */
+    /**
+     * The OpaqueDatatype defining the data size and format.
+     */
     private final OpaqueDatatype datatype;
 
     /**

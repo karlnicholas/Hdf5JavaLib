@@ -42,9 +42,9 @@ public class TwentyScalarRead {
 //                        HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
 //                    }
 //                }
-                    try (HdfDataSet ds = reader.getRootGroup().findDataset("dataset_14")) {
-                        HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
-                    }
+                try (HdfDataSet ds = reader.getRootGroup().findDataset("dataset_14")) {
+                    HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

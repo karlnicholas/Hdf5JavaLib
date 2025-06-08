@@ -34,6 +34,7 @@ public class HdfDataHolder implements Iterable<HdfData> {
 
     /**
      * Factory method for creating a holder for a scalar (single HdfData instance).
+     *
      * @param instance The non-null HdfData scalar value.
      * @return A new HdfDataHolder instance for the scalar.
      */
@@ -46,7 +47,8 @@ public class HdfDataHolder implements Iterable<HdfData> {
 
     /**
      * Factory method for creating a holder for an n-dimensional array.
-     * @param array The non-null n-dimensional array object.
+     *
+     * @param array      The non-null n-dimensional array object.
      * @param dimensions The non-null array describing the shape of the data array.
      * @return A new HdfDataHolder instance for the array.
      */
@@ -62,6 +64,7 @@ public class HdfDataHolder implements Iterable<HdfData> {
 
     /**
      * Checks if the holder contains a scalar value.
+     *
      * @return true if it holds a scalar, false otherwise.
      */
     public boolean isScalar() {
@@ -70,6 +73,7 @@ public class HdfDataHolder implements Iterable<HdfData> {
 
     /**
      * Checks if the holder contains an array.
+     *
      * @return true if it holds an array, false otherwise.
      */
     public boolean isArray() {
@@ -78,6 +82,7 @@ public class HdfDataHolder implements Iterable<HdfData> {
 
     /**
      * Gets the dimensionality of the data.
+     *
      * @return 0 for a scalar, or the number of dimensions for an array.
      */
     public int getDimensionality() {
@@ -86,6 +91,7 @@ public class HdfDataHolder implements Iterable<HdfData> {
 
     /**
      * Gets the dimensions (shape) of the array.
+     *
      * @return An array of integers representing the size of each dimension. Returns an empty array for a scalar.
      */
     public int[] getDimensions() {
@@ -94,6 +100,7 @@ public class HdfDataHolder implements Iterable<HdfData> {
 
     /**
      * Gets the scalar value.
+     *
      * @return The HdfData instance.
      * @throws IllegalStateException if the holder contains an array.
      */
@@ -107,6 +114,7 @@ public class HdfDataHolder implements Iterable<HdfData> {
     /**
      * Gets the raw, untyped n-dimensional array object.
      * For type-safe retrieval, prefer {@link #getAll(Class)}.
+     *
      * @return The Object representing the array.
      * @throws IllegalStateException if the holder contains a scalar.
      */
@@ -123,8 +131,8 @@ public class HdfDataHolder implements Iterable<HdfData> {
      *
      * @param indices The coordinates of the element to retrieve (e.g., `get(row, col)` for 2D).
      * @return The HdfData object at that position.
-     * @throws IllegalStateException if the holder contains a scalar.
-     * @throws IllegalArgumentException if the number of indices does not match the dimensionality.
+     * @throws IllegalStateException     if the holder contains a scalar.
+     * @throws IllegalArgumentException  if the number of indices does not match the dimensionality.
      * @throws IndexOutOfBoundsException if any index is out of bounds for its dimension.
      */
     public HdfData get(int... indices) {
@@ -177,7 +185,7 @@ public class HdfDataHolder implements Iterable<HdfData> {
      * @param <T>   The generic type parameter corresponding to {@code clazz}.
      * @return The underlying data object, cast to type T.
      * @throws IllegalArgumentException if the requested type {@code clazz} is not
-     *         compatible with the actual type of the data stored in the holder.
+     *                                  compatible with the actual type of the data stored in the holder.
      */
     public <T> T getAll(Class<T> clazz) {
         if (clazz == null) {
@@ -291,6 +299,7 @@ public class HdfDataHolder implements Iterable<HdfData> {
      * Returns a string representation of the HdfDataHolder.
      * For scalars, it delegates to the HdfData's toString() method.
      * For arrays, it provides a summary of the structure and elements.
+     *
      * @return A string representation of the object.
      */
     @Override

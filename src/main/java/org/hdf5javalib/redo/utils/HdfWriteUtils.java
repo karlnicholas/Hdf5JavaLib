@@ -144,7 +144,7 @@ public class HdfWriteUtils {
     /**
      * Creates an {@link HdfFixedPoint} from a long value using the specified datatype.
      *
-     * @param value             the long value to convert
+     * @param value              the long value to convert
      * @param fixedPointDatatype the fixed-point datatype defining the format
      * @return the created HdfFixedPoint
      * @throws IllegalArgumentException if the datatype size is unsupported
@@ -155,7 +155,8 @@ public class HdfWriteUtils {
             case 2 -> Short.class;
             case 4 -> Integer.class;
             case 8 -> Long.class;
-            default -> throw new IllegalArgumentException("Unsupported size for FixedPointDatatype: " + fixedPointDatatype.getSize());
+            default ->
+                    throw new IllegalArgumentException("Unsupported size for FixedPointDatatype: " + fixedPointDatatype.getSize());
         };
         return new HdfFixedPoint(toFixedPointBytes(value, fixedPointDatatype, fieldType), fixedPointDatatype);
     }
@@ -163,9 +164,9 @@ public class HdfWriteUtils {
     /**
      * Converts a field value to a byte array for a FixedPointDatatype.
      *
-     * @param value      the value to convert
-     * @param datatype   the fixed-point datatype
-     * @param fieldType  the Java type of the field
+     * @param value     the value to convert
+     * @param datatype  the fixed-point datatype
+     * @param fieldType the Java type of the field
      * @return the byte array representing the value
      * @throws IllegalArgumentException if the field type or value is unsupported
      */
@@ -226,9 +227,9 @@ public class HdfWriteUtils {
     /**
      * Converts a field value to a byte array for a FloatingPointDatatype.
      *
-     * @param value      the value to convert
-     * @param datatype   the floating-point datatype
-     * @param fieldType  the Java type of the field
+     * @param value     the value to convert
+     * @param datatype  the floating-point datatype
+     * @param fieldType the Java type of the field
      * @return the byte array representing the value
      * @throws IllegalArgumentException if the field type or size is unsupported
      */

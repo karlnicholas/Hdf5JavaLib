@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfTime;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
@@ -24,18 +24,29 @@ import java.util.Map;
  * @see HdfGlobalHeap
  */
 public class TimeDatatype implements HdfDatatype {
-    /** The class and version information for the datatype (class 2, version 1). */
+    /**
+     * The class and version information for the datatype (class 2, version 1).
+     */
     private final int classAndVersion;
-    /** A BitSet containing class-specific bit field information (byte order). */
+    /**
+     * A BitSet containing class-specific bit field information (byte order).
+     */
     private final BitSet classBitField;
-    /** The size of the time data in bytes. */
+    /**
+     * The size of the time data in bytes.
+     */
     private final int size;
-    /** The number of bits of precision. */
+    /**
+     * The number of bits of precision.
+     */
     private final int bitPrecision;
     private final HdfDataFile dataFile;
 
-    /** Map of converters for transforming byte data to specific Java types. */
+    /**
+     * Map of converters for transforming byte data to specific Java types.
+     */
     private static final Map<Class<?>, HdfConverter<TimeDatatype, ?>> CONVERTERS = new HashMap<>();
+
     static {
         CONVERTERS.put(Long.class, (bytes, dt) -> dt.toLong(bytes));
         CONVERTERS.put(BigInteger.class, (bytes, dt) -> dt.toBigInteger(bytes));
@@ -265,7 +276,8 @@ public class TimeDatatype implements HdfDatatype {
      * @param grok the HdfGlobalHeap to set
      */
     @Override
-    public void setGlobalHeap(HdfGlobalHeap grok) {}
+    public void setGlobalHeap(HdfGlobalHeap grok) {
+    }
 
     /**
      * Returns a string representation of this TimeDatatype.

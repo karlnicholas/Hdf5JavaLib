@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 
@@ -39,9 +39,13 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfDataFile
  */
 public class ObjectHeaderContinuationMessage extends HdfMessage {
-    /** The offset of the continuation block in the file. */
+    /**
+     * The offset of the continuation block in the file.
+     */
     private HdfFixedPoint continuationOffset;
-    /** The size of the continuation block in bytes. */
+    /**
+     * The size of the continuation block in bytes.
+     */
     private HdfFixedPoint continuationSize;
 
     /**
@@ -82,7 +86,7 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "ObjectHeaderContinuationMessage("+(getSizeMessageData()+8)+"){" +
+        return "ObjectHeaderContinuationMessage(" + (getSizeMessageData() + 8) + "){" +
                 "continuationOffset=" + continuationOffset +
                 ", continuationSize=" + continuationSize +
                 '}';

@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -36,24 +36,32 @@ import java.nio.ByteOrder;
  * @see HdfDataFile
  */
 public class BTreeKValuesMessage extends HdfMessage {
-    /** The version of the message format. */
+    /**
+     * The version of the message format.
+     */
     private final int version;
-    /** The number of keys in internal nodes of a chunked dataset B-Tree. */
+    /**
+     * The number of keys in internal nodes of a chunked dataset B-Tree.
+     */
     private final int indexedStorageInternalNodeK;
-    /** The number of keys in internal nodes of a group B-Tree. */
+    /**
+     * The number of keys in internal nodes of a group B-Tree.
+     */
     private final int groupInternalNodeK;
-    /** The number of keys in leaf nodes of a group B-Tree. */
+    /**
+     * The number of keys in leaf nodes of a group B-Tree.
+     */
     private final int groupLeafNodeK;
 
     /**
      * Constructs a BTreeKValuesMessage with the specified components.
      *
-     * @param version                    the version of the message format
+     * @param version                     the version of the message format
      * @param indexedStorageInternalNodeK the number of keys in internal nodes of a chunked dataset B-Tree
-     * @param groupInternalNodeK         the number of keys in internal nodes of a group B-Tree
-     * @param groupLeafNodeK             the number of keys in leaf nodes of a group B-Tree
-     * @param flags                      message flags
-     * @param sizeMessageData            the size of the message data in bytes
+     * @param groupInternalNodeK          the number of keys in internal nodes of a group B-Tree
+     * @param groupLeafNodeK              the number of keys in leaf nodes of a group B-Tree
+     * @param flags                       message flags
+     * @param sizeMessageData             the size of the message data in bytes
      */
     public BTreeKValuesMessage(int version, int indexedStorageInternalNodeK, int groupInternalNodeK, int groupLeafNodeK, int flags, int sizeMessageData) {
         super(MessageType.BtreeKValuesMessage, sizeMessageData, flags);
@@ -92,7 +100,7 @@ public class BTreeKValuesMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "BTreeKValuesMessage("+(getSizeMessageData()+8)+"){" +
+        return "BTreeKValuesMessage(" + (getSizeMessageData() + 8) + "){" +
                 "version=" + version +
                 ", indexedStorageInternalNodeK=" + indexedStorageInternalNodeK +
                 ", groupInternalNodeK=" + groupInternalNodeK +

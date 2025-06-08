@@ -1,7 +1,7 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
-import org.hdf5javalib.redo.HdfDataFile;
-import org.hdf5javalib.redo.HdfFileAllocation;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
@@ -31,24 +31,36 @@ public class HdfGlobalHeap {
     private static final String SIGNATURE = "GCOL";
     private static final int VERSION = 1;
 
-    /** Map of heap offsets to collections of global heap objects. */
+    /**
+     * Map of heap offsets to collections of global heap objects.
+     */
     private final Map<HdfFixedPoint, LinkedHashMap<Integer, GlobalHeapObject>> heapCollections;
-    /** Map of heap offsets to their declared sizes. */
+    /**
+     * Map of heap offsets to their declared sizes.
+     */
     private final Map<HdfFixedPoint, HdfFixedPoint> collectionSizes;
-    /** Map of heap offsets to the next available object ID. */
+    /**
+     * Map of heap offsets to the next available object ID.
+     */
     private final Map<HdfFixedPoint, Integer> nextObjectIds;
-    /** The current heap offset for writing new objects. */
+    /**
+     * The current heap offset for writing new objects.
+     */
     private HdfFixedPoint currentWriteHeapOffset;
-    /** Optional initializer for lazy loading heap collections. */
+    /**
+     * Optional initializer for lazy loading heap collections.
+     */
     private final GlobalHeapInitialize initialize;
-    /** The HDF5 file context. */
+    /**
+     * The HDF5 file context.
+     */
     private final HdfDataFile hdfDataFile;
 
     /**
      * Constructs an HdfGlobalHeap with an initializer and file context.
      *
-     * @param initialize the initializer for lazy loading heap collections
-     * @param hdfDataFile   the HDF5 file context
+     * @param initialize  the initializer for lazy loading heap collections
+     * @param hdfDataFile the HDF5 file context
      */
     public HdfGlobalHeap(GlobalHeapInitialize initialize, HdfDataFile hdfDataFile) {
         this.initialize = initialize;
@@ -80,7 +92,7 @@ public class HdfGlobalHeap {
      * @param objectId   the ID of the object
      * @return the data bytes of the object
      * @throws IllegalArgumentException if the object ID is 0 or invalid
-     * @throws IllegalStateException if the heap or object is not found
+     * @throws IllegalStateException    if the heap or object is not found
      */
     public byte[] getDataBytes(HdfFixedPoint heapOffset, int objectId) {
         if (objectId == 0) {
@@ -152,7 +164,7 @@ public class HdfGlobalHeap {
         int objectDataBufferSize = (int) (declaredSize - 16);
         if (objectDataBufferSize < 0) {
             if (declaredSize > 16 && objectDataBufferSize < 16) {
-                throw new IllegalArgumentException("Declared size " + declaredSize + " at offset " + startOffset + " implies insufficient space ("+objectDataBufferSize+" bytes) for null terminator object.");
+                throw new IllegalArgumentException("Declared size " + declaredSize + " at offset " + startOffset + " implies insufficient space (" + objectDataBufferSize + " bytes) for null terminator object.");
             } else if (objectDataBufferSize < 0) {
                 throw new IllegalArgumentException("Declared size " + declaredSize + " is too small for heap header at offset " + startOffset);
             }
@@ -164,7 +176,7 @@ public class HdfGlobalHeap {
             objectBuffer.order(ByteOrder.LITTLE_ENDIAN);
             bytesRead = fileChannel.read(objectBuffer);
             if (bytesRead < objectDataBufferSize) {
-                throw new IOException("Failed to read complete global heap object data buffer ("+bytesRead+"/"+objectDataBufferSize+") at offset: " + startOffset);
+                throw new IOException("Failed to read complete global heap object data buffer (" + bytesRead + "/" + objectDataBufferSize + ") at offset: " + startOffset);
             }
             objectBuffer.flip();
         }
@@ -209,7 +221,7 @@ public class HdfGlobalHeap {
      * @param bytes the byte array to add
      * @return a byte array containing the heap offset and object ID
      * @throws IllegalArgumentException if the input byte array is null
-     * @throws IllegalStateException if the heap block is not allocated or full
+     * @throws IllegalStateException    if the heap block is not allocated or full
      */
     public byte[] addToHeap(byte[] bytes) {
         if (bytes == null) {
@@ -435,22 +447,30 @@ public class HdfGlobalHeap {
      * Represents a single object in a global heap collection.
      */
     private static class GlobalHeapObject {
-        /** The unique ID of the object (0 for null terminator). */
+        /**
+         * The unique ID of the object (0 for null terminator).
+         */
         private final int heapObjectIndex;
-        /** The reference count of the object. */
+        /**
+         * The reference count of the object.
+         */
         private final int referenceCount;
-        /** The size of the object data or free space (for null terminator). */
+        /**
+         * The size of the object data or free space (for null terminator).
+         */
         private final long objectSize;
-        /** The data bytes of the object (null for null terminator). */
+        /**
+         * The data bytes of the object (null for null terminator).
+         */
         private final byte[] data;
 
         /**
          * Constructs a GlobalHeapObject.
          *
-         * @param heapObjectIndex      the object ID
-         * @param referenceCount the reference count
+         * @param heapObjectIndex the object ID
+         * @param referenceCount  the reference count
          * @param sizeOrFreeSpace the size of the data or free space
-         * @param data          the data bytes (null for ID 0)
+         * @param data            the data bytes (null for ID 0)
          * @throws IllegalArgumentException if data constraints are violated
          */
         private GlobalHeapObject(int heapObjectIndex, int referenceCount, long sizeOrFreeSpace, byte[] data) {
@@ -467,7 +487,7 @@ public class HdfGlobalHeap {
                     throw new IllegalArgumentException("Data cannot be null for non-zero Global Heap Object ID: " + heapObjectIndex);
                 }
                 if (data.length != sizeOrFreeSpace) {
-                    throw new IllegalArgumentException("Data length ("+data.length+") must match objectSize ("+sizeOrFreeSpace+") for non-zero objectId "+ heapObjectIndex);
+                    throw new IllegalArgumentException("Data length (" + data.length + ") must match objectSize (" + sizeOrFreeSpace + ") for non-zero objectId " + heapObjectIndex);
                 }
                 this.data = data;
             }
@@ -481,7 +501,9 @@ public class HdfGlobalHeap {
          * @throws RuntimeException if the buffer data is insufficient or invalid
          */
         public static GlobalHeapObject readFromByteBuffer(ByteBuffer buffer) {
-            if (buffer.remaining() < 16) { throw new RuntimeException("Buffer underflow: insufficient data for Global Heap Object header (needs 16 bytes, found " + buffer.remaining() + ")"); }
+            if (buffer.remaining() < 16) {
+                throw new RuntimeException("Buffer underflow: insufficient data for Global Heap Object header (needs 16 bytes, found " + buffer.remaining() + ")");
+            }
             int objectId = Short.toUnsignedInt(buffer.getShort());
             int referenceCount = Short.toUnsignedInt(buffer.getShort());
             buffer.getInt();
@@ -525,13 +547,15 @@ public class HdfGlobalHeap {
             buffer.putInt(0);
             buffer.putLong(objectSize);
             if (heapObjectIndex != 0) {
-                int expectedDataSize = (int)objectSize;
+                int expectedDataSize = (int) objectSize;
                 if (data == null || data.length != expectedDataSize) {
                     throw new IllegalStateException("Object data is inconsistent or null for writing object ID: " + heapObjectIndex + ". Expected size " + expectedDataSize + ", data length " + (data != null ? data.length : "null"));
                 }
                 buffer.put(data);
                 int padding = getPadding(expectedDataSize);
-                if (padding > 0) { buffer.put(new byte[padding]); }
+                if (padding > 0) {
+                    buffer.put(new byte[padding]);
+                }
             }
         }
 

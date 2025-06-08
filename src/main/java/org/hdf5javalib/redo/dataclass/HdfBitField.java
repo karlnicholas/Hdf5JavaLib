@@ -19,9 +19,13 @@ import java.util.BitSet;
  * @see BitFieldDatatype
  */
 public class HdfBitField implements HdfData {
-    /** The raw byte array containing the bit field data. */
+    /**
+     * The raw byte array containing the bit field data.
+     */
     private final byte[] bytes;
-    /** The BitFieldDatatype defining the bit precision, offset, padding, and endianness. */
+    /**
+     * The BitFieldDatatype defining the bit precision, offset, padding, and endianness.
+     */
     private final BitFieldDatatype datatype;
 
     /**

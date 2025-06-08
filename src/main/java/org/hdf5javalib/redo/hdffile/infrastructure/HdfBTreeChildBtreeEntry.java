@@ -15,16 +15,18 @@ import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
  * @see HdfGroupSymbolTableNode
  * @see HdfBTreeV1
  */
-public class HdfBTreeChildBtreeEntry extends HdfBTreeEntry{
-    /** The child B-Tree payload, non-null for internal entries (nodeLevel > 0). */
+public class HdfBTreeChildBtreeEntry extends HdfBTreeEntry {
+    /**
+     * The child B-Tree payload, non-null for internal entries (nodeLevel > 0).
+     */
     private final HdfBTreeV1 childBTree;
 
     /**
      * Constructs an HdfBTreeEntry for an internal node, pointing to a child B-Tree.
      *
-     * @param key              the key for the entry
+     * @param key               the key for the entry
      * @param childBTreeAddress the address of the child B-Tree
-     * @param childBTree       the child B-Tree payload
+     * @param childBTree        the child B-Tree payload
      */
     public HdfBTreeChildBtreeEntry(HdfFixedPoint key, HdfFixedPoint childBTreeAddress, HdfBTreeV1 childBTree) {
         super(key, childBTreeAddress);

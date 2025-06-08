@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
-import org.hdf5javalib.redo.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -38,17 +38,29 @@ import java.nio.ByteOrder;
  * @see HdfDataFile
  */
 public class FillValueMessage extends HdfMessage {
-    /** The version of the fill value message format. */
+    /**
+     * The version of the fill value message format.
+     */
     private final int version;
-    /** The time when space for fill values is allocated (Early, Late, Incremental). */
+    /**
+     * The time when space for fill values is allocated (Early, Late, Incremental).
+     */
     private final int spaceAllocationTime;
-    /** The time when the fill value is written (on creation or first write). */
+    /**
+     * The time when the fill value is written (on creation or first write).
+     */
     private final int fillValueWriteTime;
-    /** Indicates if a user-defined fill value is provided (0: undefined, 1: defined). */
+    /**
+     * Indicates if a user-defined fill value is provided (0: undefined, 1: defined).
+     */
     private final int fillValueDefined;
-    /** The size of the fill value in bytes (if defined). */
+    /**
+     * The size of the fill value in bytes (if defined).
+     */
     private final int size;
-    /** The actual fill value data (if defined). */
+    /**
+     * The actual fill value data (if defined).
+     */
     private final byte[] fillValue;
 
     /**
@@ -124,7 +136,7 @@ public class FillValueMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "FillValueMessage("+(getSizeMessageData()+8)+"){" +
+        return "FillValueMessage(" + (getSizeMessageData() + 8) + "){" +
                 "version=" + version +
                 ", spaceAllocationTime=" + spaceAllocationTime +
                 ", fillValueWriteTime=" + fillValueWriteTime +

@@ -1,7 +1,7 @@
 package org.hdf5javalib.redo.hdffile.dataobjects;
 
-import org.hdf5javalib.redo.HdfDataFile;
-import org.hdf5javalib.redo.HdfFileAllocation;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.datatype.HdfDatatype;
@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hdf5javalib.redo.HdfFileAllocation.*;
+import static org.hdf5javalib.redo.hdffile.HdfFileAllocation.*;
 
 /**
  * Represents an HDF5 group within an HDF5 file.
@@ -36,13 +36,21 @@ import static org.hdf5javalib.redo.HdfFileAllocation.*;
  */
 public class HdfGroup implements HdfDataObject, Closeable {
     private final HdfDataFile hdfDataFile;
-    /** The name of the group. */
+    /**
+     * The name of the group.
+     */
     private final String groupName;
-    /** The object header prefix for the group. */
+    /**
+     * The object header prefix for the group.
+     */
     private final HdfObjectHeaderPrefixV1 objectHeader;
-    /** The B-tree managing symbol table entries. */
+    /**
+     * The B-tree managing symbol table entries.
+     */
     private final HdfBTreeV1 bTree;
-    /** The local heap storing link names. */
+    /**
+     * The local heap storing link names.
+     */
     private final HdfLocalHeap localHeap;
 
     public HdfBTreeV1 getBTree() {
@@ -72,7 +80,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
      * the object header, B-tree, local heap, and dataset map.
      * </p>
      *
-     * @param groupName         the name of the group
+     * @param groupName    the name of the group
      * @param objectHeader the object header prefix containing group metadata
      * @param bTree        the B-tree managing symbol table entries
      * @param localHeap    the local heap storing link names
@@ -98,8 +106,8 @@ public class HdfGroup implements HdfDataObject, Closeable {
      * setting up the necessary metadata for writing to the file.
      * </p>
      *
-     * @param groupName            the name of the group
-     * @param btreeAddress    the file address for the B-tree
+     * @param groupName        the name of the group
+     * @param btreeAddress     the file address for the B-tree
      * @param localHeapAddress the file address for the local heap
      */
     public HdfGroup(String groupName, long btreeAddress, long localHeapAddress, HdfDataFile hdfDataFile) {
@@ -111,7 +119,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
         localHeap = new HdfLocalHeap(
                 localHeapContentsSize,
                 fileAllocation.getCurrentLocalHeapContentsOffset(),
-                hdfDataFile, groupName +"heap",
+                hdfDataFile, groupName + "heap",
                 HdfFileAllocation.SUPERBLOCK_SIZE + HdfFileAllocation.OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE
         );
 
@@ -121,7 +129,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
                 hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(),
                 hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(),
                 hdfDataFile,
-                groupName +"btree",
+                groupName + "btree",
                 HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset())
         );
 
@@ -129,10 +137,10 @@ public class HdfGroup implements HdfDataObject, Closeable {
         HdfFixedPoint localHeap = HdfWriteUtils.hdfFixedPointFromValue(localHeapAddress, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset());
 
         objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 24,
-                Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte)0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))),
+                Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte) 0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))),
                 hdfDataFile,
-                groupName +"header",
-                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE+BTREE_NODE_SIZE+BTREE_STORAGE_SIZE, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset())
+                groupName + "header",
+                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset())
         );
     }
 
