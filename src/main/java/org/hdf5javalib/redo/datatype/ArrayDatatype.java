@@ -7,10 +7,7 @@ import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents an HDF5 Array Datatype as defined in the HDF5 specification.
@@ -63,7 +60,7 @@ public class ArrayDatatype implements HdfDatatype {
     /**
      * The base datatype of the array elements.
      */
-    private final HdfDatatype baseType;
+    private final HdfDatatype hdfDatatype;
     private final HdfDataFile dataFile;
 
     /**
@@ -89,7 +86,7 @@ public class ArrayDatatype implements HdfDatatype {
      * @param dimensionality     The number of dimensions in the array (must be at least 1).
      * @param dimensionSizes     An array specifying the size of each dimension.
      * @param permutationIndices An array specifying the permutation indices for the dimensions (must be in canonical order: 0, 1, ..., n-1).
-     * @param baseType           The base datatype of the array elements.
+     * @param hdfDatatype           The base datatype of the array elements.
      * @param dataFile
      * @throws IllegalArgumentException if:
      *                                  <ul>
@@ -100,7 +97,7 @@ public class ArrayDatatype implements HdfDatatype {
      *                                  </ul>
      */
     public ArrayDatatype(int classAndVersion, BitSet classBitField, int size, int dimensionality,
-                         int[] dimensionSizes, int[] permutationIndices, HdfDatatype baseType, HdfDataFile dataFile) {
+                         int[] dimensionSizes, int[] permutationIndices, HdfDatatype hdfDatatype, HdfDataFile dataFile) {
         if (dimensionality < 1) {
             throw new IllegalArgumentException("Dimensionality must be at least 1");
         }
@@ -108,7 +105,7 @@ public class ArrayDatatype implements HdfDatatype {
             throw new IllegalArgumentException("Dimension sizes and permutation indices must match dimensionality");
         }
         // Validate size matches product of dimensions * base type size
-        long expectedSize = (long) baseType.getSize() * Arrays.stream(dimensionSizes).asLongStream().reduce(1, (a, b) -> a * b);
+        long expectedSize = (long) hdfDatatype.getSize() * Arrays.stream(dimensionSizes).asLongStream().reduce(1, (a, b) -> a * b);
         if (expectedSize != size) {
             throw new IllegalArgumentException("Size (" + size + ") does not match base type size * dimensions (" + expectedSize + ")");
         }
@@ -124,7 +121,7 @@ public class ArrayDatatype implements HdfDatatype {
         this.dimensionality = dimensionality;
         this.dimensionSizes = dimensionSizes.clone();
         this.permutationIndices = permutationIndices.clone();
-        this.baseType = baseType;
+        this.hdfDatatype = hdfDatatype;
         this.dataFile = dataFile;
     }
 
@@ -222,7 +219,7 @@ public class ArrayDatatype implements HdfDatatype {
      */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
-        return required | baseType.requiresGlobalHeap(required);
+        return required | hdfDatatype.requiresGlobalHeap(required);
     }
 
     /**
@@ -237,12 +234,12 @@ public class ArrayDatatype implements HdfDatatype {
             throw new IllegalArgumentException("Byte array length (" + bytes.length +
                     ") does not match datatype size (" + size + ")");
         }
-        int elementSize = baseType.getSize();
+        int elementSize = hdfDatatype.getSize();
         int totalElements = size / elementSize;
         StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < totalElements; i++) {
             byte[] elementBytes = Arrays.copyOfRange(bytes, i * elementSize, (i + 1) * elementSize);
-            sb.append(baseType.getInstance(String.class, elementBytes));
+            sb.append(hdfDatatype.getInstance(String.class, elementBytes));
             if (i < totalElements - 1) sb.append(", ");
         }
         sb.append("]");
@@ -266,12 +263,12 @@ public class ArrayDatatype implements HdfDatatype {
             throw new IllegalArgumentException("Byte array length (" + bytes.length +
                     ") does not match datatype size (" + size + ")");
         }
-        int elementSize = baseType.getSize();
+        int elementSize = hdfDatatype.getSize();
         int totalElements = size / elementSize;
         HdfData[] array = new HdfData[totalElements];
         for (int i = 0; i < totalElements; i++) {
             byte[] elementBytes = Arrays.copyOfRange(bytes, i * elementSize, (i + 1) * elementSize);
-            array[i] = baseType.getInstance(HdfData.class, elementBytes);
+            array[i] = hdfDatatype.getInstance(HdfData.class, elementBytes);
         }
         return array;
     }
@@ -282,7 +279,7 @@ public class ArrayDatatype implements HdfDatatype {
             throw new IllegalArgumentException("Byte array length (" + bytes.length +
                     ") does not match datatype size (" + size + ")");
         }
-        int elementSize = baseType.getSize();
+        int elementSize = hdfDatatype.getSize();
         int totalElements = size / elementSize;
         byte[][] result = new byte[totalElements][];
         for (int i = 0; i < totalElements; i++) {
@@ -318,7 +315,7 @@ public class ArrayDatatype implements HdfDatatype {
      */
     @Override
     public int getSizeMessageData() {
-        return (short) (4 + 4 * dimensionality + 4 * dimensionality + baseType.getSizeMessageData());
+        return (short) (4 + 4 * dimensionality + 4 * dimensionality + hdfDatatype.getSizeMessageData());
         // 1 byte dim + 3 reserved + 4 bytes per dim size + 4 bytes per perm index + base type
     }
 
@@ -337,7 +334,7 @@ public class ArrayDatatype implements HdfDatatype {
         for (int permIndex : permutationIndices) {
             buffer.putInt(permIndex);
         }
-        baseType.writeDefinitionToByteBuffer(buffer);
+        hdfDatatype.writeDefinitionToByteBuffer(buffer);
     }
 
     /**
@@ -347,7 +344,7 @@ public class ArrayDatatype implements HdfDatatype {
      */
     @Override
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {
-        baseType.setGlobalHeap(globalHeap);
+        hdfDatatype.setGlobalHeap(globalHeap);
         // Empty implementation to satisfy interface
     }
 
@@ -363,7 +360,7 @@ public class ArrayDatatype implements HdfDatatype {
                 ", dimensionality=" + dimensionality +
                 ", dimensionSizes=" + Arrays.toString(dimensionSizes) +
                 ", permutationIndices=" + Arrays.toString(permutationIndices) +
-                ", baseType=" + baseType +
+                ", baseType=" + hdfDatatype +
                 '}';
     }
 
@@ -385,5 +382,10 @@ public class ArrayDatatype implements HdfDatatype {
     @Override
     public int getSize() {
         return size;
+    }
+
+    @Override
+    public List<ReferenceDatatype> getReferenceInstances() {
+        return hdfDatatype.getReferenceInstances();
     }
 }

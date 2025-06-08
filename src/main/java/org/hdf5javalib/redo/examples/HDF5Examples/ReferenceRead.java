@@ -24,8 +24,8 @@ import static org.hdf5javalib.redo.utils.HdfReadUtils.getResourcePath;
  * dataset, as well as conversion to a custom Java class.
  * </p>
  */
-public class ExampleDebug {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ExampleDebug.class);
+public class ReferenceRead {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ReferenceRead.class);
 
     /**
      * Entry point for the application.
@@ -33,7 +33,7 @@ public class ExampleDebug {
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
-        new ExampleDebug().run();
+        new ReferenceRead().run();
     }
 
     /**
@@ -46,15 +46,23 @@ public class ExampleDebug {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Root Group: {} ", reader.getRootGroup());
                 reader.getFileAllocation().printBlocks();
-//                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
-//                    displayData(channel, dataSet, reader);
-//                }
-                for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
-                    displayData(channel, dataSet, reader);
+                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
+                    displayReference(channel, dataSet, reader);
                 }
+//                for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
+//                    displayReference(channel, dataSet, reader);
+//                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
+    private void displayReference(SeekableByteChannel channel, HdfDataSet dataSet, HdfFileReader reader) {
+        dataSet.getReferenceInstances().forEach(referenceInstance -> {
+            System.out.println("referenceInstance=" + referenceInstance);
+        });
+    }
+
+
 }

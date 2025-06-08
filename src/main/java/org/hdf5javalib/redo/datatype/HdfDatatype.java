@@ -5,6 +5,7 @@ import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;
+import java.util.List;
 
 /**
  * Defines the interface for HDF5 datatypes, providing methods to manage datatype definitions,
@@ -178,4 +179,6 @@ public interface HdfDatatype {
             throw new IllegalArgumentException("Unknown datatype class value: " + value);
         }
     }
+
+    public List<ReferenceDatatype> getReferenceInstances();
 }

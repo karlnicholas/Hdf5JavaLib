@@ -10,9 +10,7 @@ import org.hdf5javalib.redo.dataclass.reference.HdfReferenceInstance;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.hdf5javalib.file.dataobject.message.datatype.ReferenceDatatype.getTypeValue;
 
@@ -198,5 +196,10 @@ public class ReferenceDatatype implements HdfDatatype {
     @Override
     public int getSize() {
         return size;
+    }
+
+    @Override
+    public List<ReferenceDatatype> getReferenceInstances() {
+        return Collections.singletonList(this);
     }
 }

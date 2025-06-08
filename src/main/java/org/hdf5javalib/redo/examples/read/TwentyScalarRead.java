@@ -11,6 +11,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
+import static org.hdf5javalib.redo.utils.HdfReadUtils.getResourcePath;
+
 /**
  * Demonstrates reading scalar datasets from an HDF5 file.
  * <p>
@@ -49,19 +51,5 @@ public class TwentyScalarRead {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Retrieves the file path for a resource.
-     *
-     * @param fileName the name of the resource file
-     * @return the Path to the resource file
-     */
-    private Path getResourcePath(String fileName) {
-        String resourcePath = getClass().getClassLoader().getResource(fileName).getPath();
-        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
-            resourcePath = resourcePath.substring(1);
-        }
-        return Paths.get(resourcePath);
     }
 }

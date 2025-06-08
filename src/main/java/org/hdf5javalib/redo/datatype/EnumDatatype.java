@@ -38,7 +38,7 @@ public class EnumDatatype implements HdfDatatype {
     /**
      * The base integer datatype for enumeration values.
      */
-    private final HdfDatatype baseType;
+    private final HdfDatatype hdfDatatype;
     /**
      * The array of enumeration names.
      */
@@ -67,14 +67,14 @@ public class EnumDatatype implements HdfDatatype {
      * @param classAndVersion the class and version information for the datatype
      * @param classBitField   a BitSet indicating the number of members
      * @param size            the size of each enumeration value in bytes
-     * @param baseType        the base integer datatype for values
+     * @param hdfDatatype        the base integer datatype for values
      * @param names           the array of enumeration names
      * @param values          the packed array of enumeration values
      * @param dataFile
      * @throws IllegalArgumentException if the number of names or values does not match the specification
      */
     public EnumDatatype(int classAndVersion, BitSet classBitField, int size,
-                        HdfDatatype baseType, String[] names, byte[] values, HdfDataFile dataFile) {
+                        HdfDatatype hdfDatatype, String[] names, byte[] values, HdfDataFile dataFile) {
         this.dataFile = dataFile;
         if (names.length != getNumberOfMembers(classBitField)) {
             throw new IllegalArgumentException("Number of names doesn't match classBitField specification");
@@ -85,7 +85,7 @@ public class EnumDatatype implements HdfDatatype {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
-        this.baseType = baseType;
+        this.hdfDatatype = hdfDatatype;
         this.names = names.clone();
         this.values = values.clone();
     }
@@ -229,7 +229,7 @@ public class EnumDatatype implements HdfDatatype {
      */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
-        return required | baseType.requiresGlobalHeap(required);
+        return required | hdfDatatype.requiresGlobalHeap(required);
     }
 
     /**
@@ -294,7 +294,7 @@ public class EnumDatatype implements HdfDatatype {
             int nameLength = name.getBytes(StandardCharsets.US_ASCII).length + 1; // Include null terminator
             totalNameBytes += (nameLength + 7) & ~7; // Round up to next 8-byte multiple
         }
-        return (short) (totalNameBytes + values.length + baseType.getSize());
+        return (short) (totalNameBytes + values.length + hdfDatatype.getSize());
     }
 
     /**
@@ -305,7 +305,7 @@ public class EnumDatatype implements HdfDatatype {
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
         // Write base type definition first
-        baseType.writeDefinitionToByteBuffer(buffer);
+        hdfDatatype.writeDefinitionToByteBuffer(buffer);
         // Write names (null-terminated, padded to 8-byte multiples)
         for (String name : names) {
             byte[] nameBytes = name.getBytes(StandardCharsets.US_ASCII);
@@ -327,7 +327,7 @@ public class EnumDatatype implements HdfDatatype {
      */
     @Override
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {
-        baseType.setGlobalHeap(globalHeap);
+        hdfDatatype.setGlobalHeap(globalHeap);
     }
 
     /**
@@ -340,7 +340,7 @@ public class EnumDatatype implements HdfDatatype {
         return "EnumDatatype{" +
                 "size=" + size +
                 ", numMembers=" + names.length +
-                ", baseType=" + baseType +
+                ", baseType=" + hdfDatatype +
                 '}';
     }
 
@@ -363,4 +363,10 @@ public class EnumDatatype implements HdfDatatype {
     public int getSize() {
         return size;
     }
+
+    @Override
+    public List<ReferenceDatatype> getReferenceInstances() {
+        return hdfDatatype.getReferenceInstances();
+    }
+
 }

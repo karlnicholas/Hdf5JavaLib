@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Utility class for reading data from HDF5 files.
@@ -31,6 +33,20 @@ public class HdfReadUtils {
         fileChannel.read(buffer);
         buffer.flip();
         return buffer.getInt();
+    }
+
+    /**
+     * Retrieves the file path for a resource.
+     *
+     * @param fileName the name of the resource file
+     * @return the Path to the resource file
+     */
+    public static Path getResourcePath(String fileName) {
+        String resourcePath = HdfReadUtils.class.getClassLoader().getResource(fileName).getPath();
+        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
+            resourcePath = resourcePath.substring(1);
+        }
+        return Paths.get(resourcePath);
     }
 
     /**

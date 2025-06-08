@@ -11,10 +11,7 @@ import org.hdf5javalib.redo.utils.HdfReadUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents an HDF5 Variable-Length Datatype as defined in the HDF5 specification.
@@ -662,5 +659,10 @@ public class VariableLengthDatatype implements HdfDatatype {
                     (bits.get(10) ? 4 : 0) | (bits.get(11) ? 8 : 0);
             return fromValue(value);
         }
+    }
+
+    @Override
+    public List<ReferenceDatatype> getReferenceInstances() {
+        return hdfDatatype.getReferenceInstances();
     }
 }

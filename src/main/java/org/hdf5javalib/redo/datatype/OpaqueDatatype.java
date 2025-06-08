@@ -7,9 +7,7 @@ import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents an HDF5 Opaque Datatype as defined in the HDF5 specification.
@@ -229,6 +227,11 @@ public class OpaqueDatatype implements HdfDatatype {
     @Override
     public HdfDataFile getDataFile() {
         return dataFile;
+    }
+
+    @Override
+    public List<ReferenceDatatype> getReferenceInstances() {
+        return List.of();
     }
 
     /**

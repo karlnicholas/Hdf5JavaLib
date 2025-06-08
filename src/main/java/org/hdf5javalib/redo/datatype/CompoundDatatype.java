@@ -605,4 +605,9 @@ public class CompoundDatatype implements HdfDatatype {
         // Other reference types (e.g., String, List, custom classes)
         return null;
     }
+
+    @Override
+    public List<ReferenceDatatype> getReferenceInstances() {
+        return members.stream().flatMap(m -> m.getReferenceInstances().stream()).collect(Collectors.toList());
+    }
 }

@@ -7,9 +7,7 @@ import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents an HDF5 Time Datatype as defined in the HDF5 specification.
@@ -63,7 +61,7 @@ public class TimeDatatype implements HdfDatatype {
      * @param classBitField   a BitSet containing class-specific bit field information
      * @param size            the size of the time data in bytes
      * @param bitPrecision    the number of bits of precision
-     * @param dataFile
+     * @param dataFile        datafile
      */
     public TimeDatatype(int classAndVersion, BitSet classBitField, int size, int bitPrecision, HdfDataFile dataFile) {
         this.classAndVersion = classAndVersion;
@@ -151,7 +149,7 @@ public class TimeDatatype implements HdfDatatype {
      */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
-        return required | false;
+        return required;
     }
 
     /**
@@ -177,9 +175,9 @@ public class TimeDatatype implements HdfDatatype {
 
         long result = 0;
         if (isBigEndian()) {
-            for (int i = 0; i < bytes.length; i++) {
+            for (byte aByte : bytes) {
                 result <<= 8;
-                result |= (bytes[i] & 0xFFL);
+                result |= (aByte & 0xFFL);
             }
         } else {
             for (int i = bytes.length - 1; i >= 0; i--) {
@@ -228,6 +226,11 @@ public class TimeDatatype implements HdfDatatype {
     @Override
     public HdfDataFile getDataFile() {
         return dataFile;
+    }
+
+    @Override
+    public List<ReferenceDatatype> getReferenceInstances() {
+        return List.of();
     }
 
     /**

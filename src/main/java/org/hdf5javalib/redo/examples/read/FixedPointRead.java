@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static org.hdf5javalib.redo.utils.HdfReadUtils.getResourcePath;
+
 /**
  * Demonstrates reading and processing fixed-point data from HDF5 files.
  * <p>
@@ -48,21 +50,6 @@ public class FixedPointRead {
      */
     public static void main(String[] args) throws Exception {
         new FixedPointRead().run();
-    }
-
-    /**
-     * Retrieves the file path for a resource.
-     *
-     * @param fileName the name of the resource file
-     * @return the Path to the resource file
-     * @throws NullPointerException if the resource is not found
-     */
-    Path getResourcePath(String fileName) {
-        String resourcePath = Objects.requireNonNull(getClass().getClassLoader().getResource(fileName)).getPath();
-        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
-            resourcePath = resourcePath.substring(1);
-        }
-        return Paths.get(resourcePath);
     }
 
     /**

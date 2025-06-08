@@ -10,10 +10,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents an HDF5 Fixed-Point Datatype as defined in the HDF5 specification.
@@ -505,6 +502,11 @@ public class FixedPointDatatype implements HdfDatatype {
     @Override
     public HdfDataFile getDataFile() {
         return dataFile;
+    }
+
+    @Override
+    public List<ReferenceDatatype> getReferenceInstances() {
+        return List.of();
     }
 
     /**

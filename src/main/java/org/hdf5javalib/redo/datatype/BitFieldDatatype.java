@@ -6,9 +6,7 @@ import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents an HDF5 Bitfield Datatype as defined in the HDF5 specification.
@@ -257,6 +255,11 @@ public class BitFieldDatatype implements HdfDatatype {
     @Override
     public HdfDataFile getDataFile() {
         return hdfDataFile;
+    }
+
+    @Override
+    public List<ReferenceDatatype> getReferenceInstances() {
+        return List.of();
     }
 
     /**
