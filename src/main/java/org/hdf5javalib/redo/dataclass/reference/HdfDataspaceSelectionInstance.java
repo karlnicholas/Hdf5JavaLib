@@ -1,10 +1,16 @@
 package org.hdf5javalib.redo.dataclass.reference;
 
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
+import org.hdf5javalib.redo.utils.HdfDataHolder;
+
 import java.nio.ByteBuffer;
 
 import static org.hdf5javalib.redo.dataclass.reference.HdfDataspaceSelectionInstance.HdfSelectionType.*;
 
 public abstract class HdfDataspaceSelectionInstance {
+    public abstract HdfDataHolder getData(HdfDataObject hdfDataObject, HdfDataFile hdfDataFile);
+
     public enum HdfSelectionType {
         H5S_SEL_NONE(0, "Nothing selected"),
         H5S_SEL_POINTS(1, "Sequence of points selected"),

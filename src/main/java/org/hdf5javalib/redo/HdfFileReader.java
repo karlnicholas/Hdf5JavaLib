@@ -168,7 +168,8 @@ public class HdfFileReader implements HdfDataFile {
      */
     @Override
     public SeekableByteChannel getSeekableByteChannel() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return fileChannel;
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 //    @Override

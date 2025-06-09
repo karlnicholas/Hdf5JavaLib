@@ -1,5 +1,9 @@
 package org.hdf5javalib.redo.dataclass.reference;
 
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
+import org.hdf5javalib.redo.utils.HdfDataHolder;
+
 public class HdfSelectPointsV2 extends HdfDataspaceSelectionInstance {
     private final int version;
     private final int encodedSize;
@@ -18,7 +22,7 @@ public class HdfSelectPointsV2 extends HdfDataspaceSelectionInstance {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("HdfSelectPointsV1{v=").append(version)
+        sb.append("HdfSelectPointsV2{v=").append(version)
                 .append(",r=").append(rank)
                 .append(",n=").append(numPoints)
                 .append(",p=[");
@@ -38,5 +42,10 @@ public class HdfSelectPointsV2 extends HdfDataspaceSelectionInstance {
         }
         sb.append("}");
         return sb.toString();
+    }
+
+    @Override
+    public HdfDataHolder getData(HdfDataObject hdfDataObject, HdfDataFile hdfDataFile) {
+        return null;
     }
 }

@@ -1,10 +1,14 @@
 package org.hdf5javalib.redo.dataclass.reference;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
+import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.datatype.ReferenceDatatype;
+import org.hdf5javalib.redo.datatype.StringDatatype;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
 import org.hdf5javalib.redo.hdffile.infrastructure.*;
+import org.hdf5javalib.redo.utils.HdfDataHolder;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -16,6 +20,7 @@ public class HdfDatasetRegionReference implements HdfReferenceInstance {
     private final ReferenceDatatype.ReferenceType referenceType;
     private final HdfDataObject hdfDataObject;
     private final HdfDataspaceSelectionInstance dataspaceSelectionInstance;
+    private final HdfDataHolder hdfDataHolder;
 
     public HdfDatasetRegionReference(byte[] bytes, ReferenceDatatype dt, boolean external) {
         this.external = external;
@@ -55,15 +60,30 @@ public class HdfDatasetRegionReference implements HdfReferenceInstance {
 
         }
         hdfDataObject = localHdfDataObject.get();
+        hdfDataHolder = dataspaceSelectionInstance.getData(hdfDataObject, dt.getDataFile());
+        System.out.println("hdfDataHolder = " + hdfDataHolder);
+
+//        hdfDataHolder = HdfDataHolder.ofScalar(
+//                new HdfString(hdfDataObject.getObjectName(), new StringDatatype(
+//                        StringDatatype.createClassAndVersion(),
+//                        StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII),
+//                        hdfDataObject.getObjectName().length(),
+//                        dt.getDataFile())
+//                ));
     }
 
     @Override
     public String toString() {
-        return "HdfObjectReference [\r\n\texternal=" + external + ", "
+        return "HdfDatasetRegionReference [\r\n\texternal=" + external + ", "
                 + "\r\n\treferenceType=" + referenceType.getDescription()
                 + "\r\n\thdfDataObject=" + (hdfDataObject == null ? "ObjectId not decoded" : "ObjectName: " + hdfDataObject.getObjectName())
                 + "\r\n\tdataspaceSelectionInstance=" + (dataspaceSelectionInstance == null ? "no Dataspace Selection" : dataspaceSelectionInstance)
                 + "\r\n]";
 
+    }
+
+    @Override
+    public HdfDataHolder getData(HdfDataFile dataFile) {
+        return hdfDataHolder;
     }
 }

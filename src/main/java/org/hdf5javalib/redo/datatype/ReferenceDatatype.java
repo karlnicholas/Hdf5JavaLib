@@ -8,6 +8,7 @@ import org.hdf5javalib.redo.dataclass.reference.HdfDatasetRegionReference;
 import org.hdf5javalib.redo.dataclass.reference.HdfObjectReference;
 import org.hdf5javalib.redo.dataclass.reference.HdfReferenceInstance;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.redo.utils.HdfDataHolder;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -144,7 +145,9 @@ public class ReferenceDatatype implements HdfDatatype {
 //        StringBuilder sb = new StringBuilder();
 //        for (byte b : bytes) sb.append(String.format("%02X", b));
 //        return "Reference[" + getReferenceType(classBitField).description + "]=" + sb;
-        return getInstance(HdfReferenceInstance.class, bytes).toString();
+        HdfReferenceInstance referenceInstance = getInstance(HdfReferenceInstance.class, bytes);
+        HdfDataHolder data = referenceInstance.getData(dataFile);
+        return data.toString();
     }
 
     @Override

@@ -1,5 +1,9 @@
 package org.hdf5javalib.redo.dataclass.reference;
 
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
+import org.hdf5javalib.redo.utils.HdfDataHolder;
+
 public class HdfSelectionNone extends HdfDataspaceSelectionInstance {
     private final int version;
 
@@ -9,6 +13,11 @@ public class HdfSelectionNone extends HdfDataspaceSelectionInstance {
 
     @Override
     public String toString() {
-        return "HdfSelectPointsV1{v=" + version + "}";
+        return "HdfSelectionNone{v=" + version + "}";
+    }
+
+    @Override
+    public HdfDataHolder getData(HdfDataObject hdfDataObject, HdfDataFile hdfDataFile) {
+        return null;
     }
 }

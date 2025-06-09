@@ -1,5 +1,9 @@
 package org.hdf5javalib.redo.dataclass.reference;
 
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
+import org.hdf5javalib.redo.utils.HdfDataHolder;
+
 public class HdfSelectionHyperSlabV3Irregular extends HdfDataspaceSelectionInstance {
     private final int version;
     private final int flags;
@@ -17,5 +21,10 @@ public class HdfSelectionHyperSlabV3Irregular extends HdfDataspaceSelectionInsta
         this.numBlocks = numBlocks;
         this.startOffsets = startOffsets;
         this.endOffsets = endOffsets;
+    }
+
+    @Override
+    public HdfDataHolder getData(HdfDataObject hdfDataObject, HdfDataFile hdfDataFile) {
+        return null;
     }
 }

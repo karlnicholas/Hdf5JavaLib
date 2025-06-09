@@ -1,17 +1,24 @@
 package org.hdf5javalib.redo.dataclass.reference;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
+import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.datatype.ReferenceDatatype;
+import org.hdf5javalib.redo.datatype.StringDatatype;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 import org.hdf5javalib.redo.hdffile.infrastructure.*;
 import org.hdf5javalib.redo.hdffile.metadata.HdfSuperblock;
+import org.hdf5javalib.redo.utils.HdfDataHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class HdfObjectReference implements HdfReferenceInstance {
@@ -19,6 +26,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
     private final boolean external;
     private final ReferenceDatatype.ReferenceType referenceType;
     private final HdfDataObject hdfDataObject;
+    private final HdfDataHolder hdfDataHolder;
     private final HdfDataspaceSelectionInstance dataspaceSelectionInstance;
 
     public HdfObjectReference(byte[] bytes, ReferenceDatatype dt, boolean external) {
@@ -101,6 +109,17 @@ public class HdfObjectReference implements HdfReferenceInstance {
         }
         this.dataspaceSelectionInstance = dataspaceSelectionReference.get();
         this.hdfDataObject = localHdfDataObject.get();
+        if ( dataspaceSelectionInstance != null ) {
+            this.hdfDataHolder = dataspaceSelectionInstance.getData(hdfDataObject, dt.getDataFile());
+        } else {
+            this.hdfDataHolder = HdfDataHolder.ofScalar(
+                    new HdfString(hdfDataObject.getObjectName(), new StringDatatype(
+                    StringDatatype.createClassAndVersion(),
+                    StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII),
+                    hdfDataObject.getObjectName().length(),
+                    dt.getDataFile())
+            ));
+        }
     }
 
     @Override
@@ -113,5 +132,10 @@ public class HdfObjectReference implements HdfReferenceInstance {
                 : "")
                 + "\r\n]";
 
+    }
+
+    @Override
+    public HdfDataHolder getData(HdfDataFile dataFile) {
+        return hdfDataHolder;
     }
 }
