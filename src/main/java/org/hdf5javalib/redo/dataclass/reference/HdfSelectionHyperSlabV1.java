@@ -5,8 +5,14 @@ import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.dataobjects.messages.DataspaceMessage;
 import org.hdf5javalib.redo.utils.FlattenedArrayUtils;
 import org.hdf5javalib.redo.utils.HdfDataHolder;
+
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class HdfSelectionHyperSlabV1 extends HdfDataspaceSelectionInstance {
     private final int version;
@@ -27,6 +33,7 @@ public class HdfSelectionHyperSlabV1 extends HdfDataspaceSelectionInstance {
 
     @Override
     public String toString() {
+        // ... (toString method remains the same)
         StringBuilder sb = new StringBuilder();
         sb.append("HdfSelectionHyperSlabV1{v=").append(version)
                 .append(",l=").append(length)
@@ -57,9 +64,66 @@ public class HdfSelectionHyperSlabV1 extends HdfDataspaceSelectionInstance {
 
     @Override
     public HdfDataHolder getData(HdfDataObject hdfDataObject, HdfDataFile hdfDataFile) {
-        int [] shape = new int[]{Math.toIntExact(numBlocks), rank};
-        TypedDataSource<HdfData> dataSource = new TypedDataSource<>(hdfDataFile.getSeekableByteChannel(), hdfDataFile, (HdfDataSet) hdfDataObject, HdfData.class);
-        Object r = FlattenedArrayUtils.filterToNDArray(dataSource.streamFlattened(), shape, HdfData.class, (datum)->true);
-        return HdfDataHolder.ofArray(r, shape);
+        // Cast the data object to a dataset to access its properties
+        HdfDataSet hdfDataSet = (HdfDataSet) hdfDataObject;
+
+        // 1. Get the shape and strides of the full source dataset.
+        DataspaceMessage dataspaceMessage = hdfDataSet.getDataObjectHeaderPrefix().findMessageByType(DataspaceMessage.class).get();
+        int[] sourceShape = Arrays.stream(dataspaceMessage.getDimensions())
+                .mapToInt(dim -> dim.getInstance(Long.class).intValue())
+                .toArray();
+        int[] sourceStrides = FlattenedArrayUtils.computeStrides(sourceShape);
+
+        // 2. Write the predicate to check if an element is inside any hyperslab block.
+        // We need a counter to track the flat index of each element in the stream.
+        AtomicInteger flatIndex = new AtomicInteger(0);
+        Predicate<HdfData> isInSelection = (datum) -> {
+            // a. Convert the current flat index to N-D coordinates.
+            int[] currentCoords = FlattenedArrayUtils.unflattenIndex(flatIndex.getAndIncrement(), sourceStrides, sourceShape);
+
+            // b. Check if the coordinates fall within ANY of the defined hyperslab blocks.
+            for (int b = 0; b < this.numBlocks; b++) {
+                boolean isInThisBlock = true;
+                // Check each dimension for the current block.
+                for (int r = 0; r < this.rank; r++) {
+                    // A point is outside the block if its coordinate in any dimension is out of bounds.
+                    // The bounds are inclusive [start, end].
+                    if (currentCoords[r] < this.startOffsets[b][r] || currentCoords[r] > this.endOffsets[b][r]) {
+                        isInThisBlock = false;
+                        break; // No need to check other dimensions for this block.
+                    }
+                }
+                // If the point was inside this block, we can return true immediately.
+                if (isInThisBlock) {
+                    return true;
+                }
+            }
+            // If the loops complete, the point was not in any of the defined blocks.
+            return false;
+        };
+
+        // 3. Get the flattened data source stream and apply the filter.
+        TypedDataSource<HdfData> dataSource = new TypedDataSource<>(hdfDataFile.getSeekableByteChannel(), hdfDataFile, hdfDataSet, HdfData.class);
+        Stream<HdfData> filteredStream = dataSource.streamFlattened().filter(isInSelection);
+
+        // 4. Calculate the shape of the output array.
+        int[] resultShape;
+        // The common case: a single rectangular hyperslab.
+        if (this.numBlocks == 1) {
+            resultShape = new int[this.rank];
+            for (int i = 0; i < this.rank; i++) {
+                // The size of the dimension is (end - start + 1).
+                resultShape[i] = this.endOffsets[0][i] - this.startOffsets[0][i] + 1;
+            }
+            // Use the utility to reshape the filtered stream into a proper N-D array.
+            Object resultArray = FlattenedArrayUtils.streamToNDArray(filteredStream, resultShape, HdfData.class);
+            return HdfDataHolder.ofArray(resultArray, resultShape);
+
+        } else {
+            // For multiple, discontinuous blocks, a flattened 1D array is the most logical representation.
+            HdfData[] resultArray = filteredStream.toArray(HdfData[]::new);
+            resultShape = new int[]{resultArray.length};
+            return HdfDataHolder.ofArray(resultArray, resultShape);
+        }
     }
 }

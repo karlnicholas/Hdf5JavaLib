@@ -34,7 +34,6 @@ public class HdfSelectPointsV1 extends HdfDataspaceSelectionInstance {
 
     @Override
     public String toString() {
-        // ... (toString method remains the same)
         StringBuilder sb = new StringBuilder();
         sb.append("HdfSelectPointsV1{v=").append(version)
                 .append(",r=").append(rank)
@@ -90,7 +89,7 @@ public class HdfSelectPointsV1 extends HdfDataspaceSelectionInstance {
             // b. Convert the flat index to N-D coordinates using the utility.
             int[] currentCoords = FlattenedArrayUtils.unflattenIndex(currentFlatIndex, sourceStrides, sourceShape);
             // c. Convert to a List for Set comparison.
-            List<Integer> coordList = Arrays.stream(currentCoords).boxed().collect(Collectors.toList());
+            List<Integer> coordList = Arrays.stream(currentCoords).boxed().toList();
             // d. The predicate is true if the coordinates are in our target set.
             return targetPointsSet.contains(coordList);
         };
