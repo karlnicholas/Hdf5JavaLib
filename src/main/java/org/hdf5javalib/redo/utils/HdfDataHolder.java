@@ -159,6 +159,31 @@ public class HdfDataHolder implements Iterable<HdfData> {
         return (HdfData) current;
     }
 
+    // Stringify n-dimensional array
+    public static String arrayToString(Object array, int[] dimensions) {
+        int nDimensions = dimensions.length;
+        if (array == null) return "null";
+        if (!array.getClass().isArray()) return array.toString();
+
+        // Handle 1D or 2D with single row
+        if (nDimensions == 1 || (nDimensions == 2 && dimensions[0] == 1)) {
+            // 1D array or 2D with one row: flatten to [72.9, 73.0]
+            Object targetArray = nDimensions == 1 ? array : Array.get(array, 0);
+            return Arrays.toString((Object[]) targetArray);
+        }
+
+        // n>1 with multiple rows or n>2: preserve nested structure
+        StringBuilder sb = new StringBuilder("[");
+        int length = Array.getLength(array);
+        for (int i = 0; i < length; i++) {
+            Object element = Array.get(array, i);
+            sb.append(arrayToString(element, Arrays.copyOfRange(dimensions, 1, dimensions.length)));
+            if (i < length - 1) sb.append(", ");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
     /**
      * Retrieves the entire underlying data object, casting it to the requested type.
      * <p>

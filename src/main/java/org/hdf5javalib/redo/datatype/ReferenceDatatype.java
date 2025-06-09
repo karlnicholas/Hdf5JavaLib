@@ -147,7 +147,11 @@ public class ReferenceDatatype implements HdfDatatype {
 //        return "Reference[" + getReferenceType(classBitField).description + "]=" + sb;
         HdfReferenceInstance referenceInstance = getInstance(HdfReferenceInstance.class, bytes);
         HdfDataHolder data = referenceInstance.getData(dataFile);
-        return data.toString();
+        if ( data.isScalar()) {
+            return data.getScalar().toString();
+        } else {
+            return HdfDataHolder.arrayToString(data.getArray(), data.getDimensions());
+        }
     }
 
     @Override

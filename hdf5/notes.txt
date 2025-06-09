@@ -751,6 +751,37 @@ DS1
 
 Process finished with exit code 0
 
+-----------------------------
+
+--- WRITING DATA TO FILE 'h5ex_t_cpxcmpd.h5' ---
+--- WRITE COMPLETE ---
+
+--- READING AND DEREFERENCING DATA ---
+
+Processing record 0: 'Airplane'
+ -> Dereferencing the 'Surveyed areas' dataset region reference...
+    Region contains 3 data points.
+    Values from 'Ambient_Temperature' dataset:
+      Element[ 0] = 67.300000
+      Element[ 1] = 67.400000
+      Element[ 2] = 67.600000
+
+Processing record 1: 'Automobile'
+ -> Dereferencing the 'Surveyed areas' dataset region reference...
+    Region contains 12 data points.
+    Values from 'Ambient_Temperature' dataset:
+      Element[ 0] = 70.200000
+      Element[ 1] = 70.300000
+      Element[ 2] = 70.400000
+      Element[ 3] = 70.300000
+      Element[ 4] = 70.400000
+      Element[ 5] = 70.500000
+      Element[ 6] = 70.400000
+      Element[ 7] = 70.500000
+      Element[ 8] = 70.600000
+      Element[ 9] = 70.500000
+      Element[10] = 70.600000
+      Element[11] = 70.700000
 
 ----------------------
 

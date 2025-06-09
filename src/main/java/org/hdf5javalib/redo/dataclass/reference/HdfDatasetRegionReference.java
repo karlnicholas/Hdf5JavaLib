@@ -61,7 +61,6 @@ public class HdfDatasetRegionReference implements HdfReferenceInstance {
         }
         hdfDataObject = localHdfDataObject.get();
         hdfDataHolder = dataspaceSelectionInstance.getData(hdfDataObject, dt.getDataFile());
-        System.out.println("hdfDataHolder = " + hdfDataHolder);
 
 //        hdfDataHolder = HdfDataHolder.ofScalar(
 //                new HdfString(hdfDataObject.getObjectName(), new StringDatatype(

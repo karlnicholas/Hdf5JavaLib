@@ -5,10 +5,17 @@ import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.dataobjects.messages.DataspaceMessage;
 import org.hdf5javalib.redo.utils.FlattenedArrayUtils;
 import org.hdf5javalib.redo.utils.HdfDataHolder;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class HdfSelectPointsV1 extends HdfDataspaceSelectionInstance {
     private final int version;
@@ -27,6 +34,7 @@ public class HdfSelectPointsV1 extends HdfDataspaceSelectionInstance {
 
     @Override
     public String toString() {
+        // ... (toString method remains the same)
         StringBuilder sb = new StringBuilder();
         sb.append("HdfSelectPointsV1{v=").append(version)
                 .append(",r=").append(rank)
@@ -52,9 +60,49 @@ public class HdfSelectPointsV1 extends HdfDataspaceSelectionInstance {
 
     @Override
     public HdfDataHolder getData(HdfDataObject hdfDataObject, HdfDataFile hdfDataFile) {
-        int [] shape = new int[]{Math.toIntExact(numPoints), rank};
-        TypedDataSource<HdfData> dataSource = new TypedDataSource<>(hdfDataFile.getSeekableByteChannel(), hdfDataFile, (HdfDataSet) hdfDataObject, HdfData.class);
-        Object r = FlattenedArrayUtils.filterToNDArray(dataSource.streamFlattened(), shape, HdfData.class, (datum)->true);
-        return HdfDataHolder.ofArray(r, shape);
+        // Cast the data object to a dataset to access its properties
+        HdfDataSet hdfDataSet = (HdfDataSet) hdfDataObject;
+
+        // 1. Get the shape of the full source dataset.
+        DataspaceMessage dataspaceMessage = hdfDataSet.getDataObjectHeaderPrefix().findMessageByType(DataspaceMessage.class).get();
+        int[] sourceShape = Arrays.stream(dataspaceMessage.getDimensions())
+                .mapToInt(dim -> dim.getInstance(Long.class).intValue())
+                .toArray();
+        int[] sourceStrides = FlattenedArrayUtils.computeStrides(sourceShape);
+
+        // 2. For efficient O(1) lookups, convert the target int[][] coordinates to a Set<List<Integer>>.
+        // A List<Integer> has a content-based hashCode/equals, unlike int[].
+        Set<List<Integer>> targetPointsSet = Arrays.stream(this.values)
+                .map(pointCoords -> Arrays.stream(pointCoords).boxed().collect(Collectors.toList()))
+                .collect(Collectors.toSet());
+
+        // 3. Get the flattened data source stream.
+        TypedDataSource<HdfData> dataSource = new TypedDataSource<>(hdfDataFile.getSeekableByteChannel(), hdfDataFile, hdfDataSet, HdfData.class);
+        Stream<HdfData> flattenedStream = dataSource.streamFlattened();
+
+        // 4. Write the predicate to filter the stream.
+        // We need a counter to track the flat index of each element in the stream.
+        AtomicInteger flatIndex = new AtomicInteger(0);
+
+        Predicate<HdfData> isInSelection = (datum) -> {
+            // a. Get the current flat index.
+            int currentFlatIndex = flatIndex.getAndIncrement();
+            // b. Convert the flat index to N-D coordinates using the utility.
+            int[] currentCoords = FlattenedArrayUtils.unflattenIndex(currentFlatIndex, sourceStrides, sourceShape);
+            // c. Convert to a List for Set comparison.
+            List<Integer> coordList = Arrays.stream(currentCoords).boxed().collect(Collectors.toList());
+            // d. The predicate is true if the coordinates are in our target set.
+            return targetPointsSet.contains(coordList);
+        };
+
+        // 5. Filter the stream and collect the results into a new array.
+        // The result is an array of HdfData objects matching the selected points.
+        HdfData[] resultArray = flattenedStream.filter(isInSelection).toArray(HdfData[]::new);
+
+        // 6. The shape of the result is a simple 1D array with a length equal to the number of points.
+        int[] resultShape = new int[]{Math.toIntExact(this.numPoints)};
+
+        // Wrap the resulting array and its shape in the HdfDataHolder and return.
+        return HdfDataHolder.ofArray(resultArray, resultShape);
     }
 }
