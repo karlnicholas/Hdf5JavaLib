@@ -530,10 +530,10 @@ public class HdfBTreeV1 extends AllocationRecord {
      * Writes the B-Tree and its symbol table nodes to a file channel.
      *
      * @param seekableByteChannel the file channel to write to
-     * @param fileAllocation      the file allocation manager
+     * @param ignoredFileAllocation      the file allocation manager
      * @throws IOException if an I/O error occurs
      */
-    public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
+    public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation ignoredFileAllocation) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(
                         new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()).getInstance(Long.class).intValue())
                 .order(ByteOrder.LITTLE_ENDIAN);
