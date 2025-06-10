@@ -8,6 +8,7 @@ import org.hdf5javalib.redo.datatype.StringDatatype;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.hdffile.infrastructure.*;
 import org.hdf5javalib.redo.hdffile.metadata.HdfSuperblock;
 import org.hdf5javalib.redo.utils.HdfDataHolder;
@@ -18,8 +19,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class HdfObjectReference implements HdfReferenceInstance {
     private static final Logger log = LoggerFactory.getLogger(HdfObjectReference.class);
@@ -112,14 +116,48 @@ public class HdfObjectReference implements HdfReferenceInstance {
         if ( dataspaceSelectionInstance != null ) {
             this.hdfDataHolder = dataspaceSelectionInstance.getData(hdfDataObject, dt.getDataFile());
         } else {
+            HdfSymbolTableEntry rootSte = dt.getDataFile().getFileAllocation().getSuperblock().getRootGroupSymbolTableEntry();
+            HdfBTreeV1 btree = ((HdfSymbolTableEntryCacheGroupMetadata) rootSte.getCache()).getBtree();
+            HdfGroup rootGroup = ((HdfSymbolTableEntryCacheGroupMetadata) rootSte.getCache()).getGroup();
+            Optional<Deque<HdfDataObject>> objectPath = btree.findObjectPathByName(hdfDataObject.getObjectName(), rootGroup);
+            String objectPathString;
+            if (objectPath.isPresent()) {
+                objectPathString = convertObjectPathToString(objectPath);
+            } else {
+                objectPathString = hdfDataObject.getObjectName();
+            }
             this.hdfDataHolder = HdfDataHolder.ofScalar(
-                    new HdfString(hdfDataObject.getObjectName(), new StringDatatype(
+                    new HdfString(objectPathString, new StringDatatype(
                     StringDatatype.createClassAndVersion(),
                     StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII),
                     hdfDataObject.getObjectName().length(),
                     dt.getDataFile())
             ));
         }
+    }
+
+    /**
+     * Converts a Deque of HdfDataObjects into a string path with '/' as separator,
+     * using getObjectName() for each object, always starting with '/'.
+     *
+     * @param objectPath an Optional containing a Deque of HdfDataObjects
+     * @return a string starting with '/', with object names joined by '/', or "/" if not present or empty
+     * @throws NullPointerException if any object's getObjectName() returns null
+     */
+    public String convertObjectPathToString(Optional<Deque<HdfDataObject>> objectPath) {
+        if (objectPath.isEmpty() || objectPath.get().isEmpty()) {
+            return "/";
+        }
+        String path = objectPath.get().stream()
+                .map(obj -> {
+                    String name = obj.getObjectName();
+                    if (name == null) {
+                        throw new NullPointerException("Object name cannot be null in path");
+                    }
+                    return name;
+                })
+                .collect(Collectors.joining("/"));
+        return "/" + path;
     }
 
     @Override

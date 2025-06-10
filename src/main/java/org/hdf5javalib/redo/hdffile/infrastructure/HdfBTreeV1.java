@@ -226,26 +226,6 @@ public class HdfBTreeV1 extends AllocationRecord {
             HdfFixedPoint key = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength(), entriesBuffer);
             long filePosAfterEntriesBlock = fileChannel.position();
             long childAddress = childPointer.getInstance(Long.class);
-//            HdfBTreeEntry entry;
-//            if (nodeLevel == 0) {
-//                if (childAddress != -1L) {
-//                    fileChannel.position(childAddress);
-//                    HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromSeekableByteChannel(fileChannel, hdfDataFile);
-//                    entry = new HdfBTreeSnodEntry(key, childPointer, snod);
-//                } else {
-//                    HdfBTreeV1 childNode = readFromSeekableByteChannelRecursive(fileChannel, childAddress, hdfDataFile, visitedNodes);
-//                    entry = new HdfBTreeChildBtreeEntry(key, childPointer, childNode);
-//                }
-//            } else {
-//                if (childAddress != -1L) {
-//                    HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromSeekableByteChannel(fileChannel, hdfDataFile);
-//                    entry = new HdfBTreeSnodEntry(key, childPointer, snod);
-//                } else {
-//                    HdfBTreeV1 childNode = readFromSeekableByteChannelRecursive(fileChannel, childAddress, hdfDataFile, visitedNodes);
-//                    entry = new HdfBTreeChildBtreeEntry(key, childPointer, childNode);
-//                }
-//            }
-
             fileChannel.position(childAddress);
             HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap, objectName);
             HdfBTreeEntry entry = new HdfBTreeSnodEntry(key, childPointer, snod);
@@ -254,70 +234,6 @@ public class HdfBTreeV1 extends AllocationRecord {
             entries.add(entry);
         }
         return currentNode;
-    }
-
-    /**
-     * Finds an HdfDataObject by name in the B-tree using binary search.
-     *
-     * @param name  the object name to find (dataset or group)
-     * @param group the parent group for resolving link name offsets
-     * @return an Optional containing the HdfDataObject if found, or Optional.empty()
-     * @throws IllegalArgumentException if name is null or empty
-     * @throws IllegalStateException    if name resolution fails or node structure is invalid
-     */
-    public Optional<HdfDataObject> findObjectByName(String name, HdfGroup group) {
-        if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("Object name cannot be null or empty");
-        }
-        if (nodeLevel == 0) {
-            // Leaf node: find HdfBTreeSnodEntry and HdfSymbolTableEntry
-            Optional<HdfSymbolTableEntry> ste = findSymbolTableEntry(name, group);
-            if (ste.isEmpty()) {
-                return Optional.empty();
-            }
-            HdfSymbolTableEntry entry = ste.get();
-            if (entry.getCache().getCacheType() == 0) {
-                if (!(entry.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)) {
-                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheNotUsed for cacheType 0, found: " + entry.getCache().getClass().getName());
-                }
-                return Optional.of(((HdfSymbolTableEntryCacheNotUsed) entry.getCache()).getDataSet());
-            } else if (entry.getCache().getCacheType() == 1) {
-                if (!(entry.getCache() instanceof HdfSymbolTableEntryCacheGroupMetadata)) {
-                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheGroupMetadata for cacheType 1, found: " + entry.getCache().getClass().getName());
-                }
-                return Optional.of(((HdfSymbolTableEntryCacheGroupMetadata) entry.getCache()).getGroup());
-            } else {
-                throw new IllegalStateException("Unexpected cacheType: " + entry.getCache().getCacheType());
-            }
-        } else {
-            // Internal node: binary search for HdfBTreeChildBtreeEntry
-            int entryIndex = binarySearchDatasetName(entries.size(), (mid) -> {
-                HdfFixedPoint maxOffset = entries.get(mid).getKey();
-                String maxName = group.getDatasetNameByLinkNameOffset(maxOffset);
-                if (maxName == null) {
-                    throw new IllegalStateException("Null dataset name for linkNameOffset: " + maxOffset);
-                }
-                String minName = mid == 0 ? "" : group.getDatasetNameByLinkNameOffset(entries.get(mid - 1).getKey());
-                if (minName == null) {
-                    throw new IllegalStateException("Null dataset name for previous linkNameOffset: " + entries.get(mid - 1).getKey());
-                }
-                if (name.compareTo(minName) > 0 && name.compareTo(maxName) <= 0) {
-                    return 0; // Found the range
-                }
-                return name.compareTo(maxName);
-            });
-            if (entryIndex >= entries.size()) {
-                return Optional.empty();
-            }
-            if (!(entries.get(entryIndex) instanceof HdfBTreeChildBtreeEntry childBtreeEntry)) {
-                throw new IllegalStateException("Expected HdfBTreeChildBtreeEntry at index " + entryIndex + ", found: " + entries.get(entryIndex).getClass().getName());
-            }
-            HdfBTreeV1 childBTree = childBtreeEntry.getChildBTree();
-            if (childBTree == null) {
-                throw new IllegalStateException("Null child B-tree for entry at index " + entryIndex);
-            }
-            return childBTree.findObjectByName(name, group);
-        }
     }
 
     /**
@@ -443,33 +359,97 @@ public class HdfBTreeV1 extends AllocationRecord {
     }
 
     /**
-     * Finds the HdfSymbolTableEntry for a given object name using binary search.
+     * Finds an HdfDataObject by name in the B-tree using binary search.
      *
-     * @param name  the object name to search for
+     * @param name  the object name to find (dataset or group)
      * @param group the parent group for resolving link name offsets
-     * @return an Optional containing the HdfSymbolTableEntry if found, or Optional.empty()
-     * @throws IllegalStateException if name resolution fails or node structure is invalid
+     * @return an Optional containing the HdfDataObject if found, or Optional.empty()
+     * @throws IllegalArgumentException if name is null or empty
+     * @throws IllegalStateException    if name resolution fails or node structure is invalid
      */
-    private Optional<HdfSymbolTableEntry> findSymbolTableEntry(String name, HdfGroup group) {
-        Optional<SnodSearchResult> searchResult = findSnodAndInsertIndex(name, group);
-        if (searchResult.isEmpty()) {
-            return Optional.empty();
+    public Optional<HdfDataObject> findObjectByName(String name, HdfGroup group) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Object name cannot be null or empty");
         }
-        SnodSearchResult result = searchResult.get();
-        int entryIndex = result.entryIndex;
-        int steIndex = result.insertIndex;
-        HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) entries.get(entryIndex);
-        HdfGroupSymbolTableNode snod = snodEntry.getSymbolTableNode();
-        if (steIndex >= snod.getSymbolTableEntries().size()) {
-            return Optional.empty();
+        if (nodeLevel == 0) {
+            // Leaf node: find HdfBTreeSnodEntry and HdfSymbolTableEntry
+            Optional<HdfSymbolTableEntry> ste = findSymbolTableEntry(name, group);
+            if (ste.isEmpty()) {
+                return Optional.empty();
+            }
+            HdfSymbolTableEntry entry = ste.get();
+            if (entry.getCache().getCacheType() == 0) {
+                if (!(entry.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)) {
+                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheNotUsed for cacheType 0, found: " + entry.getCache().getClass().getName());
+                }
+                return Optional.of(((HdfSymbolTableEntryCacheNotUsed) entry.getCache()).getDataSet());
+            } else if (entry.getCache().getCacheType() == 1) {
+                if (!(entry.getCache() instanceof HdfSymbolTableEntryCacheGroupMetadata)) {
+                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheGroupMetadata for cacheType 1, found: " + entry.getCache().getClass().getName());
+                }
+                return Optional.of(((HdfSymbolTableEntryCacheGroupMetadata) entry.getCache()).getGroup());
+            } else {
+                throw new IllegalStateException("Unexpected cacheType: " + entry.getCache().getCacheType());
+            }
+        } else {
+            // Internal node: binary search for HdfBTreeChildBtreeEntry
+            int entryIndex = binarySearchDatasetName(entries.size(), (mid) -> {
+                HdfFixedPoint maxOffset = entries.get(mid).getKey();
+                String maxName = group.getDatasetNameByLinkNameOffset(maxOffset);
+                if (maxName == null) {
+                    throw new IllegalStateException("Null dataset name for linkNameOffset: " + maxOffset);
+                }
+                String minName = mid == 0 ? "" : group.getDatasetNameByLinkNameOffset(entries.get(mid - 1).getKey());
+                if (minName == null) {
+                    throw new IllegalStateException("Null dataset name for previous linkNameOffset: " + entries.get(mid - 1).getKey());
+                }
+                if (name.compareTo(minName) > 0 && name.compareTo(maxName) <= 0) {
+                    return 0; // Found the range
+                }
+                return name.compareTo(maxName);
+            });
+            if (entryIndex >= entries.size()) {
+                return Optional.empty();
+            }
+            if (!(entries.get(entryIndex) instanceof HdfBTreeChildBtreeEntry childBtreeEntry)) {
+                throw new IllegalStateException("Expected HdfBTreeChildBtreeEntry at index " + entryIndex + ", found: " + entries.get(entryIndex).getClass().getName());
+            }
+            HdfBTreeV1 childBTree = childBtreeEntry.getChildBTree();
+            if (childBTree == null) {
+                throw new IllegalStateException("Null child B-tree for entry at index " + entryIndex);
+            }
+            return childBTree.findObjectByName(name, group);
         }
-        HdfSymbolTableEntry ste = snod.getSymbolTableEntries().get(steIndex);
-        String steName = group.getDatasetNameByLinkNameOffset(ste.getLinkNameOffset());
-        if (!name.equals(steName)) {
-            return Optional.empty();
-        }
-        return Optional.of(ste);
     }
+
+//    /**
+//     * Finds the HdfSymbolTableEntry for a given object name using binary search.
+//     *
+//     * @param name  the object name to search for
+//     * @param group the parent group for resolving link name offsets
+//     * @return an Optional containing the HdfSymbolTableEntry if found, or Optional.empty()
+//     * @throws IllegalStateException if name resolution fails or node structure is invalid
+//     */
+//    private Optional<HdfSymbolTableEntry> findSymbolTableEntry(String name, HdfGroup group) {
+//        Optional<SnodSearchResult> searchResult = findSnodAndInsertIndex(name, group);
+//        if (searchResult.isEmpty()) {
+//            return Optional.empty();
+//        }
+//        SnodSearchResult result = searchResult.get();
+//        int entryIndex = result.entryIndex;
+//        int steIndex = result.insertIndex;
+//        HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) entries.get(entryIndex);
+//        HdfGroupSymbolTableNode snod = snodEntry.getSymbolTableNode();
+//        if (steIndex >= snod.getSymbolTableEntries().size()) {
+//            return Optional.empty();
+//        }
+//        HdfSymbolTableEntry ste = snod.getSymbolTableEntries().get(steIndex);
+//        String steName = group.getDatasetNameByLinkNameOffset(ste.getLinkNameOffset());
+//        if (!name.equals(steName)) {
+//            return Optional.empty();
+//        }
+//        return Optional.of(ste);
+//    }
 
     /**
      * Performs a binary search to find the insertion point for a dataset name.
@@ -574,24 +554,6 @@ public class HdfBTreeV1 extends AllocationRecord {
         entries.add(insertPos, newEntry);
         entriesUsed++;
     }
-
-//    /**
-//     * Checks if this is a leaf-level node (nodeLevel == 0).
-//     *
-//     * @return true if the node is a leaf node, false otherwise
-//     */
-//    public boolean isLeafLevelNode() {
-//        return this.nodeLevel == 0;
-//    }
-//
-//    /**
-//     * Checks if this is an internal-level node (nodeLevel > 0).
-//     *
-//     * @return true if the node is an internal node, false otherwise
-//     */
-//    public boolean isInternalLevelNode() {
-//        return this.nodeLevel > 0;
-//    }
 
     /**
      * Writes the B-Tree and its symbol table nodes to a file channel.
@@ -723,5 +685,132 @@ public class HdfBTreeV1 extends AllocationRecord {
 
     public List<HdfBTreeEntry> getEntries() {
         return entries;
+    }
+    /**
+     * Finds the full path to an HdfDataObject by name in the B-tree, returning a Deque of parent objects.
+     *
+     * @param name  the object name to find (dataset or group)
+     * @param group the parent group for resolving link name offsets
+     * @return an Optional containing a Deque of HdfDataObjects representing the path from the root group to the found object, or Optional.empty() if not found
+     * @throws IllegalArgumentException if name is null or empty
+     * @throws IllegalStateException    if name resolution fails or node structure is invalid
+     */
+    public Optional<Deque<HdfDataObject>> findObjectPathByName(String name, HdfGroup group) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Object name cannot be null or empty");
+        }
+        Deque<HdfDataObject> path = new ArrayDeque<>();
+        path.push(group); // Start with the root group
+        if (nodeLevel == 0) {
+            // Leaf node: find HdfSymbolTableEntry and build path
+            Optional<SymbolTableEntryWithPath> steWithPath = findSymbolTableEntryWithPath(name, group, path);
+            if (steWithPath.isEmpty()) {
+                return Optional.empty();
+            }
+            HdfSymbolTableEntry entry = steWithPath.get().entry;
+            if (entry.getCache().getCacheType() == 0) {
+                if (!(entry.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)) {
+                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheNotUsed for cacheType 0, found: " + entry.getCache().getClass().getName());
+                }
+                path.push(((HdfSymbolTableEntryCacheNotUsed) entry.getCache()).getDataSet());
+                return Optional.of(path);
+            } else if (entry.getCache().getCacheType() == 1) {
+                if (!(entry.getCache() instanceof HdfSymbolTableEntryCacheGroupMetadata)) {
+                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheGroupMetadata for cacheType 1, found: " + entry.getCache().getClass().getName());
+                }
+                path.push(((HdfSymbolTableEntryCacheGroupMetadata) entry.getCache()).getGroup());
+                return Optional.of(path);
+            } else {
+                throw new IllegalStateException("Unexpected cacheType: " + entry.getCache().getCacheType());
+            }
+        } else {
+            // Internal node: binary search for HdfBTreeChildBtreeEntry
+            int entryIndex = binarySearchDatasetName(entries.size(), (mid) -> {
+                HdfFixedPoint maxOffset = entries.get(mid).getKey();
+                String maxName = group.getDatasetNameByLinkNameOffset(maxOffset);
+                if (maxName == null) {
+                    throw new IllegalStateException("Null dataset name for linkNameOffset: " + maxOffset);
+                }
+                String minName = mid == 0 ? "" : group.getDatasetNameByLinkNameOffset(entries.get(mid - 1).getKey());
+                if (minName == null) {
+                    throw new IllegalStateException("Null dataset name for previous linkNameOffset: " + entries.get(mid - 1).getKey());
+                }
+                if (name.compareTo(minName) > 0 && name.compareTo(maxName) <= 0) {
+                    return 0; // Found the range
+                }
+                return name.compareTo(maxName);
+            });
+            if (entryIndex >= entries.size()) {
+                return Optional.empty();
+            }
+            if (!(entries.get(entryIndex) instanceof HdfBTreeChildBtreeEntry childBtreeEntry)) {
+                throw new IllegalStateException("Expected HdfBTreeChildBtreeEntry at index " + entryIndex + ", found: " + entries.get(entryIndex).getClass().getName());
+            }
+            HdfBTreeV1 childBTree = childBtreeEntry.getChildBTree();
+            if (childBTree == null) {
+                throw new IllegalStateException("Null child B-tree for entry at index " + entryIndex);
+            }
+            return childBTree.findObjectPathByName(name, group).map(childPath -> {
+                // Merge paths: parent path + child path
+                Deque<HdfDataObject> fullPath = new ArrayDeque<>(path);
+                fullPath.addAll(childPath);
+                return fullPath;
+            });
+        }
+    }
+
+    /**
+     * Helper class to hold HdfSymbolTableEntry and its path.
+     */
+    private static class SymbolTableEntryWithPath {
+        final HdfSymbolTableEntry entry;
+        final Deque<HdfDataObject> path;
+
+        SymbolTableEntryWithPath(HdfSymbolTableEntry entry, Deque<HdfDataObject> path) {
+            this.entry = entry;
+            this.path = path;
+        }
+    }
+
+    /**
+     * Finds the HdfSymbolTableEntry for a given object name using binary search, optionally tracking the path.
+     *
+     * @param name  the object name to search for
+     * @param group the parent group for resolving link name offsets
+     * @param path  the Deque to store the path (may be null if path tracking is not needed)
+     * @return an Optional containing the SymbolTableEntryWithPath if found, or Optional.empty()
+     * @throws IllegalStateException if name resolution fails or node structure is invalid
+     */
+    private Optional<SymbolTableEntryWithPath> findSymbolTableEntryWithPath(String name, HdfGroup group, Deque<HdfDataObject> path) {
+        Optional<SnodSearchResult> searchResult = findSnodAndInsertIndex(name, group);
+        if (searchResult.isEmpty()) {
+            return Optional.empty();
+        }
+        SnodSearchResult result = searchResult.get();
+        int entryIndex = result.entryIndex;
+        int steIndex = result.insertIndex;
+        HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) entries.get(entryIndex);
+        HdfGroupSymbolTableNode snod = snodEntry.getSymbolTableNode();
+        if (steIndex >= snod.getSymbolTableEntries().size()) {
+            return Optional.empty();
+        }
+        HdfSymbolTableEntry ste = snod.getSymbolTableEntries().get(steIndex);
+        String steName = group.getDatasetNameByLinkNameOffset(ste.getLinkNameOffset());
+        if (!name.equals(steName)) {
+            return Optional.empty();
+        }
+        return Optional.of(new SymbolTableEntryWithPath(ste, path));
+    }
+
+    /**
+     * Finds the HdfSymbolTableEntry for a given object name using binary search.
+     *
+     * @param name  the object name to search for
+     * @param group the parent group for resolving link name offsets
+     * @return an Optional containing the HdfSymbolTableEntry if found, or Optional.empty()
+     * @throws IllegalStateException if name resolution fails or node structure is invalid
+     */
+    private Optional<HdfSymbolTableEntry> findSymbolTableEntry(String name, HdfGroup group) {
+        return findSymbolTableEntryWithPath(name, group, null).map(steWithPath -> steWithPath.entry);
     }
 }
