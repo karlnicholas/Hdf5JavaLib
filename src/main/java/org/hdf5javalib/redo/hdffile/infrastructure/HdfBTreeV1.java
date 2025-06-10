@@ -422,35 +422,6 @@ public class HdfBTreeV1 extends AllocationRecord {
         }
     }
 
-//    /**
-//     * Finds the HdfSymbolTableEntry for a given object name using binary search.
-//     *
-//     * @param name  the object name to search for
-//     * @param group the parent group for resolving link name offsets
-//     * @return an Optional containing the HdfSymbolTableEntry if found, or Optional.empty()
-//     * @throws IllegalStateException if name resolution fails or node structure is invalid
-//     */
-//    private Optional<HdfSymbolTableEntry> findSymbolTableEntry(String name, HdfGroup group) {
-//        Optional<SnodSearchResult> searchResult = findSnodAndInsertIndex(name, group);
-//        if (searchResult.isEmpty()) {
-//            return Optional.empty();
-//        }
-//        SnodSearchResult result = searchResult.get();
-//        int entryIndex = result.entryIndex;
-//        int steIndex = result.insertIndex;
-//        HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) entries.get(entryIndex);
-//        HdfGroupSymbolTableNode snod = snodEntry.getSymbolTableNode();
-//        if (steIndex >= snod.getSymbolTableEntries().size()) {
-//            return Optional.empty();
-//        }
-//        HdfSymbolTableEntry ste = snod.getSymbolTableEntries().get(steIndex);
-//        String steName = group.getDatasetNameByLinkNameOffset(ste.getLinkNameOffset());
-//        if (!name.equals(steName)) {
-//            return Optional.empty();
-//        }
-//        return Optional.of(ste);
-//    }
-
     /**
      * Performs a binary search to find the insertion point for a dataset name.
      *
