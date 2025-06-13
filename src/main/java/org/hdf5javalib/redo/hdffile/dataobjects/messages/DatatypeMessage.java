@@ -1,8 +1,8 @@
 package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
-import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.datatype.CompoundDatatype;
 import org.hdf5javalib.redo.datatype.HdfDatatype;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

@@ -1,14 +1,14 @@
 package org.hdf5javalib.redo.examples.read;
 
-import org.hdf5javalib.HdfFileReader;
-import org.hdf5javalib.file.HdfDataSet;
-import org.hdf5javalib.utils.HdfDisplayUtils;
+import org.hdf5javalib.redo.HdfFileReader;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
+import org.hdf5javalib.redo.utils.HdfDisplayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 import static org.hdf5javalib.redo.utils.HdfReadUtils.getResourcePath;
@@ -22,34 +22,33 @@ import static org.hdf5javalib.redo.utils.HdfReadUtils.getResourcePath;
  * </p>
  */
 public class TwentyScalarRead {
+    private static final Logger log = LoggerFactory.getLogger(TwentyScalarRead.class);
     /**
      * Entry point for the application.
      *
      * @param args command-line arguments (not used)
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         new TwentyScalarRead().run();
     }
 
     /**
      * Executes the main logic of reading and displaying scalar datasets from an HDF5 file.
      */
-    private void run() {
-        try {
-            Path filePath = getResourcePath("twenty_datasets.h5");
-            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
-//                    try (HdfDataSet ds = dataSet) {
-//                        HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
-//                    }
-//                }
-                try (HdfDataSet ds = reader.getRootGroup().findDataset("dataset_14")) {
+    private void run() throws Exception {
+        Path filePath = getResourcePath("twenty_datasets.h5");
+        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+            HdfFileReader reader = new HdfFileReader(channel).readFile();
+            reader.getFileAllocation().printBlocks();
+            log.debug("Root Group: {} ", reader.getRootGroup());
+            for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
+                try (HdfDataSet ds = dataSet) {
                     HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
                 }
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+//                try (HdfDataSet ds = reader.getRootGroup().findDataset("dataset_14")) {
+//                    HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
+//                }
         }
     }
 }

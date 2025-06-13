@@ -1,7 +1,7 @@
 package org.hdf5javalib.redo.examples.HDF5Examples;
 
 import org.hdf5javalib.redo.HdfFileReader;
-import org.hdf5javalib.redo.dataclass.*;
+import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 import org.hdf5javalib.redo.utils.HdfDataHolder;
@@ -9,10 +9,8 @@ import org.hdf5javalib.redo.utils.HdfDataHolder;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.BitSet;
 
 import static org.hdf5javalib.redo.utils.HdfReadUtils.getResourcePath;
 

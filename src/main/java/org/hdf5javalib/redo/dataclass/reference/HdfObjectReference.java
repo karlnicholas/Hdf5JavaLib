@@ -7,7 +7,6 @@ import org.hdf5javalib.redo.datatype.ReferenceDatatype;
 import org.hdf5javalib.redo.datatype.StringDatatype;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
-import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
 import org.hdf5javalib.redo.hdffile.infrastructure.*;
 import org.hdf5javalib.redo.hdffile.metadata.HdfSuperblock;
@@ -17,10 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Deque;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;

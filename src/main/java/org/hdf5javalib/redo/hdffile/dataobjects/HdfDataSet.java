@@ -1,14 +1,14 @@
 package org.hdf5javalib.redo.hdffile.dataobjects;
 
+import org.hdf5javalib.redo.dataclass.HdfData;
+import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
+import org.hdf5javalib.redo.dataclass.HdfString;
+import org.hdf5javalib.redo.dataclass.HdfVariableLength;
 import org.hdf5javalib.redo.datatype.*;
 import org.hdf5javalib.redo.hdffile.AllocationRecord;
 import org.hdf5javalib.redo.hdffile.AllocationType;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
-import org.hdf5javalib.redo.dataclass.HdfData;
-import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.redo.dataclass.HdfString;
-import org.hdf5javalib.redo.dataclass.HdfVariableLength;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.*;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeV1;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
@@ -21,7 +21,10 @@ import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.HDF_MESSAGE_PREAMBLE_SIZE;

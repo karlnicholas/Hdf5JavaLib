@@ -1,12 +1,12 @@
 package org.hdf5javalib.redo.datatype;
 
-import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfReference;
 import org.hdf5javalib.redo.dataclass.reference.HdfAttributeReference;
 import org.hdf5javalib.redo.dataclass.reference.HdfDatasetRegionReference;
 import org.hdf5javalib.redo.dataclass.reference.HdfObjectReference;
 import org.hdf5javalib.redo.dataclass.reference.HdfReferenceInstance;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.redo.utils.HdfDataHolder;
 

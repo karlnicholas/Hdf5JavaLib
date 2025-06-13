@@ -1,10 +1,8 @@
 package org.hdf5javalib.redo.dataclass.reference;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.datatype.ReferenceDatatype;
-import org.hdf5javalib.redo.datatype.StringDatatype;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
 import org.hdf5javalib.redo.hdffile.infrastructure.*;

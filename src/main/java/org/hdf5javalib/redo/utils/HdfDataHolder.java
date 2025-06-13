@@ -3,12 +3,7 @@ package org.hdf5javalib.redo.utils;
 import org.hdf5javalib.redo.dataclass.HdfData;
 
 import java.lang.reflect.Array;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * A container for HDF5 data that can hold either a single scalar value

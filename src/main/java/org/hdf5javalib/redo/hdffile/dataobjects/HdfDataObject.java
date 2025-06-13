@@ -1,6 +1,5 @@
 package org.hdf5javalib.redo.hdffile.dataobjects;
 
-import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeV1;
 
 import java.util.Optional;

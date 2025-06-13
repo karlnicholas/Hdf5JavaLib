@@ -4,8 +4,6 @@ import org.hdf5javalib.redo.datatype.ReferenceDatatype;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.utils.HdfDataHolder;
 
-import java.util.List;
-
 public class HdfAttributeReference implements HdfReferenceInstance {
     private final boolean external;
 

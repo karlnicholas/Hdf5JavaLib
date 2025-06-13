@@ -7,7 +7,6 @@ import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
-import java.util.Collections;
 import java.util.List;
 
 /**
