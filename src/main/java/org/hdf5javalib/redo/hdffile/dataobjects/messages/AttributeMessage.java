@@ -202,7 +202,7 @@ public class AttributeMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "AttributeMessage(" + (getSizeMessageData() + 8) + "){" +
+        return "AttributeMessage(" + (getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE) + "){" +
                 "version=" + version +
                 ", name='" + name + '\'' +
                 ", value='" + hdfDataHolder + '\'' +
@@ -247,20 +247,10 @@ public class AttributeMessage extends HdfMessage {
         position = buffer.position();
         buffer.position((position + 7) & ~7);
 
-//        if ( value instanceof HdfVariableLength) {
-//            value.writeValueToByteBuffer(buffer);
-//        } else if ( value instanceof HdfString){
-//            value.writeValueToByteBuffer(buffer);
-//        } else {
-//            throw new RuntimeException("Unsupported datatype");
-//        }
     }
 
     public HdfDataHolder getHdfDataHolder() {
         return hdfDataHolder;
     }
 
-//    public void setValue(HdfData value) {
-//        this.value = value;
-//    }
 }

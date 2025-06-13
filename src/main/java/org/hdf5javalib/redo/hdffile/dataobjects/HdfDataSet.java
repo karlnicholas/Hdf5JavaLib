@@ -24,6 +24,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Supplier;
 
+import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.HDF_MESSAGE_PREAMBLE_SIZE;
+
 /**
  * Represents an HDF5 dataset within an HDF5 file.
  * <p>
@@ -376,7 +378,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
                     HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()),
                     (byte) 0, (short) 16);
             updatedHeaderMessages.add(objectHeaderContinuationMessage);
-            updatedHeaderMessages.add(new NilMessage(0, (byte) 0, (short) 0));
+            updatedHeaderMessages.add(new NilMessage((byte) 0, (short) 0));
             HdfMessage dataSpaceMessage = headerMessages.remove(0);
             if (!(dataSpaceMessage instanceof DataspaceMessage)) {
                 throw new IllegalStateException("Find DataspaceMessage for " + datasetName);
@@ -397,7 +399,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
                 attributes.clear();
             }
             long nilSize = (headerSize - 16) - (objectHeaderSize + attributeSize) - 8;
-            headerMessages.add(new NilMessage((int) nilSize, (byte) 0, (short) nilSize));
+            headerMessages.add(new NilMessage((byte) 0, (short) nilSize));
         }
         DataLayoutMessage dataLayoutMessage = dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class).orElseThrow();
         dataLayoutMessage.setDataAddress(allocationInfo.get(AllocationType.DATASET_DATA).getOffset());
@@ -428,7 +430,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
             if (allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getSize().getInstance(Long.class) < headerSize) {
                 fileAllocation.increaseHeaderAllocation(datasetName, HdfWriteUtils.hdfFixedPointFromValue(headerSize, fileAllocation.getSuperblock().getFixedPointDatatypeForLength()));
             }
-            int newContinuationSize = dataspaceMessage.getSizeMessageData() + 8 + attributeSize;
+            int newContinuationSize = dataspaceMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE + attributeSize;
             if (allocationInfo.get(AllocationType.DATASET_HEADER_CONTINUATION) == null || (allocationInfo.get(AllocationType.DATASET_HEADER_CONTINUATION).getSize().getInstance(Long.class) < newContinuationSize)) {
                 fileAllocation.allocateAndSetContinuationBlock(datasetName,
                         HdfWriteUtils.hdfFixedPointFromValue(newContinuationSize, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()))
@@ -447,8 +449,8 @@ public class HdfDataSet implements HdfDataObject, Closeable {
     private int getAttributeSize() {
         int attributeSize = 0;
         for (HdfMessage hdfMessage : attributes) {
-            log.trace("Write: hdfMessage.getSizeMessageData() + 8 = {} {}", hdfMessage.getMessageType(), hdfMessage.getSizeMessageData() + 8);
-            attributeSize += hdfMessage.getSizeMessageData() + 8;
+            log.trace("Write: hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE = {} {}", hdfMessage.getMessageType(), hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE);
+            attributeSize += hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE;
         }
         return attributeSize;
     }
@@ -462,8 +464,8 @@ public class HdfDataSet implements HdfDataObject, Closeable {
     private int getObjectHeaderSize(List<HdfMessage> headerMessages) {
         int objectHeaderSize = 0;
         for (HdfMessage hdfMessage : headerMessages) {
-            log.trace("Write: hdfMessage.getSizeMessageData() + 8 = {} {}", hdfMessage.getMessageType(), hdfMessage.getSizeMessageData() + 8);
-            objectHeaderSize += hdfMessage.getSizeMessageData() + 8;
+            log.trace("Write: hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE = {} {}", hdfMessage.getMessageType(), hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE);
+            objectHeaderSize += hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE;
         }
         return objectHeaderSize;
     }

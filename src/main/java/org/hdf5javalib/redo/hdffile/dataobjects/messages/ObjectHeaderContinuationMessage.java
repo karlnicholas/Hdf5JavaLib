@@ -86,7 +86,7 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "ObjectHeaderContinuationMessage(" + (getSizeMessageData() + 8) + "){" +
+        return "ObjectHeaderContinuationMessage(" + (getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE) + "){" +
                 "continuationOffset=" + continuationOffset +
                 ", continuationSize=" + continuationSize +
                 '}';

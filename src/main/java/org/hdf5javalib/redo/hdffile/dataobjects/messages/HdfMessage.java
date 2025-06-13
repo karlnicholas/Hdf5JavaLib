@@ -56,6 +56,7 @@ import java.util.List;
 public abstract class HdfMessage {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfMessage.class);
     private static final int HDF_MESSAGE_RESERVED_SIZE=3;
+    public static final int HDF_MESSAGE_PREAMBLE_SIZE=8;
     /**
      * The type of the message.
      */
@@ -130,7 +131,7 @@ public abstract class HdfMessage {
             buffer.get(messageData);
 
             HdfMessage hdfMessage = createMessageInstance(type, flags, messageData, hdfDataFile);
-            log.trace("Read: hdfMessage.sizeMessageData() + 8 = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData() + 8);
+            log.trace("Read: hdfMessage.sizeMessageData() + 8 = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE);
             // Add the message to the list
             messages.add(hdfMessage);
         }

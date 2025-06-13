@@ -36,11 +36,10 @@ public class NilMessage extends HdfMessage {
     /**
      * Constructs a NilMessage with the specified components.
      *
-     * @param size            the size of the message data (typically zero)
      * @param flags           the message flags
      * @param sizeMessageData the size of the message data in bytes
      */
-    public NilMessage(int size, int flags, int sizeMessageData) {
+    public NilMessage(int flags, int sizeMessageData) {
         super(MessageType.NilMessage, sizeMessageData, flags);
     }
 
@@ -54,7 +53,7 @@ public class NilMessage extends HdfMessage {
      */
     public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         // No data to parse for null message
-        return new NilMessage(data.length, flags, (short) data.length);
+        return new NilMessage(flags, (short) data.length);
     }
 
     /**
@@ -64,7 +63,7 @@ public class NilMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "NilMessage(" + (getSizeMessageData() + 8) + "){}";
+        return "NilMessage(" + (getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE) + "){}";
     }
 
     /**

@@ -17,8 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.parseContinuationMessage;
-import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.readMessagesFromByteBuffer;
+import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.*;
 
 /**
  * Represents the version 1 object header prefix for an HDF5 data object.
@@ -148,7 +147,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
         int i = 0;
         while (i < headerMessages.size()) {
             HdfMessage hdfMessage = headerMessages.get(i);
-            currentSize += hdfMessage.getSizeMessageData() + 8;
+            currentSize += hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE;
             currentSize = (currentSize + 7) & ~7;
             i++;
         }
@@ -252,7 +251,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
         int i = 0;
         while (i < headerMessages.size()) {
             HdfMessage hdfMessage = headerMessages.get(i);
-            currentSize += hdfMessage.getSizeMessageData() + 8;
+            currentSize += hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE;
             currentSize = (currentSize + 7) & ~7;
             i++;
 

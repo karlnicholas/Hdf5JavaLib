@@ -100,7 +100,7 @@ public class BTreeKValuesMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "BTreeKValuesMessage(" + (getSizeMessageData() + 8) + "){" +
+        return "BTreeKValuesMessage(" + (getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE) + "){" +
                 "version=" + version +
                 ", indexedStorageInternalNodeK=" + indexedStorageInternalNodeK +
                 ", groupInternalNodeK=" + groupInternalNodeK +

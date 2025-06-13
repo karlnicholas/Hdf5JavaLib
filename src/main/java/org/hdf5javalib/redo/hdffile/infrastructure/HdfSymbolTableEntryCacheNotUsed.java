@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 
 public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache {
+    private static final int SYMBOL_TABLE_ENTRY_SCRATCH_SIZE = 16;
     /**
      * The cache type (0 for basic, 1 for additional B-Tree and heap offsets).
      */
@@ -26,7 +27,7 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
             HdfObjectHeaderPrefixV1 objectHeader,
             String objectName
     ) throws IOException {
-        HdfReadUtils.skipBytes(fileChannel, 16); // Skip 16 bytes for scratch-pad
+        HdfReadUtils.skipBytes(fileChannel, SYMBOL_TABLE_ENTRY_SCRATCH_SIZE); // Skip 16 bytes for scratch-pad
         return new HdfSymbolTableEntryCacheNotUsed(hdfDataFile, objectHeader, objectName);
     }
 
@@ -38,7 +39,7 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
         // Write Reserved Field (4 bytes, must be 0)
         buffer.putInt(0);
 
-        byte[] empty = new byte[16];
+        byte[] empty = new byte[SYMBOL_TABLE_ENTRY_SCRATCH_SIZE];
         buffer.put(empty);
     }
 

@@ -168,7 +168,7 @@ public class HdfLocalHeap extends AllocationRecord {
      * @throws IOException if an I/O error occurs
      */
     public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(32).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer buffer = ByteBuffer.allocate(LOCAL_HEAP_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
 
         buffer.put(LOCAL_HEAP_SIGNATURE);
         buffer.put((byte) version);

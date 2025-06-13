@@ -87,7 +87,7 @@ public class ObjectModificationTimeMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "ObjectModificationTimeMessage(" + (getSizeMessageData() + 8) + "){" +
+        return "ObjectModificationTimeMessage(" + (getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE) + "){" +
                 "version=" + version +
                 ", secondsAfterEpoch=" + Instant.ofEpochSecond(secondsAfterEpoch).toString() +
                 '}';

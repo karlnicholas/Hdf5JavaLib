@@ -190,7 +190,7 @@ public class DataLayoutMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "DataLayoutMessage(" + (getSizeMessageData() + 8) + "){" +
+        return "DataLayoutMessage(" + (getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE) + "){" +
                 "version=" + version +
                 ", layoutClass=" + layoutClass +
                 ", dataAddress=" + (dataAddress.isUndefined() ? "<Undefined>" : dataAddress) +

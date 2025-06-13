@@ -98,25 +98,6 @@ public class HdfLocalHeapData extends AllocationRecord {
 
         data.put(currentOffset, new HdfLocalHeapDataValue(objectName, currentOffset));
 
-        // Update offset
-//        int newFreeListOffset = currentOffset + alignedStringSize;
-
-//        // Handle free list
-//        if (includeFreeBlock) {
-//            // Write free block metadata
-//            ByteBuffer buffer = ByteBuffer.wrap(heapData).order(ByteOrder.LITTLE_ENDIAN);
-//            buffer.putLong(newFreeListOffset, 1); // Next offset: 1 (last block)
-//            buffer.putLong(newFreeListOffset + 8, heapSize - newFreeListOffset); // Remaining space
-//            this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(newFreeListOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength());
-//        } else {
-//            // Set freeListOffset to actual offset unless heap is exactly full
-//            if (currentOffset + alignedStringSize == heapSize) {
-//                this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(1, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()); // Heap full, mimic C++ behavior
-//            } else {
-//                this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(newFreeListOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()); // Use actual offset
-//            }
-//        }
-//
         return currentOffset;
     }
 
