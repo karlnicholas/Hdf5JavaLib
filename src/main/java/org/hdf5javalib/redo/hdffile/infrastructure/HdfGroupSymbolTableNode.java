@@ -12,6 +12,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -27,10 +28,7 @@ import java.util.List;
  * @see HdfSymbolTableEntry
  */
 public class HdfGroupSymbolTableNode extends AllocationRecord {
-    /**
-     * The signature of the symbol table node ("SNOD").
-     */
-    private final String signature;
+    private static final byte[] GROUP_SYMBOL_TABLE_NODE_SIGNATURE = {'S', 'N', 'O', 'D'};
     /**
      * The version of the symbol table node format.
      */
@@ -43,12 +41,10 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
     /**
      * Constructs an HdfGroupSymbolTableNode with the specified fields.
      *
-     * @param signature          the signature of the node ("SNOD")
      * @param version            the version of the node format
      * @param symbolTableEntries the list of symbol table entries
      */
     public HdfGroupSymbolTableNode(
-            String signature,
             int version,
             List<HdfSymbolTableEntry> symbolTableEntries,
             HdfDataFile hdfDataFile,
@@ -56,7 +52,6 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
             HdfFixedPoint offset
     ) {
         super(AllocationType.SNOD, name, offset, hdfDataFile.getFileAllocation().HDF_SNOD_STORAGE_SIZE, hdfDataFile.getFileAllocation());
-        this.signature = signature;
         this.version = version;
         this.symbolTableEntries = symbolTableEntries;
     }
@@ -80,16 +75,14 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
         ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();
-        String signature;
         int version;
         int numberOfSymbols;
 
         // Read Signature (4 bytes)
-        byte[] signatureBytes = new byte[4];
+        byte[] signatureBytes = new byte[GROUP_SYMBOL_TABLE_NODE_SIGNATURE.length];
         buffer.get(signatureBytes);
-        signature = new String(signatureBytes, StandardCharsets.US_ASCII);
-        if (!"SNOD".equals(signature)) {
-            throw new IllegalArgumentException("Invalid SNOD signature: " + signature);
+        if (Arrays.compare(GROUP_SYMBOL_TABLE_NODE_SIGNATURE, signatureBytes) != 0) {
+            throw new IllegalArgumentException("Invalid SNOD signature: " + Arrays.toString(signatureBytes));
         }
 
         // Read Version (1 byte)
@@ -109,7 +102,6 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
         }
 
         return new HdfGroupSymbolTableNode(
-                signature,
                 version,
                 symbolTableEntries,
                 hdfDataFile,
@@ -123,7 +115,7 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
      * @param buffer the ByteBuffer to write to
      */
     public void writeToBuffer(ByteBuffer buffer) {
-        buffer.put(signature.getBytes(StandardCharsets.US_ASCII));
+        buffer.put(GROUP_SYMBOL_TABLE_NODE_SIGNATURE);
         buffer.put((byte) version);
         buffer.put((byte) 0);
         buffer.putShort((short) symbolTableEntries.size());
@@ -140,7 +132,7 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
     @Override
     public String toString() {
         return "HdfGroupSymbolTableNode{" +
-                "signature='" + signature + '\'' +
+                "signature='" + Arrays.toString(GROUP_SYMBOL_TABLE_NODE_SIGNATURE) + '\'' +
                 ", version=" + version +
                 ", numberOfSymbols=" + symbolTableEntries.size() +
                 ", symbolTableEntries=\r\n" + symbolTableEntries +

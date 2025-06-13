@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 
+import static org.hdf5javalib.redo.datatype.FixedPointDatatype.BIT_MULTIPLIER;
 import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 /**
@@ -70,6 +71,10 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  */
 public class HdfSuperblock extends AllocationRecord {
     private static final byte[] FILE_SIGNATURE = new byte[]{(byte) 0x89, 'H', 'D', 'F', '\r', '\n', 0x1A, '\n'};
+    private static final int SIGNATURE_SIZE = 8;
+    private static final int VERSION_SIZE = 1;
+    private static final int SUPERBLOCK_SIZE_V1 = 56;
+    private static final int SUPERBLOCK_SIZE_V2 = 96;
 
     private final int version;
     private final int freeSpaceVersion;
@@ -162,7 +167,7 @@ public class HdfSuperblock extends AllocationRecord {
     public static HdfSuperblock readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws Exception {
         long offset = fileChannel.position();
         // Step 1: Allocate the minimum buffer size to determine the version
-        ByteBuffer buffer = ByteBuffer.allocate(8 + 1); // File signature (8 bytes) + version (1 byte)
+        ByteBuffer buffer = ByteBuffer.allocate(SIGNATURE_SIZE + VERSION_SIZE); // File signature (8 bytes) + version (1 byte)
         buffer.order(ByteOrder.LITTLE_ENDIAN);
 
         // Read the initial bytes to determine the version
@@ -170,7 +175,7 @@ public class HdfSuperblock extends AllocationRecord {
         buffer.flip();
 
         // Verify file signature
-        byte[] signature = new byte[8];
+        byte[] signature = new byte[FILE_SIGNATURE.length];
         buffer.get(signature);
         if (!java.util.Arrays.equals(signature, FILE_SIGNATURE)) {
             throw new IllegalArgumentException("Invalid file signature");
@@ -182,9 +187,9 @@ public class HdfSuperblock extends AllocationRecord {
         // Step 2: Determine the size of the superblock based on the version
         int superblockSize;
         if (version == 0) {
-            superblockSize = 56; // Version 0 superblock size
+            superblockSize = SUPERBLOCK_SIZE_V1; // Version 0 superblock size
         } else if (version == 1) {
-            superblockSize = 96; // Version 1 superblock size (example value, adjust per spec)
+            superblockSize = SUPERBLOCK_SIZE_V2; // Version 1 superblock size (example value, adjust per spec)
         } else {
             throw new IllegalArgumentException("Unsupported HDF5 superblock version: " + version);
         }
@@ -201,7 +206,7 @@ public class HdfSuperblock extends AllocationRecord {
         buffer.flip();
 
         // Step 4: Parse the remaining superblock fields
-        buffer.position(9); // Skip the file signature
+        buffer.position(SIGNATURE_SIZE + VERSION_SIZE); // Skip the file signature
         int freeSpaceVersion = Byte.toUnsignedInt(buffer.get());
         int rootGroupVersion = Byte.toUnsignedInt(buffer.get());
         buffer.get(); // Skip reserved
@@ -213,11 +218,11 @@ public class HdfSuperblock extends AllocationRecord {
         FixedPointDatatype fixedPointDatatypeForOffset = new FixedPointDatatype(
                 FixedPointDatatype.createClassAndVersion(),
                 FixedPointDatatype.createClassBitField(false, false, false, false),
-                offsetSize, (short) 0, (short) (8 * offsetSize), hdfDataFile);
+                offsetSize, (short) 0, (short) (BIT_MULTIPLIER * offsetSize), hdfDataFile);
         FixedPointDatatype fixedPointDatatypeForLength = new FixedPointDatatype(
                 FixedPointDatatype.createClassAndVersion(),
                 FixedPointDatatype.createClassBitField(false, false, false, false),
-                lengthSize, (short) 0, (short) (8 * lengthSize), hdfDataFile);
+                lengthSize, (short) 0, (short) (BIT_MULTIPLIER * lengthSize), hdfDataFile);
 
         int groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
         int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
@@ -276,7 +281,7 @@ public class HdfSuperblock extends AllocationRecord {
         ByteBuffer buffer = ByteBuffer.allocate((int) HdfFileAllocation.SUPERBLOCK_SIZE).order(ByteOrder.LITTLE_ENDIAN);
 
         // Step 1: Write the HDF5 file signature (8 bytes)
-        buffer.put(new byte[]{(byte) 0x89, 0x48, 0x44, 0x46, 0x0D, 0x0A, 0x1A, 0x0A});
+        buffer.put(FILE_SIGNATURE);
 
         // Step 2: Superblock metadata (8 bytes)
         buffer.put((byte) version);              // Superblock version (1 byte)

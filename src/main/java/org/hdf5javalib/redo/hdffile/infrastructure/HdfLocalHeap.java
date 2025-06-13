@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
+import java.util.Arrays;
 
 import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
@@ -31,10 +32,9 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfFileAllocation
  */
 public class HdfLocalHeap extends AllocationRecord {
-    /**
-     * The signature of the local heap ("HEAP").
-     */
-    private final String signature;
+    private static final byte[] LOCAL_HEAP_SIGNATURE = new byte[]{'H', 'E', 'A', 'P'};
+    private static final int LOCAL_HEAP_HEADER_SIZE=32;
+    private static final int LOCAL_HEAP_HEADER_RESERVED_SIZE=3;
     /**
      * The version of the local heap format.
      */
@@ -57,22 +57,17 @@ public class HdfLocalHeap extends AllocationRecord {
      * Initializes the local heap with the provided signature, version, and heap properties,
      * associating it with the given HDF5 data file and heap data buffer.
      *
-     * @param signature          the signature of the local heap (e.g., "HEAP")
      * @param version            the version of the local heap format
-     * @param heapContentsSize   the size of the heap's data segment
-     * @param heapContentsOffset the offset to the heap's data segment in the file
      * @param hdfDataFile        the HDF5 data file containing the local heap
      * @param heapData           the raw byte array containing the heap's data
      * @param heapOffset
      */
-    public HdfLocalHeap(String signature, int version, HdfFixedPoint heapContentsSize,
-                        HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, HdfLocalHeapData heapData,
+    public HdfLocalHeap(int version, HdfDataFile hdfDataFile, HdfLocalHeapData heapData,
                         String name, long heapOffset) {
         super(AllocationType.LOCAL_HEAP_HEADER, name,
                 HdfWriteUtils.hdfFixedPointFromValue(heapOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
                 hdfDataFile.getFileAllocation().HDF_LOCAL_HEAP_HEADER_SIZE,
                 hdfDataFile.getFileAllocation());
-        this.signature = signature;
         this.version = version;
         this.hdfDataFile = hdfDataFile;
         this.heapData = heapData;
@@ -94,7 +89,6 @@ public class HdfLocalHeap extends AllocationRecord {
                 HdfWriteUtils.hdfFixedPointFromValue(heapOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
                 hdfDataFile.getFileAllocation().HDF_INITIAL_LOCAL_HEAP_CONTENTS_SIZE,
                 hdfDataFile.getFileAllocation());
-        this.signature = "HEAP";
         this.version = 0;
         this.hdfDataFile = hdfDataFile;
         heapData = new HdfLocalHeapData(heapContentsOffset, heapContentsSize, hdfDataFile);
@@ -126,26 +120,21 @@ public class HdfLocalHeap extends AllocationRecord {
             String objectName
     ) throws IOException {
         long heapOffset = fileChannel.position();
-        ByteBuffer buffer = ByteBuffer.allocate(32);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer buffer = ByteBuffer.allocate(LOCAL_HEAP_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
 
         fileChannel.read(buffer);
         buffer.flip();
 
-        byte[] signatureBytes = new byte[4];
+        byte[] signatureBytes = new byte[LOCAL_HEAP_SIGNATURE.length];
         buffer.get(signatureBytes);
-        String signature = new String(signatureBytes);
-        if (!"HEAP".equals(signature)) {
-            throw new IllegalArgumentException("Invalid heap signature: " + signature);
+//        String signature = new String(signatureBytes);
+        if (Arrays.compare(LOCAL_HEAP_SIGNATURE, signatureBytes) != 0) {
+            throw new IllegalArgumentException("Invalid heap signature: " + signatureBytes);
         }
 
         int version = Byte.toUnsignedInt(buffer.get());
 
-        byte[] reserved = new byte[3];
-        buffer.get(reserved);
-        if (!allBytesZero(reserved)) {
-            throw new IllegalArgumentException("Reserved bytes in heap header must be zero.");
-        }
+        buffer.position(buffer.position() + LOCAL_HEAP_HEADER_RESERVED_SIZE);
 
         HdfFixedPoint dataSegmentSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength(), buffer);
         HdfFixedPoint freeListOffset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
@@ -154,40 +143,9 @@ public class HdfLocalHeap extends AllocationRecord {
         HdfLocalHeapData hdfLocalHeapData = HdfLocalHeapData.readFromSeekableByteChannel(
                 fileChannel, dataSegmentSize, freeListOffset, dataSegmentAddress, hdfDataFile, objectName);
 
-        //
-//        fileChannel.position(dataSegmentAddress.getInstance(Long.class));
-//        // Allocate buffer and read heap data from the file channel
-//        byte[] heapData = new byte[dataSegmentSize.getInstance(Long.class).intValue()];
-//        buffer = ByteBuffer.wrap(heapData);
-//
-//        fileChannel.read(buffer);
-
-//        String signature, int version, HdfFixedPoint heapContentsSize,
-//                HdfFixedPoint freeListOffset, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, HdfLocalHeapData heapData,
-//                String name
-//TODO:
-//        // wrong hdfLocalHeapData, needs to be prior one
-//        String objectName = hdfLocalHeapData.getStringAtOffset(linkNameOffset);
-        return new HdfLocalHeap(signature, version,
-                dataSegmentSize,
-                dataSegmentAddress,
+        return new HdfLocalHeap(version,
                 hdfDataFile, hdfLocalHeapData,
                 objectName + ":Local Heap Header", heapOffset);
-    }
-
-    /**
-     * Checks if all bytes in an array are zero.
-     *
-     * @param bytes the byte array to check
-     * @return true if all bytes are zero, false otherwise
-     */
-    private static boolean allBytesZero(byte[] bytes) {
-        for (byte b : bytes) {
-            if (b != 0) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -198,7 +156,6 @@ public class HdfLocalHeap extends AllocationRecord {
     @Override
     public String toString() {
         return "HdfLocalHeap{" +
-                "signature='" + signature + '\'' +
                 ", version=" + version +
                 ", heapData=" + heapData + '}';
     }
@@ -213,9 +170,9 @@ public class HdfLocalHeap extends AllocationRecord {
     public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(32).order(ByteOrder.LITTLE_ENDIAN);
 
-        buffer.put(signature.getBytes());
+        buffer.put(LOCAL_HEAP_SIGNATURE);
         buffer.put((byte) version);
-        buffer.put(new byte[3]);
+        buffer.put(new byte[LOCAL_HEAP_HEADER_RESERVED_SIZE]);
 
         writeFixedPointToBuffer(buffer, heapData.getHeapContentsSize());
         writeFixedPointToBuffer(buffer, heapData.getFreeListOffset());

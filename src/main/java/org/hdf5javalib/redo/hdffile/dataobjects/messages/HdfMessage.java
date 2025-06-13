@@ -55,6 +55,7 @@ import java.util.List;
  */
 public abstract class HdfMessage {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HdfMessage.class);
+    private static final int HDF_MESSAGE_RESERVED_SIZE=3;
     /**
      * The type of the message.
      */
@@ -122,7 +123,7 @@ public abstract class HdfMessage {
             MessageType type = MessageType.fromValue(buffer.getShort());
             int size = Short.toUnsignedInt(buffer.getShort());
             int flags = Byte.toUnsignedInt(buffer.get());
-            buffer.position(buffer.position() + 3); // Skip 3 reserved bytes
+            buffer.position(buffer.position() + HDF_MESSAGE_RESERVED_SIZE); // Skip 3 reserved bytes
 
             // Header Message Data
             byte[] messageData = new byte[size];

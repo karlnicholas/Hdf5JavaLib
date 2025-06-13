@@ -26,6 +26,7 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see FixedPointDatatype
  */
 public class HdfSymbolTableEntry {
+    private final static int RESERVED_FIELD_1_SIZE = 4;
     /**
      * The offset of the link name in the local heap.
      */
@@ -67,7 +68,7 @@ public class HdfSymbolTableEntry {
 
         // Read cache type and skip reserved field
         int cacheType = HdfReadUtils.readIntFromFileChannel(fileChannel);
-        HdfReadUtils.skipBytes(fileChannel, 4); // Skip reserved field
+        HdfReadUtils.skipBytes(fileChannel, RESERVED_FIELD_1_SIZE); // Skip reserved field
 
         long savedPosition = fileChannel.position();
         fileChannel.position(objectHeaderAddress.getInstance(Long.class));

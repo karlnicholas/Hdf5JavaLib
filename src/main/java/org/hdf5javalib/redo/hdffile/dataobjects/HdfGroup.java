@@ -125,7 +125,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
 
         localHeap.addToHeap("");
 
-        bTree = new HdfBTreeV1("TREE", 0, 0,
+        bTree = new HdfBTreeV1(0, 0,
                 hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(),
                 hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset().undefined(),
                 hdfDataFile,

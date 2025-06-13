@@ -30,6 +30,9 @@ import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.readM
  * </p>
  */
 public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
+    private static final int OBJECT_HREADER_PREFIX_HEADER_SIZE=16;
+    private static final int OBJECT_HREADER_PREFIX_RESERVED_SIZE_1=1;
+    private static final int OBJECT_HREADER_PREFIX_RESERVED_SIZE_2=4;
     /**
      * The version of the object header (1 byte).
      */
@@ -91,7 +94,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
             String objectName
     ) throws IOException {
         long offset = fileChannel.position();
-        ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
+        ByteBuffer buffer = ByteBuffer.allocate(OBJECT_HREADER_PREFIX_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
         fileChannel.read(buffer);
         buffer.flip();
 
@@ -99,10 +102,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
         int version = Byte.toUnsignedInt(buffer.get());
 
         // Reserved (1 byte, should be zero)
-        int reserved = Byte.toUnsignedInt(buffer.get());
-        if (reserved != 0) {
-            throw new IllegalArgumentException("Reserved byte in Data Object Header Prefix is not zero.");
-        }
+        buffer.position(buffer.position() + OBJECT_HREADER_PREFIX_RESERVED_SIZE_1);
 
         // Total Number of Header Messages (2 bytes, little-endian)
         int totalHeaderMessages = Short.toUnsignedInt(buffer.getShort());
@@ -114,10 +114,8 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
         short objectHeaderSize = (short) buffer.getInt();
 
         // Reserved (4 bytes, should be zero)
-        int reservedInt = buffer.getInt();
-        if (reservedInt != 0) {
-            throw new IllegalArgumentException("Reserved integer in Data Object Header Prefix is not zero.");
-        }
+        buffer.position(buffer.position() + OBJECT_HREADER_PREFIX_RESERVED_SIZE_2);
+
         List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>(readMessagesFromByteBuffer(fileChannel, objectHeaderSize, hdfDataFile));
         for (HdfMessage hdfMessage : dataObjectHeaderMessages) {
             if (hdfMessage instanceof ObjectHeaderContinuationMessage) {

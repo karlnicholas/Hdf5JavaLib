@@ -25,6 +25,7 @@ import java.util.*;
  * @see HdfReadUtils
  */
 public class FixedPointDatatype implements HdfDatatype {
+    public static final int BIT_MULTIPLIER = 8;
     /**
      * The class and version information for the datatype (class 0, version 1).
      */
