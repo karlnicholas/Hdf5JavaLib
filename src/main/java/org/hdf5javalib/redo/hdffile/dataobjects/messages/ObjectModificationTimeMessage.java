@@ -33,6 +33,7 @@ import java.time.Instant;
  * @see HdfDataFile
  */
 public class ObjectModificationTimeMessage extends HdfMessage {
+    private static final int OBJECTMODIFICATIONTIME_RESERVED_1 = 3;
     /**
      * The version of the modification time message format.
      */
@@ -71,7 +72,7 @@ public class ObjectModificationTimeMessage extends HdfMessage {
         int version = Byte.toUnsignedInt(buffer.get());
 
         // Skip reserved bytes
-        buffer.position(buffer.position() + 3);
+        buffer.position(buffer.position() + OBJECTMODIFICATIONTIME_RESERVED_1);
 
         // Parse seconds after UNIX epoch
         long secondsAfterEpoch = Integer.toUnsignedLong(buffer.getInt());
@@ -103,7 +104,7 @@ public class ObjectModificationTimeMessage extends HdfMessage {
         writeMessageData(buffer);
         buffer.put((byte) version);
         // Write reserved bytes
-        buffer.position(buffer.position() + 3);
+        buffer.position(buffer.position() + OBJECTMODIFICATIONTIME_RESERVED_1);
         // Write seconds after UNIX epoch
         buffer.putInt((int) secondsAfterEpoch);
     }

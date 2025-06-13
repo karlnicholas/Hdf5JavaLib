@@ -64,7 +64,7 @@ public abstract class HdfMessage {
     /**
      * The size of the message data in bytes, including padding.
      */
-    private int sizeMessageData;
+    private final int sizeMessageData;
     /**
      * The message flags indicating properties like constancy or shareability.
      */
@@ -131,7 +131,7 @@ public abstract class HdfMessage {
             buffer.get(messageData);
 
             HdfMessage hdfMessage = createMessageInstance(type, flags, messageData, hdfDataFile);
-            log.trace("Read: hdfMessage.sizeMessageData() + 8 = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE);
+            log.trace("Read: hdfMessage.sizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE);
             // Add the message to the list
             messages.add(hdfMessage);
         }
