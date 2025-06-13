@@ -157,6 +157,7 @@ public class HdfLocalHeap extends AllocationRecord {
     public String toString() {
         return "HdfLocalHeap{" +
                 ", version=" + version +
+                ", signature=" + new String(LOCAL_HEAP_SIGNATURE) +
                 ", heapData=" + heapData + '}';
     }
 

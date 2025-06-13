@@ -131,7 +131,7 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
     @Override
     public String toString() {
         return "HdfGroupSymbolTableNode{" +
-                "signature='" + Arrays.toString(GROUP_SYMBOL_TABLE_NODE_SIGNATURE) + '\'' +
+                "signature='" + new String(GROUP_SYMBOL_TABLE_NODE_SIGNATURE) + '\'' +
                 ", version=" + version +
                 ", numberOfSymbols=" + symbolTableEntries.size() +
                 ", symbolTableEntries=\r\n" + symbolTableEntries +

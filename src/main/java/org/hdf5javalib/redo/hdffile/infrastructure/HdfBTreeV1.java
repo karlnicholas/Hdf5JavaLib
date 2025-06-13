@@ -622,7 +622,7 @@ public class HdfBTreeV1 extends AllocationRecord {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("HdfBTreeV1{");
-        sb.append("signature='").append(Arrays.toString(BTREE_SIGNATURE)).append('\'');
+        sb.append("signature='").append(new String(BTREE_SIGNATURE)).append('\'');
         sb.append(", nodeType=").append(nodeType);
         sb.append(", nodeLevel=").append(nodeLevel);
         sb.append(", entriesUsed=").append(entriesUsed);
