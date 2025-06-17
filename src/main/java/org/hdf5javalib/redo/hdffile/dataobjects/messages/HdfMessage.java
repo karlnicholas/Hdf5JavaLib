@@ -130,7 +130,7 @@ public abstract class HdfMessage {
             byte[] messageData = new byte[size];
             buffer.get(messageData);
 
-            HdfMessage hdfMessage = createMessageInstance(type, flags, messageData, hdfDataFile);
+            HdfMessage hdfMessage = parseHeaderMessage(type, flags, messageData, hdfDataFile);
             log.trace("Read: hdfMessage.sizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE);
             // Add the message to the list
             messages.add(hdfMessage);
@@ -148,7 +148,7 @@ public abstract class HdfMessage {
      * @return a new HdfMessage instance
      * @throws IllegalArgumentException if the message type is unknown
      */
-    protected static HdfMessage createMessageInstance(MessageType type, int flags, byte[] data, HdfDataFile hdfDataFile) {
+    protected static HdfMessage parseHeaderMessage(MessageType type, int flags, byte[] data, HdfDataFile hdfDataFile) {
         log.trace("type:flags:length {} {} {}", type, flags, data.length);
         return switch (type) {
             case NilMessage -> NilMessage.parseHeaderMessage(flags, data, hdfDataFile);
@@ -157,11 +157,9 @@ public abstract class HdfMessage {
             case FillValueMessage -> FillValueMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case DataLayoutMessage -> DataLayoutMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case AttributeMessage -> AttributeMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case ObjectHeaderContinuationMessage ->
-                    ObjectHeaderContinuationMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case ObjectHeaderContinuationMessage -> ObjectHeaderContinuationMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case SymbolTableMessage -> SymbolTableMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case ObjectModificationTimeMessage ->
-                    ObjectModificationTimeMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case ObjectModificationTimeMessage -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case BtreeKValuesMessage -> BTreeKValuesMessage.parseHeaderMessage(flags, data, hdfDataFile);
             default -> throw new IllegalArgumentException("Unknown message type: " + type);
         };

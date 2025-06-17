@@ -6,7 +6,6 @@ import org.hdf5javalib.redo.utils.HdfReadUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.BitSet;
 
 import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
@@ -56,7 +55,7 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
      * @param flags              message flags
      * @param sizeMessageData    the size of the message data in bytes
      */
-    public ObjectHeaderContinuationMessage(final HdfFixedPoint continuationOffset, final HdfFixedPoint continuationSize, int flags, short sizeMessageData) {
+    public ObjectHeaderContinuationMessage(final HdfFixedPoint continuationOffset, final HdfFixedPoint continuationSize, int flags, int sizeMessageData) {
         super(MessageType.ObjectHeaderContinuationMessage, sizeMessageData, flags);
         this.continuationOffset = continuationOffset;
         this.continuationSize = continuationSize;
@@ -73,10 +72,9 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
     public static ObjectHeaderContinuationMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Parse the continuation offset and size
-        BitSet emptyBitSet = new BitSet();
         HdfFixedPoint continuationOffset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         HdfFixedPoint continuationSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength(), buffer);
-        return new ObjectHeaderContinuationMessage(continuationOffset, continuationSize, flags, (short) data.length);
+        return new ObjectHeaderContinuationMessage(continuationOffset, continuationSize, flags, data.length);
     }
 
     /**

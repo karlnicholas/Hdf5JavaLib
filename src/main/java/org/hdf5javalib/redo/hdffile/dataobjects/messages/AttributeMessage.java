@@ -128,9 +128,9 @@ public class AttributeMessage extends HdfMessage {
         paddingBytes = new byte[padding];
         buffer.get(paddingBytes);
 
-        HdfMessage hdfDataObjectHeaderDt = createMessageInstance(MessageType.DatatypeMessage, (byte) 0, dtBytes, hdfDataFile);
+        HdfMessage hdfDataObjectHeaderDt = parseHeaderMessage(MessageType.DatatypeMessage, (byte) 0, dtBytes, hdfDataFile);
         DatatypeMessage dt = (DatatypeMessage) hdfDataObjectHeaderDt;
-        HdfMessage hdfDataObjectHeaderDs = createMessageInstance(MessageType.DataspaceMessage, (byte) 0, dsBytes, hdfDataFile);
+        HdfMessage hdfDataObjectHeaderDs = parseHeaderMessage(MessageType.DataspaceMessage, (byte) 0, dsBytes, hdfDataFile);
         DataspaceMessage ds = (DataspaceMessage) hdfDataObjectHeaderDs;
 
         int dtDataSize = dt.getHdfDatatype().getSize();

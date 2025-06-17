@@ -69,7 +69,7 @@ public class SymbolTableMessage extends HdfMessage {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         HdfFixedPoint bTreeAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         HdfFixedPoint localHeapAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
-        return new SymbolTableMessage(bTreeAddress, localHeapAddress, flags, (short) data.length);
+        return new SymbolTableMessage(bTreeAddress, localHeapAddress, flags, data.length);
     }
 
     /**

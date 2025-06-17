@@ -195,8 +195,7 @@ public class HdfSuperblock extends AllocationRecord {
         }
 
         // Step 3: Allocate a new buffer for the full superblock
-        buffer = ByteBuffer.allocate(superblockSize);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer = ByteBuffer.allocate(superblockSize).order(ByteOrder.LITTLE_ENDIAN);
 
         // Reset file channel position to re-read from the beginning
         fileChannel.position(0);

@@ -53,7 +53,7 @@ public class NilMessage extends HdfMessage {
      */
     public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         // No data to parse for null message
-        return new NilMessage(flags, (short) data.length);
+        return new NilMessage(flags, data.length);
     }
 
     /**

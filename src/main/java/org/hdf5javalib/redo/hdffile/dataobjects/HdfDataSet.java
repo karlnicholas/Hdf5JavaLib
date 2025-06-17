@@ -69,7 +69,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
     @Override
     public String toString() {
         Optional<HdfFixedPoint> dataAddress = getDataAddress();
-        return "\r\nHdfDataSet@" + (dataAddress.isEmpty() ? "<Undefined>" : dataAddress.get().isUndefined() ? "<Undefined>" : dataAddress.get().toString()) + "{" +
+        return "\r\nHdfDataSet@" + (dataAddress.isEmpty() ? "<Empty>" : dataAddress.get().isUndefined() ? "<Undefined>" : dataAddress.get().toString()) + "{" +
                 ",\r\n\tdatasetName='" + datasetName + '\'' +
                 ",\r\n\thdfDatatype=" + hdfDatatype +
 //                ",\r\n\tattributes=" + attributes +

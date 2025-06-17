@@ -59,6 +59,7 @@ import static org.hdf5javalib.redo.datatype.VariableLengthDatatype.parseVariable
  * @see HdfDatatype
  */
 public class DatatypeMessage extends HdfMessage {
+    private static final int DATATYPE_CLASSBITFIELD_SIZE=3;
     /**
      * The HDF5 datatype describing the data.
      */
@@ -99,7 +100,7 @@ public class DatatypeMessage extends HdfMessage {
     public static HdfDatatype getHdfDatatype(ByteBuffer buffer, HdfDataFile hdfDataFile) {
         // Parse Version and Datatype Class (packed into a single byte)
         int classAndVersion = Byte.toUnsignedInt(buffer.get());
-        byte[] classBits = new byte[3];
+        byte[] classBits = new byte[DATATYPE_CLASSBITFIELD_SIZE];
         buffer.get(classBits);
         BitSet classBitField = BitSet.valueOf(new long[]{
                 ((long) classBits[2] & 0xFF) << 16 | ((long) classBits[1] & 0xFF) << 8 | ((long) classBits[0] & 0xFF)
@@ -167,9 +168,9 @@ public class DatatypeMessage extends HdfMessage {
         buffer.put((byte) hdfDatatype.getClassAndVersion());    // 1
         // Write Class Bit Field (24 bits)
         byte[] bytes = hdfDatatype.getClassBitField().toByteArray();
-        byte[] result = new byte[3];
+        byte[] result = new byte[DATATYPE_CLASSBITFIELD_SIZE];
         // Copy bytes
-        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, 3));
+        System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, DATATYPE_CLASSBITFIELD_SIZE));
         buffer.put(result);         // 3
         buffer.putInt(hdfDatatype.getSize());        // 4
         hdfDatatype.writeDefinitionToByteBuffer(buffer);

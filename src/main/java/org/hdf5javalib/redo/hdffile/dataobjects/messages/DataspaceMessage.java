@@ -32,6 +32,7 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfDataFile
  */
 public class DataspaceMessage extends HdfMessage {
+    private static final int DATASPACE_MESSAGE_RESERVED_1 = 5;
     /**
      * The version of the dataspace message format.
      */
@@ -104,7 +105,7 @@ public class DataspaceMessage extends HdfMessage {
         int flagByte = Byte.toUnsignedInt(buffer.get());
         BitSet flagSet = BitSet.valueOf(new byte[]{(byte) flagByte});
 
-        buffer.position(buffer.position() + 5);
+        buffer.position(buffer.position() + DATASPACE_MESSAGE_RESERVED_1);
 
         HdfFixedPoint[] dimensions = new HdfFixedPoint[dimensionality];
         for (int i = 0; i < dimensionality; i++) {

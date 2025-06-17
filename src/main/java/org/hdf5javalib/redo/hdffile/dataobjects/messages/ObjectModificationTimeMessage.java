@@ -78,7 +78,7 @@ public class ObjectModificationTimeMessage extends HdfMessage {
         long secondsAfterEpoch = Integer.toUnsignedLong(buffer.getInt());
 
         // Return a constructed instance of ObjectModificationTimeMessage
-        return new ObjectModificationTimeMessage(version, secondsAfterEpoch, flags, (short) data.length);
+        return new ObjectModificationTimeMessage(version, secondsAfterEpoch, flags, data.length);
     }
 
     /**
