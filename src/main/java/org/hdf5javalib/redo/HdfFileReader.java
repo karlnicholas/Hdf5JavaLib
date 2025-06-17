@@ -62,7 +62,7 @@ public class HdfFileReader implements HdfDataFile {
     private void initializeGlobalHeap(HdfFixedPoint offset) {
         try {
             fileChannel.position(offset.getInstance(Long.class));
-            globalHeap.readFromSeekableByteChannel(fileChannel, this);
+            globalHeap.initializeFromSeekableByteChannel(fileChannel, this);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

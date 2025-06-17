@@ -1,6 +1,8 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
+import org.hdf5javalib.redo.hdffile.AllocationRecord;
+import org.hdf5javalib.redo.hdffile.AllocationType;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
@@ -130,7 +132,7 @@ public class HdfGlobalHeap {
      * @param hdfDataFile the HDF5 file context
      * @throws IOException if an I/O error occurs or the heap data is invalid
      */
-    public void readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
+    public void initializeFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
         long startOffset = fileChannel.position();
         ByteBuffer headerBuffer = ByteBuffer.allocate(GLOBAL_HEAP_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(headerBuffer);
@@ -190,9 +192,17 @@ public class HdfGlobalHeap {
         }
 
         HdfFixedPoint hdfStartOffset = HdfWriteUtils.hdfFixedPointFromValue(startOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset());
+
         this.heapCollections.put(hdfStartOffset, localObjects);
         this.collectionSizes.put(hdfStartOffset, localCollectionSize);
         this.nextObjectIds.put(hdfStartOffset, localNextObjectId);
+
+//        this.setType(heapCollections.size() > 1 ? AllocationType.GLOBAL_HEAP_2 : AllocationType.GLOBAL_HEAP_1);
+//        this.setName(heapCollections.size() > 1 ? "Global Heap 1" : "Global Heap 2");
+//        this.setOffset(hdfStartOffset);
+//        this.setSize(localCollectionSize);
+//        this.hdfDataFile.getFileAllocation().addAllocationBlock(this);
+
     }
 
     /**

@@ -42,13 +42,13 @@ public class ReferenceRead {
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Root Group: {} ", reader.getRootGroup());
-                reader.getFileAllocation().printBlocks();
 //                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
 //                    displayReference(channel, dataSet, reader);
 //                }
                 for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
                     displayData(channel, dataSet, reader);
                 }
+                reader.getFileAllocation().printBlocks();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

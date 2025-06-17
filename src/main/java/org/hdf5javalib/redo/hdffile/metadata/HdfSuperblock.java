@@ -131,7 +131,7 @@ public class HdfSuperblock extends AllocationRecord {
             FixedPointDatatype fixedPointDatatypeForOffset,
             FixedPointDatatype fixedPointDatatypeForLength
     ) {
-        super(AllocationType.SUPERBLOCK, name, offset, HdfWriteUtils.hdfFixedPointFromValue(HdfFileAllocation.SUPERBLOCK_SIZE, fixedPointDatatypeForLength), hdfDataFile.getFileAllocation());
+        super(AllocationType.SUPERBLOCK, name, offset, HdfWriteUtils.hdfFixedPointFromValue(HdfFileAllocation.SUPERBLOCK_SIZE, fixedPointDatatypeForLength), null);
 //        hdfDataFile.getFileAllocation().addAllocationBlock(this);
         this.version = version;
         this.freeSpaceVersion = freeSpaceVersion;
