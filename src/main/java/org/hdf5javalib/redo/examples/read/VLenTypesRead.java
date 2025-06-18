@@ -6,7 +6,6 @@ import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 import org.hdf5javalib.redo.utils.HdfDisplayUtils;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.Objects;
 
@@ -20,6 +19,7 @@ import java.util.Objects;
  * </p>
  */
 public class VLenTypesRead {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(VLenTypesRead.class);
     /**
      * Entry point for the application.
      *
@@ -46,6 +46,8 @@ public class VLenTypesRead {
                     HdfDisplayUtils.displayScalarData(channel, ds, Object.class, reader);
                 }
             }
+            log.info("RootGroup: {}", reader.getRootGroup());
+            reader.getFileAllocation().printBlocks();
         }
     }
 

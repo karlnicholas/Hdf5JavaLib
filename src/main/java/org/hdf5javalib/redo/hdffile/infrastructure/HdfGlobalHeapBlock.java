@@ -7,12 +7,9 @@ import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.SeekableByteChannel;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class HdfGlobalHeapBlock extends AllocationRecord {
     static final int GLOBAL_HEAP_OBJECT_SIZE = 16;

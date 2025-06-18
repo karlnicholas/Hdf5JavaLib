@@ -62,6 +62,7 @@ public class ExamplesRead {
             for (HdfDataSet ds : reader.getRootGroup().getDataSets()) {
                 HdfDisplayUtils.displayData(channel, ds, reader);
             }
+            reader.getFileAllocation().printBlocks();
         } catch (Exception e) {
             System.out.println("Exception in displayFile: " + filePath);
             e.printStackTrace(System.out);
