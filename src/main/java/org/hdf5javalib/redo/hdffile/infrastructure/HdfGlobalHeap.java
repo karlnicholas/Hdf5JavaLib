@@ -180,8 +180,8 @@ public class HdfGlobalHeap {
                 localCollectionSize,
                 localNextObjectId,
                 hdfDataFile,
-                globalHeaps.size() > 1 ? AllocationType.GLOBAL_HEAP_2 : AllocationType.GLOBAL_HEAP_1,
-                globalHeaps.size() > 1 ? "Global Heap 2" : "Global Heap 1",
+                globalHeaps.size() > 0 ? AllocationType.GLOBAL_HEAP_2 : AllocationType.GLOBAL_HEAP_1,
+                globalHeaps.size() > 0 ? "Global Heap 2" : "Global Heap 1",
                 hdfStartOffset,
                 hdfDataFile.getFileAllocation()
         );

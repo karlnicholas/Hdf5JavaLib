@@ -41,13 +41,13 @@ public class ReferenceRead {
             Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                log.debug("Root Group: {} ", reader.getRootGroup());
 //                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
 //                    displayReference(channel, dataSet, reader);
 //                }
                 for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
                     displayData(channel, dataSet, reader);
                 }
+                log.debug("Superblock: {} ", reader.getFileAllocation().getSuperblock());
                 reader.getFileAllocation().printBlocks();
             }
         } catch (Exception e) {

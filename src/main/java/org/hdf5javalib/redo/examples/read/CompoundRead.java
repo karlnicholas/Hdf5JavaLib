@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.BitSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.
@@ -150,5 +151,13 @@ public class CompoundRead {
 //                .streamVector()
 //                .forEach(c -> System.out.println("Row: " + c));
 //        System.out.println("DONE");
+        AtomicInteger atomicInteger = new AtomicInteger(0);
+        new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class)
+                .streamVector()
+                .forEach(c-> {
+                    c.getMembers().toString();
+                    atomicInteger.incrementAndGet();
+                });
+        System.out.println("DONE: " + atomicInteger.get());
     }
 }
