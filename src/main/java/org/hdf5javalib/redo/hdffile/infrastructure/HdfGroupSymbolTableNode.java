@@ -26,7 +26,7 @@ import java.util.List;
  * @see HdfDataFile
  * @see HdfSymbolTableEntry
  */
-public class HdfGroupSymbolTableNode extends AllocationRecord {
+public class HdfGroupSymbolTableNode {
     private static final byte[] GROUP_SYMBOL_TABLE_NODE_SIGNATURE = {'S', 'N', 'O', 'D'};
     /**
      * The version of the symbol table node format.
@@ -36,6 +36,8 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
      * The list of symbol table entries.
      */
     private final List<HdfSymbolTableEntry> symbolTableEntries;
+
+    private final AllocationRecord allocationRecord;
 
     /**
      * Constructs an HdfGroupSymbolTableNode with the specified fields.
@@ -50,7 +52,9 @@ public class HdfGroupSymbolTableNode extends AllocationRecord {
             String name,
             HdfFixedPoint offset
     ) {
-        super(AllocationType.SNOD, name, offset, hdfDataFile.getFileAllocation().HDF_SNOD_STORAGE_SIZE, hdfDataFile.getFileAllocation());
+        this.allocationRecord = new AllocationRecord(
+                AllocationType.SNOD, name, offset, hdfDataFile.getFileAllocation().HDF_SNOD_STORAGE_SIZE, hdfDataFile.getFileAllocation()
+        );
         this.version = version;
         this.symbolTableEntries = symbolTableEntries;
     }

@@ -31,10 +31,11 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfString
  * @see HdfFileAllocation
  */
-public class HdfLocalHeap extends AllocationRecord {
+public class HdfLocalHeap {
     private static final byte[] LOCAL_HEAP_SIGNATURE = new byte[]{'H', 'E', 'A', 'P'};
     private static final int LOCAL_HEAP_HEADER_SIZE=32;
     private static final int LOCAL_HEAP_HEADER_RESERVED_SIZE=3;
+    private final AllocationRecord allocationRecord;
     /**
      * The version of the local heap format.
      */
@@ -64,7 +65,7 @@ public class HdfLocalHeap extends AllocationRecord {
      */
     public HdfLocalHeap(int version, HdfDataFile hdfDataFile, HdfLocalHeapData heapData,
                         String name, long heapOffset) {
-        super(AllocationType.LOCAL_HEAP_HEADER, name,
+        this.allocationRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, name,
                 HdfWriteUtils.hdfFixedPointFromValue(heapOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
                 hdfDataFile.getFileAllocation().HDF_LOCAL_HEAP_HEADER_SIZE,
                 hdfDataFile.getFileAllocation());
@@ -85,7 +86,7 @@ public class HdfLocalHeap extends AllocationRecord {
      * @param hdfDataFile        the HDF5 data file to which the local heap will be written
      */
     public HdfLocalHeap(HdfFixedPoint heapContentsSize, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, String name, long heapOffset) {
-        super(AllocationType.LOCAL_HEAP_HEADER, name,
+        this.allocationRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, name,
                 HdfWriteUtils.hdfFixedPointFromValue(heapOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
                 hdfDataFile.getFileAllocation().HDF_INITIAL_LOCAL_HEAP_CONTENTS_SIZE,
                 hdfDataFile.getFileAllocation());
@@ -180,7 +181,7 @@ public class HdfLocalHeap extends AllocationRecord {
         writeFixedPointToBuffer(buffer, heapData.getHeapContentsOffset());
 
         buffer.rewind();
-        seekableByteChannel.position(getOffset().getInstance(Long.class));
+        seekableByteChannel.position(allocationRecord.getOffset().getInstance(Long.class));
         while (buffer.hasRemaining()) {
             seekableByteChannel.write(buffer);
         }
@@ -196,5 +197,9 @@ public class HdfLocalHeap extends AllocationRecord {
      */
     public String stringAtOffset(HdfFixedPoint offset) {
         return heapData.getStringAtOffset(offset);
+    }
+
+    public AllocationRecord getAllocationRecord() {
+        return allocationRecord;
     }
 }

@@ -58,7 +58,7 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
         buffer.putInt(0);
 
         writeFixedPointToBuffer(buffer, group.getBTree().getAllocationRecord().getOffset());
-        writeFixedPointToBuffer(buffer, group.getLocalHeap().getOffset());
+        writeFixedPointToBuffer(buffer, group.getLocalHeap().getAllocationRecord().getOffset());
 
     }
 

@@ -11,8 +11,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.LinkedHashMap;
 
-public class HdfGlobalHeapBlock extends AllocationRecord {
+public class HdfGlobalHeapBlock {
     static final int GLOBAL_HEAP_OBJECT_SIZE = 16;
+    private final AllocationRecord allocationRecord;
     private final LinkedHashMap<Integer, GlobalHeapObject> globalHeapObjects;
     /**
      * Map of heap offsets to the next available object ID.
@@ -37,7 +38,9 @@ public class HdfGlobalHeapBlock extends AllocationRecord {
             HdfFixedPoint offset,
             HdfFileAllocation fileAllocation
     ) {
-        super(type, name, offset, collectionSize, fileAllocation);
+        this.allocationRecord = new AllocationRecord(
+                type, name, offset, collectionSize, fileAllocation
+        );
         this.hdfDataFile = hdfDataFile;
         this.globalHeapObjects = globalHeapObjects;
         this.nextObjectId = nextObjectId;
@@ -133,7 +136,7 @@ public class HdfGlobalHeapBlock extends AllocationRecord {
             totalSize += GLOBAL_HEAP_OBJECT_SIZE;
         }
 
-        HdfFixedPoint blockSize = hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(getOffset());
+        HdfFixedPoint blockSize = hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(allocationRecord.getOffset());
         long aligned = alignTo(totalSize, blockSize.getInstance(Long.class));
         return HdfWriteUtils.hdfFixedPointFromValue(aligned, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset());
     }
@@ -209,14 +212,14 @@ public class HdfGlobalHeapBlock extends AllocationRecord {
         int newObjectPadding = getPadding(newObjectDataSize);
         long newObjectRequiredSize = GLOBAL_HEAP_OBJECT_SIZE + newObjectDataSize + newObjectPadding;
 
-        HdfFixedPoint blockSize = this.getSize();
+        HdfFixedPoint blockSize = allocationRecord.getSize();
         // need a new heap
         boolean canAcceptBytes = currentUsedSize + newObjectRequiredSize + GLOBAL_HEAP_OBJECT_SIZE > blockSize.getInstance(Long.class);
         if ( !canAcceptBytes ) {
             // Add null terminator to mark the block as full
             long freeSpace = blockSize.getInstance(Long.class) - currentUsedSize;
             if (freeSpace < GLOBAL_HEAP_OBJECT_SIZE) {
-                throw new IllegalStateException("Insufficient space for null terminator in heap at offset " + getOffset());
+                throw new IllegalStateException("Insufficient space for null terminator in heap at offset " + allocationRecord.getOffset());
             }
             if (!globalHeapObjects.containsKey(0)) {
                 GlobalHeapObject nullTerminator = new GlobalHeapObject(0, 0, freeSpace, null);
@@ -261,7 +264,7 @@ public class HdfGlobalHeapBlock extends AllocationRecord {
 
         ByteBuffer buffer = ByteBuffer.allocate(GLOBAL_HEAP_OBJECT_SIZE).order(ByteOrder.LITTLE_ENDIAN);
         buffer.putInt(newObjectDataSize);
-        buffer.putLong(getOffset().getInstance(Long.class));
+        buffer.putLong(allocationRecord.getOffset().getInstance(Long.class));
         buffer.putInt(nextObjectId);
         return buffer.array();
     }
