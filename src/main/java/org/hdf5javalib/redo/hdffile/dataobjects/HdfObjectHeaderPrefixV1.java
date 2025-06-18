@@ -5,6 +5,7 @@ import org.hdf5javalib.redo.hdffile.AllocationRecord;
 import org.hdf5javalib.redo.hdffile.AllocationType;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
+import org.hdf5javalib.redo.hdffile.dataobjects.messages.DataLayoutMessage;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.ObjectHeaderContinuationMessage;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
@@ -28,10 +29,12 @@ import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.*;
  * continuation messages for large headers.
  * </p>
  */
-public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
+public class HdfObjectHeaderPrefixV1 {
     private static final int OBJECT_HREADER_PREFIX_HEADER_SIZE=16;
     private static final int OBJECT_HREADER_PREFIX_RESERVED_SIZE_1=1;
     private static final int OBJECT_HREADER_PREFIX_RESERVED_SIZE_2=4;
+    private final AllocationRecord dataObjectAllocationRecord;
+    private final AllocationRecord dataAllocationRecord;
     /**
      * The version of the object header (1 byte).
      */
@@ -64,7 +67,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
     public HdfObjectHeaderPrefixV1(int version, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> headerMessages,
                                    HdfDataFile hdfDataFile, String name, HdfFixedPoint offset
     ) {
-        super(AllocationType.DATASET_OBJECT_HEADER, name, offset,
+        this.dataObjectAllocationRecord = new AllocationRecord(AllocationType.DATASET_OBJECT_HEADER, name + ":Object Header", offset,
                 HdfWriteUtils.hdfFixedPointFromValue(
                         objectHeaderSize + OBJECT_HREADER_PREFIX_HEADER_SIZE,
                         hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()
@@ -74,6 +77,15 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
         this.objectReferenceCount = objectReferenceCount;
         this.objectHeaderSize = objectHeaderSize;
         this.headerMessages = headerMessages;
+        this.dataAllocationRecord = findMessageByType(DataLayoutMessage.class)
+                .map(dlm->
+                        new AllocationRecord(
+                                AllocationType.DATASET_DATA,
+                                name+ ":Data",
+                                dlm.getDataAddress(),
+                                dlm.getDimensionSizes()[0],
+                                hdfDataFile.getFileAllocation())
+                ).orElse(null);
     }
 
     /**
@@ -127,7 +139,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
 
         // Create the instance
         return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages,
-                hdfDataFile, objectName + ":Object Header",
+                hdfDataFile, objectName,
                 HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
     }
 
@@ -187,7 +199,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
             }
         }
         buffer.rewind();
-        long rootGroupOffset = getOffset().getInstance(Long.class);
+        long rootGroupOffset = dataObjectAllocationRecord.getOffset().getInstance(Long.class);
 
         seekableByteChannel.position(rootGroupOffset);
         while (buffer.hasRemaining()) {
@@ -315,7 +327,7 @@ public class HdfObjectHeaderPrefixV1 extends AllocationRecord {
         return headerMessages;
     }
 
-    public AllocationRecord getAllocationRecord() {
-        return this;
+    public AllocationRecord getDataObjectAllocationRecord() {
+        return dataObjectAllocationRecord;
     }
 }

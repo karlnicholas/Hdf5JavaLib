@@ -93,7 +93,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
                 HdfBTreeV1 btree = ((HdfSymbolTableEntryCacheGroupMetadata) rootSte.getCache()).getBtree();
                 btree.mapOffsetToSnod().values().forEach(snod -> {
                     snod.getSymbolTableEntries().forEach(ste -> {
-                        HdfFixedPoint objectOffset = ste.getObjectHeader().getOffset();
+                        HdfFixedPoint objectOffset = ste.getObjectHeader().getDataObjectAllocationRecord().getOffset();
                         if (objectOffset.compareTo(localHdfFixedPoint) == 0) {
                             HdfSymbolTableEntryCache cache = ste.getCache();
                             if (cache.getCacheType() == 0) {

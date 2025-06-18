@@ -35,10 +35,11 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfGroup
  * @see HdfBTreeEntry
  */
-public class HdfBTreeV1 extends AllocationRecord {
+public class HdfBTreeV1 {
     private static final byte[] BTREE_SIGNATURE = {'T', 'R', 'E', 'E'};
     private static final int BTREE_HEADER_INITIAL_SIZE = 8;
     private static final int MAX_SNOD_ENTRIES = 8;
+    private final AllocationRecord allocationRecord;
     /**
      * The type of the node (0 for group B-Tree).
      */
@@ -95,7 +96,7 @@ public class HdfBTreeV1 extends AllocationRecord {
             HdfDataFile hdfDataFile,
             String name, HdfFixedPoint offset
     ) {
-        super(AllocationType.BTREE_HEADER, name, offset,
+        this.allocationRecord = new AllocationRecord(AllocationType.BTREE_HEADER, name, offset,
                 new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
                 hdfDataFile.getFileAllocation()
         );
@@ -126,7 +127,7 @@ public class HdfBTreeV1 extends AllocationRecord {
             HdfDataFile hdfDataFile,
             String name, HdfFixedPoint offset
     ) {
-        super(AllocationType.BTREE_HEADER, name, offset,
+        this.allocationRecord = new AllocationRecord(AllocationType.BTREE_HEADER, name, offset,
                 new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
                 hdfDataFile.getFileAllocation()
         );
@@ -299,6 +300,10 @@ public class HdfBTreeV1 extends AllocationRecord {
         if (symbolTableEntries.size() > MAX_SNOD_ENTRIES) {
             splitSnod(targetSnodIndex, fileAllocation, group);
         }
+    }
+
+    public AllocationRecord getAllocationRecord() {
+        return allocationRecord;
     }
 
     /**
@@ -549,7 +554,7 @@ public class HdfBTreeV1 extends AllocationRecord {
             }
         }
         buffer.rewind();
-        long bTreeOffset = getOffset().getInstance(Long.class);
+        long bTreeOffset = allocationRecord.getOffset().getInstance(Long.class);
         seekableByteChannel.position(bTreeOffset);
         while (buffer.hasRemaining()) {
             seekableByteChannel.write(buffer);

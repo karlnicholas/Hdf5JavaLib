@@ -69,12 +69,14 @@ import static org.hdf5javalib.redo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * <p>This class provides methods to parse and interpret the HDF5 Superblock
  * based on the HDF5 file specification.</p>
  */
-public class HdfSuperblock extends AllocationRecord {
+public class HdfSuperblock {
     private static final byte[] FILE_SIGNATURE = new byte[]{(byte) 0x89, 'H', 'D', 'F', '\r', '\n', 0x1A, '\n'};
     private static final int SIGNATURE_SIZE = 8;
     private static final int VERSION_SIZE = 1;
     private static final int SUPERBLOCK_SIZE_V1 = 56;
     private static final int SUPERBLOCK_SIZE_V2 = 96;
+
+    private final AllocationRecord allocationRecord;
 
     private final int version;
     private final int freeSpaceVersion;
@@ -131,7 +133,13 @@ public class HdfSuperblock extends AllocationRecord {
             FixedPointDatatype fixedPointDatatypeForOffset,
             FixedPointDatatype fixedPointDatatypeForLength
     ) {
-        super(AllocationType.SUPERBLOCK, name, offset, HdfWriteUtils.hdfFixedPointFromValue(HdfFileAllocation.SUPERBLOCK_SIZE, fixedPointDatatypeForLength), null);
+        this.allocationRecord = new AllocationRecord(
+                AllocationType.SUPERBLOCK,
+                name,
+                offset,
+                HdfWriteUtils.hdfFixedPointFromValue(HdfFileAllocation.SUPERBLOCK_SIZE,
+                        fixedPointDatatypeForLength),
+                null);
 //        hdfDataFile.getFileAllocation().addAllocationBlock(this);
         this.version = version;
         this.freeSpaceVersion = freeSpaceVersion;
@@ -254,7 +262,7 @@ public class HdfSuperblock extends AllocationRecord {
                 fixedPointDatatypeForLength
         );
         hdfDataFile.setFileAllocation(new HdfFileAllocation(superblock));
-        hdfDataFile.getFileAllocation().addAllocationBlock(superblock);
+        hdfDataFile.getFileAllocation().addAllocationBlock(superblock.allocationRecord);
         HdfSymbolTableEntry rootGroupSymbolTableEntry = HdfSymbolTableEntry.readFromSeekableByteChannel(fileChannel, hdfDataFile, null);
         superblock.setRootGroupSymbolTableEntry(rootGroupSymbolTableEntry);
         return superblock;
@@ -307,7 +315,7 @@ public class HdfSuperblock extends AllocationRecord {
 
         buffer.flip();
 
-        fileChannel.position(fileAllocation.getSuperblock().getOffset().getInstance(Long.class));
+        fileChannel.position(fileAllocation.getSuperblock().allocationRecord.getOffset().getInstance(Long.class));
         while (buffer.hasRemaining()) {
             fileChannel.write(buffer);
         }
@@ -353,4 +361,7 @@ public class HdfSuperblock extends AllocationRecord {
         return rootGroupSymbolTableEntry;
     }
 
+    public AllocationRecord getAllocationRecord() {
+        return allocationRecord;
+    }
 }

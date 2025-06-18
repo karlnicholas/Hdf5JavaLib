@@ -174,7 +174,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
                 Math.max(objectHeaderSize, headerSize - 16),
                 headerMessages,
                 hdfDataFile,
-                "name",
+                "",
                 allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getOffset()
         );
 

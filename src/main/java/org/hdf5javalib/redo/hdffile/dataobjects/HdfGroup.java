@@ -139,7 +139,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
         objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 24,
                 Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte) 0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))),
                 hdfDataFile,
-                groupName + "header",
+                groupName,
                 HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset())
         );
     }

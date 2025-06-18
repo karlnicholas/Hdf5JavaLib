@@ -100,7 +100,7 @@ public class HdfSymbolTableEntry {
         writeFixedPointToBuffer(buffer, linkNameOffset);
 
         // Write Object Header Address (sizeOfOffsets bytes, little-endian)
-        writeFixedPointToBuffer(buffer, objectHeader.getOffset());
+        writeFixedPointToBuffer(buffer, objectHeader.getDataObjectAllocationRecord().getOffset());
 
         // Write Cache Type (4 bytes, little-endian)
         cache.writeToBuffer(buffer);

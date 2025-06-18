@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
  * </p>
  */
 public class SeparateTypesRead {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SeparateTypesRead.class);
     /**
      * Entry point for the application.
      *
@@ -113,6 +114,8 @@ public class SeparateTypesRead {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, String.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfData[].class, reader);
             }
+            log.info("RootGroup: {}", reader.getRootGroup());
+            reader.getFileAllocation().printBlocks();
         }
     }
 

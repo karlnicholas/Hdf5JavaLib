@@ -39,13 +39,13 @@ public class TwentyScalarRead {
         Path filePath = getResourcePath("twenty_datasets.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            reader.getFileAllocation().printBlocks();
-            log.debug("Root Group: {} ", reader.getRootGroup());
             for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
                 try (HdfDataSet ds = dataSet) {
                     HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
                 }
             }
+            log.debug("Root Group: {} ", reader.getRootGroup());
+            reader.getFileAllocation().printBlocks();
 //                try (HdfDataSet ds = reader.getRootGroup().findDataset("dataset_14")) {
 //                    HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
 //                }
