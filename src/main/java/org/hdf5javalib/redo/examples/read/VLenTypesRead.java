@@ -46,7 +46,7 @@ public class VLenTypesRead {
                     HdfDisplayUtils.displayScalarData(channel, ds, Object.class, reader);
                 }
             }
-            log.info("RootGroup: {}", reader.getRootGroup());
+            log.info("Superblock: {}", reader.getFileAllocation().getSuperblock());
             reader.getFileAllocation().printBlocks();
         }
     }

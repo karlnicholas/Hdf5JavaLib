@@ -43,10 +43,11 @@ public class CompoundRead {
             Path filePath = getResourcePath("compound_example.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                log.debug("Root Group: {} ", reader.getRootGroup());
                 try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/CompoundData").orElseThrow()) {
                     displayData(channel, dataSet, reader);
                 }
+                log.debug("Root Group: {} ", reader.getRootGroup());
+                reader.getFileAllocation().printBlocks();
             }
 
         } catch (Exception e) {

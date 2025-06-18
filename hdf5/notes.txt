@@ -1,6 +1,9 @@
-"C:\Program Files\Java\jdk-17\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2021.3.2\lib\idea_rt.jar=50638" -Dfile.encoding=UTF-8 -classpath C:\Users\karln\IdeaProjects\Hdf5JavaLib\target\classes;C:\Users\karln\.m2\repository\org\slf4j\slf4j-api\2.0.17\slf4j-api-2.0.17.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;C:\Users\karln\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead
 Running h5ex_t_array.h5
-16:29:06.464 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+HdfData(HdfData[]) read   = [[0, 0, 0, 0, 0, 0, -1, -2, -3, -4, 0, -2, -4, -6, -8], [0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 2, 1, 0, -1, -2], [0, 2, 4, 6, 8, 2, 3, 4, 5, 6, 4, 4, 4, 4, 4], [0, 3, 6, 9, 12, 3, 5, 7, 9, 11, 6, 7, 8, 9, 10]]
+HdfData(HdfData[]) stream = [[0, 0, 0, 0, 0, 0, -1, -2, -3, -4, 0, -2, -4, -6, -8], [0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 2, 1, 0, -1, -2], [0, 2, 4, 6, 8, 2, 3, 4, 5, 6, 4, 4, 4, 4, 4], [0, 3, 6, 9, 12, 3, 5, 7, 9, 11, 6, 7, 8, 9, 10]]
+15:44:22.164 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=2528, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -18,12 +21,30 @@ HdfDataSet@2048{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
-HdfData(HdfData[]) read   = [[0, 0, 0, 0, 0, 0, -1, -2, -3, -4, 0, -2, -4, -6, -8], [0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 2, 1, 0, -1, -2], [0, 2, 4, 6, 8, 2, 3, 4, 5, 6, 4, 4, 4, 4, 4], [0, 3, 6, 9, 12, 3, 5, 7, 9, 11, 6, 7, 8, 9, 10]]
-HdfData(HdfData[]) stream = [[0, 0, 0, 0, 0, 0, -1, -2, -3, -4, 0, -2, -4, -6, -8], [0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 2, 1, 0, -1, -2], [0, 2, 4, 6, 8, 2, 3, 4, 5, 6, 4, 4, 4, 4, 4], [0, 3, 6, 9, 12, 3, 5, 7, 9, 11, 6, 7, 8, 9, 10]]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+2048         | 0x00000800   | 480      | DATASET_DATA | DS1:Data
+--- Gap Analysis ---
+Gap detected: Offset 1400 to 2048, Size 648
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_arrayatt.h5
-16:29:06.539 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+15:44:22.242 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=1968, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -43,10 +64,31 @@ HdfDataSet@<Undefined>{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+1400         | 0x00000578   | 568      | DATASET_HEADER_CONTINUATION | DS1:Header Continuation
+--- Gap Analysis ---
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_bit.h5
-16:29:06.549 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+HdfData(HdfData[][]) read   = [[00000000, 01010011, 10100010, 11110001, 00000000, 01010011, 10100010], [01000100, 10010100, 11100100, 00110100, 01000100, 10010100, 11100100], [10001000, 11011001, 00101010, 01111011, 10001000, 11011001, 00101010], [11001100, 00011110, 01101100, 10111110, 11001100, 00011110, 01101100]]
+HdfData(HdfData[][]) stream = [[00000000, 01010011, 10100010, 11110001, 00000000, 01010011, 10100010], [01000100, 10010100, 11100100, 00110100, 01000100, 10010100, 11100100], [10001000, 11011001, 00101010, 01111011, 10001000, 11011001, 00101010], [11001100, 00011110, 01101100, 10111110, 11001100, 00011110, 01101100]]
+15:44:22.255 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=2076, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -64,12 +106,30 @@ HdfDataSet@2048{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
-HdfData(HdfData[][]) read   = [[00000000, 01010011, 10100010, 11110001, 00000000, 01010011, 10100010], [01000100, 10010100, 11100100, 00110100, 01000100, 10010100, 11100100], [10001000, 11011001, 00101010, 01111011, 10001000, 11011001, 00101010], [11001100, 00011110, 01101100, 10111110, 11001100, 00011110, 01101100]]
-HdfData(HdfData[][]) stream = [[00000000, 01010011, 10100010, 11110001, 00000000, 01010011, 10100010], [01000100, 10010100, 11100100, 00110100, 01000100, 10010100, 11100100], [10001000, 11011001, 00101010, 01111011, 10001000, 11011001, 00101010], [11001100, 00011110, 01101100, 10111110, 11001100, 00011110, 01101100]]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+2048         | 0x00000800   | 28       | DATASET_DATA | DS1:Data
+--- Gap Analysis ---
+Gap detected: Offset 1400 to 2048, Size 648
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_bitatt.h5
-16:29:06.560 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+15:44:22.264 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=1400, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -88,10 +148,30 @@ HdfDataSet@<Undefined>{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+--- Gap Analysis ---
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_cmpd.h5
-16:29:06.578 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+HdfData(HdfData[]) read   = [1153, Exterior (static), 1.1920392515278585E-14, 3.070733824170739E90, 1184, Intake, -9.539767610322231E-233, 4.6672614692633455E-62, 1027, Intake manifold, 4.667261468365516E-62, 7.688168983161245E284, 1313, Exhaust manifold, -2.439312392945428E19, -1.4959242067111115E114]
+HdfData(HdfData[]) stream = [1153, Exterior (static), 1.1920392515278585E-14, 3.070733824170739E90, 1184, Intake, -9.539767610322231E-233, 4.6672614692633455E-62, 1027, Intake manifold, 4.667261468365516E-62, 7.688168983161245E284, 1313, Exhaust manifold, -2.439312392945428E19, -1.4959242067111115E114]
+15:44:22.294 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=6336, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1192", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -116,12 +196,31 @@ Member{name='Pressure (inHg)', offset=40, dimensionality=0, dimensionPermutation
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
-HdfData(HdfData[]) read   = [1153, Exterior (static), 1.1920392515278585E-14, 3.070733824170739E90, 1184, Intake, -9.539767610322231E-233, 4.6672614692633455E-62, 1027, Intake manifold, 4.667261468365516E-62, 7.688168983161245E284, 1313, Exhaust manifold, -2.439312392945428E19, -1.4959242067111115E114]
-HdfData(HdfData[]) stream = [1153, Exterior (static), 1.1920392515278585E-14, 3.070733824170739E90, 1184, Intake, -9.539767610322231E-233, 4.6672614692633455E-62, 1027, Intake manifold, 4.667261468365516E-62, 7.688168983161245E284, 1313, Exhaust manifold, -2.439312392945428E19, -1.4959242067111115E114]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 392      | DATASET_OBJECT_HEADER | DS1:Object Header
+1192         | 0x000004A8   | 328      | SNOD       | :Snod
+2048         | 0x00000800   | 192      | DATASET_DATA | DS1:Data
+2240         | 0x000008C0   | 4096     | GLOBAL_HEAP_1 | Global Heap 1
+--- Gap Analysis ---
+Gap detected: Offset 1520 to 2048, Size 528
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_cmpdatt.h5
-16:29:06.604 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+15:44:22.305 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=6144, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -141,15 +240,36 @@ HdfDataSet@<Undefined>{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+1400         | 0x00000578   | 512      | DATASET_HEADER_CONTINUATION | DS1:Header Continuation
+2048         | 0x00000800   | 4096     | GLOBAL_HEAP_1 | Global Heap 1
+--- Gap Analysis ---
+Gap detected: Offset 1912 to 2048, Size 136
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_commit.h5
-16:29:06.605 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+Sensor_Type
+15:44:22.308 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=1424, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1096", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
-HdfDataSet@<Undefined>{,
+HdfDataSet@<Empty>{,
 	datasetName='Sensor_Type',
 	hdfDatatype=CompoundDatatype { classAndVersion: 22 classBitField: {2}, size: 40, 
 Member{name='Serial number', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=false, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
@@ -165,10 +285,33 @@ Member{name='Pressure (inHg)', offset=32, dimensionality=0, dimensionPermutation
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=Sensor_Type, offset=8]}}}}
-Sensor_Type
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=Sensor_Type, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 296      | DATASET_OBJECT_HEADER | Sensor_Type:Object Header
+1096         | 0x00000448   | 328      | SNOD       | :Snod
+--- Gap Analysis ---
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_cpxcmpd.h5
-16:29:06.627 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+Ambient_Temperature
+HdfData(HdfData[][]) read   = [[66.80000000000001, 66.9, 67.0, 67.10000000000001, 67.2, 67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9], [66.9, 67.0, 67.1, 67.2, 67.3, 67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0], [67.0, 67.1, 67.19999999999999, 67.3, 67.39999999999999, 67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1], [67.10000000000001, 67.2, 67.3, 67.4, 67.5, 67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2], [67.2, 67.3, 67.39999999999999, 67.5, 67.6, 67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3], [67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4], [67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5], [67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6], [67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7], [67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8], [67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9], [67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0], [68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1], [68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2], [68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3], [68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4], [68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5], [68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6], [68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7], [68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8], [68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9], [68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0], [69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1], [69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2], [69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3], [69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4], [69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5], [69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1, 72.19999999999999, 72.3, 72.39999999999999, 72.5, 72.6], [69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2, 72.3, 72.4, 72.5, 72.60000000000001, 72.7], [69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3, 72.39999999999999, 72.5, 72.6, 72.7, 72.8], [69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4, 72.5, 72.60000000000001, 72.7, 72.80000000000001, 72.9], [69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5, 72.6, 72.7, 72.8, 72.9, 73.0]]
+HdfData(HdfData[][]) stream = [[66.80000000000001, 66.9, 67.0, 67.10000000000001, 67.2, 67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9], [66.9, 67.0, 67.1, 67.2, 67.3, 67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0], [67.0, 67.1, 67.19999999999999, 67.3, 67.39999999999999, 67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1], [67.10000000000001, 67.2, 67.3, 67.4, 67.5, 67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2], [67.2, 67.3, 67.39999999999999, 67.5, 67.6, 67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3], [67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4], [67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5], [67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6], [67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7], [67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8], [67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9], [67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0], [68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1], [68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2], [68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3], [68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4], [68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5], [68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6], [68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7], [68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8], [68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9], [68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0], [69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1], [69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2], [69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3], [69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4], [69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5], [69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1, 72.19999999999999, 72.3, 72.39999999999999, 72.5, 72.6], [69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2, 72.3, 72.4, 72.5, 72.60000000000001, 72.7], [69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3, 72.39999999999999, 72.5, 72.6, 72.7, 72.8], [69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4, 72.5, 72.60000000000001, 72.7, 72.80000000000001, 72.9], [69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5, 72.6, 72.7, 72.8, 72.9, 73.0]]
+DS1
+HdfData(HdfData[]) read   = [[1153, Exterior (static), 53.23, 24.57, 1184, Intake, 55.12, 22.95, 1027, Intake manifold, 103.55, 31.23, 1313, Exhaust manifold, 1252.89, 84.11], Airplane, Green, [-103234.21, 422638.78, 5996.43], /Air_Vehicle, [67.3, 67.4, 67.6], [3244, Roof, 83.82, 29.92], Automobile, Red, [326734.36, 221568.23, 432.36], /Land_Vehicle, [[70.2, 70.3, 70.4], [70.3, 70.39999999999999, 70.5], [70.4, 70.5, 70.60000000000001], [70.5, 70.6, 70.7]]]
+HdfData(HdfData[]) stream = [[1153, Exterior (static), 53.23, 24.57, 1184, Intake, 55.12, 22.95, 1027, Intake manifold, 103.55, 31.23, 1313, Exhaust manifold, 1252.89, 84.11], Airplane, Green, [-103234.21, 422638.78, 5996.43], /Air_Vehicle, [67.3, 67.4, 67.6], [3244, Roof, 83.82, 29.92], Automobile, Red, [326734.36, 221568.23, 432.36], /Land_Vehicle, [[70.2, 70.3, 70.4], [70.3, 70.39999999999999, 70.5], [70.4, 70.5, 70.60000000000001], [70.5, 70.6, 70.7]]]
+15:44:22.369 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=16560, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
@@ -176,7 +319,7 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=10360, localHeapAddress=10904}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=0, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[<empty>]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}, HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}, HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='Ambient_Temperature',
 	hdfDatatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023},
@@ -223,82 +366,47 @@ Member{name='Surveyed areas', offset=72, dimensionality=0, dimensionPermutation=
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=1440, localHeapAddress=10240}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=0, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[<empty>]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=72, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=Ambient_Temperature, offset=8], 32=HdfLocalHeapDataValue[value=Land_Vehicles, offset=32], 48=HdfLocalHeapDataValue[value=Air_Vehicles, offset=48], 64=HdfLocalHeapDataValue[value=DS1, offset=64]}}}}
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=72, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=Ambient_Temperature, offset=8], 32=HdfLocalHeapDataValue[value=Land_Vehicles, offset=32], 48=HdfLocalHeapDataValue[value=Air_Vehicles, offset=48], 64=HdfLocalHeapDataValue[value=DS1, offset=64]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | Ambient_Temperature:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+1400         | 0x00000578   | 40       | GROUP_OBJECT_HEADER | Land_Vehicles:Object Header
+1440         | 0x000005A0   | 544      | BTREE_HEADER | Land_Vehicles:Btree
+1984         | 0x000007C0   | 40       | GROUP_OBJECT_HEADER | Air_Vehicles:Object Header
+2048         | 0x00000800   | 8192     | DATASET_DATA | Ambient_Temperature:Data
+10240        | 0x00002800   | 32       | LOCAL_HEAP_HEADER | Land_Vehicles:Local Heap Header
+10272        | 0x00002820   | 88       | LOCAL_HEAP | Land_Vehicles:Local Heap Data
+10360        | 0x00002878   | 544      | BTREE_HEADER | Air_Vehicles:Btree
+10904        | 0x00002A98   | 32       | LOCAL_HEAP_HEADER | Air_Vehicles:Local Heap Header
+10936        | 0x00002AB8   | 88       | LOCAL_HEAP | Air_Vehicles:Local Heap Data
+11024        | 0x00002B10   | 520      | DATASET_OBJECT_HEADER | DS1:Object Header
+12288        | 0x00003000   | 4096     | GLOBAL_HEAP_1 | Global Heap 1
+16384        | 0x00004000   | 176      | DATASET_DATA | DS1:Data
+--- Gap Analysis ---
+Gap detected: Offset 2024 to 2048, Size 24
+Gap detected: Offset 11544 to 12288, Size 744
+--- Overlap Check ---
+No overlaps detected.
+==================================
+Running h5ex_t_cpxcmpdatt.h5
 Ambient_Temperature
 HdfData(HdfData[][]) read   = [[66.80000000000001, 66.9, 67.0, 67.10000000000001, 67.2, 67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9], [66.9, 67.0, 67.1, 67.2, 67.3, 67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0], [67.0, 67.1, 67.19999999999999, 67.3, 67.39999999999999, 67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1], [67.10000000000001, 67.2, 67.3, 67.4, 67.5, 67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2], [67.2, 67.3, 67.39999999999999, 67.5, 67.6, 67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3], [67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4], [67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5], [67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6], [67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7], [67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8], [67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9], [67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0], [68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1], [68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2], [68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3], [68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4], [68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5], [68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6], [68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7], [68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8], [68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9], [68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0], [69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1], [69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2], [69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3], [69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4], [69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5], [69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1, 72.19999999999999, 72.3, 72.39999999999999, 72.5, 72.6], [69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2, 72.3, 72.4, 72.5, 72.60000000000001, 72.7], [69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3, 72.39999999999999, 72.5, 72.6, 72.7, 72.8], [69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4, 72.5, 72.60000000000001, 72.7, 72.80000000000001, 72.9], [69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5, 72.6, 72.7, 72.8, 72.9, 73.0]]
 HdfData(HdfData[][]) stream = [[66.80000000000001, 66.9, 67.0, 67.10000000000001, 67.2, 67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9], [66.9, 67.0, 67.1, 67.2, 67.3, 67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0], [67.0, 67.1, 67.19999999999999, 67.3, 67.39999999999999, 67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1], [67.10000000000001, 67.2, 67.3, 67.4, 67.5, 67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2], [67.2, 67.3, 67.39999999999999, 67.5, 67.6, 67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3], [67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4], [67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5], [67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6], [67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7], [67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8], [67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9], [67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0], [68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1], [68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2], [68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3], [68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4], [68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5], [68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6], [68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7], [68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8], [68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9], [68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0], [69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1], [69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2], [69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3], [69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4], [69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5], [69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1, 72.19999999999999, 72.3, 72.39999999999999, 72.5, 72.6], [69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2, 72.3, 72.4, 72.5, 72.60000000000001, 72.7], [69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3, 72.39999999999999, 72.5, 72.6, 72.7, 72.8], [69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4, 72.5, 72.60000000000001, 72.7, 72.80000000000001, 72.9], [69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5, 72.6, 72.7, 72.8, 72.9, 73.0]]
 DS1
-HdfData(HdfData[]) read   = [[1153, Exterior (static), 53.23, 24.57, 1184, Intake, 55.12, 22.95, 1027, Intake manifold, 103.55, 31.23, 1313, Exhaust manifold, 1252.89, 84.11], Airplane, Green, [-103234.21, 422638.78, 5996.43], Air_Vehicles, [67.3, 67.4, 67.6], [3244, Roof, 83.82, 29.92], Automobile, Red, [326734.36, 221568.23, 432.36], Land_Vehicles, [[70.2, 70.3, 70.4], [70.3, 70.39999999999999, 70.5], [70.4, 70.5, 70.60000000000001], [70.5, 70.6, 70.7]]]
-HdfData(HdfData[]) stream = [[1153, Exterior (static), 53.23, 24.57, 1184, Intake, 55.12, 22.95, 1027, Intake manifold, 103.55, 31.23, 1313, Exhaust manifold, 1252.89, 84.11], Airplane, Green, [-103234.21, 422638.78, 5996.43], Air_Vehicles, [67.3, 67.4, 67.6], [3244, Roof, 83.82, 29.92], Automobile, Red, [326734.36, 221568.23, 432.36], Land_Vehicles, [[70.2, 70.3, 70.4], [70.3, 70.39999999999999, 70.5], [70.4, 70.5, 70.60000000000001], [70.5, 70.6, 70.7]]]
-
-
-
-	datasetName='DS1',
-	hdfDatatype=CompoundDatatype { classAndVersion: 38 classBitField: {1, 2}, size: 88, 
-Member{name='Sensors', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='Sequence', hdfDatatype='CompoundDatatype { classAndVersion: 38 classBitField: {2}, size: 40, 
-
-Member{name='Serial number', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}, sizeMessageData=60}
-Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
-Member{name='Temperature (F)', offset=24, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}
-Member{name='Pressure (inHg)', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}'}, sizeMessageData=60}
-
-
-Member{name='Name', offset=16, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=60}
-Member{name='Color', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=EnumDatatype{size=4, numMembers=3, hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}, sizeMessageData=60}
-
-Member{name='Location', offset=40, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ArrayDatatype{size=24, dimensionality=1, dimensionSizes=[3], permutationIndices=[0], hdfDatatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}}, sizeMessageData=56}
-
-Member{name='Group', offset=64, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ReferenceDatatype{size=8, version=1, type=Object Reference (H5R_OBJECT1)}, sizeMessageData=48}
-
-Member{name='Surveyed areas', offset=72, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ReferenceDatatype{size=12, version=1, type=Dataset Region Reference (H5R_DATASET_REGION1)}, sizeMessageData=56},
-
-
-
-	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 5 Object Reference Count: 1 Object Header Size: 504
-		DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[2], maxDimensions=[2], hasMaxDimensions=true}
-		DatatypeMessage(408){hdfDatatype=CompoundDatatype { classAndVersion: 38 classBitField: {1, 2}, size: 88, 
-Member{name='Sensors', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='Sequence', hdfDatatype='CompoundDatatype { classAndVersion: 38 classBitField: {2}, size: 40, 
-Member{name='Serial number', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}, sizeMessageData=60}
-Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
-Member{name='Temperature (F)', offset=24, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}
-Member{name='Pressure (inHg)', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}'}, sizeMessageData=60}
-Member{name='Name', offset=16, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=60}
-Member{name='Color', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=EnumDatatype{size=4, numMembers=3, hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}, sizeMessageData=60}
-Member{name='Location', offset=40, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ArrayDatatype{size=24, dimensionality=1, dimensionSizes=[3], permutationIndices=[0], hdfDatatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}}, sizeMessageData=56}
-Member{name='Group', offset=64, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ReferenceDatatype{size=8, version=1, type=Object Reference (H5R_OBJECT1)}, sizeMessageData=48}
-Member{name='Surveyed areas', offset=72, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ReferenceDatatype{size=12, version=1, type=Dataset Region Reference (H5R_DATASET_REGION1)}, sizeMessageData=56}}
-
-
-
-HdfData(HdfData[]) read   = [
-
-
-[1153, Exterior (static), 53.23, 24.57, 
-1184, Intake, 55.12, 22.95, 
-1027, Intake manifold, 103.55, 31.23, 
-1313, Exhaust manifold, 1252.89, 84.11], 
-
-Airplane, 
-Green, 
-[-103234.21, 422638.78, 5996.43], 
-Air_Vehicles, 
-[67.3, 67.4, 67.6], 
-
-
-[3244, Roof, 83.82, 29.92], 
-Automobile, 
-Red, 
-[326734.36, 221568.23, 432.36], 
-Land_Vehicles, 
-[[70.2, 70.3, 70.4], [70.3, 70.39999999999999, 70.5], [70.4, 70.5, 70.60000000000001], [70.5, 70.6, 70.7]]
-
-]
-
-
-Running h5ex_t_cpxcmpdatt.h5
-16:29:06.678 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+15:44:22.375 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=16384, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=4, symbolTableEntries=
@@ -306,7 +414,7 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=10360, localHeapAddress=10904}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=0, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[<empty>]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}, HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}, HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='Ambient_Temperature',
 	hdfDatatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023},
@@ -328,21 +436,51 @@ HdfDataSet@<Undefined>{,
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:12Z}
-		AttributeMessage(624){version=1, name='A1', value='HdfDataHolder{array, dimensionality=1, dimensions=[2], elements=[[1153, Exterior (static), 53.23, 24.57, 1184, Intake, 55.12, 22.95, 1027, Intake manifold, 103.55, 31.23, 1313, Exhaust manifold, 1252.89, 84.11], Airplane, Green, [-103234.21, 422638.78, 5996.43], Air_Vehicles, [67.3, 67.4, 67.6], [3244, Roof, 83.82, 29.92], Automobile, Red, [326734.36, 221568.23, 432.36], Land_Vehicles, [[70.2, 70.3, 70.4], [70.3, 70.39999999999999, 70.5], [70.4, 70.5, 70.60000000000001], [70.5, 70.6, 70.7]]]}'}},
+		AttributeMessage(624){version=1, name='A1', value='HdfDataHolder{array, dimensionality=1, dimensions=[2], elements=[[1153, Exterior (static), 53.23, 24.57, 1184, Intake, 55.12, 22.95, 1027, Intake manifold, 103.55, 31.23, 1313, Exhaust manifold, 1252.89, 84.11], Airplane, Green, [-103234.21, 422638.78, 5996.43], /Air_Vehicle, [67.3, 67.4, 67.6], [3244, Roof, 83.82, 29.92], Automobile, Red, [326734.36, 221568.23, 432.36], /Land_Vehicle, [[70.2, 70.3, 70.4], [70.3, 70.39999999999999, 70.5], [70.4, 70.5, 70.60000000000001], [70.5, 70.6, 70.7]]]}'}},
 	closed=false
 	}}}, HdfSymbolTableEntry{linkNameOffset=32, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name='Land_Vehicles'
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=1440, localHeapAddress=10240}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=0, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[<empty>]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=72, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=Ambient_Temperature, offset=8], 32=HdfLocalHeapDataValue[value=Land_Vehicles, offset=32], 48=HdfLocalHeapDataValue[value=Air_Vehicles, offset=48], 64=HdfLocalHeapDataValue[value=DS1, offset=64]}}}}
-Ambient_Temperature
-HdfData(HdfData[][]) read   = [[66.80000000000001, 66.9, 67.0, 67.10000000000001, 67.2, 67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9], [66.9, 67.0, 67.1, 67.2, 67.3, 67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0], [67.0, 67.1, 67.19999999999999, 67.3, 67.39999999999999, 67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1], [67.10000000000001, 67.2, 67.3, 67.4, 67.5, 67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2], [67.2, 67.3, 67.39999999999999, 67.5, 67.6, 67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3], [67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4], [67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5], [67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6], [67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7], [67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8], [67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9], [67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0], [68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1], [68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2], [68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3], [68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4], [68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5], [68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6], [68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7], [68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8], [68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9], [68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0], [69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1], [69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2], [69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3], [69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4], [69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5], [69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1, 72.19999999999999, 72.3, 72.39999999999999, 72.5, 72.6], [69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2, 72.3, 72.4, 72.5, 72.60000000000001, 72.7], [69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3, 72.39999999999999, 72.5, 72.6, 72.7, 72.8], [69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4, 72.5, 72.60000000000001, 72.7, 72.80000000000001, 72.9], [69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5, 72.6, 72.7, 72.8, 72.9, 73.0]]
-HdfData(HdfData[][]) stream = [[66.80000000000001, 66.9, 67.0, 67.10000000000001, 67.2, 67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9], [66.9, 67.0, 67.1, 67.2, 67.3, 67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0], [67.0, 67.1, 67.19999999999999, 67.3, 67.39999999999999, 67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1], [67.10000000000001, 67.2, 67.3, 67.4, 67.5, 67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2], [67.2, 67.3, 67.39999999999999, 67.5, 67.6, 67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3], [67.30000000000001, 67.4, 67.5, 67.60000000000001, 67.7, 67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4], [67.4, 67.5, 67.6, 67.7, 67.8, 67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5], [67.5, 67.6, 67.69999999999999, 67.8, 67.89999999999999, 68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6], [67.60000000000001, 67.7, 67.8, 67.9, 68.0, 68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7], [67.7, 67.8, 67.89999999999999, 68.0, 68.1, 68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8], [67.80000000000001, 67.9, 68.0, 68.10000000000001, 68.2, 68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9], [67.9, 68.0, 68.1, 68.2, 68.3, 68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0], [68.0, 68.1, 68.19999999999999, 68.3, 68.39999999999999, 68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1], [68.10000000000001, 68.2, 68.3, 68.4, 68.5, 68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2], [68.2, 68.3, 68.39999999999999, 68.5, 68.6, 68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3], [68.30000000000001, 68.4, 68.5, 68.60000000000001, 68.7, 68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4], [68.4, 68.5, 68.6, 68.7, 68.8, 68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5], [68.5, 68.6, 68.69999999999999, 68.8, 68.89999999999999, 69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6], [68.60000000000001, 68.7, 68.8, 68.9, 69.0, 69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7], [68.7, 68.8, 68.89999999999999, 69.0, 69.1, 69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8], [68.80000000000001, 68.9, 69.0, 69.10000000000001, 69.2, 69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9], [68.9, 69.0, 69.1, 69.2, 69.3, 69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0], [69.0, 69.1, 69.19999999999999, 69.3, 69.39999999999999, 69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1], [69.10000000000001, 69.2, 69.3, 69.4, 69.5, 69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2], [69.2, 69.3, 69.39999999999999, 69.5, 69.6, 69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3], [69.30000000000001, 69.4, 69.5, 69.60000000000001, 69.7, 69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4], [69.4, 69.5, 69.6, 69.7, 69.8, 69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5], [69.5, 69.6, 69.69999999999999, 69.8, 69.89999999999999, 70.0, 70.1, 70.19999999999999, 70.3, 70.39999999999999, 70.5, 70.6, 70.69999999999999, 70.8, 70.89999999999999, 71.0, 71.1, 71.19999999999999, 71.3, 71.39999999999999, 71.5, 71.6, 71.69999999999999, 71.8, 71.89999999999999, 72.0, 72.1, 72.19999999999999, 72.3, 72.39999999999999, 72.5, 72.6], [69.60000000000001, 69.7, 69.8, 69.9, 70.0, 70.10000000000001, 70.2, 70.3, 70.4, 70.5, 70.60000000000001, 70.7, 70.8, 70.9, 71.0, 71.10000000000001, 71.2, 71.3, 71.4, 71.5, 71.60000000000001, 71.7, 71.8, 71.9, 72.0, 72.10000000000001, 72.2, 72.3, 72.4, 72.5, 72.60000000000001, 72.7], [69.7, 69.8, 69.89999999999999, 70.0, 70.1, 70.2, 70.3, 70.39999999999999, 70.5, 70.6, 70.7, 70.8, 70.89999999999999, 71.0, 71.1, 71.2, 71.3, 71.39999999999999, 71.5, 71.6, 71.7, 71.8, 71.89999999999999, 72.0, 72.1, 72.2, 72.3, 72.39999999999999, 72.5, 72.6, 72.7, 72.8], [69.80000000000001, 69.9, 70.0, 70.10000000000001, 70.2, 70.30000000000001, 70.4, 70.5, 70.60000000000001, 70.7, 70.80000000000001, 70.9, 71.0, 71.10000000000001, 71.2, 71.30000000000001, 71.4, 71.5, 71.60000000000001, 71.7, 71.80000000000001, 71.9, 72.0, 72.10000000000001, 72.2, 72.30000000000001, 72.4, 72.5, 72.60000000000001, 72.7, 72.80000000000001, 72.9], [69.9, 70.0, 70.1, 70.2, 70.3, 70.4, 70.5, 70.6, 70.7, 70.8, 70.9, 71.0, 71.1, 71.2, 71.3, 71.4, 71.5, 71.6, 71.7, 71.8, 71.9, 72.0, 72.1, 72.2, 72.3, 72.4, 72.5, 72.6, 72.7, 72.8, 72.9, 73.0]]
-DS1
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=72, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=Ambient_Temperature, offset=8], 32=HdfLocalHeapDataValue[value=Land_Vehicles, offset=32], 48=HdfLocalHeapDataValue[value=Air_Vehicles, offset=48], 64=HdfLocalHeapDataValue[value=DS1, offset=64]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | Ambient_Temperature:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+1400         | 0x00000578   | 40       | GROUP_OBJECT_HEADER | Land_Vehicles:Object Header
+1440         | 0x000005A0   | 544      | BTREE_HEADER | Land_Vehicles:Btree
+1984         | 0x000007C0   | 40       | GROUP_OBJECT_HEADER | Air_Vehicles:Object Header
+2048         | 0x00000800   | 8192     | DATASET_DATA | Ambient_Temperature:Data
+10240        | 0x00002800   | 32       | LOCAL_HEAP_HEADER | Land_Vehicles:Local Heap Header
+10272        | 0x00002820   | 88       | LOCAL_HEAP | Land_Vehicles:Local Heap Data
+10360        | 0x00002878   | 544      | BTREE_HEADER | Air_Vehicles:Btree
+10904        | 0x00002A98   | 32       | LOCAL_HEAP_HEADER | Air_Vehicles:Local Heap Header
+10936        | 0x00002AB8   | 88       | LOCAL_HEAP | Air_Vehicles:Local Heap Data
+11024        | 0x00002B10   | 744      | DATASET_OBJECT_HEADER | DS1:Object Header
+12288        | 0x00003000   | 4096     | GLOBAL_HEAP_1 | Global Heap 1
+--- Gap Analysis ---
+Gap detected: Offset 2024 to 2048, Size 24
+Gap detected: Offset 11768 to 12288, Size 520
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_enum.h5
-16:29:06.693 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+HdfData(HdfData[][]) read   = [[SOLID, SOLID, SOLID, SOLID, SOLID, SOLID, SOLID], [SOLID, LIQUID, GAS, PLASMA, SOLID, LIQUID, GAS], [SOLID, GAS, SOLID, GAS, SOLID, GAS, SOLID], [SOLID, PLASMA, GAS, LIQUID, SOLID, PLASMA, GAS]]
+HdfData(HdfData[][]) stream = [[SOLID, SOLID, SOLID, SOLID, SOLID, SOLID, SOLID], [SOLID, LIQUID, GAS, PLASMA, SOLID, LIQUID, GAS], [SOLID, GAS, SOLID, GAS, SOLID, GAS, SOLID], [SOLID, PLASMA, GAS, LIQUID, SOLID, PLASMA, GAS]]
+15:44:22.386 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=2104, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -360,12 +498,30 @@ HdfDataSet@2048{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
-HdfData(HdfData[][]) read   = [[SOLID, SOLID, SOLID, SOLID, SOLID, SOLID, SOLID], [SOLID, LIQUID, GAS, PLASMA, SOLID, LIQUID, GAS], [SOLID, GAS, SOLID, GAS, SOLID, GAS, SOLID], [SOLID, PLASMA, GAS, LIQUID, SOLID, PLASMA, GAS]]
-HdfData(HdfData[][]) stream = [[SOLID, SOLID, SOLID, SOLID, SOLID, SOLID, SOLID], [SOLID, LIQUID, GAS, PLASMA, SOLID, LIQUID, GAS], [SOLID, GAS, SOLID, GAS, SOLID, GAS, SOLID], [SOLID, PLASMA, GAS, LIQUID, SOLID, PLASMA, GAS]]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+2048         | 0x00000800   | 56       | DATASET_DATA | DS1:Data
+--- Gap Analysis ---
+Gap detected: Offset 1400 to 2048, Size 648
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_enumatt.h5
-16:29:06.694 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+15:44:22.388 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=1584, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -385,10 +541,31 @@ HdfDataSet@<Undefined>{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+1400         | 0x00000578   | 184      | DATASET_HEADER_CONTINUATION | DS1:Header Continuation
+--- Gap Analysis ---
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_float.h5
-16:29:06.695 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+HdfData(HdfData[][]) read   = [[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0], [2.0, 1.6666666666666665, 2.4, 3.2857142857142856, 4.222222222222222, 5.181818181818182, 6.153846153846154], [4.0, 2.333333333333333, 2.8, 3.571428571428571, 4.444444444444445, 5.363636363636363, 6.3076923076923075], [6.0, 3.0, 3.2, 3.857142857142857, 4.666666666666667, 5.545454545454545, 6.461538461538462]]
+HdfData(HdfData[][]) stream = [[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0], [2.0, 1.6666666666666665, 2.4, 3.2857142857142856, 4.222222222222222, 5.181818181818182, 6.153846153846154], [4.0, 2.333333333333333, 2.8, 3.571428571428571, 4.444444444444445, 5.363636363636363, 6.3076923076923075], [6.0, 3.0, 3.2, 3.857142857142857, 4.666666666666667, 5.545454545454545, 6.461538461538462]]
+15:44:22.390 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=2272, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -406,12 +583,30 @@ HdfDataSet@2048{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
-HdfData(HdfData[][]) read   = [[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0], [2.0, 1.6666666666666665, 2.4, 3.2857142857142856, 4.222222222222222, 5.181818181818182, 6.153846153846154], [4.0, 2.333333333333333, 2.8, 3.571428571428571, 4.444444444444445, 5.363636363636363, 6.3076923076923075], [6.0, 3.0, 3.2, 3.857142857142857, 4.666666666666667, 5.545454545454545, 6.461538461538462]]
-HdfData(HdfData[][]) stream = [[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0], [2.0, 1.6666666666666665, 2.4, 3.2857142857142856, 4.222222222222222, 5.181818181818182, 6.153846153846154], [4.0, 2.333333333333333, 2.8, 3.571428571428571, 4.444444444444445, 5.363636363636363, 6.3076923076923075], [6.0, 3.0, 3.2, 3.857142857142857, 4.666666666666667, 5.545454545454545, 6.461538461538462]]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+2048         | 0x00000800   | 224      | DATASET_DATA | DS1:Data
+--- Gap Analysis ---
+Gap detected: Offset 1400 to 2048, Size 648
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_floatatt.h5
-16:29:06.697 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+15:44:22.392 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=1712, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -431,10 +626,31 @@ HdfDataSet@<Undefined>{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+1400         | 0x00000578   | 312      | DATASET_HEADER_CONTINUATION | DS1:Header Continuation
+--- Gap Analysis ---
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_int.h5
-16:29:06.698 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+HdfData(HdfData[][]) read   = [[0, -1, -2, -3, -4, -5, -6], [0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6], [0, 2, 4, 6, 8, 10, 12]]
+HdfData(HdfData[][]) stream = [[0, -1, -2, -3, -4, -5, -6], [0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6], [0, 2, 4, 6, 8, 10, 12]]
+15:44:22.394 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=2272, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -452,12 +668,30 @@ HdfDataSet@2048{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
-HdfData(HdfData[][]) read   = [[0, -1, -2, -3, -4, -5, -6], [0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6], [0, 2, 4, 6, 8, 10, 12]]
-HdfData(HdfData[][]) stream = [[0, -1, -2, -3, -4, -5, -6], [0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6], [0, 2, 4, 6, 8, 10, 12]]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+2048         | 0x00000800   | 224      | DATASET_DATA | DS1:Data
+--- Gap Analysis ---
+Gap detected: Offset 1400 to 2048, Size 648
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_intatt.h5
-16:29:06.699 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+15:44:22.396 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=1704, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -477,10 +711,32 @@ HdfDataSet@<Undefined>{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+1400         | 0x00000578   | 304      | DATASET_HEADER_CONTINUATION | DS1:Header Continuation
+--- Gap Analysis ---
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_objref.h5
-16:29:06.701 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+HdfData(HdfData[]) read   = [/G, /DS]
+HdfData(HdfData[]) stream = [/G, /DS]
+DS2
+15:44:22.399 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=2412, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=3, symbolTableEntries=
@@ -512,15 +768,37 @@ HdfDataSet@<Undefined>{,
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=1440, localHeapAddress=1984}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=0, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[<empty>]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=32, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS2, offset=8], 16=HdfLocalHeapDataValue[value=G1, offset=16], 24=HdfLocalHeapDataValue[value=DS1, offset=24]}}}}
-DS1
-HdfData(HdfData[]) read   = [G1, DS2]
-HdfData(HdfData[]) stream = [G1, DS2]
-DS2
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=32, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS2, offset=8], 16=HdfLocalHeapDataValue[value=G1, offset=16], 24=HdfLocalHeapDataValue[value=DS1, offset=24]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS2:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+1400         | 0x00000578   | 40       | GROUP_OBJECT_HEADER | G1:Object Header
+1440         | 0x000005A0   | 544      | BTREE_HEADER | G1:Btree
+1984         | 0x000007C0   | 32       | LOCAL_HEAP_HEADER | G1:Local Heap Header
+2016         | 0x000007E0   | 88       | LOCAL_HEAP | G1:Local Heap Data
+2104         | 0x00000838   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+2376         | 0x00000948   | 36       | DATASET_DATA | DS1:Data
+--- Gap Analysis ---
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_objrefatt.h5
-16:29:06.702 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+DS2
+15:44:22.401 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=2376, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=3, symbolTableEntries=
@@ -534,7 +812,7 @@ HdfDataSet@<Undefined>{,
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:13Z}
-		AttributeMessage(96){version=1, name='A1', value='HdfDataHolder{array, dimensionality=1, dimensions=[2], elements=[G1, DS2]}'}
+		AttributeMessage(96){version=1, name='A1', value='HdfDataHolder{array, dimensionality=1, dimensions=[2], elements=[/G, /DS]}'}
 		NilMessage(56){}},
 	closed=false
 	}}}, HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
@@ -553,13 +831,37 @@ HdfDataSet@<Undefined>{,
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=1440, localHeapAddress=1984}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=0, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[<empty>]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=32, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS2, offset=8], 16=HdfLocalHeapDataValue[value=G1, offset=16], 24=HdfLocalHeapDataValue[value=DS1, offset=24]}}}}
-DS1
-DS2
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=32, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS2, offset=8], 16=HdfLocalHeapDataValue[value=G1, offset=16], 24=HdfLocalHeapDataValue[value=DS1, offset=24]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS2:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+1400         | 0x00000578   | 40       | GROUP_OBJECT_HEADER | G1:Object Header
+1440         | 0x000005A0   | 544      | BTREE_HEADER | G1:Btree
+1984         | 0x000007C0   | 32       | LOCAL_HEAP_HEADER | G1:Local Heap Header
+2016         | 0x000007E0   | 88       | LOCAL_HEAP | G1:Local Heap Data
+2104         | 0x00000838   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+--- Gap Analysis ---
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_opaque.h5
-16:29:06.709 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+HdfData(HdfData[]) read   = [4F504151554530, 4F504151554531, 4F504151554532, 4F504151554533]
+HdfData(HdfData[]) stream = [4F504151554530, 4F504151554531, 4F504151554532, 4F504151554533]
+15:44:22.407 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=2076, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -577,12 +879,30 @@ HdfDataSet@2048{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
-HdfData(HdfData[]) read   = [4F504151554530, 4F504151554531, 4F504151554532, 4F504151554533]
-HdfData(HdfData[]) stream = [4F504151554530, 4F504151554531, 4F504151554532, 4F504151554533]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+2048         | 0x00000800   | 28       | DATASET_DATA | DS1:Data
+--- Gap Analysis ---
+Gap detected: Offset 1400 to 2048, Size 648
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_opaqueatt.h5
-16:29:06.712 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+15:44:22.410 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=1400, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -601,10 +921,33 @@ HdfDataSet@<Undefined>{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+--- Gap Analysis ---
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_regref.h5
-16:29:06.714 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+HdfData(HdfData[]) read   = [[104, 102, 53, 100], [84, 104, 101, 114, 111, 119, 116, 104, 101, 100, 111, 103]]
+HdfData(HdfData[]) stream = [[104, 102, 53, 100], [84, 104, 101, 114, 111, 119, 116, 104, 101, 100, 111, 103]]
+DS2
+HdfData(HdfData[][]) read   = [[84, 104, 101, 32, 113, 117, 105, 99, 107, 32, 98, 114, 111, 119, 110, 0], [102, 111, 120, 32, 106, 117, 109, 112, 115, 32, 111, 118, 101, 114, 32, 0], [116, 104, 101, 32, 53, 32, 108, 97, 122, 121, 32, 100, 111, 103, 115, 0]]
+HdfData(HdfData[][]) stream = [[84, 104, 101, 32, 113, 117, 105, 99, 107, 32, 98, 114, 111, 119, 110, 0], [102, 111, 120, 32, 106, 117, 109, 112, 115, 32, 111, 118, 101, 114, 32, 0], [116, 104, 101, 32, 53, 32, 108, 97, 122, 121, 32, 100, 111, 103, 115, 0]]
+15:44:22.414 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=6228, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=2, symbolTableEntries=
@@ -634,15 +977,36 @@ HdfDataSet@2048{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS2, offset=8], 16=HdfLocalHeapDataValue[value=DS1, offset=16]}}}}
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS2, offset=8], 16=HdfLocalHeapDataValue[value=DS1, offset=16]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS2:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+1400         | 0x00000578   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+2048         | 0x00000800   | 48       | DATASET_DATA | DS2:Data
+2096         | 0x00000830   | 36       | DATASET_DATA | DS1:Data
+2132         | 0x00000854   | 4096     | GLOBAL_HEAP_1 | Global Heap 1
+--- Gap Analysis ---
+Gap detected: Offset 1672 to 2048, Size 376
+--- Overlap Check ---
+No overlaps detected.
+==================================
+Running h5ex_t_regrefatt.h5
 DS1
-HdfData(HdfData[]) read   = [[104, 102, 53, 100], [84, 104, 101, 114, 111, 119, 116, 104, 101, 100, 111, 103]]
-HdfData(HdfData[]) stream = [[104, 102, 53, 100], [84, 104, 101, 114, 111, 119, 116, 104, 101, 100, 111, 103]]
 DS2
 HdfData(HdfData[][]) read   = [[84, 104, 101, 32, 113, 117, 105, 99, 107, 32, 98, 114, 111, 119, 110, 0], [102, 111, 120, 32, 106, 117, 109, 112, 115, 32, 111, 118, 101, 114, 32, 0], [116, 104, 101, 32, 53, 32, 108, 97, 122, 121, 32, 100, 111, 103, 115, 0]]
 HdfData(HdfData[][]) stream = [[84, 104, 101, 32, 113, 117, 105, 99, 107, 32, 98, 114, 111, 119, 110, 0], [102, 111, 120, 32, 106, 117, 109, 112, 115, 32, 111, 118, 101, 114, 32, 0], [116, 104, 101, 32, 53, 32, 108, 97, 122, 121, 32, 100, 111, 103, 115, 0]]
-Running h5ex_t_regrefatt.h5
-16:29:06.718 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+15:44:22.417 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=6192, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=2, symbolTableEntries=
@@ -673,13 +1037,34 @@ HdfDataSet@2048{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS2, offset=8], 16=HdfLocalHeapDataValue[value=DS1, offset=16]}}}}
-DS1
-DS2
-HdfData(HdfData[][]) read   = [[84, 104, 101, 32, 113, 117, 105, 99, 107, 32, 98, 114, 111, 119, 110, 0], [102, 111, 120, 32, 106, 117, 109, 112, 115, 32, 111, 118, 101, 114, 32, 0], [116, 104, 101, 32, 53, 32, 108, 97, 122, 121, 32, 100, 111, 103, 115, 0]]
-HdfData(HdfData[][]) stream = [[84, 104, 101, 32, 113, 117, 105, 99, 107, 32, 98, 114, 111, 119, 110, 0], [102, 111, 120, 32, 106, 117, 109, 112, 115, 32, 111, 118, 101, 114, 32, 0], [116, 104, 101, 32, 53, 32, 108, 97, 122, 121, 32, 100, 111, 103, 115, 0]]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=24, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS2, offset=8], 16=HdfLocalHeapDataValue[value=DS1, offset=16]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS2:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+1400         | 0x00000578   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+2048         | 0x00000800   | 48       | DATASET_DATA | DS2:Data
+2096         | 0x00000830   | 4096     | GLOBAL_HEAP_1 | Global Heap 1
+--- Gap Analysis ---
+Gap detected: Offset 1672 to 2048, Size 376
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_string.h5
-16:29:06.720 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+HdfData(HdfData[]) read   = [Parting, is such, sweet  , sorrow.]
+HdfData(HdfData[]) stream = [Parting, is such, sweet  , sorrow.]
+15:44:22.421 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=2076, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -697,12 +1082,30 @@ HdfDataSet@2048{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
-HdfData(HdfData[]) read   = [Parting, is such, sweet  , sorrow.]
-HdfData(HdfData[]) stream = [Parting, is such, sweet  , sorrow.]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+2048         | 0x00000800   | 28       | DATASET_DATA | DS1:Data
+--- Gap Analysis ---
+Gap detected: Offset 1400 to 2048, Size 648
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_stringatt.h5
-16:29:06.722 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+15:44:22.423 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=1400, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -721,10 +1124,30 @@ HdfDataSet@<Undefined>{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+--- Gap Analysis ---
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_vlen.h5
-16:29:06.722 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+HdfData(HdfData[]) read   = [[3, 2, 1], [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144]]
+HdfData(HdfData[]) stream = [[3, 2, 1], [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144]]
+15:44:22.424 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=6176, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -742,12 +1165,31 @@ HdfDataSet@2048{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
-HdfData(HdfData[]) read   = [[3, 2, 1], [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144]]
-HdfData(HdfData[]) stream = [[3, 2, 1], [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144]]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+2048         | 0x00000800   | 32       | DATASET_DATA | DS1:Data
+2080         | 0x00000820   | 4096     | GLOBAL_HEAP_1 | Global Heap 1
+--- Gap Analysis ---
+Gap detected: Offset 1400 to 2048, Size 648
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_vlenatt.h5
-16:29:06.723 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+15:44:22.426 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=6144, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -766,10 +1208,32 @@ HdfDataSet@<Undefined>{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+2048         | 0x00000800   | 4096     | GLOBAL_HEAP_1 | Global Heap 1
+--- Gap Analysis ---
+Gap detected: Offset 1400 to 2048, Size 648
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_vlstring.h5
-16:29:06.724 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+HdfData(HdfData[]) read   = [Parting, is such, sweet, sorrow.]
+HdfData(HdfData[]) stream = [Parting, is such, sweet, sorrow.]
+15:44:22.428 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=6208, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -787,12 +1251,31 @@ HdfDataSet@2048{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
-HdfData(HdfData[]) read   = [Parting, is such, sweet, sorrow.]
-HdfData(HdfData[]) stream = [Parting, is such, sweet, sorrow.]
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+2048         | 0x00000800   | 64       | DATASET_DATA | DS1:Data
+2112         | 0x00000840   | 4096     | GLOBAL_HEAP_1 | Global Heap 1
+--- Gap Analysis ---
+Gap detected: Offset 1400 to 2048, Size 648
+--- Overlap Check ---
+No overlaps detected.
+==================================
 Running h5ex_t_vlstringatt.h5
-16:29:06.725 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- RootGroup: HdfGroup{name=''
+DS1
+15:44:22.431 [main] INFO org.hdf5javalib.redo.examples.HDF5Examples.ExamplesRead -- Superblock: HdfSuperblock{version=0, freeSpaceVersion=0, rootGroupVersion=0, sharedHeaderVersion=0, sizeOfOffsets=8, sizeOfLengths=8, groupLeafNodeK=4, groupInternalNodeK=16, baseAddress=0, freeSpaceAddress=<Undefined>, endOfFileAddress=6144, driverInformationAddress=<Undefined>
+rootGroupSymbolTableEntry=HdfSymbolTableEntry{linkNameOffset=0, cacheType=HdfSymbolTableEntryCacheGroupMetadata{cacheType=1group=HdfGroup{name=''
 objectHeader=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 24
 		SymbolTableMessage(24){bTreeAddress=136, localHeapAddress=680}}
 bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=0, entries=[HdfBTreeEntry{key="+key", childPointer="1072", payload(SNOD)=HdfGroupSymbolTableNode{signature='SNOD', version=1, numberOfSymbols=1, symbolTableEntries=
@@ -811,10 +1294,27 @@ HdfDataSet@<Undefined>{,
 	closed=false
 	}}}]
 }}]}
-localHeap=HdfLocalHeap{signature='HEAP', version=0, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}
-DS1
+localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=16, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0], 8=HdfLocalHeapDataValue[value=DS1, offset=8]}}}}}}}
+=== HDF File Allocation Layout ===
+Metadata End of File Offset: 800
+Data End of File Offset: 2048
+Current End of File Offset: 2048
+----------------------------------
+Offset (Dec) | Offset (Hex) | Size     | Type       | Name
+0            | 0x00000000   | 96       | SUPERBLOCK | Superblock
+96           | 0x00000060   | 40       | GROUP_OBJECT_HEADER | :Object Header
+136          | 0x00000088   | 544      | BTREE_HEADER | :Btree
+680          | 0x000002A8   | 32       | LOCAL_HEAP_HEADER | :Local Heap Header
+712          | 0x000002C8   | 88       | LOCAL_HEAP | :Local Heap Data
+800          | 0x00000320   | 272      | DATASET_OBJECT_HEADER | DS1:Object Header
+1072         | 0x00000430   | 328      | SNOD       | :Snod
+2048         | 0x00000800   | 4096     | GLOBAL_HEAP_1 | Global Heap 1
+--- Gap Analysis ---
+Gap detected: Offset 1400 to 2048, Size 648
+--- Overlap Check ---
+No overlaps detected.
+==================================
 
-Process finished with exit code 0
 
 -----------------------------
 

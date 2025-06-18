@@ -34,6 +34,7 @@ public class HdfObjectHeaderPrefixV1 {
     private static final int OBJECT_HREADER_PREFIX_RESERVED_SIZE_1=1;
     private static final int OBJECT_HREADER_PREFIX_RESERVED_SIZE_2=4;
     private final AllocationRecord dataObjectAllocationRecord;
+    private final AllocationRecord dataObjectContinuationAllocationRecord;
     private final AllocationRecord dataAllocationRecord;
     /**
      * The version of the object header (1 byte).
@@ -65,9 +66,9 @@ public class HdfObjectHeaderPrefixV1 {
      * @param headerMessages       the list of header messages
      */
     public HdfObjectHeaderPrefixV1(int version, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> headerMessages,
-                                   HdfDataFile hdfDataFile, String name, HdfFixedPoint offset
+                                   HdfDataFile hdfDataFile, AllocationType allocationType, String name, HdfFixedPoint offset
     ) {
-        this.dataObjectAllocationRecord = new AllocationRecord(AllocationType.DATASET_OBJECT_HEADER, name + ":Object Header", offset,
+        this.dataObjectAllocationRecord = new AllocationRecord(allocationType, name + ":Object Header", offset,
                 HdfWriteUtils.hdfFixedPointFromValue(
                         objectHeaderSize + OBJECT_HREADER_PREFIX_HEADER_SIZE,
                         hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()
@@ -77,6 +78,15 @@ public class HdfObjectHeaderPrefixV1 {
         this.objectReferenceCount = objectReferenceCount;
         this.objectHeaderSize = objectHeaderSize;
         this.headerMessages = headerMessages;
+        this.dataObjectContinuationAllocationRecord = findMessageByType(ObjectHeaderContinuationMessage.class)
+                .map(cm->
+                        new AllocationRecord(
+                                AllocationType.DATASET_HEADER_CONTINUATION,
+                                name+ ":Header Continuation",
+                                cm.getContinuationOffset(),
+                                cm.getContinuationSize(),
+                                hdfDataFile.getFileAllocation())
+                ).orElse(null);
         this.dataAllocationRecord = findMessageByType(DataLayoutMessage.class)
                 .map(dlm->
                         dlm.getDataAddress().isUndefined() ? null :
@@ -105,7 +115,8 @@ public class HdfObjectHeaderPrefixV1 {
     public static HdfObjectHeaderPrefixV1 readFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
             HdfDataFile hdfDataFile,
-            String objectName
+            String objectName,
+            AllocationType allocationType
     ) throws IOException {
         long offset = fileChannel.position();
         ByteBuffer buffer = ByteBuffer.allocate(OBJECT_HREADER_PREFIX_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
@@ -132,15 +143,16 @@ public class HdfObjectHeaderPrefixV1 {
 
         List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>(readMessagesFromByteBuffer(fileChannel, objectHeaderSize, hdfDataFile));
         for (HdfMessage hdfMessage : dataObjectHeaderMessages) {
-            if (hdfMessage instanceof ObjectHeaderContinuationMessage) {
-                dataObjectHeaderMessages.addAll(parseContinuationMessage(fileChannel, (ObjectHeaderContinuationMessage) hdfMessage, hdfDataFile));
+            if (hdfMessage instanceof ObjectHeaderContinuationMessage objectHeaderContinuationMessage) {
+                dataObjectHeaderMessages.addAll(parseContinuationMessage(fileChannel, objectHeaderContinuationMessage, hdfDataFile));
+
                 break;
             }
         }
 
         // Create the instance
         return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages,
-                hdfDataFile, objectName,
+                hdfDataFile, allocationType, objectName,
                 HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
     }
 

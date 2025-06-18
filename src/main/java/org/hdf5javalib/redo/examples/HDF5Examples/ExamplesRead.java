@@ -58,10 +58,10 @@ public class ExamplesRead {
     public void displayFile(Path filePath) {
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            log.info("RootGroup: {}", reader.getRootGroup());
             for (HdfDataSet ds : reader.getRootGroup().getDataSets()) {
                 HdfDisplayUtils.displayData(channel, ds, reader);
             }
+            log.info("Superblock: {}", reader.getFileAllocation().getSuperblock());
             reader.getFileAllocation().printBlocks();
         } catch (Exception e) {
             System.out.println("Exception in displayFile: " + filePath);

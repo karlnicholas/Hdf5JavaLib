@@ -114,7 +114,7 @@ public class SeparateTypesRead {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, String.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfData[].class, reader);
             }
-            log.info("RootGroup: {}", reader.getRootGroup());
+            log.info("Superblock: {}", reader.getFileAllocation().getSuperblock());
             reader.getFileAllocation().printBlocks();
         }
     }

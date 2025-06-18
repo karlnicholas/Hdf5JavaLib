@@ -338,9 +338,9 @@ public class HdfSuperblock {
                 ", groupLeafNodeK=" + groupLeafNodeK +
                 ", groupInternalNodeK=" + groupInternalNodeK +
                 ", baseAddress=" + baseAddress +
-                ", freeSpaceAddress=" + addressFileFreeSpaceInfo +
-                ", endOfFileAddress=" + endOfFileAddress +
-                ", driverInformationAddress=" + driverInformationAddress +
+                ", freeSpaceAddress=" + (addressFileFreeSpaceInfo.isUndefined() ? "<Undefined>" : addressFileFreeSpaceInfo) +
+                ", endOfFileAddress=" + (endOfFileAddress.isUndefined() ? "<Undefined>" : endOfFileAddress) +
+                ", driverInformationAddress=" + (driverInformationAddress.isUndefined() ? "<Undefined>" : driverInformationAddress) +
                 "\r\nrootGroupSymbolTableEntry=" + rootGroupSymbolTableEntry +
                 '}';
     }
