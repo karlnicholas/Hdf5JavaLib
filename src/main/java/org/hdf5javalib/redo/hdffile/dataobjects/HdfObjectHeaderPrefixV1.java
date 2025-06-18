@@ -79,6 +79,7 @@ public class HdfObjectHeaderPrefixV1 {
         this.headerMessages = headerMessages;
         this.dataAllocationRecord = findMessageByType(DataLayoutMessage.class)
                 .map(dlm->
+                        dlm.getDataAddress().isUndefined() ? null :
                         new AllocationRecord(
                                 AllocationType.DATASET_DATA,
                                 name+ ":Data",
