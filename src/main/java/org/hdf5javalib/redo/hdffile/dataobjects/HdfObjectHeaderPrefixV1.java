@@ -62,7 +62,6 @@ public class HdfObjectHeaderPrefixV1 extends HdfObjectHeaderPrefix {
         ByteBuffer buffer = ByteBuffer.allocate(OBJECT_HEADER_PREFIX_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
         fileChannel.read(buffer);
         buffer.flip();
-        fileChannel.position(offset);
 
         // Parse Version (1 byte)
         int version = Byte.toUnsignedInt(buffer.get());
