@@ -105,7 +105,7 @@ public abstract class HdfObjectHeaderPrefix {
             return HdfObjectHeaderPrefixV1.readObjectHeader(fileChannel, hdfDataFile, objectName, allocationType);
         } else {
             buffer.rewind();
-            byte[] signature = new byte[16];
+            byte[] signature = new byte[HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE.length];
             buffer.get(signature);
             if (Arrays.compare(signature, HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE) != 0) {
                 throw new IllegalStateException("Object header signature mismatch");
