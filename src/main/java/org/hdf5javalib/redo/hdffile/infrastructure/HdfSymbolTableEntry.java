@@ -4,6 +4,7 @@ import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.hdffile.AllocationType;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 
@@ -35,7 +36,7 @@ public class HdfSymbolTableEntry {
     /**
      * The offset of the object's header in the file.
      */
-    private final HdfObjectHeaderPrefixV1 objectHeader;
+    private final HdfObjectHeaderPrefix objectHeader;
     private final HdfSymbolTableEntryCache cache;
 
     /**
@@ -74,7 +75,7 @@ public class HdfSymbolTableEntry {
         long savedPosition = fileChannel.position();
         fileChannel.position(objectHeaderAddress.getInstance(Long.class));
         String objectName = localHeap == null ? "" : localHeap.stringAtOffset(linkNameOffset);
-        HdfObjectHeaderPrefixV1 objectHeader = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(
+        HdfObjectHeaderPrefix objectHeader = HdfObjectHeaderPrefix.readFromSeekableByteChannel(
                 fileChannel,
                 hdfDataFile,
                 objectName,
@@ -125,7 +126,7 @@ public class HdfSymbolTableEntry {
         return linkNameOffset;
     }
 
-    public HdfObjectHeaderPrefixV1 getObjectHeader() {
+    public HdfObjectHeaderPrefix getObjectHeader() {
         return objectHeader;
     }
 

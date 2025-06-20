@@ -1,11 +1,9 @@
 package org.hdf5javalib.redo.hdffile.dataobjects;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.redo.hdffile.AllocationRecord;
 import org.hdf5javalib.redo.hdffile.AllocationType;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
-import org.hdf5javalib.redo.hdffile.dataobjects.messages.DataLayoutMessage;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.ObjectHeaderContinuationMessage;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
@@ -16,7 +14,6 @@ import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.*;
 
@@ -29,13 +26,10 @@ import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.*;
  * continuation messages for large headers.
  * </p>
  */
-public class HdfObjectHeaderPrefixV1 {
-    private static final int OBJECT_HREADER_PREFIX_HEADER_SIZE=16;
-    private static final int OBJECT_HREADER_PREFIX_RESERVED_SIZE_1=1;
-    private static final int OBJECT_HREADER_PREFIX_RESERVED_SIZE_2=4;
-    private final AllocationRecord dataObjectAllocationRecord;
-    private final AllocationRecord dataObjectContinuationAllocationRecord;
-    private final AllocationRecord dataAllocationRecord;
+public class HdfObjectHeaderPrefixV1 extends HdfObjectHeaderPrefix {
+    private static final int OBJECT_HEADER_PREFIX_HEADER_SIZE =16;
+    private static final int OBJECT_HEADER_PREFIX_RESERVED_SIZE_1 =1;
+    private static final int OBJECT_HEADER_PREFIX_RESERVED_SIZE_2 =4;
     /**
      * The version of the object header (1 byte).
      */
@@ -45,16 +39,6 @@ public class HdfObjectHeaderPrefixV1 {
      * The reference count for the object (4 bytes).
      */
     private final long objectReferenceCount;
-
-    /**
-     * The size of the object header (4 bytes).
-     */
-    private final long objectHeaderSize;
-
-    /**
-     * The list of header messages associated with the object.
-     */
-    private final List<HdfMessage> headerMessages;
 
 
     /**
@@ -68,66 +52,23 @@ public class HdfObjectHeaderPrefixV1 {
     public HdfObjectHeaderPrefixV1(int version, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> headerMessages,
                                    HdfDataFile hdfDataFile, AllocationType allocationType, String name, HdfFixedPoint offset
     ) {
-        this.dataObjectAllocationRecord = new AllocationRecord(allocationType, name + ":Object Header", offset,
-                HdfWriteUtils.hdfFixedPointFromValue(
-                        objectHeaderSize + OBJECT_HREADER_PREFIX_HEADER_SIZE,
-                        hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()
-                ), hdfDataFile.getFileAllocation()
-        );
+        super(headerMessages, allocationType, name, offset, objectHeaderSize, hdfDataFile, OBJECT_HEADER_PREFIX_HEADER_SIZE);
         this.version = version;
         this.objectReferenceCount = objectReferenceCount;
-        this.objectHeaderSize = objectHeaderSize;
-        this.headerMessages = headerMessages;
-        this.dataObjectContinuationAllocationRecord = findMessageByType(ObjectHeaderContinuationMessage.class)
-                .map(cm->
-                        new AllocationRecord(
-                                AllocationType.DATASET_HEADER_CONTINUATION,
-                                name+ ":Header Continuation",
-                                cm.getContinuationOffset(),
-                                cm.getContinuationSize(),
-                                hdfDataFile.getFileAllocation())
-                ).orElse(null);
-        this.dataAllocationRecord = findMessageByType(DataLayoutMessage.class)
-                .map(dlm->
-                        dlm.getDataAddress().isUndefined() ? null :
-                        new AllocationRecord(
-                                AllocationType.DATASET_DATA,
-                                name+ ":Data",
-                                dlm.getDataAddress(),
-                                dlm.getDimensionSizes()[0],
-                                hdfDataFile.getFileAllocation())
-                ).orElse(null);
     }
 
-    /**
-     * Reads an HdfObjectHeaderPrefixV1 from a file channel.
-     * <p>
-     * Parses the fixed-size header (version, reference count, header size) and header messages,
-     * including any continuation messages, from the specified file channel.
-     * </p>
-     *
-     * @param fileChannel the seekable byte channel to read from
-     * @param hdfDataFile the HDF5 file context
-     * @return the constructed HdfObjectHeaderPrefixV1 instance
-     * @throws IOException              if an I/O error occurs
-     * @throws IllegalArgumentException if reserved fields are non-zero
-     */
-    public static HdfObjectHeaderPrefixV1 readFromSeekableByteChannel(
-            SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile,
-            String objectName,
-            AllocationType allocationType
-    ) throws IOException {
+    protected static HdfObjectHeaderPrefixV1 readObjectHeader(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, String objectName, AllocationType allocationType) throws IOException {
         long offset = fileChannel.position();
-        ByteBuffer buffer = ByteBuffer.allocate(OBJECT_HREADER_PREFIX_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
+        ByteBuffer buffer = ByteBuffer.allocate(OBJECT_HEADER_PREFIX_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
         fileChannel.read(buffer);
         buffer.flip();
+        fileChannel.position(offset);
 
         // Parse Version (1 byte)
         int version = Byte.toUnsignedInt(buffer.get());
 
         // Reserved (1 byte, should be zero)
-        buffer.position(buffer.position() + OBJECT_HREADER_PREFIX_RESERVED_SIZE_1);
+        buffer.position(buffer.position() + OBJECT_HEADER_PREFIX_RESERVED_SIZE_1);
 
         // Total Number of Header Messages (2 bytes, little-endian)
         int totalHeaderMessages = Short.toUnsignedInt(buffer.getShort());
@@ -136,15 +77,18 @@ public class HdfObjectHeaderPrefixV1 {
         long objectReferenceCount = Integer.toUnsignedLong(buffer.getInt());
 
         // Object Header Size (4 bytes, little-endian)
-        short objectHeaderSize = (short) buffer.getInt();
+        long objectHeaderSize = Integer.toUnsignedLong(buffer.getInt());
 
         // Reserved (4 bytes, should be zero)
-        buffer.position(buffer.position() + OBJECT_HREADER_PREFIX_RESERVED_SIZE_2);
+        buffer.position(buffer.position() + OBJECT_HEADER_PREFIX_RESERVED_SIZE_2);
 
-        List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>(readMessagesFromByteBuffer(fileChannel, objectHeaderSize, hdfDataFile));
+        List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>(
+                HdfMessage.readMessagesFromByteBuffer(fileChannel, objectHeaderSize, hdfDataFile, HdfMessage.V1_OBJECT_HEADER_READ_PREFIX)
+        );
+
         for (HdfMessage hdfMessage : dataObjectHeaderMessages) {
             if (hdfMessage instanceof ObjectHeaderContinuationMessage objectHeaderContinuationMessage) {
-                dataObjectHeaderMessages.addAll(parseContinuationMessage(fileChannel, objectHeaderContinuationMessage, hdfDataFile));
+                dataObjectHeaderMessages.addAll(HdfMessage.parseContinuationMessage(fileChannel, objectHeaderContinuationMessage, hdfDataFile, HdfMessage.V1_OBJECT_HEADER_READ_PREFIX));
 
                 break;
             }
@@ -169,6 +113,7 @@ public class HdfObjectHeaderPrefixV1 {
      * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the buffer overflows
      */
+    @Override
     public void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
         int currentSize = 16;
         int i = 0;
@@ -320,27 +265,4 @@ public class HdfObjectHeaderPrefixV1 {
         return builder.toString();
     }
 
-    /**
-     * Finds a header message of the specified type.
-     *
-     * @param messageClass the class of the message to find
-     * @param <T>          the type of the message
-     * @return an Optional containing the message if found, or empty if not found
-     */
-    public <T extends HdfMessage> Optional<T> findMessageByType(Class<T> messageClass) {
-        for (HdfMessage message : headerMessages) {
-            if (messageClass.isInstance(message)) {
-                return Optional.of(messageClass.cast(message)); // Avoids unchecked cast warning
-            }
-        }
-        return Optional.empty();
-    }
-
-    public List<HdfMessage> getHeaderMessages() {
-        return headerMessages;
-    }
-
-    public AllocationRecord getDataObjectAllocationRecord() {
-        return dataObjectAllocationRecord;
-    }
 }

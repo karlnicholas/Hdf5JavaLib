@@ -44,7 +44,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
     /**
      * The object header prefix for the group.
      */
-    private final HdfObjectHeaderPrefixV1 objectHeader;
+    private final HdfObjectHeaderPrefix objectHeader;
     /**
      * The B-tree managing symbol table entries.
      */
@@ -66,7 +66,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
         return localHeap;
     }
 
-    public HdfObjectHeaderPrefixV1 getObjectHeader() {
+    public HdfObjectHeaderPrefix getObjectHeader() {
         return objectHeader;
     }
 
@@ -88,7 +88,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
      */
     public HdfGroup(
             String groupName,
-            HdfObjectHeaderPrefixV1 objectHeader,
+            HdfObjectHeaderPrefix objectHeader,
             HdfBTreeV1 bTree,
             HdfLocalHeap localHeap,
             HdfDataFile hdfDataFile

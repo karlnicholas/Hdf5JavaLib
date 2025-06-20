@@ -8,6 +8,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Represents a base class for HDF5 Object Header Messages.
@@ -104,6 +105,46 @@ public abstract class HdfMessage {
      */
     public abstract void writeMessageToByteBuffer(ByteBuffer buffer);
 
+    static class OBJECT_HEADER_PREFIX {
+        final MessageType type;
+        final int size;
+        final int flags;
+        final int order;
+
+        OBJECT_HEADER_PREFIX(MessageType type, int size, int flags, int order) {
+            this.type = type;
+            this.size = size;
+            this.flags = flags;
+            this.order = order;
+        }
+    }
+
+    public static Function<ByteBuffer, OBJECT_HEADER_PREFIX> V1_OBJECT_HEADER_READ_PREFIX = buffer-> {
+        // Header Message Type (2 bytes, little-endian)
+        MessageType type = MessageType.fromValue(buffer.getShort());
+        int size = Short.toUnsignedInt(buffer.getShort());
+        int flags = Byte.toUnsignedInt(buffer.get());
+        buffer.position(buffer.position() + HDF_MESSAGE_RESERVED_SIZE); // Skip 3 reserved bytes
+        return new OBJECT_HEADER_PREFIX(type, size, flags, 0);
+    };
+
+    public static Function<ByteBuffer, OBJECT_HEADER_PREFIX> V2_OBJECT_HEADER_READ_PREFIX = buffer-> {
+        // Header Message Type (2 bytes, little-endian)
+        MessageType type = MessageType.fromValue(buffer.get());
+        int size = Short.toUnsignedInt(buffer.getShort());
+        int flags = Byte.toUnsignedInt(buffer.get());
+        return new OBJECT_HEADER_PREFIX(type, size, flags, 0);
+    };
+
+    public static Function<ByteBuffer, OBJECT_HEADER_PREFIX> V2OBJECT_HEADER_READ_PREFIX_WITHORDER = buffer-> {
+        // Header Message Type (2 bytes, little-endian)
+        MessageType type = MessageType.fromValue(buffer.get());
+        int size = Short.toUnsignedInt(buffer.getShort());
+        int flags = Byte.toUnsignedInt(buffer.get());
+        int order = Short.toUnsignedInt(buffer.getShort());
+        return new OBJECT_HEADER_PREFIX(type, size, flags, order);
+    };
+
     /**
      * Reads and parses a list of HdfMessages from the provided file channel.
      *
@@ -113,24 +154,24 @@ public abstract class HdfMessage {
      * @return a list of parsed HdfMessage instances
      * @throws IOException if an I/O error occurs
      */
-    public static List<HdfMessage> readMessagesFromByteBuffer(SeekableByteChannel fileChannel, short objectHeaderSize, HdfDataFile hdfDataFile) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(objectHeaderSize).order(ByteOrder.LITTLE_ENDIAN);
+    public static List<HdfMessage> readMessagesFromByteBuffer(
+            SeekableByteChannel fileChannel,
+            long objectHeaderSize,
+            HdfDataFile hdfDataFile,
+            Function<ByteBuffer, OBJECT_HEADER_PREFIX> prefixFunction
+    ) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate((int) objectHeaderSize).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();
         List<HdfMessage> messages = new ArrayList<>();
 
         while (buffer.hasRemaining()) {
-            // Header Message Type (2 bytes, little-endian)
-            MessageType type = MessageType.fromValue(buffer.getShort());
-            int size = Short.toUnsignedInt(buffer.getShort());
-            int flags = Byte.toUnsignedInt(buffer.get());
-            buffer.position(buffer.position() + HDF_MESSAGE_RESERVED_SIZE); // Skip 3 reserved bytes
-
+            OBJECT_HEADER_PREFIX prefix = prefixFunction.apply(buffer);
             // Header Message Data
-            byte[] messageData = new byte[size];
+            byte[] messageData = new byte[prefix.size];
             buffer.get(messageData);
 
-            HdfMessage hdfMessage = parseHeaderMessage(type, flags, messageData, hdfDataFile);
+            HdfMessage hdfMessage = parseHeaderMessage(prefix.type, prefix.flags, messageData, hdfDataFile);
             log.trace("Read: hdfMessage.sizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE);
             // Add the message to the list
             messages.add(hdfMessage);
@@ -153,14 +194,17 @@ public abstract class HdfMessage {
         return switch (type) {
             case NilMessage -> NilMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case DataspaceMessage -> DataspaceMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case LinkInfoMessage ->  LinkInfoMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case DatatypeMessage -> DatatypeMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case FillValueMessage -> FillValueMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case DataLayoutMessage -> DataLayoutMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case GroupInfoMessage ->  GroupInfoMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case AttributeMessage -> AttributeMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case ObjectHeaderContinuationMessage -> ObjectHeaderContinuationMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case SymbolTableMessage -> SymbolTableMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case ObjectModificationTimeMessage -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case BtreeKValuesMessage -> BTreeKValuesMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case AttributeInfoMessage -> AttributeInfoMessage.parseHeaderMessage(flags, data, hdfDataFile);
             default -> throw new IllegalArgumentException("Unknown message type: " + type);
         };
     }
@@ -174,7 +218,12 @@ public abstract class HdfMessage {
      * @return a list of parsed HdfMessage instances from the continuation block
      * @throws IOException if an I/O error occurs
      */
-    public static List<HdfMessage> parseContinuationMessage(SeekableByteChannel fileChannel, ObjectHeaderContinuationMessage objectHeaderContinuationMessage, HdfDataFile hdfDataFile) throws IOException {
+    public static List<HdfMessage> parseContinuationMessage(
+            SeekableByteChannel fileChannel,
+            ObjectHeaderContinuationMessage objectHeaderContinuationMessage,
+            HdfDataFile hdfDataFile,
+            Function<ByteBuffer, OBJECT_HEADER_PREFIX> prefixFunction
+    ) throws IOException {
         long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().getInstance(Long.class);
         short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getInstance(Long.class).shortValue();
 
@@ -182,7 +231,7 @@ public abstract class HdfMessage {
         fileChannel.position(continuationOffset);
 
         // Parse the continuation block messages
-        return new ArrayList<>(readMessagesFromByteBuffer(fileChannel, continuationSize, hdfDataFile));
+        return new ArrayList<>(readMessagesFromByteBuffer(fileChannel, continuationSize, hdfDataFile, prefixFunction));
     }
 
     public int getSizeMessageData() {

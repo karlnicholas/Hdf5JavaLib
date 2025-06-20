@@ -1,3 +1,20 @@
+Version 1 ohdr:
+
+Header Message Type #1	(SHORT)
+Size of Header Message Data #1 (SHORT)
+Header Message #1 Flags	(BYTE)
+Reserved (zero)  (BYTE[3])
+
+Header Message Data #1
+
+Version 2 ohdr:
+
+Header Message Type #1	 (BYTE)
+Size of Header Message Data #1 (SHORT)
+Header Message #1 Flags (BYTE)
+
+Header Message #1 Creation Order (optional) (SHORT)
+
 Running h5ex_t_array.h5
 DS1
 HdfData(HdfData[]) read   = [[0, 0, 0, 0, 0, 0, -1, -2, -3, -4, 0, -2, -4, -6, -8], [0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 2, 1, 0, -1, -2], [0, 2, 4, 6, 8, 2, 3, 4, 5, 6, 4, 4, 4, 4, 4], [0, 3, 6, 9, 12, 3, 5, 7, 9, 11, 6, 7, 8, 9, 10]]

@@ -7,6 +7,7 @@ import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 import static org.hdf5javalib.redo.utils.HdfDisplayUtils.displayData;
@@ -38,7 +39,7 @@ public class ExampleDebug {
      */
     private void run() {
         try {
-            Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
+            Path filePath = Paths.get("c:/users/karln/downloads/ATL03_20250302235544_11742607_006_01.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Root Group: {} ", reader.getRootGroup());

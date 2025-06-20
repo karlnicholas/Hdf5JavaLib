@@ -1,6 +1,6 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
-import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefix;
 
 import java.nio.ByteBuffer;
 
@@ -12,5 +12,5 @@ public interface HdfSymbolTableEntryCache {
 
     int getCacheType();
 
-    HdfObjectHeaderPrefixV1 getObjectHeader();
+    HdfObjectHeaderPrefix getObjectHeader();
 }

@@ -60,7 +60,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
     /**
      * The object header prefix for the dataset.
      */
-    private HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix;
+    private HdfObjectHeaderPrefix dataObjectHeaderPrefix;
     /**
      * Indicates whether the dataset is closed.
      */
@@ -102,7 +102,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
      * @param datasetName            the name of the dataset
      * @param dataObjectHeaderPrefix the object header prefix for the dataset
      */
-    public HdfDataSet(HdfDataFile hdfDataFile, String datasetName, HdfObjectHeaderPrefixV1 dataObjectHeaderPrefix) {
+    public HdfDataSet(HdfDataFile hdfDataFile, String datasetName, HdfObjectHeaderPrefix dataObjectHeaderPrefix) {
         this.hdfDataFile = hdfDataFile;
         this.datasetName = datasetName;
         this.hdfDatatype = dataObjectHeaderPrefix.findMessageByType(DatatypeMessage.class).orElseThrow().getHdfDatatype();
@@ -565,7 +565,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
         return datasetName;
     }
 
-    public HdfObjectHeaderPrefixV1 getDataObjectHeaderPrefix() {
+    public HdfObjectHeaderPrefix getDataObjectHeaderPrefix() {
         return dataObjectHeaderPrefix;
     }
 

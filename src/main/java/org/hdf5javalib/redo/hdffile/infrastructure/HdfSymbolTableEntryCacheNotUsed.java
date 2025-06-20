@@ -2,6 +2,7 @@ package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 
@@ -17,14 +18,14 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
     private final int cacheType = 0;
     private final HdfDataSet dataSet;
 
-    public HdfSymbolTableEntryCacheNotUsed(HdfDataFile hdfDataFile, HdfObjectHeaderPrefixV1 objectHeader, String datasetName) {
+    public HdfSymbolTableEntryCacheNotUsed(HdfDataFile hdfDataFile, HdfObjectHeaderPrefix objectHeader, String datasetName) {
         dataSet = new HdfDataSet(hdfDataFile, datasetName, objectHeader);
     }
 
     public static HdfSymbolTableEntryCacheNotUsed readFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
             HdfDataFile hdfDataFile,
-            HdfObjectHeaderPrefixV1 objectHeader,
+            HdfObjectHeaderPrefix objectHeader,
             String objectName
     ) throws IOException {
         HdfReadUtils.skipBytes(fileChannel, SYMBOL_TABLE_ENTRY_SCRATCH_SIZE); // Skip 16 bytes for scratch-pad
@@ -56,7 +57,7 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
     }
 
     @Override
-    public HdfObjectHeaderPrefixV1 getObjectHeader() {
+    public HdfObjectHeaderPrefix getObjectHeader() {
         return dataSet.getDataObjectHeaderPrefix();
     }
 

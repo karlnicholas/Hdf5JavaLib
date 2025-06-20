@@ -3,6 +3,7 @@ package org.hdf5javalib.redo.hdffile.infrastructure;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
+import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 
@@ -24,7 +25,7 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
 //    private final HdfLocalHeap localHeap;
     private final HdfGroup group;
 
-    public HdfSymbolTableEntryCacheGroupMetadata(String groupName, HdfObjectHeaderPrefixV1 objectHeader, HdfBTreeV1 bTree, HdfLocalHeap localHeap, HdfDataFile hdfDataFile) {
+    public HdfSymbolTableEntryCacheGroupMetadata(String groupName, HdfObjectHeaderPrefix objectHeader, HdfBTreeV1 bTree, HdfLocalHeap localHeap, HdfDataFile hdfDataFile) {
         group = new HdfGroup(groupName, objectHeader, bTree, localHeap,
 //                new LinkedHashMap<>(),
                 hdfDataFile);
@@ -33,7 +34,7 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
     public static HdfSymbolTableEntryCache readFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
             HdfDataFile hdfDataFile,
-            HdfObjectHeaderPrefixV1 objectHeader,
+            HdfObjectHeaderPrefix objectHeader,
             String objectName
     ) throws Exception {
         // reading for group.
@@ -75,7 +76,7 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
     }
 
     @Override
-    public HdfObjectHeaderPrefixV1 getObjectHeader() {
+    public HdfObjectHeaderPrefix getObjectHeader() {
         return group.getObjectHeader();
     }
 
