@@ -1,7 +1,6 @@
 package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
-import org.hdf5javalib.redo.hdffile.HdfDataSet;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.redo.utils.HdfReadUtils;
 

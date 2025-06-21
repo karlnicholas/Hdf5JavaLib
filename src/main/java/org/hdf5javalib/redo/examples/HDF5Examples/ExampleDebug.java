@@ -2,7 +2,7 @@ package org.hdf5javalib.redo.examples.HDF5Examples;
 
 import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
-import org.hdf5javalib.redo.hdffile.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfDataSet;
 
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;

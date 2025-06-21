@@ -1,6 +1,4 @@
-package org.hdf5javalib.redo.hdffile;
-
-import org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeV1;
+package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import java.util.Optional;
 

@@ -3,7 +3,7 @@ package org.hdf5javalib.redo.examples.read;
 import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.*;
 import org.hdf5javalib.redo.datatype.CompoundDatatype;
-import org.hdf5javalib.redo.hdffile.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfDataSet;
 import org.hdf5javalib.redo.utils.HdfDisplayUtils;
 
 import java.io.FileInputStream;

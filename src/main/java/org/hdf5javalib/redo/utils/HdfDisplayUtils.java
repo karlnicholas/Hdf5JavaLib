@@ -5,7 +5,7 @@ import org.hdf5javalib.redo.dataclass.HdfData;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
-import org.hdf5javalib.redo.hdffile.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfDataSet;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;

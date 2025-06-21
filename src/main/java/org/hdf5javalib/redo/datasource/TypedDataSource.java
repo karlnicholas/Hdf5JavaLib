@@ -2,7 +2,7 @@ package org.hdf5javalib.redo.datasource;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
-import org.hdf5javalib.redo.hdffile.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfDataSet;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DataspaceMessage;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DatatypeMessage;
 import org.hdf5javalib.redo.utils.FlattenedArrayUtils;

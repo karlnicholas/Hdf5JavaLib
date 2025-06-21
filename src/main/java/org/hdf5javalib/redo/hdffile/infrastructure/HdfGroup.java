@@ -1,17 +1,16 @@
-package org.hdf5javalib.redo.hdffile;
+package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.dataclass.HdfString;
 import org.hdf5javalib.redo.datatype.HdfDatatype;
 import org.hdf5javalib.redo.datatype.StringDatatype;
+import org.hdf5javalib.redo.hdffile.AllocationType;
+import org.hdf5javalib.redo.hdffile.HdfDataFile;
+import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.redo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.DataspaceMessage;
 import org.hdf5javalib.redo.hdffile.dataobjects.messages.SymbolTableMessage;
-import org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeSnodEntry;
-import org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeV1;
-import org.hdf5javalib.redo.hdffile.infrastructure.HdfLocalHeap;
-import org.hdf5javalib.redo.hdffile.infrastructure.HdfSymbolTableEntryCacheNotUsed;
 import org.hdf5javalib.redo.utils.HdfWriteUtils;
 
 import java.io.Closeable;

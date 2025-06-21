@@ -1,7 +1,7 @@
 package org.hdf5javalib.redo.examples.read;
 
 import org.hdf5javalib.redo.HdfFileReader;
-import org.hdf5javalib.redo.hdffile.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfDataSet;
 import org.hdf5javalib.redo.utils.HdfDisplayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
