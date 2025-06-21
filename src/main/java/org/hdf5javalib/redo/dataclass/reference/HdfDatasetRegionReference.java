@@ -4,7 +4,7 @@ import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.datatype.FixedPointDatatype;
 import org.hdf5javalib.redo.datatype.ReferenceDatatype;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
-import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataObject;
+import org.hdf5javalib.redo.hdffile.HdfDataObject;
 import org.hdf5javalib.redo.hdffile.infrastructure.*;
 import org.hdf5javalib.redo.utils.HdfDataHolder;
 

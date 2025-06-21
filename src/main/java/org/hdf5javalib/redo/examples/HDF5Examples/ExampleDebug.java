@@ -2,7 +2,7 @@ package org.hdf5javalib.redo.examples.HDF5Examples;
 
 import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.datasource.TypedDataSource;
-import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.HdfDataSet;
 
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -11,7 +11,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 import static org.hdf5javalib.redo.utils.HdfDisplayUtils.displayData;
-import static org.hdf5javalib.redo.utils.HdfReadUtils.getResourcePath;
 
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.

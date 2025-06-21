@@ -140,7 +140,7 @@ public abstract class HdfObjectHeaderPrefix {
         return dataObjectAllocationRecord;
     }
 
-    abstract void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException;
+    public abstract void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException;
 
     public void writeInitialMessageBlockToBuffer(ByteBuffer buffer) {
     }

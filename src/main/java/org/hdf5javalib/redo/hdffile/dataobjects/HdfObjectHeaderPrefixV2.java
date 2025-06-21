@@ -164,7 +164,7 @@ public class HdfObjectHeaderPrefixV2 extends HdfObjectHeaderPrefix {
     }
 
     @Override
-    void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
+    public void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
 
     }
 }

@@ -2,7 +2,7 @@ package org.hdf5javalib.redo.examples.read;
 
 import org.hdf5javalib.redo.HdfFileReader;
 import org.hdf5javalib.redo.dataclass.HdfVariableLength;
-import org.hdf5javalib.redo.hdffile.dataobjects.HdfDataSet;
+import org.hdf5javalib.redo.hdffile.HdfDataSet;
 import org.hdf5javalib.redo.utils.HdfDisplayUtils;
 
 import java.io.FileInputStream;

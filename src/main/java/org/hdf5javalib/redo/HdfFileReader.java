@@ -3,7 +3,7 @@ package org.hdf5javalib.redo;
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 import org.hdf5javalib.redo.hdffile.HdfFileAllocation;
-import org.hdf5javalib.redo.hdffile.dataobjects.HdfGroup;
+import org.hdf5javalib.redo.hdffile.HdfGroup;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.redo.hdffile.infrastructure.HdfSymbolTableEntryCacheGroupMetadata;
 import org.hdf5javalib.redo.hdffile.metadata.HdfSuperblock;

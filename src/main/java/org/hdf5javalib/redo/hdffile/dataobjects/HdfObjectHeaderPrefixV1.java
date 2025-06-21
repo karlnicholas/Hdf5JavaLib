@@ -15,7 +15,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.*;
+import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.HDF_MESSAGE_PREAMBLE_SIZE;
 
 /**
  * Represents the version 1 object header prefix for an HDF5 data object.
