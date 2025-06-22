@@ -2,6 +2,8 @@ package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 
+import java.util.Optional;
+
 /**
  * Represents an entry in an HDF5 B-Tree (version 1) as defined in the HDF5 specification.
  * <p>
@@ -15,7 +17,7 @@ import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
  * @see HdfGroupSymbolTableNode
  * @see HdfBTreeV1
  */
-public abstract class HdfBTreeEntry {
+public class HdfBTreeEntry {
     /**
      * The key for this B-Tree entry, linkNameOffset.
      */
@@ -24,6 +26,15 @@ public abstract class HdfBTreeEntry {
      * The address of the child node (symbol table node or child B-Tree).
      */
     private final HdfFixedPoint childPointer;
+    /**
+     * The child B-Tree payload, non-null for internal entries (nodeLevel > 0).
+     */
+    private final HdfBTreeV1 childBTree;
+
+    /**
+     * The symbol table node payload, non-null for leaf entries (nodeLevel == 0).
+     */
+    private final HdfGroupSymbolTableNode groupSymbolTableNode;
 
     /**
      * Constructs an HdfBTreeEntry for a leaf node, pointing to a symbol table node.
@@ -31,9 +42,11 @@ public abstract class HdfBTreeEntry {
      * @param key          the key for the entry
      * @param childPointer the address of the symbol table node
      */
-    public HdfBTreeEntry(HdfFixedPoint key, HdfFixedPoint childPointer) {
+    public HdfBTreeEntry(HdfFixedPoint key, HdfFixedPoint childPointer, HdfBTreeV1 childBTree, HdfGroupSymbolTableNode groupSymbolTableNode) {
         this.key = key;
         this.childPointer = childPointer;
+        this.childBTree = childBTree;
+        this.groupSymbolTableNode = groupSymbolTableNode;
     }
 
 //    /**
@@ -92,6 +105,14 @@ public abstract class HdfBTreeEntry {
 
     public HdfFixedPoint getChildPointer() {
         return childPointer;
+    }
+
+    public Optional<HdfBTreeV1> getChildBTree() {
+        return Optional.ofNullable(childBTree);
+    }
+
+    public Optional<HdfGroupSymbolTableNode> getGroupSymbolTableNode() {
+        return Optional.ofNullable(groupSymbolTableNode);
     }
 
 //    public HdfGroupSymbolTableNode getSymbolTableNode() {

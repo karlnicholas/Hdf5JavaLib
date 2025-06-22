@@ -219,7 +219,7 @@ public class HdfBTreeV1 {
             long childAddress = childPointer.getInstance(Long.class);
             fileChannel.position(childAddress);
             HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap, objectName);
-            HdfBTreeEntry entry = new HdfBTreeSnodEntry(key, childPointer, snod);
+            HdfBTreeEntry entry = new HdfBTreeEntry(key, childPointer, null, snod);
 
             fileChannel.position(filePosAfterEntriesBlock);
             entries.add(entry);
@@ -257,7 +257,7 @@ public class HdfBTreeV1 {
             HdfFixedPoint snodOffset = fileAllocation.allocateNextSnodStorage();
             targetSnod = new HdfGroupSymbolTableNode(1, new ArrayList<>(MAX_SNOD_ENTRIES), hdfDataFile,
                     group.getGroupName() + ":SNOD", snodOffset);
-            targetEntry = new HdfBTreeSnodEntry(linkNameOffset, snodOffset, targetSnod);
+            targetEntry = new HdfBTreeEntry(linkNameOffset, snodOffset, null, targetSnod);
             entries.add(targetEntry);
             entriesUsed++;
             targetSnodIndex = 0;
@@ -267,17 +267,17 @@ public class HdfBTreeV1 {
             if (searchResult.isEmpty()) {
                 // No suitable SNOD found, use the last one
                 targetSnodIndex = entries.size() - 1;
-                insertIndex = ((HdfBTreeSnodEntry) entries.get(targetSnodIndex)).getSymbolTableNode().getSymbolTableEntries().size();
+                insertIndex = entries.get(targetSnodIndex).getGroupSymbolTableNode().get().getSymbolTableEntries().size();
             } else {
                 SnodSearchResult result = searchResult.get();
                 targetSnodIndex = result.entryIndex;
                 insertIndex = result.insertIndex;
             }
             targetEntry = entries.get(targetSnodIndex);
-            if (!(targetEntry instanceof HdfBTreeSnodEntry)) {
+            if (targetEntry.getGroupSymbolTableNode().isEmpty()) {
                 throw new IllegalStateException("Expected HdfBTreeSnodEntry at index " + targetSnodIndex + ", found: " + targetEntry.getClass().getName());
             }
-            targetSnod = ((HdfBTreeSnodEntry) targetEntry).getSymbolTableNode();
+            targetSnod = targetEntry.getGroupSymbolTableNode().get();
         }
 
         // Step 2: Insert new dataset
@@ -333,15 +333,16 @@ public class HdfBTreeV1 {
         if (entryIndex >= entries.size()) {
             return Optional.empty();
         }
-        if (!(entries.get(entryIndex) instanceof HdfBTreeSnodEntry snodEntry)) {
+        Optional<HdfGroupSymbolTableNode> snodEntry = entries.get(entryIndex).getGroupSymbolTableNode();
+        if (snodEntry.isEmpty()) {
             throw new IllegalStateException("Expected HdfBTreeSnodEntry at index " + entryIndex + ", found: " + entries.get(entryIndex).getClass().getName());
         }
-        HdfGroupSymbolTableNode snod = snodEntry.getSymbolTableNode();
-        if (snod == null || snod.getSymbolTableEntries() == null || snod.getSymbolTableEntries().isEmpty()) {
+//        HdfGroupSymbolTableNode snod = snodEntry;
+        if (snodEntry.get().getSymbolTableEntries() == null || snodEntry.get().getSymbolTableEntries().isEmpty()) {
             return Optional.of(new SnodSearchResult(entryIndex, 0));
         }
-        int insertIndex = binarySearchDatasetName(snod.getSymbolTableEntries().size(), (mid) -> {
-            HdfSymbolTableEntry ste = snod.getSymbolTableEntries().get(mid);
+        int insertIndex = binarySearchDatasetName(snodEntry.get().getSymbolTableEntries().size(), (mid) -> {
+            HdfSymbolTableEntry ste = snodEntry.get().getSymbolTableEntries().get(mid);
             HdfFixedPoint offset = ste.getLinkNameOffset();
             String steName = group.getDatasetNameByLinkNameOffset(offset);
             if (steName == null) {
@@ -405,13 +406,11 @@ public class HdfBTreeV1 {
             if (entryIndex >= entries.size()) {
                 return Optional.empty();
             }
-            if (!(entries.get(entryIndex) instanceof HdfBTreeChildBtreeEntry childBtreeEntry)) {
+            Optional<HdfBTreeV1> childBtreeEntry = entries.get(entryIndex).getChildBTree();
+            if (childBtreeEntry.isEmpty()) {
                 throw new IllegalStateException("Expected HdfBTreeChildBtreeEntry at index " + entryIndex + ", found: " + entries.get(entryIndex).getClass().getName());
             }
-            HdfBTreeV1 childBTree = childBtreeEntry.getChildBTree();
-            if (childBTree == null) {
-                throw new IllegalStateException("Null child B-tree for entry at index " + entryIndex);
-            }
+            HdfBTreeV1 childBTree = childBtreeEntry.get();
             return childBTree.findObjectByName(name, group);
         }
     }
@@ -453,7 +452,7 @@ public class HdfBTreeV1 {
     private void splitSnod(int targetEntryIndex, HdfFileAllocation fileAllocation, HdfGroup group) {
         final int MAX_SNOD_ENTRIES = 8;
         HdfBTreeEntry targetEntry = entries.get(targetEntryIndex);
-        HdfGroupSymbolTableNode targetSnod = ((HdfBTreeSnodEntry) targetEntry).getSymbolTableNode();
+        HdfGroupSymbolTableNode targetSnod = targetEntry.getGroupSymbolTableNode().get();
         List<HdfSymbolTableEntry> symbolTableEntries = targetSnod.getSymbolTableEntries();
 
         // Create new SNOD
@@ -502,7 +501,7 @@ public class HdfBTreeV1 {
                 .findFirst()
                 .map(HdfSymbolTableEntry::getLinkNameOffset)
                 .orElseThrow(() -> new IllegalStateException("Could not find linkNameOffset for max dataset name: " + newMaxName));
-        HdfBTreeEntry newEntry = new HdfBTreeSnodEntry(newKey, newSnodOffset, newSnod);
+        HdfBTreeEntry newEntry = new HdfBTreeEntry(newKey, newSnodOffset, null, newSnod);
 
         // Insert new BTreeEntry in sorted order
         int insertPos = targetEntryIndex + 1;
@@ -594,19 +593,19 @@ public class HdfBTreeV1 {
         // Leaf node
         if (node.nodeLevel == 0) {
             for (HdfBTreeEntry entry : entries) {
-                HdfGroupSymbolTableNode snod = ((HdfBTreeSnodEntry) entry).getSymbolTableNode();
-                if (snod != null) {
+                Optional<HdfGroupSymbolTableNode> snod = entry.getGroupSymbolTableNode();
+                if (snod.isPresent()) {
                     long offset = entry.getChildPointer().getInstance(Long.class);
                     if (offset != -1L) {
-                        map.put(offset, snod);
+                        map.put(offset, snod.get());
                     }
                 }
             }
         } else {
             for (HdfBTreeEntry entry : entries) {
-                HdfBTreeV1 childBTree = ((HdfBTreeChildBtreeEntry) entry).getChildBTree();
-                if (childBTree != null) {
-                    collectSnodsRecursively(childBTree, map);
+                Optional<HdfBTreeV1> childBtree = entry.getChildBTree();
+                if (childBtree.isPresent()) {
+                    collectSnodsRecursively(childBtree.get(), map);
                 }
             }
         }
@@ -708,13 +707,11 @@ public class HdfBTreeV1 {
             if (entryIndex >= entries.size()) {
                 return Optional.empty();
             }
-            if (!(entries.get(entryIndex) instanceof HdfBTreeChildBtreeEntry childBtreeEntry)) {
+            Optional<HdfBTreeV1> childBtreeEntry = entries.get(entryIndex).getChildBTree();
+            if (childBtreeEntry.isEmpty()) {
                 throw new IllegalStateException("Expected HdfBTreeChildBtreeEntry at index " + entryIndex + ", found: " + entries.get(entryIndex).getClass().getName());
             }
-            HdfBTreeV1 childBTree = childBtreeEntry.getChildBTree();
-            if (childBTree == null) {
-                throw new IllegalStateException("Null child B-tree for entry at index " + entryIndex);
-            }
+            HdfBTreeV1 childBTree = childBtreeEntry.get();
             return childBTree.findObjectPathByName(name, group).map(childPath -> {
                 // Merge paths: parent path + child path
                 Deque<HdfDataObject> fullPath = new ArrayDeque<>(path);
@@ -754,8 +751,8 @@ public class HdfBTreeV1 {
         SnodSearchResult result = searchResult.get();
         int entryIndex = result.entryIndex;
         int steIndex = result.insertIndex;
-        HdfBTreeSnodEntry snodEntry = (HdfBTreeSnodEntry) entries.get(entryIndex);
-        HdfGroupSymbolTableNode snod = snodEntry.getSymbolTableNode();
+        HdfBTreeEntry snodEntry = entries.get(entryIndex);
+        HdfGroupSymbolTableNode snod = snodEntry.getGroupSymbolTableNode().get();
         if (steIndex >= snod.getSymbolTableEntries().size()) {
             return Optional.empty();
         }
