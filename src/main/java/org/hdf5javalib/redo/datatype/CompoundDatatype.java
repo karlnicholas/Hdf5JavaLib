@@ -21,11 +21,11 @@ import java.util.stream.Collectors;
  * the HDF5 compound datatype (class 6).
  * </p>
  *
- * @see HdfDatatype
+ * @see Datatype
  * @see HdfGlobalHeap
  * @see DatatypeMessage
  */
-public class CompoundDatatype implements HdfDatatype {
+public class CompoundDatatype implements Datatype {
     /**
      * The class and version information for the datatype (class 6, version 1).
      */
@@ -55,7 +55,7 @@ public class CompoundDatatype implements HdfDatatype {
     /**
      * Map of converters for transforming byte data to specific Java types.
      */
-    private static final Map<Class<?>, HdfConverter<CompoundDatatype, ?>> CONVERTERS = new HashMap<>();
+    private static final Map<Class<?>, DatatypeConverter<CompoundDatatype, ?>> CONVERTERS = new HashMap<>();
 
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
@@ -287,9 +287,9 @@ public class CompoundDatatype implements HdfDatatype {
      *
      * @param <T>       the type of the class to be converted
      * @param clazz     the Class object representing the target type
-     * @param converter the HdfConverter for converting between CompoundDatatype and the target type
+     * @param converter the DatatypeConverter for converting between CompoundDatatype and the target type
      */
-    public static <T> void addConverter(Class<T> clazz, HdfConverter<CompoundDatatype, T> converter) {
+    public static <T> void addConverter(Class<T> clazz, DatatypeConverter<CompoundDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
@@ -307,11 +307,11 @@ public class CompoundDatatype implements HdfDatatype {
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         // Check CONVERTERS first
         @SuppressWarnings("unchecked")
-        HdfConverter<CompoundDatatype, T> converter = (HdfConverter<CompoundDatatype, T>) CONVERTERS.get(clazz);
+        DatatypeConverter<CompoundDatatype, T> converter = (DatatypeConverter<CompoundDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
             return clazz.cast(converter.convert(bytes, this));
         }
-        for (Map.Entry<Class<?>, HdfConverter<CompoundDatatype, ?>> entry : CONVERTERS.entrySet()) {
+        for (Map.Entry<Class<?>, DatatypeConverter<CompoundDatatype, ?>> entry : CONVERTERS.entrySet()) {
             if (entry.getKey().isAssignableFrom(clazz)) {
                 return clazz.cast(entry.getValue().convert(bytes, this));
             }

@@ -23,11 +23,11 @@ import java.util.*;
  * datatype (class 9).
  * </p>
  *
- * @see HdfDatatype
+ * @see Datatype
  * @see DatatypeMessage
  * @see HdfGlobalHeap
  */
-public class VariableLengthDatatype implements HdfDatatype {
+public class VariableLengthDatatype implements Datatype {
     /**
      * The class and version information for the datatype (class 9, version 1).
      */
@@ -47,13 +47,13 @@ public class VariableLengthDatatype implements HdfDatatype {
     /**
      * The underlying datatype for the variable-length elements.
      */
-    private final HdfDatatype hdfDatatype;
+    private final Datatype datatype;
     private final HdfDataFile hdfDataFile;
 
     /**
      * Map of converters for transforming byte data to specific Java types.
      */
-    private static final Map<Class<?>, HdfConverter<VariableLengthDatatype, ?>> CONVERTERS = new HashMap<>();
+    private static final Map<Class<?>, DatatypeConverter<VariableLengthDatatype, ?>> CONVERTERS = new HashMap<>();
 
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
@@ -70,13 +70,13 @@ public class VariableLengthDatatype implements HdfDatatype {
      * @param classAndVersion the class and version information for the datatype
      * @param classBitField   a BitSet containing class-specific bit field information
      * @param size            the fixed size of the variable-length descriptor in bytes
-     * @param hdfDatatype     the underlying datatype for the variable-length elements
+     * @param datatype     the underlying datatype for the variable-length elements
      */
-    public VariableLengthDatatype(int classAndVersion, BitSet classBitField, int size, HdfDatatype hdfDatatype, HdfDataFile hdfDataFile) {
+    public VariableLengthDatatype(int classAndVersion, BitSet classBitField, int size, Datatype datatype, HdfDataFile hdfDataFile) {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
-        this.hdfDatatype = hdfDatatype;
+        this.datatype = datatype;
         this.hdfDataFile = hdfDataFile;
     }
 
@@ -121,9 +121,9 @@ public class VariableLengthDatatype implements HdfDatatype {
      *
      * @param <T>       the type of the class to be converted
      * @param clazz     the Class object representing the target type
-     * @param converter the HdfConverter for converting between VariableLengthDatatype and the target type
+     * @param converter the DatatypeConverter for converting between VariableLengthDatatype and the target type
      */
-    public static <T> void addConverter(Class<T> clazz, HdfConverter<VariableLengthDatatype, T> converter) {
+    public static <T> void addConverter(Class<T> clazz, DatatypeConverter<VariableLengthDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
@@ -139,11 +139,11 @@ public class VariableLengthDatatype implements HdfDatatype {
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         @SuppressWarnings("unchecked")
-        HdfConverter<VariableLengthDatatype, T> converter = (HdfConverter<VariableLengthDatatype, T>) CONVERTERS.get(clazz);
+        DatatypeConverter<VariableLengthDatatype, T> converter = (DatatypeConverter<VariableLengthDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
             return clazz.cast(converter.convert(bytes, this));
         }
-        for (Map.Entry<Class<?>, HdfConverter<VariableLengthDatatype, ?>> entry : CONVERTERS.entrySet()) {
+        for (Map.Entry<Class<?>, DatatypeConverter<VariableLengthDatatype, ?>> entry : CONVERTERS.entrySet()) {
             if (entry.getKey().isAssignableFrom(clazz)) {
                 return clazz.cast(entry.getValue().convert(bytes, this));
             }
@@ -178,10 +178,10 @@ public class VariableLengthDatatype implements HdfDatatype {
         if (getType() == Type.STRING) {
             return new String(workingBytes, getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
         } else {
-            int datatypeSize = hdfDatatype.getSize();
+            int datatypeSize = datatype.getSize();
             String[] resultArray = new String[count];
             for (int i = 0; i < count; i++) {
-                resultArray[i] = hdfDatatype.getInstance(String.class, Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize));
+                resultArray[i] = datatype.getInstance(String.class, Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize));
             }
             return Arrays.toString(resultArray);
         }
@@ -199,7 +199,7 @@ public class VariableLengthDatatype implements HdfDatatype {
         int index = buffer.getInt();
 
         byte[] workingBytes = globalHeap.getDataBytes(offset, index);
-        int datatypeSize = hdfDatatype.getSize();
+        int datatypeSize = datatype.getSize();
         byte[][] resultArray = new byte[count][];
         for (int i = 0; i < count; i++) {
             resultArray[i] = Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize);
@@ -214,10 +214,10 @@ public class VariableLengthDatatype implements HdfDatatype {
         int index = buffer.getInt();
 
         byte[] workingBytes = globalHeap.getDataBytes(offset, index);
-        int datatypeSize = hdfDatatype.getSize();
+        int datatypeSize = datatype.getSize();
         HdfData[] result = new HdfData[count];
         for (int i = 0; i < count; i++) {
-            result[i] = hdfDatatype.getInstance(HdfData.class, Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize));
+            result[i] = datatype.getInstance(HdfData.class, Arrays.copyOfRange(workingBytes, i * datatypeSize, (i + 1) * datatypeSize));
         }
         return result;
     }
@@ -250,7 +250,7 @@ public class VariableLengthDatatype implements HdfDatatype {
     @Override
     public int getSizeMessageData() {
         short sizeMessageData = 16;
-        if (hdfDatatype.getDatatypeClass() == DatatypeClass.FIXED) {
+        if (datatype.getDatatypeClass() == DatatypeClass.FIXED) {
             sizeMessageData += 4;
         }
         return sizeMessageData;
@@ -270,7 +270,7 @@ public class VariableLengthDatatype implements HdfDatatype {
                     ", padding='" + getPaddingType().name + '\'' +
                     ", charSet='" + getCharacterSet().name + '\'')
                 : "" ) +
-                ", hdfDatatype='" + hdfDatatype + '\'' +
+                ", datatype='" + datatype + '\'' +
                 '}';
     }
 
@@ -281,7 +281,7 @@ public class VariableLengthDatatype implements HdfDatatype {
      */
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
-        DatatypeMessage.writeDatatypeProperties(buffer, hdfDatatype);
+        DatatypeMessage.writeDatatypeProperties(buffer, datatype);
     }
 
     /**
@@ -334,7 +334,7 @@ public class VariableLengthDatatype implements HdfDatatype {
     @Override
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {
         this.globalHeap = globalHeap;
-        this.hdfDatatype.setGlobalHeap(globalHeap);
+        this.datatype.setGlobalHeap(globalHeap);
     }
 
     public HdfGlobalHeap getGlobalHeap() {
@@ -666,6 +666,6 @@ public class VariableLengthDatatype implements HdfDatatype {
 
     @Override
     public List<ReferenceDatatype> getReferenceInstances() {
-        return hdfDatatype.getReferenceInstances();
+        return datatype.getReferenceInstances();
     }
 }

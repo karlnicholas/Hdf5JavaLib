@@ -21,10 +21,10 @@ import java.util.*;
  * fixed-point datatype (class 0).
  * </p>
  *
- * @see HdfDatatype
+ * @see Datatype
  * @see HdfReadUtils
  */
-public class FixedPointDatatype implements HdfDatatype {
+public class FixedPointDatatype implements Datatype {
     public static final int BIT_MULTIPLIER = 8;
     /**
      * The class and version information for the datatype (class 0, version 1).
@@ -51,7 +51,7 @@ public class FixedPointDatatype implements HdfDatatype {
     /**
      * Map of converters for transforming byte data to specific Java types.
      */
-    private static final Map<Class<?>, HdfConverter<FixedPointDatatype, ?>> CONVERTERS = new HashMap<>();
+    private static final Map<Class<?>, DatatypeConverter<FixedPointDatatype, ?>> CONVERTERS = new HashMap<>();
 
     static {
         CONVERTERS.put(BigDecimal.class, (bytes, dt) -> dt.toBigDecimal(bytes));
@@ -439,9 +439,9 @@ public class FixedPointDatatype implements HdfDatatype {
      *
      * @param <T>       the type of the class to be converted
      * @param clazz     the Class object representing the target type
-     * @param converter the HdfConverter for converting between FixedPointDatatype and the target type
+     * @param converter the DatatypeConverter for converting between FixedPointDatatype and the target type
      */
-    public static <T> void addConverter(Class<T> clazz, HdfConverter<FixedPointDatatype, T> converter) {
+    public static <T> void addConverter(Class<T> clazz, DatatypeConverter<FixedPointDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
@@ -457,11 +457,11 @@ public class FixedPointDatatype implements HdfDatatype {
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         @SuppressWarnings("unchecked")
-        HdfConverter<FixedPointDatatype, T> converter = (HdfConverter<FixedPointDatatype, T>) CONVERTERS.get(clazz);
+        DatatypeConverter<FixedPointDatatype, T> converter = (DatatypeConverter<FixedPointDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
             return clazz.cast(converter.convert(bytes, this));
         }
-        for (Map.Entry<Class<?>, HdfConverter<FixedPointDatatype, ?>> entry : CONVERTERS.entrySet()) {
+        for (Map.Entry<Class<?>, DatatypeConverter<FixedPointDatatype, ?>> entry : CONVERTERS.entrySet()) {
             if (entry.getKey().isAssignableFrom(clazz)) {
                 return clazz.cast(entry.getValue().convert(bytes, this));
             }

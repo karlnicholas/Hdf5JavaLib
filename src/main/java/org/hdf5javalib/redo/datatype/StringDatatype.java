@@ -18,10 +18,10 @@ import java.util.*;
  * datatype (class 3).
  * </p>
  *
- * @see HdfDatatype
+ * @see Datatype
  * @see HdfGlobalHeap
  */
-public class StringDatatype implements HdfDatatype {
+public class StringDatatype implements Datatype {
     /**
      * The class and version information for the datatype (class 3, version 1).
      */
@@ -39,7 +39,7 @@ public class StringDatatype implements HdfDatatype {
     /**
      * Map of converters for transforming byte data to specific Java types.
      */
-    private static final Map<Class<?>, HdfConverter<StringDatatype, ?>> CONVERTERS = new HashMap<>();
+    private static final Map<Class<?>, DatatypeConverter<StringDatatype, ?>> CONVERTERS = new HashMap<>();
 
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
@@ -102,9 +102,9 @@ public class StringDatatype implements HdfDatatype {
      *
      * @param <T>       the type of the class to be converted
      * @param clazz     the Class object representing the target type
-     * @param converter the HdfConverter for converting between StringDatatype and the target type
+     * @param converter the DatatypeConverter for converting between StringDatatype and the target type
      */
-    public static <T> void addConverter(Class<T> clazz, HdfConverter<StringDatatype, T> converter) {
+    public static <T> void addConverter(Class<T> clazz, DatatypeConverter<StringDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
@@ -120,11 +120,11 @@ public class StringDatatype implements HdfDatatype {
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         @SuppressWarnings("unchecked")
-        HdfConverter<StringDatatype, T> converter = (HdfConverter<StringDatatype, T>) CONVERTERS.get(clazz);
+        DatatypeConverter<StringDatatype, T> converter = (DatatypeConverter<StringDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
             return clazz.cast(converter.convert(bytes, this));
         }
-        for (Map.Entry<Class<?>, HdfConverter<StringDatatype, ?>> entry : CONVERTERS.entrySet()) {
+        for (Map.Entry<Class<?>, DatatypeConverter<StringDatatype, ?>> entry : CONVERTERS.entrySet()) {
             if (entry.getKey().isAssignableFrom(clazz)) {
                 return clazz.cast(entry.getValue().convert(bytes, this));
             }

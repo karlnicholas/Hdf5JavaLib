@@ -19,10 +19,10 @@ import java.util.*;
  * as per the HDF5 enumerated datatype (class 8).
  * </p>
  *
- * @see HdfDatatype
+ * @see Datatype
  * @see DatatypeMessage
  */
-public class EnumDatatype implements HdfDatatype {
+public class EnumDatatype implements Datatype {
     /**
      * The class and version information for the datatype (class 8, version 1 or 2).
      */
@@ -38,7 +38,7 @@ public class EnumDatatype implements HdfDatatype {
     /**
      * The base integer datatype for enumeration values.
      */
-    private final HdfDatatype hdfDatatype;
+    private final Datatype datatype;
     /**
      * The array of enumeration names.
      */
@@ -52,7 +52,7 @@ public class EnumDatatype implements HdfDatatype {
     /**
      * Map of converters for transforming byte data to specific Java types.
      */
-    private static final Map<Class<?>, HdfConverter<EnumDatatype, ?>> CONVERTERS = new HashMap<>();
+    private static final Map<Class<?>, DatatypeConverter<EnumDatatype, ?>> CONVERTERS = new HashMap<>();
 
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
@@ -67,14 +67,14 @@ public class EnumDatatype implements HdfDatatype {
      * @param classAndVersion the class and version information for the datatype
      * @param classBitField   a BitSet indicating the number of members
      * @param size            the size of each enumeration value in bytes
-     * @param hdfDatatype        the base integer datatype for values
+     * @param datatype        the base integer datatype for values
      * @param names           the array of enumeration names
      * @param values          the packed array of enumeration values
      * @param dataFile
      * @throws IllegalArgumentException if the number of names or values does not match the specification
      */
     public EnumDatatype(int classAndVersion, BitSet classBitField, int size,
-                        HdfDatatype hdfDatatype, String[] names, byte[] values, HdfDataFile dataFile) {
+                        Datatype datatype, String[] names, byte[] values, HdfDataFile dataFile) {
         this.dataFile = dataFile;
         if (names.length != getNumberOfMembers(classBitField)) {
             throw new IllegalArgumentException("Number of names doesn't match classBitField specification");
@@ -85,7 +85,7 @@ public class EnumDatatype implements HdfDatatype {
         this.classAndVersion = classAndVersion;
         this.classBitField = classBitField;
         this.size = size;
-        this.hdfDatatype = hdfDatatype;
+        this.datatype = datatype;
         this.names = names.clone();
         this.values = values.clone();
     }
@@ -102,7 +102,7 @@ public class EnumDatatype implements HdfDatatype {
     public static EnumDatatype parseEnumDatatype(int classAndVersion, BitSet classBitField,
                                                  int size, ByteBuffer buffer, HdfDataFile hdfDataFile) {
         // Base type is parsed from the buffer first, after size
-        HdfDatatype baseType = DatatypeMessage.getHdfDatatype(buffer, hdfDataFile);
+        Datatype baseType = DatatypeMessage.getHdfDatatype(buffer, hdfDataFile);
 
         int numMembers = getNumberOfMembers(classBitField);
 
@@ -191,9 +191,9 @@ public class EnumDatatype implements HdfDatatype {
      *
      * @param <T>       the type of the class to be converted
      * @param clazz     the Class object representing the target type
-     * @param converter the HdfConverter for converting between EnumDatatype and the target type
+     * @param converter the DatatypeConverter for converting between EnumDatatype and the target type
      */
-    public static <T> void addConverter(Class<T> clazz, HdfConverter<EnumDatatype, T> converter) {
+    public static <T> void addConverter(Class<T> clazz, DatatypeConverter<EnumDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
@@ -209,11 +209,11 @@ public class EnumDatatype implements HdfDatatype {
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         @SuppressWarnings("unchecked")
-        HdfConverter<EnumDatatype, T> converter = (HdfConverter<EnumDatatype, T>) CONVERTERS.get(clazz);
+        DatatypeConverter<EnumDatatype, T> converter = (DatatypeConverter<EnumDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
             return clazz.cast(converter.convert(bytes, this));
         }
-        for (Map.Entry<Class<?>, HdfConverter<EnumDatatype, ?>> entry : CONVERTERS.entrySet()) {
+        for (Map.Entry<Class<?>, DatatypeConverter<EnumDatatype, ?>> entry : CONVERTERS.entrySet()) {
             if (entry.getKey().isAssignableFrom(clazz)) {
                 return clazz.cast(entry.getValue().convert(bytes, this));
             }
@@ -229,7 +229,7 @@ public class EnumDatatype implements HdfDatatype {
      */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
-        return required | hdfDatatype.requiresGlobalHeap(required);
+        return required | datatype.requiresGlobalHeap(required);
     }
 
     /**
@@ -294,7 +294,7 @@ public class EnumDatatype implements HdfDatatype {
             int nameLength = name.getBytes(StandardCharsets.US_ASCII).length + 1; // Include null terminator
             totalNameBytes += (nameLength + 7) & ~7; // Round up to next 8-byte multiple
         }
-        return (short) (totalNameBytes + values.length + hdfDatatype.getSize());
+        return (short) (totalNameBytes + values.length + datatype.getSize());
     }
 
     /**
@@ -305,7 +305,7 @@ public class EnumDatatype implements HdfDatatype {
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
         // Write base type definition first
-        hdfDatatype.writeDefinitionToByteBuffer(buffer);
+        datatype.writeDefinitionToByteBuffer(buffer);
         // Write names (null-terminated, padded to 8-byte multiples)
         for (String name : names) {
             byte[] nameBytes = name.getBytes(StandardCharsets.US_ASCII);
@@ -327,7 +327,7 @@ public class EnumDatatype implements HdfDatatype {
      */
     @Override
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {
-        hdfDatatype.setGlobalHeap(globalHeap);
+        datatype.setGlobalHeap(globalHeap);
     }
 
     /**
@@ -340,7 +340,7 @@ public class EnumDatatype implements HdfDatatype {
         return "EnumDatatype{" +
                 "size=" + size +
                 ", numMembers=" + names.length +
-                ", hdfDatatype=" + hdfDatatype +
+                ", datatype=" + datatype +
                 '}';
     }
 
@@ -366,7 +366,7 @@ public class EnumDatatype implements HdfDatatype {
 
     @Override
     public List<ReferenceDatatype> getReferenceInstances() {
-        return hdfDatatype.getReferenceInstances();
+        return datatype.getReferenceInstances();
     }
 
 }

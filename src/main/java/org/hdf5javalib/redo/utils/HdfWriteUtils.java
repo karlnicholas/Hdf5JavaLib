@@ -97,7 +97,7 @@ public class HdfWriteUtils {
                 }
 
                 Class<?> fieldType = field.getType();
-                HdfDatatype memberType = member.getHdfDatatype();
+                Datatype memberType = member.getHdfDatatype();
 
                 if (memberType instanceof StringDatatype membertyped) {
                     if (fieldType != String.class) {

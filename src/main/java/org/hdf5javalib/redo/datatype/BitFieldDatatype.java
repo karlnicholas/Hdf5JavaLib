@@ -19,10 +19,10 @@ import java.util.Map;
  * of byte order and padding as per the HDF5 bitfield datatype (class 4).
  * </p>
  *
- * @see HdfDatatype
+ * @see Datatype
  * @see HdfGlobalHeap
  */
-public class BitFieldDatatype implements HdfDatatype {
+public class BitFieldDatatype implements Datatype {
     /**
      * The class and version information for the datatype (class 4, version 1).
      */
@@ -48,7 +48,7 @@ public class BitFieldDatatype implements HdfDatatype {
     /**
      * Map of converters for transforming byte data to specific Java types.
      */
-    private static final Map<Class<?>, HdfConverter<BitFieldDatatype, ?>> CONVERTERS = new HashMap<>();
+    private static final Map<Class<?>, DatatypeConverter<BitFieldDatatype, ?>> CONVERTERS = new HashMap<>();
 
     static {
         CONVERTERS.put(BitSet.class, (bytes, dt) -> dt.toBitSet(bytes));
@@ -126,9 +126,9 @@ public class BitFieldDatatype implements HdfDatatype {
      *
      * @param <T>       the type of the class to be converted
      * @param clazz     the Class object representing the target type
-     * @param converter the HdfConverter for converting between BitFieldDatatype and the target type
+     * @param converter the DatatypeConverter for converting between BitFieldDatatype and the target type
      */
-    public static <T> void addConverter(Class<T> clazz, HdfConverter<BitFieldDatatype, T> converter) {
+    public static <T> void addConverter(Class<T> clazz, DatatypeConverter<BitFieldDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
@@ -144,11 +144,11 @@ public class BitFieldDatatype implements HdfDatatype {
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         @SuppressWarnings("unchecked")
-        HdfConverter<BitFieldDatatype, T> converter = (HdfConverter<BitFieldDatatype, T>) CONVERTERS.get(clazz);
+        DatatypeConverter<BitFieldDatatype, T> converter = (DatatypeConverter<BitFieldDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
             return clazz.cast(converter.convert(bytes, this));
         }
-        for (Map.Entry<Class<?>, HdfConverter<BitFieldDatatype, ?>> entry : CONVERTERS.entrySet()) {
+        for (Map.Entry<Class<?>, DatatypeConverter<BitFieldDatatype, ?>> entry : CONVERTERS.entrySet()) {
             if (entry.getKey().isAssignableFrom(clazz)) {
                 return clazz.cast(entry.getValue().convert(bytes, this));
             }

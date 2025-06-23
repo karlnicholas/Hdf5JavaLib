@@ -17,10 +17,10 @@ import java.util.List;
  * to a {@link ByteBuffer} and delegates data conversion to the member's base datatype.
  * </p>
  *
- * @see HdfDatatype
+ * @see Datatype
  * @see DatatypeMessage
  */
-public class CompoundMemberDatatype implements HdfDatatype {
+public class CompoundMemberDatatype implements Datatype {
     /**
      * The name of the compound member.
      */
@@ -44,7 +44,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
     /**
      * The base datatype of the member.
      */
-    private final HdfDatatype hdfDatatype;
+    private final Datatype datatype;
     /**
      * The size of the message data for this member in bytes.
      */
@@ -59,18 +59,18 @@ public class CompoundMemberDatatype implements HdfDatatype {
      * @param dimensionality       the number of dimensions, if an array
      * @param dimensionPermutation the dimension permutation index
      * @param dimensionSizes       the sizes of each dimension
-     * @param hdfDatatype                 the base datatype of the member
+     * @param datatype                 the base datatype of the member
      * @throws IllegalStateException if the datatype class is not supported
      */
-    public CompoundMemberDatatype(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, HdfDatatype hdfDatatype, HdfDataFile dataFile) {
+    public CompoundMemberDatatype(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, Datatype datatype, HdfDataFile dataFile) {
         this.name = name;
         this.offset = offset;
         this.dimensionality = dimensionality;
         this.dimensionPermutation = dimensionPermutation;
         this.dimensionSizes = dimensionSizes;
-        this.hdfDatatype = hdfDatatype;
+        this.datatype = datatype;
         this.dataFile = dataFile;
-        sizeMessageData = switch (hdfDatatype.getDatatypeClass()) {
+        sizeMessageData = switch (datatype.getDatatypeClass()) {
             case FIXED -> computeFixedMessageDataSize(name);
             case FLOAT -> computeFloatMessageDataSize(name);
             case TIME -> computeTimeMessageDataSize(name);
@@ -201,7 +201,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
                 ", dimensionality=" + dimensionality +
                 ", dimensionPermutation=" + dimensionPermutation +
                 ", dimensionSizes=" + java.util.Arrays.toString(dimensionSizes) +
-                ", type=" + hdfDatatype +
+                ", type=" + datatype +
                 ", sizeMessageData=" + sizeMessageData +
                 '}';
     }
@@ -225,7 +225,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
             buffer.putInt(ds);
         }
 
-        DatatypeMessage.writeDatatypeProperties(buffer, hdfDatatype);
+        DatatypeMessage.writeDatatypeProperties(buffer, datatype);
     }
 
     /**
@@ -235,7 +235,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
      */
     @Override
     public DatatypeClass getDatatypeClass() {
-        return hdfDatatype.getDatatypeClass();
+        return datatype.getDatatypeClass();
     }
 
     /**
@@ -245,7 +245,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
      */
     @Override
     public int getClassAndVersion() {
-        return hdfDatatype.getClassAndVersion();
+        return datatype.getClassAndVersion();
     }
 
     /**
@@ -255,7 +255,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
      */
     @Override
     public BitSet getClassBitField() {
-        return hdfDatatype.getClassBitField();
+        return datatype.getClassBitField();
     }
 
     /**
@@ -265,7 +265,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
      */
     @Override
     public int getSize() {
-        return hdfDatatype.getSize();
+        return datatype.getSize();
     }
 
     /**
@@ -278,7 +278,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
      */
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
-        return hdfDatatype.getInstance(clazz, bytes);
+        return datatype.getInstance(clazz, bytes);
     }
 
     /**
@@ -289,7 +289,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
      */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
-        return hdfDatatype.requiresGlobalHeap(required);
+        return datatype.requiresGlobalHeap(required);
     }
 
     /**
@@ -299,7 +299,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
      */
     @Override
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {
-        hdfDatatype.setGlobalHeap(globalHeap);
+        datatype.setGlobalHeap(globalHeap);
     }
 
     /**
@@ -310,7 +310,7 @@ public class CompoundMemberDatatype implements HdfDatatype {
      */
     @Override
     public String toString(byte[] bytes) {
-        return hdfDatatype.toString(bytes);
+        return datatype.toString(bytes);
     }
 
     @Override
@@ -331,12 +331,12 @@ public class CompoundMemberDatatype implements HdfDatatype {
         return offset;
     }
 
-    public HdfDatatype getHdfDatatype() {
-        return hdfDatatype;
+    public Datatype getHdfDatatype() {
+        return datatype;
     }
 
     @Override
     public List<ReferenceDatatype> getReferenceInstances() {
-        return hdfDatatype.getReferenceInstances();
+        return datatype.getReferenceInstances();
     }
 }

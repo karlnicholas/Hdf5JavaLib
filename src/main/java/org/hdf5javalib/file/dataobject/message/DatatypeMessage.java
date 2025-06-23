@@ -89,10 +89,10 @@ public class DatatypeMessage extends HdfMessage {
     }
 
     /**
-     * Extracts an HdfDatatype from the provided ByteBuffer.
+     * Extracts an Datatype from the provided ByteBuffer.
      *
      * @param buffer the ByteBuffer containing the datatype definition
-     * @return the parsed HdfDatatype
+     * @return the parsed Datatype
      */
     public static HdfDatatype getHdfDatatype(ByteBuffer buffer) {
         // Parse Version and Datatype Class (packed into a single byte)
@@ -157,10 +157,10 @@ public class DatatypeMessage extends HdfMessage {
     }
 
     /**
-     * Writes the properties of an HdfDatatype to the provided ByteBuffer.
+     * Writes the properties of an Datatype to the provided ByteBuffer.
      *
      * @param buffer     the ByteBuffer to write the datatype properties to
-     * @param hdfDatatype the HdfDatatype to write
+     * @param hdfDatatype the Datatype to write
      */
     public static void writeDatatypeProperties(ByteBuffer buffer, HdfDatatype hdfDatatype) {
         buffer.put(hdfDatatype.getClassAndVersion());    // 1

@@ -21,10 +21,10 @@ import java.util.Map;
  * (class 2).
  * </p>
  *
- * @see HdfDatatype
+ * @see Datatype
  * @see HdfGlobalHeap
  */
-public class TimeDatatype implements HdfDatatype {
+public class TimeDatatype implements Datatype {
     /**
      * The class and version information for the datatype (class 2, version 1).
      */
@@ -46,7 +46,7 @@ public class TimeDatatype implements HdfDatatype {
     /**
      * Map of converters for transforming byte data to specific Java types.
      */
-    private static final Map<Class<?>, HdfConverter<TimeDatatype, ?>> CONVERTERS = new HashMap<>();
+    private static final Map<Class<?>, DatatypeConverter<TimeDatatype, ?>> CONVERTERS = new HashMap<>();
 
     static {
         CONVERTERS.put(Long.class, (bytes, dt) -> dt.toLong(bytes));
@@ -114,9 +114,9 @@ public class TimeDatatype implements HdfDatatype {
      *
      * @param <T>       the type of the class to be converted
      * @param clazz     the Class object representing the target type
-     * @param converter the HdfConverter for converting between TimeDatatype and the target type
+     * @param converter the DatatypeConverter for converting between TimeDatatype and the target type
      */
-    public static <T> void addConverter(Class<T> clazz, HdfConverter<TimeDatatype, T> converter) {
+    public static <T> void addConverter(Class<T> clazz, DatatypeConverter<TimeDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
@@ -132,11 +132,11 @@ public class TimeDatatype implements HdfDatatype {
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         @SuppressWarnings("unchecked")
-        HdfConverter<TimeDatatype, T> converter = (HdfConverter<TimeDatatype, T>) CONVERTERS.get(clazz);
+        DatatypeConverter<TimeDatatype, T> converter = (DatatypeConverter<TimeDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
             return clazz.cast(converter.convert(bytes, this));
         }
-        for (Map.Entry<Class<?>, HdfConverter<TimeDatatype, ?>> entry : CONVERTERS.entrySet()) {
+        for (Map.Entry<Class<?>, DatatypeConverter<TimeDatatype, ?>> entry : CONVERTERS.entrySet()) {
             if (entry.getKey().isAssignableFrom(clazz)) {
                 return clazz.cast(entry.getValue().convert(bytes, this));
             }

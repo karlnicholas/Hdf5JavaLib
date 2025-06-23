@@ -2,7 +2,7 @@ package org.hdf5javalib.redo.hdffile.infrastructure;
 
 import org.hdf5javalib.redo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.redo.dataclass.HdfString;
-import org.hdf5javalib.redo.datatype.HdfDatatype;
+import org.hdf5javalib.redo.datatype.Datatype;
 import org.hdf5javalib.redo.datatype.StringDatatype;
 import org.hdf5javalib.redo.hdffile.AllocationType;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
@@ -153,16 +153,16 @@ public class HdfGroup implements HdfDataObject, Closeable {
      *
      * @param hdfDataFile      the HDF5 file context
      * @param datasetName      the name of the dataset
-     * @param hdfDatatype      the datatype of the dataset
+     * @param datatype      the datatype of the dataset
      * @param dataSpaceMessage the dataspace message defining the dataset's dimensions
      * @return the created {@link HdfDataSet}
      */
-    public HdfDataSet createDataSet(HdfDataFile hdfDataFile, String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
+    public HdfDataSet createDataSet(HdfDataFile hdfDataFile, String datasetName, Datatype datatype, DataspaceMessage dataSpaceMessage) {
         HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length, hdfDataFile));
         HdfFixedPoint linkNameOffset;
         linkNameOffset = localHeap.addToHeap(hdfDatasetName.toString());
 
-        HdfDataSet newDataSet = new HdfDataSet(hdfDataFile, datasetName, hdfDatatype, dataSpaceMessage);
+        HdfDataSet newDataSet = new HdfDataSet(hdfDataFile, datasetName, datatype, dataSpaceMessage);
 
         bTree.addDataset(linkNameOffset, newDataSet, this);
         return newDataSet;

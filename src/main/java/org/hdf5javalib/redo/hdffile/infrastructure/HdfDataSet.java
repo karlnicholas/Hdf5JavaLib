@@ -53,7 +53,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
     /**
      * The datatype of the dataset.
      */
-    private final HdfDatatype hdfDatatype;
+    private final Datatype datatype;
     /**
      * The list of attributes associated with the dataset.
      */
@@ -72,7 +72,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
         Optional<HdfFixedPoint> dataAddress = getDataAddress();
         return "\r\nHdfDataSet@" + (dataAddress.isEmpty() ? "<Empty>" : dataAddress.get().isUndefined() ? "<Undefined>" : dataAddress.get().toString()) + "{" +
                 ",\r\n\tdatasetName='" + datasetName + '\'' +
-                ",\r\n\thdfDatatype=" + hdfDatatype +
+                ",\r\n\tdatatype=" + datatype +
 //                ",\r\n\tattributes=" + attributes +
                 ",\r\n\tdataObjectHeaderPrefix=" + dataObjectHeaderPrefix +
                 ",\r\n\tclosed=" + closed +
@@ -84,16 +84,16 @@ public class HdfDataSet implements HdfDataObject, Closeable {
      *
      * @param hdfDataFile      the HDF5 file context
      * @param datasetName      the name of the dataset
-     * @param hdfDatatype      the datatype of the dataset
+     * @param datatype      the datatype of the dataset
      * @param dataSpaceMessage the dataspace message defining the dataset's dimensions
      */
-    public HdfDataSet(HdfDataFile hdfDataFile, String datasetName, HdfDatatype hdfDatatype, DataspaceMessage dataSpaceMessage) {
+    public HdfDataSet(HdfDataFile hdfDataFile, String datasetName, Datatype datatype, DataspaceMessage dataSpaceMessage) {
         this.hdfDataFile = hdfDataFile;
         this.datasetName = datasetName;
-        this.hdfDatatype = hdfDatatype;
+        this.datatype = datatype;
         this.attributes = new ArrayList<>();
         closed = false;
-        createInitialMessages(dataSpaceMessage, hdfDatatype);
+        createInitialMessages(dataSpaceMessage, datatype);
     }
 
     /**
@@ -106,7 +106,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
     public HdfDataSet(HdfDataFile hdfDataFile, String datasetName, HdfObjectHeaderPrefix dataObjectHeaderPrefix) {
         this.hdfDataFile = hdfDataFile;
         this.datasetName = datasetName;
-        this.hdfDatatype = dataObjectHeaderPrefix.findMessageByType(DatatypeMessage.class).orElseThrow().getHdfDatatype();
+        this.datatype = dataObjectHeaderPrefix.findMessageByType(DatatypeMessage.class).orElseThrow().getHdfDatatype();
         this.attributes = new ArrayList<>();
         this.dataObjectHeaderPrefix = dataObjectHeaderPrefix;
         closed = false;
@@ -117,9 +117,9 @@ public class HdfDataSet implements HdfDataObject, Closeable {
      * Initializes the object header messages for a new dataset.
      *
      * @param dataSpaceMessage the dataspace message defining the dataset's dimensions
-     * @param hdfDatatype      the datatype of the dataset
+     * @param datatype      the datatype of the dataset
      */
-    private void createInitialMessages(DataspaceMessage dataSpaceMessage, HdfDatatype hdfDatatype) {
+    private void createInitialMessages(DataspaceMessage dataSpaceMessage, Datatype datatype) {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         Map<AllocationType, AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(datasetName);
 
@@ -128,19 +128,19 @@ public class HdfDataSet implements HdfDataObject, Closeable {
         headerMessages.add(dataSpaceMessage);
 
         // Create datatype message
-        short dataTypeMessageSize = (short) ((hdfDatatype.getSizeMessageData() + 7) & ~7); // Align to 8-byte boundary
-        DatatypeMessage dataTypeMessage = new DatatypeMessage(hdfDatatype, (byte) 1, dataTypeMessageSize);
+        short dataTypeMessageSize = (short) ((datatype.getSizeMessageData() + 7) & ~7); // Align to 8-byte boundary
+        DatatypeMessage dataTypeMessage = new DatatypeMessage(datatype, (byte) 1, dataTypeMessageSize);
         headerMessages.add(dataTypeMessage);
 
         // Add FillValue message
-        int fillValueWriteTime = hdfDatatype.getDatatypeClass() == HdfDatatype.DatatypeClass.COMPOUND ? 0 : 2;
+        int fillValueWriteTime = datatype.getDatatypeClass() == Datatype.DatatypeClass.COMPOUND ? 0 : 2;
         FillValueMessage fillValueMessage = new FillValueMessage(2, 2, fillValueWriteTime, 1,
                 0, new byte[0], (byte) 1, (short) 8);
         headerMessages.add(fillValueMessage);
 
         // Add DataLayoutMessage (Contiguous Storage)
         HdfFixedPoint[] dimensions = dataSpaceMessage.getDimensions();
-        long dimensionSizes = hdfDatatype.getSize();
+        long dimensionSizes = datatype.getSize();
         for (HdfFixedPoint fixedPoint : dimensions) {
             dimensionSizes *= fixedPoint.getInstance(Long.class);
         }
@@ -182,7 +182,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
 
         // Allocate data block if needed
         if (allocationInfo.get(AllocationType.DATASET_DATA) == null) {
-            boolean requiresGlobalHeap = hdfDatatype.requiresGlobalHeap(false);
+            boolean requiresGlobalHeap = datatype.requiresGlobalHeap(false);
             if (requiresGlobalHeap && !hdfDataFile.getFileAllocation().hasGlobalHeapAllocation()) {
                 hdfDataFile.getFileAllocation().allocateFirstGlobalHeapBlock();
             }
@@ -199,10 +199,10 @@ public class HdfDataSet implements HdfDataObject, Closeable {
      * @return the created {@link AttributeMessage}
      */
     public AttributeMessage createAttribute(String name, String value, HdfDataFile hdfDataFile) {
-        boolean requiresGlobalHeap = hdfDatatype.requiresGlobalHeap(false);
+        boolean requiresGlobalHeap = datatype.requiresGlobalHeap(false);
 
         // Create datatype and messages
-        HdfDatatype attributeType = createAttributeType(requiresGlobalHeap, value, hdfDataFile);
+        Datatype attributeType = createAttributeType(requiresGlobalHeap, value, hdfDataFile);
         DatatypeMessage datatypeMessage = createDatatypeMessage(attributeType);
         DataspaceMessage dataspaceMessage = createDataspaceMessage();
 
@@ -243,9 +243,9 @@ public class HdfDataSet implements HdfDataObject, Closeable {
      *
      * @param requiresGlobalHeap whether the global heap is required
      * @param value              the attribute value
-     * @return the created {@link HdfDatatype}
+     * @return the created {@link Datatype}
      */
-    private HdfDatatype createAttributeType(boolean requiresGlobalHeap, String value, HdfDataFile hdfDataFile) {
+    private Datatype createAttributeType(boolean requiresGlobalHeap, String value, HdfDataFile hdfDataFile) {
         if (requiresGlobalHeap) {
             FixedPointDatatype fixedType = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
@@ -274,7 +274,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
      * @param attributeType the attribute datatype
      * @return the created {@link DatatypeMessage}
      */
-    private DatatypeMessage createDatatypeMessage(HdfDatatype attributeType) {
+    private DatatypeMessage createDatatypeMessage(Datatype attributeType) {
         short dataTypeMessageSize = (short) attributeType.getSizeMessageData();
         return new DatatypeMessage(attributeType, (byte) 1, dataTypeMessageSize);
     }
@@ -301,7 +301,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
      * @param hdfDataFile        the HDF5 file context
      * @return the created {@link HdfData} value
      */
-    private HdfData createAttributeValue(String value, HdfDatatype attributeType,
+    private HdfData createAttributeValue(String value, Datatype attributeType,
                                          boolean requiresGlobalHeap, HdfDataFile hdfDataFile) {
         if (requiresGlobalHeap) {
             VariableLengthDatatype variableLengthType = new VariableLengthDatatype(
@@ -558,8 +558,8 @@ public class HdfDataSet implements HdfDataObject, Closeable {
         }
     }
 
-    public HdfDatatype getHdfDatatype() {
-        return hdfDatatype;
+    public Datatype getHdfDatatype() {
+        return datatype;
     }
 
     public String getDatasetName() {

@@ -146,7 +146,7 @@ public class OpaqueDatatype implements HdfDatatype {
      *
      * @param <T>       the type of the class to be converted
      * @param clazz     the Class object representing the target type
-     * @param converter the HdfConverter for converting between OpaqueDatatype and the target type
+     * @param converter the DatatypeConverter for converting between OpaqueDatatype and the target type
      */
     public static <T> void addConverter(Class<T> clazz, HdfConverter<OpaqueDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);

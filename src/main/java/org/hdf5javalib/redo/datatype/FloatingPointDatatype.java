@@ -21,10 +21,10 @@ import java.util.Map;
  * the HDF5 floating-point datatype (class 1).
  * </p>
  *
- * @see HdfDatatype
+ * @see Datatype
  * @see HdfGlobalHeap
  */
-public class FloatingPointDatatype implements HdfDatatype {
+public class FloatingPointDatatype implements Datatype {
     /**
      * The class and version information for the datatype (class 1, version 1).
      */
@@ -70,7 +70,7 @@ public class FloatingPointDatatype implements HdfDatatype {
     /**
      * Map of converters for transforming byte data to specific Java types.
      */
-    private static final Map<Class<?>, HdfConverter<FloatingPointDatatype, ?>> CONVERTERS = new HashMap<>();
+    private static final Map<Class<?>, DatatypeConverter<FloatingPointDatatype, ?>> CONVERTERS = new HashMap<>();
 
     static {
         CONVERTERS.put(Double.class, (bytes, dt) -> dt.toDouble(bytes));
@@ -187,9 +187,9 @@ public class FloatingPointDatatype implements HdfDatatype {
      *
      * @param <T>       the type of the class to be converted
      * @param clazz     the Class object representing the target type
-     * @param converter the HdfConverter for converting between FloatingPointDatatype and the target type
+     * @param converter the DatatypeConverter for converting between FloatingPointDatatype and the target type
      */
-    public static <T> void addConverter(Class<T> clazz, HdfConverter<FloatingPointDatatype, T> converter) {
+    public static <T> void addConverter(Class<T> clazz, DatatypeConverter<FloatingPointDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
@@ -205,11 +205,11 @@ public class FloatingPointDatatype implements HdfDatatype {
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         @SuppressWarnings("unchecked")
-        HdfConverter<FloatingPointDatatype, T> converter = (HdfConverter<FloatingPointDatatype, T>) CONVERTERS.get(clazz);
+        DatatypeConverter<FloatingPointDatatype, T> converter = (DatatypeConverter<FloatingPointDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
             return clazz.cast(converter.convert(bytes, this));
         }
-        for (Map.Entry<Class<?>, HdfConverter<FloatingPointDatatype, ?>> entry : CONVERTERS.entrySet()) {
+        for (Map.Entry<Class<?>, DatatypeConverter<FloatingPointDatatype, ?>> entry : CONVERTERS.entrySet()) {
             if (entry.getKey().isAssignableFrom(clazz)) {
                 return clazz.cast(entry.getValue().convert(bytes, this));
             }

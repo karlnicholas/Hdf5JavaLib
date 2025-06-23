@@ -18,7 +18,7 @@ import static org.hdf5javalib.file.dataobject.message.datatype.ReferenceDatatype
 /**
  * HDF5 Reference Datatype (Class 7) for objects, dataset regions, or attributes.
  */
-public class ReferenceDatatype implements HdfDatatype {
+public class ReferenceDatatype implements Datatype {
     private final int classAndVersion;
     private final BitSet classBitField;
     private final int size;
@@ -55,7 +55,7 @@ public class ReferenceDatatype implements HdfDatatype {
         }
     }
 
-    private static final Map<Class<?>, HdfConverter<ReferenceDatatype, ?>> CONVERTERS = new HashMap<>();
+    private static final Map<Class<?>, DatatypeConverter<ReferenceDatatype, ?>> CONVERTERS = new HashMap<>();
 
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
@@ -122,11 +122,11 @@ public class ReferenceDatatype implements HdfDatatype {
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         @SuppressWarnings("unchecked")
-        HdfConverter<ReferenceDatatype, T> converter = (HdfConverter<ReferenceDatatype, T>) CONVERTERS.get(clazz);
+        DatatypeConverter<ReferenceDatatype, T> converter = (DatatypeConverter<ReferenceDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
             return clazz.cast(converter.convert(bytes, this));
         }
-        for (Map.Entry<Class<?>, HdfConverter<ReferenceDatatype, ?>> entry : CONVERTERS.entrySet()) {
+        for (Map.Entry<Class<?>, DatatypeConverter<ReferenceDatatype, ?>> entry : CONVERTERS.entrySet()) {
             if (entry.getKey().isAssignableFrom(clazz)) {
                 return clazz.cast(entry.getValue().convert(bytes, this));
             }

@@ -11,7 +11,7 @@ import java.util.List;
  * Defines the interface for HDF5 datatypes, providing methods to manage datatype definitions,
  * serialization, and instance creation.
  */
-public interface HdfDatatype {
+public interface Datatype {
 
     /**
      * Writes the datatype definition to the provided ByteBuffer.

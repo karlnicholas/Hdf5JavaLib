@@ -27,10 +27,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='DS1',
-	hdfDatatype=ArrayDatatype{size=120, dimensionality=2, dimensionSizes=[3, 5], permutationIndices=[0, 1], hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}},
+	datatype=ArrayDatatype{size=120, dimensionality=2, dimensionSizes=[3, 5], permutationIndices=[0, 1], datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[4], maxDimensions=[4], hasMaxDimensions=true}
-		DatatypeMessage(48){hdfDatatype=ArrayDatatype{size=120, dimensionality=2, dimensionSizes=[3, 5], permutationIndices=[0, 1], hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}}}
+		DatatypeMessage(48){datatype=ArrayDatatype{size=120, dimensionality=2, dimensionSizes=[3, 5], permutationIndices=[0, 1], datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[480], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:10Z}
@@ -68,10 +68,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 8 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:10Z}
@@ -112,10 +112,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='DS1',
-	hdfDatatype=BitFieldDatatype{size=1, bitOffset=0, bitPrecision=8, bigEndian=true, loPadValue=0, hiPadValue=0},
+	datatype=BitFieldDatatype{size=1, bitOffset=0, bitPrecision=8, bigEndian=true, loPadValue=0, hiPadValue=0},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(48){version=1, dimensionality=2, flags={0}, dimensions=[4, 7], maxDimensions=[4, 7], hasMaxDimensions=true}
-		DatatypeMessage(24){hdfDatatype=BitFieldDatatype{size=1, bitOffset=0, bitPrecision=8, bigEndian=true, loPadValue=0, hiPadValue=0}}
+		DatatypeMessage(24){datatype=BitFieldDatatype{size=1, bitOffset=0, bitPrecision=8, bigEndian=true, loPadValue=0, hiPadValue=0}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[28], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:11Z}
@@ -153,10 +153,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:11Z}
@@ -195,16 +195,16 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='DS1',
-	hdfDatatype=CompoundDatatype { classAndVersion: 22 classBitField: {2}, size: 48, 
+	datatype=CompoundDatatype { classAndVersion: 22 classBitField: {2}, size: 48,
 Member{name='Serial number', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=false, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
-Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
+Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', datatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
 Member{name='Temperature (F)', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}
 Member{name='Pressure (inHg)', offset=40, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 5 Object Reference Count: 1 Object Header Size: 376
 		DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[4], maxDimensions=[4], hasMaxDimensions=true}
-		DatatypeMessage(280){hdfDatatype=CompoundDatatype { classAndVersion: 22 classBitField: {2}, size: 48, 
+		DatatypeMessage(280){datatype=CompoundDatatype { classAndVersion: 22 classBitField: {2}, size: 48,
 Member{name='Serial number', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=false, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
-Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
+Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', datatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
 Member{name='Temperature (F)', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}
 Member{name='Pressure (inHg)', offset=40, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=0, fillValueDefined=1, size=0, fillValue=0 bytes}
@@ -244,10 +244,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 8 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:11Z}
@@ -288,15 +288,15 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Empty>{,
 	datasetName='Sensor_Type',
-	hdfDatatype=CompoundDatatype { classAndVersion: 22 classBitField: {2}, size: 40, 
+	datatype=CompoundDatatype { classAndVersion: 22 classBitField: {2}, size: 40,
 Member{name='Serial number', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=false, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
-Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
+Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', datatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
 Member{name='Temperature (F)', offset=24, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}
 Member{name='Pressure (inHg)', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 1 Object Reference Count: 1 Object Header Size: 280
-		DatatypeMessage(280){hdfDatatype=CompoundDatatype { classAndVersion: 22 classBitField: {2}, size: 40, 
+		DatatypeMessage(280){datatype=CompoundDatatype { classAndVersion: 22 classBitField: {2}, size: 40,
 Member{name='Serial number', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=false, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
-Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
+Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', datatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
 Member{name='Temperature (F)', offset=24, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}
 Member{name='Pressure (inHg)', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}}},
 	closed=false
@@ -339,10 +339,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=0, leftS
 localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}, HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='Ambient_Temperature',
-	hdfDatatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023},
+	datatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(48){version=1, dimensionality=2, flags={0}, dimensions=[32, 32], maxDimensions=[32, 32], hasMaxDimensions=true}
-		DatatypeMessage(32){hdfDatatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}}
+		DatatypeMessage(32){datatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[8192], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:11Z}
@@ -351,28 +351,28 @@ HdfDataSet@2048{,
 	}}}, HdfSymbolTableEntry{linkNameOffset=64, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@16384{,
 	datasetName='DS1',
-	hdfDatatype=CompoundDatatype { classAndVersion: 38 classBitField: {1, 2}, size: 88, 
-Member{name='Sensors', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='Sequence', hdfDatatype='CompoundDatatype { classAndVersion: 38 classBitField: {2}, size: 40, 
+	datatype=CompoundDatatype { classAndVersion: 38 classBitField: {1, 2}, size: 88,
+Member{name='Sensors', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='Sequence', datatype='CompoundDatatype { classAndVersion: 38 classBitField: {2}, size: 40,
 Member{name='Serial number', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}, sizeMessageData=60}
-Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
+Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', datatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
 Member{name='Temperature (F)', offset=24, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}
 Member{name='Pressure (inHg)', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}'}, sizeMessageData=60}
-Member{name='Name', offset=16, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=60}
-Member{name='Color', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=EnumDatatype{size=4, numMembers=3, hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}, sizeMessageData=60}
-Member{name='Location', offset=40, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ArrayDatatype{size=24, dimensionality=1, dimensionSizes=[3], permutationIndices=[0], hdfDatatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}}, sizeMessageData=56}
+Member{name='Name', offset=16, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', datatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=60}
+Member{name='Color', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=EnumDatatype{size=4, numMembers=3, datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}, sizeMessageData=60}
+Member{name='Location', offset=40, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ArrayDatatype{size=24, dimensionality=1, dimensionSizes=[3], permutationIndices=[0], datatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}}, sizeMessageData=56}
 Member{name='Group', offset=64, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ReferenceDatatype{size=8, version=1, type=Object Reference (H5R_OBJECT1)}, sizeMessageData=48}
 Member{name='Surveyed areas', offset=72, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ReferenceDatatype{size=12, version=1, type=Dataset Region Reference (H5R_DATASET_REGION1)}, sizeMessageData=56},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 5 Object Reference Count: 1 Object Header Size: 504
 		DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[2], maxDimensions=[2], hasMaxDimensions=true}
-		DatatypeMessage(408){hdfDatatype=CompoundDatatype { classAndVersion: 38 classBitField: {1, 2}, size: 88, 
-Member{name='Sensors', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='Sequence', hdfDatatype='CompoundDatatype { classAndVersion: 38 classBitField: {2}, size: 40, 
+		DatatypeMessage(408){datatype=CompoundDatatype { classAndVersion: 38 classBitField: {1, 2}, size: 88,
+Member{name='Sensors', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='Sequence', datatype='CompoundDatatype { classAndVersion: 38 classBitField: {2}, size: 40,
 Member{name='Serial number', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}, sizeMessageData=60}
-Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
+Member{name='Location', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', datatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=68}
 Member{name='Temperature (F)', offset=24, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}
 Member{name='Pressure (inHg)', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}, sizeMessageData=68}'}, sizeMessageData=60}
-Member{name='Name', offset=16, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=60}
-Member{name='Color', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=EnumDatatype{size=4, numMembers=3, hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}, sizeMessageData=60}
-Member{name='Location', offset=40, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ArrayDatatype{size=24, dimensionality=1, dimensionSizes=[3], permutationIndices=[0], hdfDatatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}}, sizeMessageData=56}
+Member{name='Name', offset=16, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII', datatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}, sizeMessageData=60}
+Member{name='Color', offset=32, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=EnumDatatype{size=4, numMembers=3, datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}, sizeMessageData=60}
+Member{name='Location', offset=40, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ArrayDatatype{size=24, dimensionality=1, dimensionSizes=[3], permutationIndices=[0], datatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}}, sizeMessageData=56}
 Member{name='Group', offset=64, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ReferenceDatatype{size=8, version=1, type=Object Reference (H5R_OBJECT1)}, sizeMessageData=48}
 Member{name='Surveyed areas', offset=72, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=ReferenceDatatype{size=12, version=1, type=Dataset Region Reference (H5R_DATASET_REGION1)}, sizeMessageData=56}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=0, fillValueDefined=1, size=0, fillValue=0 bytes}
@@ -434,10 +434,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=0, leftS
 localHeap=HdfLocalHeap{, version=0, signature=HEAP, heapData=HdfLocalHeapData{, dataSegmentSize=88, freeListOffset=8, dataSegmentAddress=null, heapData={0=HdfLocalHeapDataValue[value=, offset=0]}}}}}}, HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='Ambient_Temperature',
-	hdfDatatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023},
+	datatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(48){version=1, dimensionality=2, flags={0}, dimensions=[32, 32], maxDimensions=[32, 32], hasMaxDimensions=true}
-		DatatypeMessage(32){hdfDatatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}}
+		DatatypeMessage(32){datatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[8192], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:12Z}
@@ -446,10 +446,10 @@ HdfDataSet@2048{,
 	}}}, HdfSymbolTableEntry{linkNameOffset=64, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 728
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:12Z}
@@ -504,10 +504,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='DS1',
-	hdfDatatype=EnumDatatype{size=2, numMembers=4, hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=false, loPad=false, hiPad=false, signed=true, size=2, bitOffset=0, bitPrecision=16}},
+	datatype=EnumDatatype{size=2, numMembers=4, datatype=FixedPointDatatype{classAndVersion=16, littleEndian=false, loPad=false, hiPad=false, signed=true, size=2, bitOffset=0, bitPrecision=16}},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(48){version=1, dimensionality=2, flags={0}, dimensions=[4, 7], maxDimensions=[4, 7], hasMaxDimensions=true}
-		DatatypeMessage(72){hdfDatatype=EnumDatatype{size=2, numMembers=4, hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=false, loPad=false, hiPad=false, signed=true, size=2, bitOffset=0, bitPrecision=16}}}
+		DatatypeMessage(72){datatype=EnumDatatype{size=2, numMembers=4, datatype=FixedPointDatatype{classAndVersion=16, littleEndian=false, loPad=false, hiPad=false, signed=true, size=2, bitOffset=0, bitPrecision=16}}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[56], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:12Z}
@@ -545,10 +545,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 8 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:12Z}
@@ -589,10 +589,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='DS1',
-	hdfDatatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023},
+	datatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(48){version=1, dimensionality=2, flags={0}, dimensions=[4, 7], maxDimensions=[4, 7], hasMaxDimensions=true}
-		DatatypeMessage(32){hdfDatatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}}
+		DatatypeMessage(32){datatype=FloatingPointDatatype{size=8, bitOffset=0, bitPrecision=64, exponentLocation=52, exponentSize=11, mantissaLocation=0, mantissaSize=52, exponentBias=1023}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[224], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:12Z}
@@ -630,10 +630,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 8 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:12Z}
@@ -674,10 +674,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=false, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=false, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(48){version=1, dimensionality=2, flags={0}, dimensions=[4, 7], maxDimensions=[4, 7], hasMaxDimensions=true}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=false, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=false, loPad=false, hiPad=false, signed=true, size=8, bitOffset=0, bitPrecision=64}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[224], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:12Z}
@@ -715,10 +715,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 8 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:12Z}
@@ -760,10 +760,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=24, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2376{,
 	datasetName='DS1',
-	hdfDatatype=ReferenceDatatype{size=18, version=4, encoding=1, type=Object Reference (H5R_OBJECT2)},
+	datatype=ReferenceDatatype{size=18, version=4, encoding=1, type=Object Reference (H5R_OBJECT2)},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[2], maxDimensions=[2], hasMaxDimensions=true}
-		DatatypeMessage(16){hdfDatatype=ReferenceDatatype{size=18, version=4, encoding=1, type=Object Reference (H5R_OBJECT2)}}
+		DatatypeMessage(16){datatype=ReferenceDatatype{size=18, version=4, encoding=1, type=Object Reference (H5R_OBJECT2)}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2376, dimensionSizes=[36], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:13Z}
@@ -772,10 +772,10 @@ HdfDataSet@2376{,
 	}}}, HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS2',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:13Z}
@@ -822,10 +822,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=24, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:13Z}
@@ -835,10 +835,10 @@ HdfDataSet@<Undefined>{,
 	}}}, HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS2',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:13Z}
@@ -885,10 +885,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='DS1',
-	hdfDatatype=OpaqueDatatype{size=7, asciiTag='Character array'},
+	datatype=OpaqueDatatype{size=7, asciiTag='Character array'},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[4], maxDimensions=[4], hasMaxDimensions=true}
-		DatatypeMessage(32){hdfDatatype=OpaqueDatatype{size=7, asciiTag='Character array'}}
+		DatatypeMessage(32){datatype=OpaqueDatatype{size=7, asciiTag='Character array'}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[28], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:13Z}
@@ -926,10 +926,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:13Z}
@@ -971,10 +971,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=16, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2096{,
 	datasetName='DS1',
-	hdfDatatype=ReferenceDatatype{size=18, version=4, encoding=1, type=Object Reference (H5R_OBJECT2)},
+	datatype=ReferenceDatatype{size=18, version=4, encoding=1, type=Object Reference (H5R_OBJECT2)},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[2], maxDimensions=[2], hasMaxDimensions=true}
-		DatatypeMessage(16){hdfDatatype=ReferenceDatatype{size=18, version=4, encoding=1, type=Object Reference (H5R_OBJECT2)}}
+		DatatypeMessage(16){datatype=ReferenceDatatype{size=18, version=4, encoding=1, type=Object Reference (H5R_OBJECT2)}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2096, dimensionSizes=[36], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:13Z}
@@ -983,10 +983,10 @@ HdfDataSet@2096{,
 	}}}, HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='DS2',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(48){version=1, dimensionality=2, flags={0}, dimensions=[3, 16], maxDimensions=[3, 16], hasMaxDimensions=true}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[48], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:13Z}
@@ -1030,10 +1030,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=16, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:13Z}
@@ -1043,10 +1043,10 @@ HdfDataSet@<Undefined>{,
 	}}}, HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='DS2',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(48){version=1, dimensionality=2, flags={0}, dimensions=[3, 16], maxDimensions=[3, 16], hasMaxDimensions=true}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=1, bitOffset=0, bitPrecision=8}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[48], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:13Z}
@@ -1088,10 +1088,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='DS1',
-	hdfDatatype=StringDatatype{size=7, padding='Space Pad', charSet='ASCII'},
+	datatype=StringDatatype{size=7, padding='Space Pad', charSet='ASCII'},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[4], maxDimensions=[4], hasMaxDimensions=true}
-		DatatypeMessage(16){hdfDatatype=StringDatatype{size=7, padding='Space Pad', charSet='ASCII'}}
+		DatatypeMessage(16){datatype=StringDatatype{size=7, padding='Space Pad', charSet='ASCII'}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[28], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:14Z}
@@ -1129,10 +1129,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:14Z}
@@ -1171,10 +1171,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='DS1',
-	hdfDatatype=VariableLengthDatatype{size=16, type='Sequence', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}'},
+	datatype=VariableLengthDatatype{size=16, type='Sequence', datatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}'},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[2], maxDimensions=[2], hasMaxDimensions=true}
-		DatatypeMessage(32){hdfDatatype=VariableLengthDatatype{size=16, type='Sequence', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}'}}
+		DatatypeMessage(32){datatype=VariableLengthDatatype{size=16, type='Sequence', datatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}'}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=0, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[32], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:14Z}
@@ -1213,10 +1213,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:14Z}
@@ -1257,10 +1257,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@2048{,
 	datasetName='DS1',
-	hdfDatatype=VariableLengthDatatype{size=16, type='String', padding='Space Pad', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'},
+	datatype=VariableLengthDatatype{size=16, type='String', padding='Space Pad', charSet='ASCII', datatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(32){version=1, dimensionality=1, flags={0}, dimensions=[4], maxDimensions=[4], hasMaxDimensions=true}
-		DatatypeMessage(32){hdfDatatype=VariableLengthDatatype{size=16, type='String', padding='Space Pad', charSet='ASCII', hdfDatatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}}
+		DatatypeMessage(32){datatype=VariableLengthDatatype{size=16, type='String', padding='Space Pad', charSet='ASCII', datatype='FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=1, bitOffset=0, bitPrecision=8}'}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=0, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[64], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:14Z}
@@ -1299,10 +1299,10 @@ bTree=HdfBTreeV1{signature='TREE', nodeType=0, nodeLevel=0, entriesUsed=1, leftS
 [HdfSymbolTableEntry{linkNameOffset=8, cacheType=HdfSymbolTableEntryCacheNotUsed{cacheType=0, dataSet=
 HdfDataSet@<Undefined>{,
 	datasetName='DS1',
-	hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
+	datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32},
 	dataObjectHeaderPrefix=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 7 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(16){version=2, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-		DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 		DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=<Undefined>, dimensionSizes=[0], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-28T23:31:14Z}
@@ -1420,7 +1420,7 @@ localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=88, freeList
 dataSets=[
   integer@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-05-10T15:32:22Z}
@@ -1488,140 +1488,140 @@ localHeap=HdfLocalHeap{signature='HEAP', version=0, dataSegmentSize=352, freeLis
 dataSets=[
   dataset_1@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2048, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_10@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2084, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_11@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2088, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_12@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2092, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_13@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2096, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_14@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2100, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_15@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2104, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_16@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2108, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_17@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2112, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_18@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2116, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_19@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2120, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_2@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2052, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_20@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2124, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_3@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2056, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_4@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2060, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_5@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2064, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_6@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2068, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_7@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2072, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_8@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2076, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
 NilMessage(152){}},
   dataset_9@0 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 DataspaceMessage(16){version=1, dimensionality=0, flags={}, dimensions=[], maxDimensions=Not Present, hasMaxDimensions=false}
-DatatypeMessage(24){hdfDatatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 FillValueMessage(16){version=2, spaceAllocationTime=2, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
 DataLayoutMessage(32){version=3, layoutClass=1, dataAddress=2080, dimensionSizes=[4], compactDataSize=N/A, compactData=N/A, datasetElementSize=N/A}
 ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-04-25T00:01:26Z}
@@ -1692,7 +1692,7 @@ dataSets=[
   CompoundData@800 HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 8 Object Reference Count: 1 Object Header Size: 968
 ObjectHeaderContinuationMessage(24){continuationOffset=2112, continuationSize=120}
 NilMessage(8){}
-DatatypeMessage(872){hdfDatatype=CompoundDatatype { classBitField: {1, 2, 3}, size: 96, 
+DatatypeMessage(872){datatype=CompoundDatatype { classBitField: {1, 2, 3}, size: 96,
 Member{name='recordId', offset=0, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=false, size=8, bitOffset=0, bitPrecision=64}, sizeMessageData=60}
 Member{name='fixedStr', offset=8, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=StringDatatype{size=10, padding='Null Terminate', charSet='ASCII'}, sizeMessageData=56}
 Member{name='varStr', offset=24, dimensionality=0, dimensionPermutation=0, dimensionSizes=[0, 0, 0, 0], type=VariableLengthDatatype{size=16, type='String', padding='Null Terminate', charSet='ASCII'}, sizeMessageData=60}

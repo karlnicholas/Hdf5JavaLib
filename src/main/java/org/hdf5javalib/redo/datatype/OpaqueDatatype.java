@@ -21,10 +21,10 @@ import java.util.Map;
  * {@code String}, or {@code byte[]}, as per the HDF5 opaque datatype (class 5).
  * </p>
  *
- * @see HdfDatatype
+ * @see Datatype
  * @see HdfGlobalHeap
  */
-public class OpaqueDatatype implements HdfDatatype {
+public class OpaqueDatatype implements Datatype {
     /**
      * The class and version information for the datatype (class 5, version 1).
      */
@@ -46,7 +46,7 @@ public class OpaqueDatatype implements HdfDatatype {
     /**
      * Map of converters for transforming byte data to specific Java types.
      */
-    private static final Map<Class<?>, HdfConverter<OpaqueDatatype, ?>> CONVERTERS = new HashMap<>();
+    private static final Map<Class<?>, DatatypeConverter<OpaqueDatatype, ?>> CONVERTERS = new HashMap<>();
 
     static {
         CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
@@ -162,9 +162,9 @@ public class OpaqueDatatype implements HdfDatatype {
      *
      * @param <T>       the type of the class to be converted
      * @param clazz     the Class object representing the target type
-     * @param converter the HdfConverter for converting between OpaqueDatatype and the target type
+     * @param converter the DatatypeConverter for converting between OpaqueDatatype and the target type
      */
-    public static <T> void addConverter(Class<T> clazz, HdfConverter<OpaqueDatatype, T> converter) {
+    public static <T> void addConverter(Class<T> clazz, DatatypeConverter<OpaqueDatatype, T> converter) {
         CONVERTERS.put(clazz, converter);
     }
 
@@ -180,11 +180,11 @@ public class OpaqueDatatype implements HdfDatatype {
     @Override
     public <T> T getInstance(Class<T> clazz, byte[] bytes) {
         @SuppressWarnings("unchecked")
-        HdfConverter<OpaqueDatatype, T> converter = (HdfConverter<OpaqueDatatype, T>) CONVERTERS.get(clazz);
+        DatatypeConverter<OpaqueDatatype, T> converter = (DatatypeConverter<OpaqueDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
             return clazz.cast(converter.convert(bytes, this));
         }
-        for (Map.Entry<Class<?>, HdfConverter<OpaqueDatatype, ?>> entry : CONVERTERS.entrySet()) {
+        for (Map.Entry<Class<?>, DatatypeConverter<OpaqueDatatype, ?>> entry : CONVERTERS.entrySet()) {
             if (entry.getKey().isAssignableFrom(clazz)) {
                 return clazz.cast(entry.getValue().convert(bytes, this));
             }

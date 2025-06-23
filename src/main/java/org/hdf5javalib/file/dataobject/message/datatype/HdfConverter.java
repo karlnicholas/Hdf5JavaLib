@@ -3,7 +3,7 @@ package org.hdf5javalib.file.dataobject.message.datatype;
 /**
  * A functional interface for converting byte data to a specific Java type using an HDF5 datatype.
  * <p>
- * The {@code HdfConverter} interface defines a method to convert a byte array to a target type {@code T}
+ * The {@code DatatypeConverter} interface defines a method to convert a byte array to a target type {@code T}
  * based on the provided HDF5 datatype {@code D}. It is used to map raw HDF5 data to Java objects.
  * </p>
  *

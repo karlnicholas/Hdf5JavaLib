@@ -1,7 +1,7 @@
 package org.hdf5javalib.redo.hdffile.dataobjects.messages;
 
 import org.hdf5javalib.redo.datatype.CompoundDatatype;
-import org.hdf5javalib.redo.datatype.HdfDatatype;
+import org.hdf5javalib.redo.datatype.Datatype;
 import org.hdf5javalib.redo.hdffile.HdfDataFile;
 
 import java.nio.ByteBuffer;
@@ -56,25 +56,25 @@ import static org.hdf5javalib.redo.datatype.VariableLengthDatatype.parseVariable
  * </ul>
  *
  * @see HdfMessage
- * @see HdfDatatype
+ * @see Datatype
  */
 public class DatatypeMessage extends HdfMessage {
     private static final int DATATYPE_CLASSBITFIELD_SIZE=3;
     /**
      * The HDF5 datatype describing the data.
      */
-    private final HdfDatatype hdfDatatype;
+    private final Datatype datatype;
 
     /**
      * Constructs a DatatypeMessage with the specified components.
      *
-     * @param hdfDatatype     the HDF5 datatype describing the data
+     * @param datatype     the HDF5 datatype describing the data
      * @param flags           message flags
      * @param sizeMessageData the size of the message data in bytes
      */
-    public DatatypeMessage(HdfDatatype hdfDatatype, int flags, short sizeMessageData) {
+    public DatatypeMessage(Datatype datatype, int flags, short sizeMessageData) {
         super(MessageType.DatatypeMessage, sizeMessageData, flags);
-        this.hdfDatatype = hdfDatatype;
+        this.datatype = datatype;
     }
 
     /**
@@ -87,17 +87,17 @@ public class DatatypeMessage extends HdfMessage {
      */
     public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        HdfDatatype hdfDatatype = getHdfDatatype(buffer, hdfDataFile);
-        return new DatatypeMessage(hdfDatatype, flags, (short) data.length);
+        Datatype datatype = getHdfDatatype(buffer, hdfDataFile);
+        return new DatatypeMessage(datatype, flags, (short) data.length);
     }
 
     /**
-     * Extracts an HdfDatatype from the provided ByteBuffer.
+     * Extracts an Datatype from the provided ByteBuffer.
      *
      * @param buffer the ByteBuffer containing the datatype definition
-     * @return the parsed HdfDatatype
+     * @return the parsed Datatype
      */
-    public static HdfDatatype getHdfDatatype(ByteBuffer buffer, HdfDataFile hdfDataFile) {
+    public static Datatype getHdfDatatype(ByteBuffer buffer, HdfDataFile hdfDataFile) {
         // Parse Version and Datatype Class (packed into a single byte)
         int classAndVersion = Byte.toUnsignedInt(buffer.get());
         byte[] classBits = new byte[DATATYPE_CLASSBITFIELD_SIZE];
@@ -111,8 +111,8 @@ public class DatatypeMessage extends HdfMessage {
         return parseMessageDataType(classAndVersion, classBitField, size, buffer, hdfDataFile);
     }
 
-    private static HdfDatatype parseMessageDataType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer, HdfDataFile hdfDataFile) {
-        HdfDatatype.DatatypeClass dataTypeClass = HdfDatatype.DatatypeClass.fromValue(classAndVersion & 0x0F);
+    private static Datatype parseMessageDataType(int classAndVersion, BitSet classBitField, int size, ByteBuffer buffer, HdfDataFile hdfDataFile) {
+        Datatype.DatatypeClass dataTypeClass = Datatype.DatatypeClass.fromValue(classAndVersion & 0x0F);
         return switch (dataTypeClass) {
             case FIXED -> parseFixedPointType(classAndVersion, classBitField, size, buffer, hdfDataFile);
             case FLOAT -> parseFloatingPointType(classAndVersion, classBitField, size, buffer, hdfDataFile);
@@ -135,7 +135,7 @@ public class DatatypeMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "DatatypeMessage(" + (getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE) + "){hdfDatatype=" + hdfDatatype + '}';
+        return "DatatypeMessage(" + (getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE) + "){datatype=" + datatype + '}';
     }
 
     /**
@@ -155,28 +155,28 @@ public class DatatypeMessage extends HdfMessage {
      * @param buffer the ByteBuffer to write the information to
      */
     public void writeInfoToByteBuffer(ByteBuffer buffer) {
-        writeDatatypeProperties(buffer, hdfDatatype);
+        writeDatatypeProperties(buffer, datatype);
     }
 
     /**
-     * Writes the properties of an HdfDatatype to the provided ByteBuffer.
+     * Writes the properties of an Datatype to the provided ByteBuffer.
      *
      * @param buffer      the ByteBuffer to write the datatype properties to
-     * @param hdfDatatype the HdfDatatype to write
+     * @param datatype the Datatype to write
      */
-    public static void writeDatatypeProperties(ByteBuffer buffer, HdfDatatype hdfDatatype) {
-        buffer.put((byte) hdfDatatype.getClassAndVersion());    // 1
+    public static void writeDatatypeProperties(ByteBuffer buffer, Datatype datatype) {
+        buffer.put((byte) datatype.getClassAndVersion());    // 1
         // Write Class Bit Field (24 bits)
-        byte[] bytes = hdfDatatype.getClassBitField().toByteArray();
+        byte[] bytes = datatype.getClassBitField().toByteArray();
         byte[] result = new byte[DATATYPE_CLASSBITFIELD_SIZE];
         // Copy bytes
         System.arraycopy(bytes, 0, result, 0, Math.min(bytes.length, DATATYPE_CLASSBITFIELD_SIZE));
         buffer.put(result);         // 3
-        buffer.putInt(hdfDatatype.getSize());        // 4
-        hdfDatatype.writeDefinitionToByteBuffer(buffer);
+        buffer.putInt(datatype.getSize());        // 4
+        datatype.writeDefinitionToByteBuffer(buffer);
     }
 
-    public HdfDatatype getHdfDatatype() {
-        return hdfDatatype;
+    public Datatype getHdfDatatype() {
+        return datatype;
     }
 }
