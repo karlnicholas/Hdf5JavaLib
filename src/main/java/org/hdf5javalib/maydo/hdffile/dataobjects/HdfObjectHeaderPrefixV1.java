@@ -1,9 +1,9 @@
 package org.hdf5javalib.maydo.hdffile.dataobjects;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.hdffile.AllocationType;
-import org.hdf5javalib.maydo.hdffile.HdfDataFile;
-import org.hdf5javalib.maydo.hdffile.HdfFileAllocation;
+import org.hdf5javalib.maydo.hdfjava.AllocationType;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
+import org.hdf5javalib.maydo.hdfjava.HdfFileAllocation;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.ObjectHeaderContinuationMessage;
 import org.hdf5javalib.maydo.utils.HdfWriteUtils;
@@ -156,12 +156,12 @@ public class HdfObjectHeaderPrefixV1 extends HdfObjectHeaderPrefix {
             }
         }
         buffer.rewind();
-        long rootGroupOffset = dataObjectAllocationRecord.getOffset().getInstance(Long.class);
-
-        seekableByteChannel.position(rootGroupOffset);
-        while (buffer.hasRemaining()) {
-            seekableByteChannel.write(buffer);
-        }
+//        long rootGroupOffset = dataObjectAllocationRecord.getOffset().getInstance(Long.class);
+//
+//        seekableByteChannel.position(rootGroupOffset);
+//        while (buffer.hasRemaining()) {
+//            seekableByteChannel.write(buffer);
+//        }
     }
 
     /**

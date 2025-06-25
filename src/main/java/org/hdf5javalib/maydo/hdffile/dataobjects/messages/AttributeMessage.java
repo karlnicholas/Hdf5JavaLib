@@ -4,10 +4,7 @@ import org.hdf5javalib.maydo.dataclass.HdfData;
 import org.hdf5javalib.maydo.dataclass.HdfString;
 import org.hdf5javalib.maydo.datatype.Datatype;
 import org.hdf5javalib.maydo.datatype.StringDatatype;
-import org.hdf5javalib.maydo.hdffile.HdfDataFile;
-import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DataspaceMessage;
-import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DatatypeMessage;
-import org.hdf5javalib.maydo.hdffile.dataobjects.messages.HdfMessage;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.utils.HdfDataHolder;
 
 import java.lang.reflect.Array;

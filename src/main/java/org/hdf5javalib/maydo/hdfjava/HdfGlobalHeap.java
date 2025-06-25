@@ -1,9 +1,6 @@
-package org.hdf5javalib.maydo.hdffile.infrastructure;
+package org.hdf5javalib.maydo.hdfjava;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.hdffile.AllocationType;
-import org.hdf5javalib.maydo.hdffile.HdfDataFile;
-import org.hdf5javalib.maydo.hdffile.HdfFileAllocation;
 import org.hdf5javalib.maydo.utils.HdfReadUtils;
 import org.hdf5javalib.maydo.utils.HdfWriteUtils;
 
@@ -16,7 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static org.hdf5javalib.maydo.hdffile.infrastructure.HdfGlobalHeapBlock.GLOBAL_HEAP_OBJECT_SIZE;
+import static org.hdf5javalib.maydo.hdfjava.HdfGlobalHeapBlock.GLOBAL_HEAP_OBJECT_SIZE;
 
 /**
  * Manages HDF5 global heap collections as defined in the HDF5 specification.

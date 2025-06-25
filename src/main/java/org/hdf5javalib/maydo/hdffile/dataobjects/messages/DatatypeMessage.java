@@ -2,7 +2,7 @@ package org.hdf5javalib.maydo.hdffile.dataobjects.messages;
 
 import org.hdf5javalib.maydo.datatype.CompoundDatatype;
 import org.hdf5javalib.maydo.datatype.Datatype;
-import org.hdf5javalib.maydo.hdffile.HdfDataFile;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

@@ -1,10 +1,10 @@
 package org.hdf5javalib.maydo.hdffile.dataobjects;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.hdffile.AllocationRecord;
-import org.hdf5javalib.maydo.hdffile.AllocationType;
-import org.hdf5javalib.maydo.hdffile.HdfDataFile;
-import org.hdf5javalib.maydo.hdffile.HdfFileAllocation;
+import org.hdf5javalib.maydo.hdfjava.AllocationRecord;
+import org.hdf5javalib.maydo.hdfjava.AllocationType;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
+import org.hdf5javalib.maydo.hdfjava.HdfFileAllocation;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DataLayoutMessage;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.ObjectHeaderContinuationMessage;
@@ -19,9 +19,6 @@ import java.util.List;
 import java.util.Optional;
 
 public abstract class HdfObjectHeaderPrefix {
-    protected final AllocationRecord dataObjectAllocationRecord;
-    protected final AllocationRecord dataObjectContinuationAllocationRecord;
-    protected final AllocationRecord dataAllocationRecord;
     /**
      * The size of the object header (4 bytes).
      */
@@ -43,35 +40,6 @@ public abstract class HdfObjectHeaderPrefix {
     ) {
         this.headerMessages = headerMessages;
         this.objectHeaderSize = objectHeaderSize;
-        this.dataObjectAllocationRecord = new AllocationRecord(
-                allocationType,
-                name + ":Object Header",
-                offset,
-                HdfWriteUtils.hdfFixedPointFromValue(
-                        objectHeaderSize + OBJECT_HREADER_PREFIX_HEADER_SIZE,
-                        hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()
-                ), hdfDataFile.getFileAllocation()
-        );
-        this.dataObjectContinuationAllocationRecord = findMessageByType(ObjectHeaderContinuationMessage.class)
-                .map(cm->
-            new AllocationRecord(
-            AllocationType.DATASET_HEADER_CONTINUATION,
-            name+ ":Header Continuation",
-            cm.getContinuationOffset(),
-                    cm.getContinuationSize(),
-                    hdfDataFile.getFileAllocation())
-                ).orElse(null);
-        this.dataAllocationRecord = findMessageByType(DataLayoutMessage.class)
-                .map(dlm->
-            dlm.getDataAddress().isUndefined() ? null :
-            new AllocationRecord(
-            AllocationType.DATASET_DATA,
-            name+ ":Data",
-            dlm.getDataAddress(),
-                    dlm.getDimensionSizes()[0],
-                    hdfDataFile.getFileAllocation())
-                ).orElse(null);
-
     }
 
     /**
@@ -134,10 +102,6 @@ public abstract class HdfObjectHeaderPrefix {
 
     public List<HdfMessage> getHeaderMessages() {
         return headerMessages;
-    }
-
-    public AllocationRecord getDataObjectAllocationRecord() {
-        return dataObjectAllocationRecord;
     }
 
     public abstract void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException;

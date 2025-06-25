@@ -4,7 +4,7 @@ import org.hdf5javalib.maydo.HdfFileReader;
 import org.hdf5javalib.maydo.dataclass.HdfData;
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
-import org.hdf5javalib.maydo.hdffile.HdfDataFile;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
 
 import java.io.IOException;

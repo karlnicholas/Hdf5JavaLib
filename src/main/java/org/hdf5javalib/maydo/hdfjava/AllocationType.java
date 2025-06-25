@@ -1,4 +1,4 @@
-package org.hdf5javalib.maydo.hdffile;
+package org.hdf5javalib.maydo.hdfjava;
 
 /**
  * Defines the types of allocation blocks used in an HDF5 file.

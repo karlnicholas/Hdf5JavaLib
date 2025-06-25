@@ -4,9 +4,9 @@ import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.dataclass.HdfString;
 import org.hdf5javalib.maydo.datatype.Datatype;
 import org.hdf5javalib.maydo.datatype.StringDatatype;
-import org.hdf5javalib.maydo.hdffile.AllocationType;
-import org.hdf5javalib.maydo.hdffile.HdfDataFile;
-import org.hdf5javalib.maydo.hdffile.HdfFileAllocation;
+import org.hdf5javalib.maydo.hdfjava.AllocationType;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
+import org.hdf5javalib.maydo.hdfjava.HdfFileAllocation;
 import org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DataspaceMessage;
@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hdf5javalib.maydo.hdffile.HdfFileAllocation.*;
+import static org.hdf5javalib.maydo.hdfjava.HdfFileAllocation.*;
 
 /**
  * Represents an HDF5 group within an HDF5 file.

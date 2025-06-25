@@ -2,8 +2,8 @@ package org.hdf5javalib.maydo.hdffile.infrastructure;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.datatype.FixedPointDatatype;
-import org.hdf5javalib.maydo.hdffile.AllocationType;
-import org.hdf5javalib.maydo.hdffile.HdfDataFile;
+import org.hdf5javalib.maydo.hdfjava.AllocationType;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.maydo.utils.HdfReadUtils;
 
@@ -101,8 +101,8 @@ public class HdfSymbolTableEntry {
         // Write Link Name Offset (sizeOfOffsets bytes, little-endian)
         writeFixedPointToBuffer(buffer, linkNameOffset);
 
-        // Write Object Header Address (sizeOfOffsets bytes, little-endian)
-        writeFixedPointToBuffer(buffer, objectHeader.getDataObjectAllocationRecord().getOffset());
+//        // Write Object Header Address (sizeOfOffsets bytes, little-endian)
+//        writeFixedPointToBuffer(buffer, objectHeader.getDataObjectAllocationRecord().getOffset());
 
         // Write Cache Type (4 bytes, little-endian)
         cache.writeToBuffer(buffer);

@@ -1,9 +1,9 @@
 package org.hdf5javalib.maydo.hdffile.infrastructure;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.hdffile.AllocationRecord;
-import org.hdf5javalib.maydo.hdffile.AllocationType;
-import org.hdf5javalib.maydo.hdffile.HdfDataFile;
+import org.hdf5javalib.maydo.hdfjava.AllocationRecord;
+import org.hdf5javalib.maydo.hdfjava.AllocationType;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.utils.HdfWriteUtils;
 
 import java.io.IOException;
@@ -37,8 +37,6 @@ public class HdfGroupSymbolTableNode {
      */
     private final List<HdfSymbolTableEntry> symbolTableEntries;
 
-    private final AllocationRecord allocationRecord;
-
     /**
      * Constructs an HdfGroupSymbolTableNode with the specified fields.
      *
@@ -52,9 +50,6 @@ public class HdfGroupSymbolTableNode {
             String name,
             HdfFixedPoint offset
     ) {
-        this.allocationRecord = new AllocationRecord(
-                AllocationType.SNOD, name, offset, hdfDataFile.getFileAllocation().HDF_SNOD_STORAGE_SIZE, hdfDataFile.getFileAllocation()
-        );
         this.version = version;
         this.symbolTableEntries = symbolTableEntries;
     }

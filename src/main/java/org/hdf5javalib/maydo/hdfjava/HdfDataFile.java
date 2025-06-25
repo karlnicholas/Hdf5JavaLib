@@ -1,6 +1,4 @@
-package org.hdf5javalib.maydo.hdffile;
-
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfGlobalHeap;
+package org.hdf5javalib.maydo.hdfjava;
 
 import java.nio.channels.SeekableByteChannel;
 

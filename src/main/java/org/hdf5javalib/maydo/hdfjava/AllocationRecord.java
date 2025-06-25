@@ -1,4 +1,4 @@
-package org.hdf5javalib.maydo.hdffile;
+package org.hdf5javalib.maydo.hdfjava;
 
 // --- Helper Classes ---
 

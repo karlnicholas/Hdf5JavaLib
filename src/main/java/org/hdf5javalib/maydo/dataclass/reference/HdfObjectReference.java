@@ -5,7 +5,7 @@ import org.hdf5javalib.maydo.dataclass.HdfString;
 import org.hdf5javalib.maydo.datatype.FixedPointDatatype;
 import org.hdf5javalib.maydo.datatype.ReferenceDatatype;
 import org.hdf5javalib.maydo.datatype.StringDatatype;
-import org.hdf5javalib.maydo.hdffile.HdfDataFile;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdffile.infrastructure.*;
 import org.hdf5javalib.maydo.hdffile.metadata.HdfSuperblock;
 import org.hdf5javalib.maydo.utils.HdfDataHolder;
@@ -91,7 +91,8 @@ public class HdfObjectReference implements HdfReferenceInstance {
                 HdfBTreeV1 btree = ((HdfSymbolTableEntryCacheGroupMetadata) rootSte.getCache()).getBtree();
                 btree.mapOffsetToSnod().values().forEach(snod -> {
                     snod.getSymbolTableEntries().forEach(ste -> {
-                        HdfFixedPoint objectOffset = ste.getObjectHeader().getDataObjectAllocationRecord().getOffset();
+//                        HdfFixedPoint objectOffset = ste.getObjectHeader().getDataObjectAllocationRecord().getOffset();
+                        HdfFixedPoint objectOffset = null;
                         if (objectOffset.compareTo(localHdfFixedPoint) == 0) {
                             HdfSymbolTableEntryCache cache = ste.getCache();
                             if (cache.getCacheType() == 0) {

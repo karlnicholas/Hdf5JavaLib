@@ -1,6 +1,6 @@
 package org.hdf5javalib.maydo.hdffile.infrastructure;
 
-import org.hdf5javalib.maydo.hdffile.HdfDataFile;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.maydo.utils.HdfReadUtils;
 

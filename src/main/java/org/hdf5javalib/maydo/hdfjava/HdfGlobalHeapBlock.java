@@ -1,10 +1,6 @@
-package org.hdf5javalib.maydo.hdffile.infrastructure;
+package org.hdf5javalib.maydo.hdfjava;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.hdffile.AllocationRecord;
-import org.hdf5javalib.maydo.hdffile.AllocationType;
-import org.hdf5javalib.maydo.hdffile.HdfDataFile;
-import org.hdf5javalib.maydo.hdffile.HdfFileAllocation;
 import org.hdf5javalib.maydo.utils.HdfWriteUtils;
 
 import java.nio.ByteBuffer;

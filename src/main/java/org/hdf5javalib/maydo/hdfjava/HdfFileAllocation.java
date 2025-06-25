@@ -1,4 +1,4 @@
-package org.hdf5javalib.maydo.hdffile;
+package org.hdf5javalib.maydo.hdfjava;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.hdffile.metadata.HdfSuperblock;

@@ -2,7 +2,7 @@ package org.hdf5javalib.maydo.hdffile.dataobjects.messages;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.datatype.FixedPointDatatype;
-import org.hdf5javalib.maydo.hdffile.HdfDataFile;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.utils.HdfReadUtils;
 
 import java.nio.ByteBuffer;
