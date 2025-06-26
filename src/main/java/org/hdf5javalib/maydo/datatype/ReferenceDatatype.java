@@ -7,7 +7,7 @@ import org.hdf5javalib.maydo.dataclass.reference.HdfDatasetRegionReference;
 import org.hdf5javalib.maydo.dataclass.reference.HdfObjectReference;
 import org.hdf5javalib.maydo.dataclass.reference.HdfReferenceInstance;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
-import org.hdf5javalib.maydo.hdfjava.HdfGlobalHeap;
+import org.hdf5javalib.maydo.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.maydo.utils.HdfDataHolder;
 
 import java.nio.ByteBuffer;

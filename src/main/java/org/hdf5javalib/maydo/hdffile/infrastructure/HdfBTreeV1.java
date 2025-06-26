@@ -36,7 +36,6 @@ public class HdfBTreeV1 {
     private static final byte[] BTREE_SIGNATURE = {'T', 'R', 'E', 'E'};
     private static final int BTREE_HEADER_INITIAL_SIZE = 8;
     private static final int MAX_SNOD_ENTRIES = 8;
-    private final AllocationRecord allocationRecord;
     /**
      * The type of the node (0 for group B-Tree).
      */
@@ -93,10 +92,6 @@ public class HdfBTreeV1 {
             HdfDataFile hdfDataFile,
             String name, HdfFixedPoint offset
     ) {
-        this.allocationRecord = new AllocationRecord(AllocationType.BTREE_HEADER, name, offset,
-                new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
-                hdfDataFile.getFileAllocation()
-        );
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;
         this.entriesUsed = entriesUsed;
@@ -124,10 +119,6 @@ public class HdfBTreeV1 {
             HdfDataFile hdfDataFile,
             String name, HdfFixedPoint offset
     ) {
-        this.allocationRecord = new AllocationRecord(AllocationType.BTREE_HEADER, name, offset,
-                new HdfFixedPoint(hdfDataFile.getFileAllocation().HDF_BTREE_NODE_SIZE.add(hdfDataFile.getFileAllocation().HDF_BTREE_STORAGE_SIZE), hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
-                hdfDataFile.getFileAllocation()
-        );
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;
         this.hdfDataFile = hdfDataFile;
@@ -297,10 +288,6 @@ public class HdfBTreeV1 {
         if (symbolTableEntries.size() > MAX_SNOD_ENTRIES) {
             splitSnod(targetSnodIndex, fileAllocation, group);
         }
-    }
-
-    public AllocationRecord getAllocationRecord() {
-        return allocationRecord;
     }
 
     /**
@@ -550,11 +537,11 @@ public class HdfBTreeV1 {
             }
         }
         buffer.rewind();
-        long bTreeOffset = allocationRecord.getOffset().getInstance(Long.class);
-        seekableByteChannel.position(bTreeOffset);
-        while (buffer.hasRemaining()) {
-            seekableByteChannel.write(buffer);
-        }
+//        long bTreeOffset = allocationRecord.getOffset().getInstance(Long.class);
+//        seekableByteChannel.position(bTreeOffset);
+//        while (buffer.hasRemaining()) {
+//            seekableByteChannel.write(buffer);
+//        }
 
         Map<Long, HdfGroupSymbolTableNode> mapOffsetToSnod = mapOffsetToSnod();
         //TODO: hardcoed SNod storage size.

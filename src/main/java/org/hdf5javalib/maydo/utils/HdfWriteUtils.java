@@ -5,7 +5,7 @@ import org.hdf5javalib.maydo.dataclass.HdfFloatPoint;
 import org.hdf5javalib.maydo.dataclass.HdfString;
 import org.hdf5javalib.maydo.dataclass.HdfVariableLength;
 import org.hdf5javalib.maydo.datatype.*;
-import org.hdf5javalib.maydo.hdfjava.HdfGlobalHeap;
+import org.hdf5javalib.maydo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;

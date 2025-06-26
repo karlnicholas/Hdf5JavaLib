@@ -4,7 +4,7 @@ import org.hdf5javalib.maydo.dataclass.HdfArray;
 import org.hdf5javalib.maydo.dataclass.HdfData;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DatatypeMessage;
-import org.hdf5javalib.maydo.hdfjava.HdfGlobalHeap;
+import org.hdf5javalib.maydo.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.util.*;

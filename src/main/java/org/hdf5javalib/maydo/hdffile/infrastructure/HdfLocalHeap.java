@@ -35,7 +35,6 @@ public class HdfLocalHeap {
     private static final byte[] LOCAL_HEAP_SIGNATURE = new byte[]{'H', 'E', 'A', 'P'};
     private static final int LOCAL_HEAP_HEADER_SIZE=32;
     private static final int LOCAL_HEAP_HEADER_RESERVED_SIZE=3;
-    private final AllocationRecord allocationRecord;
     /**
      * The version of the local heap format.
      */
@@ -65,10 +64,6 @@ public class HdfLocalHeap {
      */
     public HdfLocalHeap(int version, HdfDataFile hdfDataFile, HdfLocalHeapData heapData,
                         String name, long heapOffset) {
-        this.allocationRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, name,
-                HdfWriteUtils.hdfFixedPointFromValue(heapOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
-                hdfDataFile.getFileAllocation().HDF_LOCAL_HEAP_HEADER_SIZE,
-                hdfDataFile.getFileAllocation());
         this.version = version;
         this.hdfDataFile = hdfDataFile;
         this.heapData = heapData;
@@ -86,10 +81,10 @@ public class HdfLocalHeap {
      * @param hdfDataFile        the HDF5 data file to which the local heap will be written
      */
     public HdfLocalHeap(HdfFixedPoint heapContentsSize, HdfFixedPoint heapContentsOffset, HdfDataFile hdfDataFile, String name, long heapOffset) {
-        this.allocationRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, name,
-                HdfWriteUtils.hdfFixedPointFromValue(heapOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
-                hdfDataFile.getFileAllocation().HDF_INITIAL_LOCAL_HEAP_CONTENTS_SIZE,
-                hdfDataFile.getFileAllocation());
+//        this.allocationRecord = new AllocationRecord(AllocationType.LOCAL_HEAP_HEADER, name,
+//                HdfWriteUtils.hdfFixedPointFromValue(heapOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()),
+//                hdfDataFile.getFileAllocation().HDF_INITIAL_LOCAL_HEAP_CONTENTS_SIZE,
+//                hdfDataFile.getFileAllocation());
         this.version = 0;
         this.hdfDataFile = hdfDataFile;
         heapData = new HdfLocalHeapData(heapContentsOffset, heapContentsSize, hdfDataFile);
@@ -181,11 +176,11 @@ public class HdfLocalHeap {
         writeFixedPointToBuffer(buffer, heapData.getHeapContentsOffset());
 
         buffer.rewind();
-        seekableByteChannel.position(allocationRecord.getOffset().getInstance(Long.class));
-        while (buffer.hasRemaining()) {
-            seekableByteChannel.write(buffer);
-        }
-
+//        seekableByteChannel.position(allocationRecord.getOffset().getInstance(Long.class));
+//        while (buffer.hasRemaining()) {
+//            seekableByteChannel.write(buffer);
+//        }
+//
         heapData.writeToByteChannel(seekableByteChannel, hdfDataFile);
     }
 
@@ -199,7 +194,7 @@ public class HdfLocalHeap {
         return heapData.getStringAtOffset(offset);
     }
 
-    public AllocationRecord getAllocationRecord() {
-        return allocationRecord;
-    }
+//    public AllocationRecord getAllocationRecord() {
+//        return allocationRecord;
+//    }
 }

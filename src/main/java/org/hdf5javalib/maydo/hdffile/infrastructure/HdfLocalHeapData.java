@@ -15,7 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class HdfLocalHeapData {
-    private final AllocationRecord allocationRecord;
     /**
      * The offset to the heap's data segment in the file.
      */
@@ -48,9 +47,6 @@ public class HdfLocalHeapData {
             HdfDataFile hdfDataFile,
             String objectName
     ) {
-        this.allocationRecord = new AllocationRecord(
-                AllocationType.LOCAL_HEAP, objectName + ":Local Heap Data", heapContentsOffset, heapContentsSize, hdfDataFile.getFileAllocation()
-        );
         this.heapContentsSize = heapContentsSize;
         this.freeListOffset = freeListOffset;
         this.data = data;
@@ -64,9 +60,6 @@ public class HdfLocalHeapData {
      * @param hdfDataFile hdfDataFile
      */
     public HdfLocalHeapData(HdfFixedPoint offset, HdfFixedPoint size, HdfDataFile hdfDataFile) {
-        this.allocationRecord = new AllocationRecord(
-                AllocationType.LOCAL_HEAP, "LOCALHEAP2", offset, size, hdfDataFile.getFileAllocation()
-        );
         this.heapContentsSize = size;
         this.heapContentsOffset = offset;
         this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength());
