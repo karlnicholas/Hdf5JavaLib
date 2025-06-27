@@ -1,6 +1,7 @@
 package org.hdf5javalib.maydo.hdffile.infrastructure;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
+import org.hdf5javalib.maydo.hdfjava.HdfBTree;
 
 import java.util.Optional;
 
@@ -15,7 +16,7 @@ import java.util.Optional;
  *
  * @see HdfFixedPoint
  * @see HdfGroupSymbolTableNode
- * @see HdfBTreeV1
+ * @see HdfBTree
  */
 public class HdfBTreeEntry {
     /**
@@ -29,7 +30,7 @@ public class HdfBTreeEntry {
     /**
      * The child B-Tree payload, non-null for internal entries (nodeLevel > 0).
      */
-    private final HdfBTreeV1 childBTree;
+    private final HdfBTree childBTree;
 
     /**
      * The symbol table node payload, non-null for leaf entries (nodeLevel == 0).
@@ -42,7 +43,7 @@ public class HdfBTreeEntry {
      * @param key          the key for the entry
      * @param childPointer the address of the symbol table node
      */
-    public HdfBTreeEntry(HdfFixedPoint key, HdfFixedPoint childPointer, HdfBTreeV1 childBTree, HdfGroupSymbolTableNode groupSymbolTableNode) {
+    public HdfBTreeEntry(HdfFixedPoint key, HdfFixedPoint childPointer, HdfBTree childBTree, HdfGroupSymbolTableNode groupSymbolTableNode) {
         this.key = key;
         this.childPointer = childPointer;
         this.childBTree = childBTree;
@@ -56,7 +57,7 @@ public class HdfBTreeEntry {
 //     * @param childBTreeAddress the address of the child B-Tree
 //     * @param childBTree       the child B-Tree payload
 //     */
-//    public HdfBTreeEntry(HdfFixedPoint key, HdfFixedPoint childBTreeAddress, HdfBTreeV1 childBTree) {
+//    public HdfBTreeEntry(HdfFixedPoint key, HdfFixedPoint childBTreeAddress, HdfBTree childBTree) {
 //        this.key = key;
 //        this.childPointer = childBTreeAddress;
 //        this.symbolTableNode = null;
@@ -107,7 +108,7 @@ public class HdfBTreeEntry {
         return childPointer;
     }
 
-    public Optional<HdfBTreeV1> getChildBTree() {
+    public Optional<HdfBTree> getChildBTree() {
         return Optional.ofNullable(childBTree);
     }
 
@@ -119,7 +120,7 @@ public class HdfBTreeEntry {
 //        return symbolTableNode;
 //    }
 //
-//    public HdfBTreeV1 getChildBTree() {
+//    public HdfBTree getChildBTree() {
 //        return childBTree;
 //    }
 }

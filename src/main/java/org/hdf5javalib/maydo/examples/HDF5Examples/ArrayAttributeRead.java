@@ -3,7 +3,7 @@ package org.hdf5javalib.maydo.examples.HDF5Examples;
 import org.hdf5javalib.maydo.HdfFileReader;
 import org.hdf5javalib.maydo.dataclass.HdfData;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.HdfDataHolder;
 
 import java.nio.channels.SeekableByteChannel;
@@ -44,11 +44,10 @@ public class ArrayAttributeRead {
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Root Group: {} ", reader.getRootGroup());
-                reader.getFileAllocation().printBlocks();
-//                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
+    //                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
 //                    displayData(channel, dataSet, reader);
 //                }
-                for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
+                for (HdfDataset dataSet : reader.getRootGroup().getDataSets()) {
                     displayAttributes(dataSet);
                 }
             }
@@ -57,7 +56,7 @@ public class ArrayAttributeRead {
         }
     }
 
-    private void displayAttributes(HdfDataSet dataSet) {
+    private void displayAttributes(HdfDataset dataSet) {
         dataSet.getAttributeMessages().forEach(message -> {
             // iterator
             HdfDataHolder dataHolder = message.getHdfDataHolder();

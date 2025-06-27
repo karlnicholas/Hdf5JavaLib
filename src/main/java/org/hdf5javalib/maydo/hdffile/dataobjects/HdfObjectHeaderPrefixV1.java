@@ -96,7 +96,7 @@ public class HdfObjectHeaderPrefixV1 extends HdfObjectHeaderPrefix {
         // Create the instance
         return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages,
                 hdfDataFile, allocationType, objectName,
-                HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset()));
+                HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()));
     }
 
     /**

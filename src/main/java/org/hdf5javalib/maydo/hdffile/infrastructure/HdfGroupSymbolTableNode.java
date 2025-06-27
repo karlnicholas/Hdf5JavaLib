@@ -104,7 +104,7 @@ public class HdfGroupSymbolTableNode {
                 symbolTableEntries,
                 hdfDataFile,
                 objectName + ":Snod",
-                HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()));
+                HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()));
     }
 
     /**

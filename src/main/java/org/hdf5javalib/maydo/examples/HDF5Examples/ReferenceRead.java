@@ -2,7 +2,7 @@ package org.hdf5javalib.maydo.examples.HDF5Examples;
 
 import org.hdf5javalib.maydo.HdfFileReader;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -41,21 +41,20 @@ public class ReferenceRead {
             Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
+//                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
 //                    displayReference(channel, dataSet, reader);
 //                }
-                for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
+                for (HdfDataset dataSet : reader.getRootGroup().getDataSets()) {
                     displayData(channel, dataSet, reader);
                 }
-                log.debug("Superblock: {} ", reader.getFileAllocation().getSuperblock());
-                reader.getFileAllocation().printBlocks();
+                log.debug("Superblock: {} ", reader.getSuperblock());
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void displayReference(SeekableByteChannel channel, HdfDataSet dataSet, HdfFileReader reader) {
+    private void displayReference(SeekableByteChannel channel, HdfDataset dataSet, HdfFileReader reader) {
         dataSet.getReferenceInstances().forEach(referenceInstance -> {
             System.out.println("referenceInstance=" + referenceInstance);
         });

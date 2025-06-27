@@ -5,7 +5,7 @@ import org.hdf5javalib.maydo.dataclass.HdfData;
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
@@ -33,18 +33,18 @@ public class HdfDisplayUtils {
      * @param hdfDataFile the HDF5 file context
      * @param dataset     the dataset to which the attribute is added
      */
-    public static void writeVersionAttribute(HdfDataFile hdfDataFile, HdfDataSet dataset) {
+    public static void writeVersionAttribute(HdfDataFile hdfDataFile, HdfDataset dataset) {
         String ATTRIBUTE_NAME = "GIT root revision";
         String ATTRIBUTE_VALUE = "Revision: , URL: ";
         dataset.createAttribute(ATTRIBUTE_NAME, ATTRIBUTE_VALUE, hdfDataFile);
     }
 
-    public static void displayData(SeekableByteChannel channel, HdfDataSet ds, HdfFileReader reader) throws Exception {
+    public static void displayData(SeekableByteChannel channel, HdfDataset ds, HdfFileReader reader) throws Exception {
         System.out.println(ds.getDatasetName());
         if (ds.hasDataspaceMessage()) {
             switch (ds.getDimensionality()) {
                 case 0:
-                    if (HdfFixedPoint.compareToZero(ds.getdimensionSizes().orElseThrow()[0]) != 0) {
+                    if (HdfFixedPoint.compareToZero(ds.getDimensionSizes().orElseThrow()[0]) != 0) {
                         displayScalarData(channel, ds, HdfData.class, reader);
                     }
                     break;
@@ -75,7 +75,7 @@ public class HdfDisplayUtils {
      * @param <T>         the type of the data
      * @throws IOException if an I/O error occurs
      */
-    public static <T> void displayScalarData(SeekableByteChannel fileChannel, HdfDataSet dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+    public static <T> void displayScalarData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T result = dataSource.readScalar();
@@ -100,7 +100,7 @@ public class HdfDisplayUtils {
      * @param <T>         the type of the data elements
      * @throws IOException if an I/O error occurs
      */
-    public static <T> void displayVectorData(SeekableByteChannel fileChannel, HdfDataSet dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+    public static <T> void displayVectorData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T[] resultArray = dataSource.readVector();
@@ -129,7 +129,7 @@ public class HdfDisplayUtils {
      * @param <T>         the type of the data elements
      * @throws IOException if an I/O error occurs
      */
-    public static <T> void displayMatrixData(SeekableByteChannel fileChannel, HdfDataSet dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+    public static <T> void displayMatrixData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T[][] resultArray = dataSource.readMatrix();

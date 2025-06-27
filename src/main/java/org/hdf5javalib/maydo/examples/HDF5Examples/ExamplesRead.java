@@ -2,7 +2,7 @@ package org.hdf5javalib.maydo.examples.HDF5Examples;
 
 import org.hdf5javalib.maydo.HdfFileReader;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.HdfDisplayUtils;
 
 import java.io.IOException;
@@ -58,11 +58,10 @@ public class ExamplesRead {
     public void displayFile(Path filePath) {
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            for (HdfDataSet ds : reader.getRootGroup().getDataSets()) {
+            for (HdfDataset ds : reader.getRootGroup().getDataSets()) {
                 HdfDisplayUtils.displayData(channel, ds, reader);
             }
-            log.info("Superblock: {}", reader.getFileAllocation().getSuperblock());
-            reader.getFileAllocation().printBlocks();
+            log.info("Superblock: {}", reader.getSuperblock());
         } catch (Exception e) {
             System.out.println("Exception in displayFile: " + filePath);
             e.printStackTrace(System.out);

@@ -171,7 +171,7 @@ public class VariableLengthDatatype implements Datatype {
     public String toString(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         int count = buffer.getInt();
-        HdfFixedPoint offset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint offset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         int index = buffer.getInt();
 
         byte[] workingBytes = globalHeap.getDataBytes(offset, index);
@@ -195,7 +195,7 @@ public class VariableLengthDatatype implements Datatype {
     private byte[][] toByteArrayArray(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         int count = buffer.getInt();
-        HdfFixedPoint offset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint offset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         int index = buffer.getInt();
 
         byte[] workingBytes = globalHeap.getDataBytes(offset, index);
@@ -210,7 +210,7 @@ public class VariableLengthDatatype implements Datatype {
     private Object toObjectArray(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         int count = buffer.getInt();
-        HdfFixedPoint offset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint offset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         int index = buffer.getInt();
 
         byte[] workingBytes = globalHeap.getDataBytes(offset, index);

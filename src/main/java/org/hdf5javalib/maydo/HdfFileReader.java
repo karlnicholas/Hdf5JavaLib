@@ -4,7 +4,7 @@ import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdfjava.HdfFileAllocation;
 import org.hdf5javalib.maydo.hdffile.infrastructure.HdfGlobalHeap;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfGroup;
+import org.hdf5javalib.maydo.hdfjava.HdfGroup;
 import org.hdf5javalib.maydo.hdffile.infrastructure.HdfSymbolTableEntryCacheGroupMetadata;
 import org.hdf5javalib.maydo.hdffile.metadata.HdfSuperblock;
 
@@ -46,7 +46,7 @@ public class HdfFileReader implements HdfDataFile {
      */
     public HdfFileReader(SeekableByteChannel fileChannel) {
         this.fileChannel = fileChannel;
-        this.fileAllocation = null;
+//        this.fileAllocation = null;
         this.globalHeap = new HdfGlobalHeap(this::initializeGlobalHeap, this);
     }
 
@@ -94,7 +94,7 @@ public class HdfFileReader implements HdfDataFile {
 //     * @return a map of dataset names to their {@link HdfGroup.DataSetInfo}
 //     * @throws IOException if an I/O error occurs
 //     */
-//    private Map<String, HdfGroup.DataSetInfo> collectDatasetsMap(SeekableByteChannel fileChannel, HdfBTreeV1 bTree, HdfLocalHeap localHeap) throws IOException {
+//    private Map<String, HdfGroup.DataSetInfo> collectDatasetsMap(SeekableByteChannel fileChannel, HdfBTree bTree, HdfLocalHeap localHeap) throws IOException {
 //        Map<String, HdfGroup.DataSetInfo> dataSets = new LinkedHashMap<>();
 //        collectDatasetsRecursive(bTree, dataSets, localHeap, fileChannel);
 //        return dataSets;
@@ -113,7 +113,7 @@ public class HdfFileReader implements HdfDataFile {
 //     * @param fileChannel the seekable byte channel for reading
 //     * @throws IOException if an I/O error occurs
 //     */
-//    private void collectDatasetsRecursive(HdfBTreeV1 currentNode,
+//    private void collectDatasetsRecursive(HdfBTree currentNode,
 //                                          Map<String, HdfGroup.DataSetInfo> dataSets,
 //                                          HdfLocalHeap localHeap,
 //                                          SeekableByteChannel fileChannel) throws IOException {
@@ -127,14 +127,14 @@ public class HdfFileReader implements HdfDataFile {
 //                    fileChannel.position(dataObjectHeaderAddress);
 //                    HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, this);
 //                    DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
-//                    HdfDataSet dataset = new HdfDataSet(this, linkName.toString(), dataType.getHdfDatatype(), header);
+//                    HdfDataset dataset = new HdfDataset(this, linkName.toString(), dataType.getHdfDatatype(), header);
 //                    HdfGroup.DataSetInfo dataSetInfo = new HdfGroup.DataSetInfo(dataset,
 //                            HdfWriteUtils.hdfFixedPointFromValue(0, superblock.getFixedPointDatatypeForOffset()),
 //                            linkNameOffset);
 //                    dataSets.put(linkName.toString(), dataSetInfo);
 //                }
 //            } else if (entry.isInternalEntry()) {
-//                HdfBTreeV1 childBTree = entry.getChildBTree();
+//                HdfBTree childBTree = entry.getChildBTree();
 //                collectDatasetsRecursive(childBTree, dataSets, localHeap, fileChannel);
 //            }
 //        }
@@ -172,6 +172,11 @@ public class HdfFileReader implements HdfDataFile {
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public org.hdf5javalib.maydo.hdfjava.HdfSuperblock getSuperblock() {
+        return null;
+    }
+
 //    @Override
 //    public HdfSuperblock getSuperblock() {
 //        return superblock;
@@ -183,7 +188,7 @@ public class HdfFileReader implements HdfDataFile {
     }
 
     public HdfGroup getRootGroup() {
-        return ((HdfSymbolTableEntryCacheGroupMetadata) fileAllocation.getSuperblock().getRootGroupSymbolTableEntry().getCache())
+        return ((HdfSymbolTableEntryCacheGroupMetadata) getSuperblock().getRootGroupSymbolTableEntry().getCache())
                 .getGroup();
     }
 }

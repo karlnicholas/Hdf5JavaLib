@@ -4,8 +4,8 @@ import org.hdf5javalib.maydo.HdfFileReader;
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfGroup;
+import org.hdf5javalib.maydo.hdfjava.HdfGroup;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.FlattenedArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +62,7 @@ public class FixedPointRead {
             hdfFileReader.getFileAllocation().printBlocks();
             log.debug("Root Group: {} ", hdfFileReader.getRootGroup());
             HdfGroup group = hdfFileReader.getRootGroup().getGroup("/Group1").orElseThrow();
-            for (HdfDataSet dataset : group.getDataSets()) {
+            for (HdfDataset dataset : group.getDataSets()) {
                 tryScalarDataSpliterator(channel, hdfFileReader, dataset);
             }
         }
@@ -107,7 +107,7 @@ public class FixedPointRead {
      * @param dataSet     the scalar dataset to process
      * @throws IOException if an I/O error occurs
      */
-    void tryDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataSet dataSet) throws IOException {
+    void tryDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, hdfDataFile, dataSet, BigInteger.class);
         BigInteger allData = dataSource.readScalar();
         System.out.println("Scalar dataset name = " + dataSet.getDatasetName());
@@ -129,7 +129,7 @@ public class FixedPointRead {
      * @param dataSet     the scalar dataset to process
      * @throws IOException if an I/O error occurs
      */
-    void tryScalarDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataSet dataSet) throws IOException {
+    void tryScalarDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, hdfDataFile, dataSet, BigInteger.class);
         BigInteger allData = dataSource.readScalar();
         System.out.println("Scalar dataset name = " + dataSet.getDatasetName());
@@ -151,7 +151,7 @@ public class FixedPointRead {
      * @param dataSet     the vector dataset to process
      * @throws IOException if an I/O error occurs
      */
-    void tryVectorSpliterator(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataSet dataSet) throws IOException {
+    void tryVectorSpliterator(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, BigInteger.class);
         BigInteger[] allData = dataSource.readVector();
         System.out.println("Vector readAll stats  = " + Arrays.stream(allData).collect(Collectors.summarizingInt(BigInteger::intValue)));
@@ -177,7 +177,7 @@ public class FixedPointRead {
      * @param dataSet     the matrix dataset to process
      * @throws IOException if an I/O error occurs
      */
-    void tryMatrixSpliterator(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataSet dataSet) throws IOException {
+    void tryMatrixSpliterator(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
         TypedDataSource<BigDecimal> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, BigDecimal.class);
         BigDecimal[][] allData = dataSource.readMatrix();
         // Print the matrix values
@@ -243,7 +243,7 @@ public class FixedPointRead {
      * @param dataSet     the 4D dataset to process
      * @throws IOException if an I/O error occurs
      */
-    void display4DData(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataSet dataSet) throws IOException {
+    void display4DData(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
         TypedDataSource<Integer> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, Integer.class);
         // Print all values in order
         final Integer[] flattenedData = dataSource.readFlattened();
@@ -292,7 +292,7 @@ public class FixedPointRead {
      * @param dataSet     the 4D dataset to process
      * @throws IOException if an I/O error occurs
      */
-    void displaySalesCube(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataSet dataSet) throws IOException {
+    void displaySalesCube(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
         TypedDataSource<Double> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, Double.class);
         int[] shape = dataSource.getShape(); // Should be [60, 100, 50]
         Double[][] sales2024Jan = (Double[][]) FlattenedArrayUtils.sliceStream(

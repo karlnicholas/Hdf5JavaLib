@@ -4,7 +4,7 @@ import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.datatype.FixedPointDatatype;
 import org.hdf5javalib.maydo.datatype.ReferenceDatatype;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
-import org.hdf5javalib.maydo.hdffile.infrastructure.*;
+import org.hdf5javalib.maydo.hdfjava.HdfDataObject;
 import org.hdf5javalib.maydo.utils.HdfDataHolder;
 
 import java.nio.ByteBuffer;
@@ -22,7 +22,7 @@ public class HdfDatasetRegionReference implements HdfReferenceInstance {
     public HdfDatasetRegionReference(byte[] bytes, ReferenceDatatype dt, boolean external) {
         this.external = external;
         this.referenceType = ReferenceDatatype.ReferenceType.DATASET_REGION1;
-        FixedPointDatatype offsetSpec = dt.getDataFile().getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset();
+        FixedPointDatatype offsetSpec = dt.getDataFile().getSuperblock().getFixedPointDatatypeForOffset();
         int offsetSize = offsetSpec.getSize();
         HdfFixedPoint heapOffset = new HdfFixedPoint(Arrays.copyOfRange(bytes, 0, offsetSize), offsetSpec);
         ByteBuffer bb = ByteBuffer.wrap(bytes, offsetSize, bytes.length - offsetSize).order(ByteOrder.LITTLE_ENDIAN);
@@ -37,7 +37,7 @@ public class HdfDatasetRegionReference implements HdfReferenceInstance {
         AtomicReference<HdfDataObject> localHdfDataObject = new AtomicReference<>();
         if (localHdfFixedPoint != null) {
             // TODO: btree search logic
-            HdfSymbolTableEntry rootSte = dt.getDataFile().getFileAllocation().getSuperblock().getRootGroupSymbolTableEntry();
+            HdfSymbolTableEntry rootSte = dt.getDataFile().getSuperblock().getRootGroupSymbolTableEntry();
             HdfBTreeV1 btree = ((HdfSymbolTableEntryCacheGroupMetadata) rootSte.getCache()).getBtree();
             btree.mapOffsetToSnod().values().forEach(snod -> {
                 snod.getSymbolTableEntries().forEach(ste -> {

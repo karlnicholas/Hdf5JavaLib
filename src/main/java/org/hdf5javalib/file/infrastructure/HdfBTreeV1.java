@@ -19,7 +19,7 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
 /**
  * Represents an HDF5 B-Tree (version 1) as defined in the HDF5 specification.
  * <p>
- * The {@code HdfBTreeV1} class models a B-Tree used for indexing group entries in HDF5 files.
+ * The {@code HdfBTree} class models a B-Tree used for indexing group entries in HDF5 files.
  * It supports both leaf nodes (containing symbol table nodes) and internal nodes (containing
  * child B-Trees). This class provides methods for reading from a file channel, adding datasets,
  * splitting symbol table nodes, and writing the B-Tree structure back to a file.
@@ -52,7 +52,7 @@ public class HdfBTreeV1 {
     private final HdfDataFile hdfDataFile;
 
     /**
-     * Constructs an HdfBTreeV1 with all fields specified.
+     * Constructs an HdfBTree with all fields specified.
      *
      * @param signature         the signature of the B-Tree node ("TREE")
      * @param nodeType          the type of the node (0 for group B-Tree)
@@ -87,7 +87,7 @@ public class HdfBTreeV1 {
     }
 
     /**
-     * Constructs an HdfBTreeV1 with minimal fields for a new node.
+     * Constructs an HdfBTree with minimal fields for a new node.
      *
      * @param signature         the signature of the B-Tree node ("TREE")
      * @param nodeType          the type of the node (0 for group B-Tree)
@@ -116,11 +116,11 @@ public class HdfBTreeV1 {
     }
 
     /**
-     * Reads an HdfBTreeV1 from a file channel.
+     * Reads an HdfBTree from a file channel.
      *
      * @param fileChannel the file channel to read from
      * @param hdfDataFile the HDF5 file context
-     * @return the constructed HdfBTreeV1 instance
+     * @return the constructed HdfBTree instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
     public static HdfBTreeV1 readFromFileChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
@@ -129,13 +129,13 @@ public class HdfBTreeV1 {
     }
 
     /**
-     * Recursively reads an HdfBTreeV1 from a file channel, handling cycles.
+     * Recursively reads an HdfBTree from a file channel, handling cycles.
      *
      * @param fileChannel the file channel to read from
      * @param nodeAddress the address of the current node
      * @param visitedNodes a map of visited node addresses to detect cycles
      * @param hdfDataFile  the HDF5 file context
-     * @return the constructed HdfBTreeV1 instance
+     * @return the constructed HdfBTree instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
     private static HdfBTreeV1 readFromFileChannelRecursive(SeekableByteChannel fileChannel,
@@ -527,14 +527,14 @@ public class HdfBTreeV1 {
     }
 
     /**
-     * Returns a string representation of the HdfBTreeV1.
+     * Returns a string representation of the HdfBTree.
      *
      * @return a string describing the node's signature, type, level, entries, and structure
      */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("HdfBTreeV1{");
+        sb.append("HdfBTree{");
         sb.append("signature='").append(signature).append('\'');
         sb.append(", nodeType=").append(nodeType);
         sb.append(", nodeLevel=").append(nodeLevel);

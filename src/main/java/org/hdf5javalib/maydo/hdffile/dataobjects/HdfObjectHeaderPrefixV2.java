@@ -44,7 +44,7 @@ public class HdfObjectHeaderPrefixV2 extends HdfObjectHeaderPrefix {
             long prefixSize
     ) {
         super(headerMessages, allocationType, name,
-                HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()),
+                HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()),
             objectHeaderSize, hdfDataFile, (int) prefixSize);
         this.flags = flags;
         this.checksum = checksum;

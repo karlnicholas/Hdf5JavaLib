@@ -43,7 +43,7 @@ public class ExampleDebug {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Root Group: {} ", reader.getRootGroup());
                 reader.getFileAllocation().printBlocks();
-//                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
+//                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
 //                    displayData(channel, dataSet, reader);
 //                }
                 for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {

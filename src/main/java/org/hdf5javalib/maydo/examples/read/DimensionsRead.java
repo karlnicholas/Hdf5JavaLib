@@ -3,7 +3,7 @@ package org.hdf5javalib.maydo.examples.read;
 import org.hdf5javalib.maydo.HdfFileReader;
 import org.hdf5javalib.maydo.dataclass.HdfData;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -43,16 +43,16 @@ public class DimensionsRead {
 //            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
 //                HdfFileReader reader = new HdfFileReader(channel).readFile();
 //                log.debug("Root Group: {} ", reader.getRootGroup());
-//                try (HdfDataSet ds = reader.getRootGroup().getDataset("/scalar_dataset").orElseThrow()) {
+//                try (HdfDataset ds = reader.getRootGroup().getDataset("/scalar_dataset").orElseThrow()) {
 //                    displayScalarData(channel, ds, HdfFloatPoint.class, reader);
 //                }
-//                try (HdfDataSet ds = reader.getRootGroup().getDataset("/1d_dataset").orElseThrow()) {
+//                try (HdfDataset ds = reader.getRootGroup().getDataset("/1d_dataset").orElseThrow()) {
 //                    displayVectorData(channel, ds, HdfFloatPoint.class, reader);
 //                }
-//                try (HdfDataSet ds = reader.getRootGroup().getDataset("/2d_dataset").orElseThrow()) {
+//                try (HdfDataset ds = reader.getRootGroup().getDataset("/2d_dataset").orElseThrow()) {
 //                    displayMatrixData(channel, ds, HdfFloatPoint.class, reader);
 //                }
-//                try (HdfDataSet ds = reader.getRootGroup().getDataset("/2d_dataset_permuted").orElseThrow()) {
+//                try (HdfDataset ds = reader.getRootGroup().getDataset("/2d_dataset_permuted").orElseThrow()) {
 //                    displayMatrixData(channel, ds, HdfFloatPoint.class, reader);
 //                }
 //            }
@@ -60,7 +60,7 @@ public class DimensionsRead {
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Root Group: {} ", reader.getRootGroup());
-                for (HdfDataSet ds : reader.getRootGroup().getDataSets()) {
+                for (HdfDataset ds : reader.getRootGroup().getDataSets()) {
                     displayScalarData(channel, ds, HdfData[].class, reader);
                 }
             }

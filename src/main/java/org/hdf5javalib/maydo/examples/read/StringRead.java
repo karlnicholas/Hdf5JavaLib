@@ -1,7 +1,7 @@
 package org.hdf5javalib.maydo.examples.read;
 
 import org.hdf5javalib.maydo.HdfFileReader;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.HdfDisplayUtils;
 
 import java.io.FileInputStream;
@@ -34,7 +34,7 @@ public class StringRead {
         try (FileInputStream fis = new FileInputStream(filePath)) {
             FileChannel channel = fis.getChannel();
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/strings").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getRootGroup().getDataset("/strings").orElseThrow()) {
                 HdfDisplayUtils.displayVectorData(channel, dataSet, String.class, reader);
             }
         }
@@ -42,7 +42,7 @@ public class StringRead {
         try (FileInputStream fis = new FileInputStream(filePath)) {
             FileChannel channel = fis.getChannel();
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            try (HdfDataSet dataSet = reader.getRootGroup().getDataset("strings").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getRootGroup().getDataset("strings").orElseThrow()) {
                 HdfDisplayUtils.displayVectorData(channel, dataSet, String.class, reader);
             }
         }

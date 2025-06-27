@@ -104,12 +104,12 @@ public class AttributeInfoMessage extends HdfMessage {
             maxCreationIndex = buffer.getShort();
         }
 
-        HdfFixedPoint fractalHeapAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
-        HdfFixedPoint nameBtreeAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint fractalHeapAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint nameBtreeAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
 
         HdfFixedPoint creationOrderBtreeAddress = null;
         if (creationOrderIndexed) {
-            creationOrderBtreeAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+            creationOrderBtreeAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         }
 
         return new AttributeInfoMessage(version, attributeInfoFlags, maxCreationIndex,

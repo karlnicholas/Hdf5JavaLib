@@ -134,7 +134,7 @@ public class HdfGlobalHeapBlock {
 
         HdfFixedPoint blockSize = hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(allocationRecord.getOffset());
         long aligned = alignTo(totalSize, blockSize.getInstance(Long.class));
-        return HdfWriteUtils.hdfFixedPointFromValue(aligned, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset());
+        return HdfWriteUtils.hdfFixedPointFromValue(aligned, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
     }
 
     /**

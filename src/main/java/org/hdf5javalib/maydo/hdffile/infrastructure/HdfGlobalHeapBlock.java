@@ -26,7 +26,6 @@ public class HdfGlobalHeapBlock {
      * @param type           the allocation type
      * @param name           the name of the allocation
      * @param offset         the starting offset
-     * @param fileAllocation
      */
     public HdfGlobalHeapBlock(
             LinkedHashMap<Integer, GlobalHeapObject> globalHeapObjects,
@@ -35,8 +34,7 @@ public class HdfGlobalHeapBlock {
             HdfDataFile hdfDataFile,
             AllocationType type,
             String name,
-            HdfFixedPoint offset,
-            HdfFileAllocation fileAllocation
+            HdfFixedPoint offset
     ) {
         this.hdfDataFile = hdfDataFile;
         this.globalHeapObjects = globalHeapObjects;
@@ -137,7 +135,7 @@ public class HdfGlobalHeapBlock {
 //        HdfFixedPoint blockSize = hdfDataFile.getFileAllocation().getGlobalHeapBlockSize(allocationRecord.getOffset());
 //        long aligned = alignTo(totalSize, blockSize.getInstance(Long.class));
         long aligned = alignTo(totalSize, 4096);
-        return HdfWriteUtils.hdfFixedPointFromValue(aligned, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset());
+        return HdfWriteUtils.hdfFixedPointFromValue(aligned, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
     }
 
     /**

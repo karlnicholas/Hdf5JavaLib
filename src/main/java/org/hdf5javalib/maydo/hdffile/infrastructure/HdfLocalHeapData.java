@@ -62,7 +62,7 @@ public class HdfLocalHeapData {
     public HdfLocalHeapData(HdfFixedPoint offset, HdfFixedPoint size, HdfDataFile hdfDataFile) {
         this.heapContentsSize = size;
         this.heapContentsOffset = offset;
-        this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength());
+        this.freeListOffset = HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength());
         this.data = new LinkedHashMap<>();
     }
 

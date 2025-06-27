@@ -2,6 +2,7 @@ package org.hdf5javalib.maydo.hdffile.infrastructure;
 
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefix;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.HdfReadUtils;
 
 import java.io.IOException;
@@ -14,10 +15,10 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
      * The cache type (0 for basic, 1 for additional B-Tree and heap offsets).
      */
     private final int cacheType = 0;
-    private final HdfDataSet dataSet;
+    private final HdfDataset dataSet;
 
     public HdfSymbolTableEntryCacheNotUsed(HdfDataFile hdfDataFile, HdfObjectHeaderPrefix objectHeader, String datasetName) {
-        dataSet = new HdfDataSet(hdfDataFile, datasetName, objectHeader);
+        dataSet = new HdfDataset(hdfDataFile, datasetName, objectHeader);
     }
 
     public static HdfSymbolTableEntryCacheNotUsed readFromSeekableByteChannel(
@@ -59,7 +60,7 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
         return dataSet.getDataObjectHeaderPrefix();
     }
 
-    public HdfDataSet getDataSet() {
+    public HdfDataset getDataSet() {
         return dataSet;
     }
 }

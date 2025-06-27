@@ -207,7 +207,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
 
     }
 
-//    public HdfDataSet findDataset(String datasetName) {
+//    public HdfDataset findDataset(String datasetName) {
 //        return bTree.getEntries().stream()
 //                .filter(bte -> bte instanceof HdfBTreeSnodEntry)
 //                .flatMap(bte -> ((HdfBTreeSnodEntry) bte).getSymbolTableNode().getSymbolTableEntries().stream())

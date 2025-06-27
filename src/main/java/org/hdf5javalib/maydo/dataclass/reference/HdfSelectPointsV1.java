@@ -4,8 +4,8 @@ import org.hdf5javalib.maydo.dataclass.HdfData;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DataspaceMessage;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataObject;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
+import org.hdf5javalib.maydo.hdfjava.HdfDataObject;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.FlattenedArrayUtils;
 import org.hdf5javalib.maydo.utils.HdfDataHolder;
 
@@ -60,7 +60,7 @@ public class HdfSelectPointsV1 extends HdfDataspaceSelectionInstance {
     @Override
     public HdfDataHolder getData(HdfDataObject hdfDataObject, HdfDataFile hdfDataFile) {
         // Cast the data object to a dataset to access its properties
-        HdfDataSet hdfDataSet = (HdfDataSet) hdfDataObject;
+        HdfDataset hdfDataSet = (HdfDataset) hdfDataObject;
 
         // 1. Get the shape of the full source dataset.
         DataspaceMessage dataspaceMessage = hdfDataSet.getDataObjectHeaderPrefix().findMessageByType(DataspaceMessage.class).get();

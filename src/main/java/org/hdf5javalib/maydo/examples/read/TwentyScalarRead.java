@@ -1,7 +1,7 @@
 package org.hdf5javalib.maydo.examples.read;
 
 import org.hdf5javalib.maydo.HdfFileReader;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.HdfDisplayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,14 +39,13 @@ public class TwentyScalarRead {
         Path filePath = getResourcePath("twenty_datasets.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
-                try (HdfDataSet ds = dataSet) {
+            for (HdfDataset dataSet : reader.getRootGroup().getDataSets()) {
+                try (HdfDataset ds = dataSet) {
                     HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
                 }
             }
-            log.debug("Root Group: {} ", reader.getRootGroup());
-            reader.getFileAllocation().printBlocks();
-//                try (HdfDataSet ds = reader.getRootGroup().findDataset("dataset_14")) {
+            log.debug("Superblock: {} ", reader.getSuperblock());
+//                try (HdfDataset ds = reader.getRootGroup().findDataset("dataset_14")) {
 //                    HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
 //                }
         }

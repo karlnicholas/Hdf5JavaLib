@@ -4,7 +4,7 @@ import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DataspaceMessage;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DatatypeMessage;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.FlattenedArrayUtils;
 
 import java.io.IOException;
@@ -28,14 +28,14 @@ import java.util.stream.StreamSupport;
  * </p>
  *
  * @param <T> the Java type of the data elements (e.g., {@link Integer}, {@link Double})
- * @see HdfDataSet
+ * @see HdfDataset
  * @see HdfDataFile
  */
 public class TypedDataSource<T> {
     /**
      * The HDF5 dataset being accessed.
      */
-    private final HdfDataSet dataset;
+    private final HdfDataset dataset;
     /**
      * The channel for reading data from the HDF5 file.
      */
@@ -62,14 +62,14 @@ public class TypedDataSource<T> {
      * @param dataClass   the Java class of the data elements
      * @throws NullPointerException if any parameter is null
      */
-    public TypedDataSource(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataSet dataset, Class<T> dataClass) {
+    public TypedDataSource(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataset, Class<T> dataClass) {
         if (channel == null || hdfDataFile == null || dataset == null || dataClass == null) {
             throw new NullPointerException("Parameters must not be null");
         }
         this.dataset = dataset;
         this.channel = channel;
         this.dataClass = dataClass;
-        this.elementSize = dataset.getHdfDatatype().getSize();
+        this.elementSize = dataset.getDatatype().getSize();
         this.dimensions = extractDimensions(dataset.getDataObjectHeaderPrefix()
                 .findMessageByType(DataspaceMessage.class).orElseThrow());
         dataset.getDataObjectHeaderPrefix().findMessageByType(DatatypeMessage.class).orElseThrow()
@@ -134,7 +134,7 @@ public class TypedDataSource<T> {
     private T populateElement(ByteBuffer buffer) {
         byte[] bytes = new byte[elementSize];
         buffer.get(bytes);
-        return dataset.getHdfDatatype().getInstance(dataClass, bytes);
+        return dataset.getDatatype().getInstance(dataClass, bytes);
     }
 
     /**
@@ -201,7 +201,7 @@ public class TypedDataSource<T> {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
         }
-        if (HdfFixedPoint.compareToZero(dataset.getdimensionSizes().orElseThrow()[0]) <= 0) {
+        if (HdfFixedPoint.compareToZero(dataset.getDimensionSizes().orElseThrow()[0]) <= 0) {
             throw new IllegalStateException("Dataset has no data");
         }
         ByteBuffer buffer = readBytes(0, elementSize);
@@ -219,7 +219,7 @@ public class TypedDataSource<T> {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
         }
-        if (HdfFixedPoint.compareToZero(dataset.getdimensionSizes().orElseThrow()[0]) <= 0) {
+        if (HdfFixedPoint.compareToZero(dataset.getDimensionSizes().orElseThrow()[0]) <= 0) {
             throw new IllegalStateException("Dataset has no data");
         }
         try {

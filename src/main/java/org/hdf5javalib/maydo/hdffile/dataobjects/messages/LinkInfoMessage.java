@@ -97,12 +97,12 @@ public class LinkInfoMessage extends HdfMessage {
             maxCreationIndex = buffer.getLong();
         }
 
-        HdfFixedPoint fractalHeapAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
-        HdfFixedPoint v2BTreeNameIndexAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint fractalHeapAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint v2BTreeNameIndexAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
 
         HdfFixedPoint v2BTreeCreationOrderIndexAddress = null;
         if (creationOrderIndexed) {
-            v2BTreeCreationOrderIndexAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+            v2BTreeCreationOrderIndexAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         }
 
         return new LinkInfoMessage(version, linkInfoFlags, maxCreationIndex,

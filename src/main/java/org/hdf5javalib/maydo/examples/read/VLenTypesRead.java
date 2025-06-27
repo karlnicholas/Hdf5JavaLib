@@ -2,7 +2,7 @@ package org.hdf5javalib.maydo.examples.read;
 
 import org.hdf5javalib.maydo.HdfFileReader;
 import org.hdf5javalib.maydo.dataclass.HdfVariableLength;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.HdfDisplayUtils;
 
 import java.io.FileInputStream;
@@ -37,8 +37,8 @@ public class VLenTypesRead {
         try (FileInputStream fis = new FileInputStream(filePath)) {
             FileChannel channel = fis.getChannel();
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
-                try (HdfDataSet ds = dataSet) {
+            for (HdfDataset dataSet : reader.getRootGroup().getDataSets()) {
+                try (HdfDataset ds = dataSet) {
                     System.out.println();
                     System.out.println("Dataset name: " + ds.getDatasetName());
                     HdfDisplayUtils.displayScalarData(channel, ds, HdfVariableLength.class, reader);
@@ -46,8 +46,7 @@ public class VLenTypesRead {
                     HdfDisplayUtils.displayScalarData(channel, ds, Object.class, reader);
                 }
             }
-            log.info("Superblock: {}", reader.getFileAllocation().getSuperblock());
-            reader.getFileAllocation().printBlocks();
+            log.info("Superblock: {}", reader.getSuperblock());
         }
     }
 

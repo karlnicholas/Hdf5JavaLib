@@ -1,7 +1,9 @@
 package org.hdf5javalib.maydo.hdfjava;
 
+import java.util.Optional;
+
 public interface HdfDataObject {
-    String getName();
-    boolean isGroup();
-    boolean isDataset();
+    String getObjectName();
+
+    Optional<HdfBTree> getBTreeOptionally(); // Datasets have no B-tree
 }

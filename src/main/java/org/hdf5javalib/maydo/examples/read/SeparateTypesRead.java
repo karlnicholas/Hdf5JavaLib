@@ -3,7 +3,7 @@ package org.hdf5javalib.maydo.examples.read;
 import org.hdf5javalib.maydo.HdfFileReader;
 import org.hdf5javalib.maydo.dataclass.*;
 import org.hdf5javalib.maydo.datatype.CompoundDatatype;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.HdfDisplayUtils;
 
 import java.io.FileInputStream;
@@ -44,7 +44,7 @@ public class SeparateTypesRead {
         try (FileInputStream fis = new FileInputStream(filePath)) {
             FileChannel channel = fis.getChannel();
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/fixed_point").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getRootGroup().getDataset("/fixed_point").orElseThrow()) {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfFixedPoint.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, Integer.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, Long.class, reader);
@@ -52,28 +52,28 @@ public class SeparateTypesRead {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, BigDecimal.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, String.class, reader);
             }
-            try (HdfDataSet dataSet = reader.getRootGroup().getDataset("float").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getRootGroup().getDataset("float").orElseThrow()) {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, Float.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, Double.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, String.class, reader);
             }
-            try (HdfDataSet dataSet = reader.getRootGroup().getDataset("time").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getRootGroup().getDataset("time").orElseThrow()) {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfTime.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, Long.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, BigInteger.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, String.class, reader);
             }
-            try (HdfDataSet dataSet = reader.getRootGroup().getDataset("string").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getRootGroup().getDataset("string").orElseThrow()) {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfString.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, String.class, reader);
             }
-            try (HdfDataSet dataSet = reader.getRootGroup().getDataset("bitfield").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getRootGroup().getDataset("bitfield").orElseThrow()) {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfBitField.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, BitSet.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, String.class, reader);
             }
-            try (HdfDataSet dataSet = reader.getRootGroup().getDataset("compound").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getRootGroup().getDataset("compound").orElseThrow()) {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfCompound.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, String.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, Compound.class, reader);
@@ -90,32 +90,31 @@ public class SeparateTypesRead {
                 });
                 HdfDisplayUtils.displayScalarData(channel, dataSet, CustomCompound.class, reader);
             }
-            try (HdfDataSet dataSet = reader.getRootGroup().getDataset("opaque").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getRootGroup().getDataset("opaque").orElseThrow()) {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfOpaque.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, String.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, byte[].class, reader);
             }
-            try (HdfDataSet dataSet = reader.getRootGroup().getDataset("reference").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getRootGroup().getDataset("reference").orElseThrow()) {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfReference.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, String.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, byte[].class, reader);
             }
-            try (HdfDataSet dataSet = reader.getRootGroup().getDataset("enum").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getRootGroup().getDataset("enum").orElseThrow()) {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfEnum.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, String.class, reader);
             }
-            try (HdfDataSet dataSet = reader.getRootGroup().getDataset("vlen").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getRootGroup().getDataset("vlen").orElseThrow()) {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfVariableLength.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, String.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, Object.class, reader);
             }
-            try (HdfDataSet dataSet = reader.getRootGroup().getDataset("array").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getRootGroup().getDataset("array").orElseThrow()) {
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfArray.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, String.class, reader);
                 HdfDisplayUtils.displayScalarData(channel, dataSet, HdfData[].class, reader);
             }
-            log.info("Superblock: {}", reader.getFileAllocation().getSuperblock());
-            reader.getFileAllocation().printBlocks();
+            log.info("Superblock: {}", reader.getSuperblock());
         }
     }
 

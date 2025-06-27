@@ -18,7 +18,7 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
     /**
      * The offset of the B-Tree for cache type 1 entries (null for cache type 0).
      */
-//    private final HdfBTreeV1 bTree;
+//    private final HdfBTree bTree;
 //    /** The offset of the local heap for cache type 1 entries (null for cache type 0). */
 //    private final HdfLocalHeap localHeap;
     private final HdfGroup group;

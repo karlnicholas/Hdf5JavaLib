@@ -2,7 +2,7 @@ package org.hdf5javalib.maydo.examples.HDF5Examples;
 
 import org.hdf5javalib.maydo.HdfFileReader;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -41,12 +41,11 @@ public class ExampleDebug {
             Path filePath = Paths.get("c:/users/karln/downloads/ATL03_20250302235544_11742607_006_01.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                log.debug("Root Group: {} ", reader.getRootGroup());
-                reader.getFileAllocation().printBlocks();
-//                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
+                log.debug("Superblock: {} ", reader.getSuperblock());
+//    //                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
 //                    displayData(channel, dataSet, reader);
 //                }
-                for (HdfDataSet dataSet : reader.getRootGroup().getDataSets()) {
+                for (HdfDataset dataSet : reader.getRootGroup().getDataSets()) {
                     displayData(channel, dataSet, reader);
                 }
             }

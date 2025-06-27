@@ -6,8 +6,8 @@ import org.hdf5javalib.maydo.datatype.FixedPointDatatype;
 import org.hdf5javalib.maydo.datatype.ReferenceDatatype;
 import org.hdf5javalib.maydo.datatype.StringDatatype;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
-import org.hdf5javalib.maydo.hdffile.infrastructure.*;
 import org.hdf5javalib.maydo.hdffile.metadata.HdfSuperblock;
+import org.hdf5javalib.maydo.hdfjava.HdfDataObject;
 import org.hdf5javalib.maydo.utils.HdfDataHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
         AtomicReference<HdfDataspaceSelectionInstance> dataspaceSelectionReference = new AtomicReference<>();
 
         HdfFixedPoint localHdfFixedPoint;
-        HdfSuperblock superblock = dt.getDataFile().getFileAllocation().getSuperblock();
+        HdfSuperblock superblock = dt.getDataFile().getSuperblock();
         referenceType = ReferenceDatatype.getReferenceType(dt.getClassBitField());
         if (!external) {
             if (referenceType == ReferenceDatatype.ReferenceType.OBJECT1) {
@@ -44,7 +44,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
                     int size = Byte.toUnsignedInt(bytes[2]);
                     localHdfFixedPoint = new HdfFixedPoint(Arrays.copyOfRange(bytes, 3, 3 + size), superblock.getFixedPointDatatypeForOffset());
                 } else if (bytes[0] == 0x03) {
-                    FixedPointDatatype offsetSpec = dt.getDataFile().getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset();
+                    FixedPointDatatype offsetSpec = dt.getDataFile().getSuperblock().getFixedPointDatatypeForOffset();
                     int offsetSize = offsetSpec.getSize();
                     ByteBuffer bb = ByteBuffer.wrap(bytes, 2 + 4 + offsetSize, bytes.length - (2 + 4 + offsetSize)).order(ByteOrder.LITTLE_ENDIAN);
                     HdfFixedPoint heapOffset = new HdfFixedPoint(Arrays.copyOfRange(bytes, 2 + 4, 2 + 4 + offsetSize), offsetSpec);
@@ -60,7 +60,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
                     dataspaceSelectionReference.set(HdfDataspaceSelectionInstance.parseSelectionInfo(heapBytes));
                     localHdfFixedPoint = datasetReferenced;
                 } else if (bytes[0] == 0x04) {
-                    FixedPointDatatype offsetSpec = dt.getDataFile().getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset();
+                    FixedPointDatatype offsetSpec = dt.getDataFile().getSuperblock().getFixedPointDatatypeForOffset();
                     int offsetSize = offsetSpec.getSize();
                     ByteBuffer bb = ByteBuffer.wrap(bytes, 2 + 4 + offsetSize, bytes.length - (2 + 4 + offsetSize)).order(ByteOrder.LITTLE_ENDIAN);
                     HdfFixedPoint heapOffset = new HdfFixedPoint(Arrays.copyOfRange(bytes, 2 + 4, 2 + 4 + offsetSize), offsetSpec);
@@ -87,7 +87,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
             }
             if (localHdfFixedPoint != null) {
                 // TODO: btree search logic
-                HdfSymbolTableEntry rootSte = dt.getDataFile().getFileAllocation().getSuperblock().getRootGroupSymbolTableEntry();
+                HdfSymbolTableEntry rootSte = dt.getDataFile().getSuperblock().getRootGroupSymbolTableEntry();
                 HdfBTreeV1 btree = ((HdfSymbolTableEntryCacheGroupMetadata) rootSte.getCache()).getBtree();
                 btree.mapOffsetToSnod().values().forEach(snod -> {
                     snod.getSymbolTableEntries().forEach(ste -> {
@@ -112,7 +112,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
         if ( dataspaceSelectionInstance != null ) {
             this.hdfDataHolder = dataspaceSelectionInstance.getData(hdfDataObject, dt.getDataFile());
         } else {
-            HdfSymbolTableEntry rootSte = dt.getDataFile().getFileAllocation().getSuperblock().getRootGroupSymbolTableEntry();
+            HdfSymbolTableEntry rootSte = dt.getDataFile().getSuperblock().getRootGroupSymbolTableEntry();
             HdfBTreeV1 btree = ((HdfSymbolTableEntryCacheGroupMetadata) rootSte.getCache()).getBtree();
             HdfGroup rootGroup = ((HdfSymbolTableEntryCacheGroupMetadata) rootSte.getCache()).getGroup();
             Optional<Deque<HdfDataObject>> objectPath = btree.findObjectPathByName(hdfDataObject.getObjectName(), rootGroup);

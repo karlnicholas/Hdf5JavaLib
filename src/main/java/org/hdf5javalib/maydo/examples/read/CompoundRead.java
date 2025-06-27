@@ -3,8 +3,8 @@ package org.hdf5javalib.maydo.examples.read;
 import org.hdf5javalib.maydo.HdfFileReader;
 import org.hdf5javalib.maydo.dataclass.*;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfDataSet;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
@@ -44,12 +44,11 @@ public class CompoundRead {
             Path filePath = getResourcePath("compound_example.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                try (HdfDataSet dataSet = reader.getRootGroup().getDataset("/CompoundData").orElseThrow()) {
+                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/CompoundData").orElseThrow()) {
                     displayData(channel, dataSet, reader);
                 }
                 log.debug("Root Group: {} ", reader.getRootGroup());
-                reader.getFileAllocation().printBlocks();
-            }
+                }
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -135,7 +134,7 @@ public class CompoundRead {
      * @param hdfDataFile         the HDF5 file context
      * @throws IOException if an I/O error occurs
      */
-    public void displayData(SeekableByteChannel seekableByteChannel, HdfDataSet dataSet, HdfDataFile hdfDataFile) throws IOException {
+    public void displayData(SeekableByteChannel seekableByteChannel, HdfDataset dataSet, HdfDataFile hdfDataFile) throws IOException {
         System.out.println("Ten Rows:");
         new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class)
                 .streamVector()

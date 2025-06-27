@@ -46,7 +46,7 @@ public class TwentyScalarRead {
             }
             log.debug("Root Group: {} ", reader.getRootGroup());
             reader.getFileAllocation().printBlocks();
-//                try (HdfDataSet ds = reader.getRootGroup().findDataset("dataset_14")) {
+//                try (HdfDataset ds = reader.getRootGroup().findDataset("dataset_14")) {
 //                    HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
 //                }
         }

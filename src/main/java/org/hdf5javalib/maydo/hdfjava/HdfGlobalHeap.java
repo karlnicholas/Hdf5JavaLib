@@ -129,7 +129,7 @@ public class HdfGlobalHeap {
         }
 
         headerBuffer.position(headerBuffer.position() + GLOBAL_HEAP_RESERVED_1_SIZE);
-        HdfFixedPoint localCollectionSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength(), headerBuffer);
+        HdfFixedPoint localCollectionSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), headerBuffer);
         long declaredSize = localCollectionSize.getInstance(Long.class);
 
         int objectDataBufferSize = (int) (declaredSize - GLOBAL_HEAP_OBJECT_SIZE);
@@ -170,7 +170,7 @@ public class HdfGlobalHeap {
             throw new IOException("Unexpected error processing global heap object data buffer at offset: " + startOffset, e);
         }
 
-        HdfFixedPoint hdfStartOffset = HdfWriteUtils.hdfFixedPointFromValue(startOffset, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForOffset());
+        HdfFixedPoint hdfStartOffset = HdfWriteUtils.hdfFixedPointFromValue(startOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
 
         HdfGlobalHeapBlock heapBlock = new HdfGlobalHeapBlock(
                 localObjects,
@@ -218,7 +218,7 @@ public class HdfGlobalHeap {
         HdfGlobalHeapBlock heapBlock = globalHeaps.computeIfAbsent(currentHeapOffset, k -> {
             return new HdfGlobalHeapBlock(
                     new LinkedHashMap<>(),
-                    HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()),
+                    HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()),
                     1,
                     hdfDataFile,
                     globalHeaps.size() > 1 ? AllocationType.GLOBAL_HEAP_2 : AllocationType.GLOBAL_HEAP_1,
@@ -240,7 +240,7 @@ public class HdfGlobalHeap {
             }
             HdfGlobalHeapBlock globalHeapBlock = new HdfGlobalHeapBlock(
                     new LinkedHashMap<>(),
-                    HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getFileAllocation().getSuperblock().getFixedPointDatatypeForLength()),
+                    HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()),
                     1,
                     hdfDataFile,
                     globalHeaps.size() > 1 ? AllocationType.GLOBAL_HEAP_2 : AllocationType.GLOBAL_HEAP_1,

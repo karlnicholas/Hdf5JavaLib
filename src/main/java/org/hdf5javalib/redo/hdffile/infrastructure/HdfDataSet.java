@@ -33,7 +33,7 @@ import static org.hdf5javalib.redo.hdffile.dataobjects.messages.HdfMessage.HDF_M
 /**
  * Represents an HDF5 dataset within an HDF5 file.
  * <p>
- * The {@code HdfDataSet} class manages a dataset, including its name, datatype, attributes,
+ * The {@code HdfDataset} class manages a dataset, including its name, datatype, attributes,
  * and data storage. It supports creating datasets, adding attributes, writing data, and
  * handling object header messages. Datasets can be scalar, vector, or multi-dimensional,
  * and they may require global heap storage for certain datatypes (e.g., variable-length strings).
@@ -70,7 +70,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
     @Override
     public String toString() {
         Optional<HdfFixedPoint> dataAddress = getDataAddress();
-        return "\r\nHdfDataSet@" + (dataAddress.isEmpty() ? "<Empty>" : dataAddress.get().isUndefined() ? "<Undefined>" : dataAddress.get().toString()) + "{" +
+        return "\r\nHdfDataset@" + (dataAddress.isEmpty() ? "<Empty>" : dataAddress.get().isUndefined() ? "<Undefined>" : dataAddress.get().toString()) + "{" +
                 ",\r\n\tdatasetName='" + datasetName + '\'' +
                 ",\r\n\tdatatype=" + datatype +
 //                ",\r\n\tattributes=" + attributes +
@@ -80,7 +80,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
     }
 
     /**
-     * Constructs an HdfDataSet for creating a new dataset.
+     * Constructs an HdfDataset for creating a new dataset.
      *
      * @param hdfDataFile      the HDF5 file context
      * @param datasetName      the name of the dataset
@@ -97,7 +97,7 @@ public class HdfDataSet implements HdfDataObject, Closeable {
     }
 
     /**
-     * Constructs an HdfDataSet for an existing dataset.
+     * Constructs an HdfDataset for an existing dataset.
      *
      * @param hdfDataFile            the HDF5 file context
      * @param datasetName            the name of the dataset

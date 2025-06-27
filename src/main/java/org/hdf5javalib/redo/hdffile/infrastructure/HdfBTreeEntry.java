@@ -56,7 +56,7 @@ public class HdfBTreeEntry {
 //     * @param childBTreeAddress the address of the child B-Tree
 //     * @param childBTree       the child B-Tree payload
 //     */
-//    public HdfBTreeEntry(HdfFixedPoint key, HdfFixedPoint childBTreeAddress, HdfBTreeV1 childBTree) {
+//    public HdfBTreeEntry(HdfFixedPoint key, HdfFixedPoint childBTreeAddress, HdfBTree childBTree) {
 //        this.key = key;
 //        this.childPointer = childBTreeAddress;
 //        this.symbolTableNode = null;
@@ -119,7 +119,7 @@ public class HdfBTreeEntry {
 //        return symbolTableNode;
 //    }
 //
-//    public HdfBTreeV1 getChildBTree() {
+//    public HdfBTree getChildBTree() {
 //        return childBTree;
 //    }
 }
