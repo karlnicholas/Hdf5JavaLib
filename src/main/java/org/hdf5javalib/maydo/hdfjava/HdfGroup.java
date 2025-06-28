@@ -47,7 +47,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
     /**
      * The local heap storing link names.
      */
-    private final HdfLocalHeap localHeap;
+//    private final HdfLocalHeap localHeap;
 
     public HdfBTree getBTree() {
         return bTree;
@@ -57,9 +57,9 @@ public class HdfGroup implements HdfDataObject, Closeable {
         return Optional.of(bTree);
     }
 
-    public HdfLocalHeap getLocalHeap() {
-        return localHeap;
-    }
+//    public HdfLocalHeap getLocalHeap() {
+//        return localHeap;
+//    }
 
     public HdfObjectHeaderPrefix getObjectHeader() {
         return objectHeader;
@@ -79,19 +79,19 @@ public class HdfGroup implements HdfDataObject, Closeable {
      * @param groupName    the name of the group
      * @param objectHeader the object header prefix containing group metadata
      * @param bTree        the B-tree managing symbol table entries
-     * @param localHeap    the local heap storing link names
+//     * @param localHeap    the local heap storing link names
      */
     public HdfGroup(
             String groupName,
             HdfObjectHeaderPrefix objectHeader,
             HdfBTree bTree,
-            HdfLocalHeap localHeap,
+//            HdfLocalHeap localHeap,
             HdfDataFile hdfDataFile
     ) {
         this.groupName = groupName;
         this.objectHeader = objectHeader;
         this.bTree = bTree;
-        this.localHeap = localHeap;
+//        this.localHeap = localHeap;
         this.hdfDataFile = hdfDataFile;
     }
 
@@ -112,14 +112,14 @@ public class HdfGroup implements HdfDataObject, Closeable {
         this.hdfDataFile = hdfDataFile;
         HdfFixedPoint localHeapContentsSize = fileAllocation.getCurrentLocalHeapContentsSize();
 
-        localHeap = new HdfLocalHeap(
-                localHeapContentsSize,
-                fileAllocation.getCurrentLocalHeapContentsOffset(),
-                hdfDataFile, groupName + "heap",
-                HdfFileAllocation.SUPERBLOCK_SIZE + HdfFileAllocation.OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE
-        );
-
-        localHeap.addToHeap("");
+//        localHeap = new HdfLocalHeap(
+//                localHeapContentsSize,
+//                fileAllocation.getCurrentLocalHeapContentsOffset(),
+//                hdfDataFile, groupName + "heap",
+//                HdfFileAllocation.SUPERBLOCK_SIZE + HdfFileAllocation.OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE
+//        );
+//
+//        localHeap.addToHeap("");
 
         bTree = new HdfBTree(0, 0,
                 hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
@@ -156,8 +156,8 @@ public class HdfGroup implements HdfDataObject, Closeable {
      */
     public HdfDataset createDataSet(HdfDataFile hdfDataFile, String datasetName, Datatype datatype, DataspaceMessage dataSpaceMessage) {
         HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length, hdfDataFile));
-        HdfFixedPoint linkNameOffset;
-        linkNameOffset = localHeap.addToHeap(hdfDatasetName.toString());
+        HdfFixedPoint linkNameOffset = null;
+//        linkNameOffset = localHeap.addToHeap(hdfDatasetName.toString());
 
         HdfDataset newDataSet = new HdfDataset(hdfDataFile, datasetName, datatype, dataSpaceMessage);
 
@@ -173,7 +173,8 @@ public class HdfGroup implements HdfDataObject, Closeable {
      * @throws IllegalArgumentException if the offset is not found
      */
     public String getDatasetNameByLinkNameOffset(HdfFixedPoint linkNameOffset) {
-        return localHeap.stringAtOffset(linkNameOffset);
+//        return localHeap.stringAtOffset(linkNameOffset);
+        return "";
     }
 
     /**
@@ -186,21 +187,22 @@ public class HdfGroup implements HdfDataObject, Closeable {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         objectHeader.writeAsGroupToByteChannel(seekableByteChannel, fileAllocation);
         bTree.writeToByteChannel(seekableByteChannel, fileAllocation);
-        localHeap.writeToByteChannel(seekableByteChannel, fileAllocation);
+//        localHeap.writeToByteChannel(seekableByteChannel, fileAllocation);
     }
 
     /**
      * Retrieves all datasets in the group.
      *
-     * @return a collection of all {@link org.hdf5javalib.file.HdfDataset} objects in the group
+     * @return a collection of
      */
     public List<HdfDataset> getDataSets() {
-        return bTree.getEntries().stream()
-                .filter(bte -> bte.getGroupSymbolTableNode().isPresent())
-                .flatMap(bte -> bte.getGroupSymbolTableNode().get().getSymbolTableEntries().stream())
-                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)
-                .map(ste -> ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet())
-                .toList();
+//        return bTree.getEntries().stream()
+//                .filter(bte -> bte.getGroupSymbolTableNode().isPresent())
+//                .flatMap(bte -> bte.getGroupSymbolTableNode().get().getSymbolTableEntries().stream())
+//                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)
+//                .map(ste -> ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet())
+//                .toList();
+        return Collections.emptyList();
 
     }
 
@@ -226,7 +228,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
                 "name='" + groupName + '\'' +
                 "\r\nobjectHeader=" + objectHeader +
                 "\r\nbTree=" + bTree +
-                "\r\nlocalHeap=" + localHeap +
+//                "\r\nlocalHeap=" + localHeap +
                 "}";
     }
 

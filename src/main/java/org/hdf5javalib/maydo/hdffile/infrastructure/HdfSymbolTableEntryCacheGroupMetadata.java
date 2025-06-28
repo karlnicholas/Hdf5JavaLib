@@ -24,7 +24,8 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
     private final HdfGroup group;
 
     public HdfSymbolTableEntryCacheGroupMetadata(String groupName, HdfObjectHeaderPrefix objectHeader, HdfBTree bTree, HdfLocalHeap localHeap, HdfDataFile hdfDataFile) {
-        group = new HdfGroup(groupName, objectHeader, bTree, localHeap,
+        group = new HdfGroup(groupName, objectHeader, bTree,
+//                localHeap,
 //                new LinkedHashMap<>(),
                 hdfDataFile);
     }
