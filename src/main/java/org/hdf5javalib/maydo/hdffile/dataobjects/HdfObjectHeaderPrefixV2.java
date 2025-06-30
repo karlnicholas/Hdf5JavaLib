@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HdfObjectHeaderPrefixV2 extends HdfObjectHeaderPrefix {
-    protected static final byte[] OBJECT_HEADER_MESSAGE_SIGNATURE= {'O', 'H', 'D', 'R'};
+    public static final byte[] OBJECT_HEADER_MESSAGE_SIGNATURE= {'O', 'H', 'D', 'R'};
     private final byte flags;
     private final int checksum;
     private final Instant accessTime;

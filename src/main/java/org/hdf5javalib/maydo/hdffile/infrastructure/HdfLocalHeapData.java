@@ -99,45 +99,6 @@ public class HdfLocalHeapData {
         return currentOffset;
     }
 
-    public static HdfLocalHeapData readFromSeekableByteChannel(
-            SeekableByteChannel fileChannel,
-            HdfFixedPoint dataSegmentSize,
-            HdfFixedPoint freeListOffset,
-            HdfFixedPoint dataSegmentAddress,
-            HdfDataFile hdfDataFile,
-            String objectName
-    ) throws IOException {
-
-        Map<HdfFixedPoint, HdfLocalHeapDataValue> data = new LinkedHashMap<>();
-        fileChannel.position(dataSegmentAddress.getInstance(Long.class));
-        // Allocate buffer and read heap data from the file channel
-        byte[] heapData = new byte[dataSegmentSize.getInstance(Long.class).intValue()];
-        ByteBuffer buffer = ByteBuffer.wrap(heapData);
-        fileChannel.read(buffer);
-        buffer.flip();
-        long iFreeListOffset = freeListOffset.getInstance(Long.class);
-        if (iFreeListOffset == 1) {
-            iFreeListOffset = dataSegmentSize.getInstance(Long.class);
-        }
-        long iOffset = 0;
-        while (buffer.position() < iFreeListOffset) {
-            long iStart = iOffset;
-            // Find the null terminator
-            while (iOffset < heapData.length && heapData[Math.toIntExact(iOffset)] != 0) {
-                iOffset++;
-            }
-            String dataValue = new String(heapData, (int) iStart, (int) (iOffset - iStart), StandardCharsets.US_ASCII);
-            HdfFixedPoint hdfOffset = HdfWriteUtils.hdfFixedPointFromValue(iStart, freeListOffset.getDatatype());
-            HdfLocalHeapDataValue value = new HdfLocalHeapDataValue(dataValue, hdfOffset);
-            data.put(hdfOffset, value);
-            // 8 to add 1 for the 0 terminator.
-            iOffset = (iOffset + 8) & ~7;
-            buffer.position((int) iOffset);
-        }
-
-        return new HdfLocalHeapData(dataSegmentAddress, dataSegmentSize, freeListOffset, data, hdfDataFile, objectName);
-    }
-
     public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfDataFile hdfDataFile) throws IOException {
 
 //        buffer = ByteBuffer.wrap(heapData);

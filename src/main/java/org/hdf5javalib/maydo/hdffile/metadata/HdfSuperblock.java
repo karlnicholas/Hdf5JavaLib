@@ -70,11 +70,11 @@ import static org.hdf5javalib.maydo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * based on the HDF5 file specification.</p>
  */
 public class HdfSuperblock {
-    private static final byte[] FILE_SIGNATURE = new byte[]{(byte) 0x89, 'H', 'D', 'F', '\r', '\n', 0x1A, '\n'};
-    private static final int SIGNATURE_SIZE = 8;
-    private static final int VERSION_SIZE = 1;
-    private static final int SUPERBLOCK_SIZE_V1 = 56;
-    private static final int SUPERBLOCK_SIZE_V2 = 96;
+    public static final byte[] FILE_SIGNATURE = new byte[]{(byte) 0x89, 'H', 'D', 'F', '\r', '\n', 0x1A, '\n'};
+    public static final int SIGNATURE_SIZE = 8;
+    public static final int VERSION_SIZE = 1;
+    public static final int SUPERBLOCK_SIZE_V1 = 56;
+    public static final int SUPERBLOCK_SIZE_V2 = 96;
 
     private final AllocationRecord allocationRecord;
 
@@ -158,117 +158,7 @@ public class HdfSuperblock {
         this.fixedPointDatatypeForLength = fixedPointDatatypeForLength;
     }
 
-    /**
-     * Reads a Superblock from a file channel.
-     * <p>
-     * Parses the superblock metadata, including the file signature, version, offset and length sizes,
-     * B-tree settings, and address fields, from the specified file channel. Validates the signature
-     * and version, and constructs a Superblock instance with the parsed data.
-     * </p>
-     *
-     * @param fileChannel the seekable byte channel to read from
-     * @param hdfDataFile the HDF5 file context
-     * @return the constructed HdfSuperblock instance
-     * @throws IOException              if an I/O error occurs
-     * @throws IllegalArgumentException if the file signature is invalid or the version is unsupported
-     */
-    public static HdfSuperblock readFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws Exception {
-        long offset = fileChannel.position();
-        // Step 1: Allocate the minimum buffer size to determine the version
-        ByteBuffer buffer = ByteBuffer.allocate(SIGNATURE_SIZE + VERSION_SIZE); // File signature (8 bytes) + version (1 byte)
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-
-        // Read the initial bytes to determine the version
-        fileChannel.read(buffer);
-        buffer.flip();
-
-        // Verify file signature
-        byte[] signature = new byte[FILE_SIGNATURE.length];
-        buffer.get(signature);
-        if (!java.util.Arrays.equals(signature, FILE_SIGNATURE)) {
-            throw new IllegalArgumentException("Invalid file signature");
-        }
-
-        // Read version
-        int version = Byte.toUnsignedInt(buffer.get());
-
-        // Step 2: Determine the size of the superblock based on the version
-        int superblockSize;
-        if (version == 0) {
-            superblockSize = SUPERBLOCK_SIZE_V1; // Version 0 superblock size
-        } else if (version == 1) {
-            superblockSize = SUPERBLOCK_SIZE_V2; // Version 1 superblock size (example value, adjust per spec)
-        } else {
-            throw new IllegalArgumentException("Unsupported HDF5 superblock version: " + version);
-        }
-
-        // Step 3: Allocate a new buffer for the full superblock
-        buffer = ByteBuffer.allocate(superblockSize).order(ByteOrder.LITTLE_ENDIAN);
-
-        // Reset file channel position to re-read from the beginning
-        fileChannel.position(0);
-
-        // Read the full superblock
-        fileChannel.read(buffer);
-        buffer.flip();
-
-        // Step 4: Parse the remaining superblock fields
-        buffer.position(SIGNATURE_SIZE + VERSION_SIZE); // Skip the file signature
-        int freeSpaceVersion = Byte.toUnsignedInt(buffer.get());
-        int rootGroupVersion = Byte.toUnsignedInt(buffer.get());
-        buffer.get(); // Skip reserved
-        int sharedHeaderVersion = Byte.toUnsignedInt(buffer.get());
-        int offsetSize = Byte.toUnsignedInt(buffer.get());
-        int lengthSize = Byte.toUnsignedInt(buffer.get());
-        buffer.get(); // Skip reserved
-
-        FixedPointDatatype fixedPointDatatypeForOffset = new FixedPointDatatype(
-                FixedPointDatatype.createClassAndVersion(),
-                FixedPointDatatype.createClassBitField(false, false, false, false),
-                offsetSize, (short) 0, (short) (BIT_MULTIPLIER * offsetSize), hdfDataFile);
-        FixedPointDatatype fixedPointDatatypeForLength = new FixedPointDatatype(
-                FixedPointDatatype.createClassAndVersion(),
-                FixedPointDatatype.createClassBitField(false, false, false, false),
-                lengthSize, (short) 0, (short) (BIT_MULTIPLIER * lengthSize), hdfDataFile);
-
-        int groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
-        int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
-        buffer.getInt(); // Skip consistency flags
-
-        // Parse addresses using HdfFixedPoint
-        HdfFixedPoint baseAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
-        HdfFixedPoint freeSpaceAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
-        HdfFixedPoint endOfFileAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
-        HdfFixedPoint driverInformationAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
-        HdfFixedPoint hdfOffset = HdfWriteUtils.hdfFixedPointFromValue(offset, fixedPointDatatypeForOffset);
-
-        HdfSuperblock superblock = new HdfSuperblock(
-                version,
-                freeSpaceVersion,
-                rootGroupVersion,
-                sharedHeaderVersion,
-                offsetSize,
-                lengthSize,
-                groupLeafNodeK,
-                groupInternalNodeK,
-                baseAddress,
-                freeSpaceAddress,
-                endOfFileAddress,
-                driverInformationAddress,
-                hdfDataFile,
-                "Superblock",
-                hdfOffset,
-                fixedPointDatatypeForOffset,
-                fixedPointDatatypeForLength
-        );
-        hdfDataFile.setFileAllocation(new HdfFileAllocation(superblock));
-        hdfDataFile.getFileAllocation().addAllocationBlock(superblock.allocationRecord);
-        HdfSymbolTableEntry rootGroupSymbolTableEntry = HdfSymbolTableEntry.readFromSeekableByteChannel(fileChannel, hdfDataFile, null);
-        superblock.setRootGroupSymbolTableEntry(rootGroupSymbolTableEntry);
-        return superblock;
-    }
-
-    private void setRootGroupSymbolTableEntry(HdfSymbolTableEntry rootGroupSymbolTableEntry) {
+    public void setRootGroupSymbolTableEntry(HdfSymbolTableEntry rootGroupSymbolTableEntry) {
         this.rootGroupSymbolTableEntry = rootGroupSymbolTableEntry;
     }
 

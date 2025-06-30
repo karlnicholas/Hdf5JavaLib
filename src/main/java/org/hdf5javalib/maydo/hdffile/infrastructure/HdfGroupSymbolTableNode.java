@@ -27,7 +27,7 @@ import java.util.List;
  * @see HdfSymbolTableEntry
  */
 public class HdfGroupSymbolTableNode {
-    private static final byte[] GROUP_SYMBOL_TABLE_NODE_SIGNATURE = {'S', 'N', 'O', 'D'};
+    public static final byte[] GROUP_SYMBOL_TABLE_NODE_SIGNATURE = {'S', 'N', 'O', 'D'};
     /**
      * The version of the symbol table node format.
      */
@@ -52,59 +52,6 @@ public class HdfGroupSymbolTableNode {
     ) {
         this.version = version;
         this.symbolTableEntries = symbolTableEntries;
-    }
-
-    /**
-     * Reads an HdfGroupSymbolTableNode from a file channel.
-     *
-     * @param fileChannel the file channel to read from
-     * @param hdfDataFile the HDF5 file context
-     * @return the constructed HdfGroupSymbolTableNode
-     * @throws IOException              if an I/O error occurs or the SNOD signature is invalid
-     * @throws IllegalArgumentException if the SNOD signature is invalid
-     */
-    public static HdfGroupSymbolTableNode readFromSeekableByteChannel(
-            SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile,
-            HdfLocalHeap localHeap,
-            String objectName
-    ) throws Exception {
-        long offset = fileChannel.position();
-        ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
-        fileChannel.read(buffer);
-        buffer.flip();
-        int version;
-        int numberOfSymbols;
-
-        // Read Signature (4 bytes)
-        byte[] signatureBytes = new byte[GROUP_SYMBOL_TABLE_NODE_SIGNATURE.length];
-        buffer.get(signatureBytes);
-        if (Arrays.compare(GROUP_SYMBOL_TABLE_NODE_SIGNATURE, signatureBytes) != 0) {
-            throw new IllegalArgumentException("Invalid SNOD signature: " + Arrays.toString(signatureBytes));
-        }
-
-        // Read Version (1 byte)
-        version = Byte.toUnsignedInt(buffer.get());
-
-        // Skip Reserved Bytes (1 byte)
-        buffer.get();
-
-        // Read Number of Symbols (2 bytes, little-endian)
-        numberOfSymbols = Short.toUnsignedInt(buffer.getShort());
-
-        // Read Symbol Table Entries
-        List<HdfSymbolTableEntry> symbolTableEntries = new ArrayList<>(numberOfSymbols);
-        for (int i = 0; i < numberOfSymbols; i++) {
-            HdfSymbolTableEntry entry = HdfSymbolTableEntry.readFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap);
-            symbolTableEntries.add(entry);
-        }
-
-        return new HdfGroupSymbolTableNode(
-                version,
-                symbolTableEntries,
-                hdfDataFile,
-                objectName + ":Snod",
-                HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()));
     }
 
     /**

@@ -27,7 +27,7 @@ import static org.hdf5javalib.maydo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see FixedPointDatatype
  */
 public class HdfSymbolTableEntry {
-    private final static int RESERVED_FIELD_1_SIZE = 4;
+    public final static int RESERVED_FIELD_1_SIZE = 4;
     /**
      * The offset of the link name in the local heap.
      */
@@ -48,48 +48,6 @@ public class HdfSymbolTableEntry {
         this.linkNameOffset = linkNameOffset;
         this.objectHeader = cache.getObjectHeader();
         this.cache = cache;
-    }
-
-    /**
-     * Reads an HdfSymbolTableEntry from a file channel.
-     *
-     * @param fileChannel the file channel to read from
-     * @param hdfDataFile the HdfDataFile offset fields
-     * @return the constructed HdfSymbolTableEntry
-     * @throws IOException if an I/O error occurs
-     */
-    public static HdfSymbolTableEntry readFromSeekableByteChannel(
-            SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile,
-            HdfLocalHeap localHeap
-    ) throws Exception {
-        // Read the fixed-point values for linkNameOffset and objectHeaderAddress
-        HdfFixedPoint linkNameOffset = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
-        HdfFixedPoint objectHeaderAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
-
-        // Read cache type and skip reserved field
-        int cacheType = HdfReadUtils.readIntFromFileChannel(fileChannel);
-        HdfReadUtils.skipBytes(fileChannel, RESERVED_FIELD_1_SIZE); // Skip reserved field
-
-        long savedPosition = fileChannel.position();
-        fileChannel.position(objectHeaderAddress.getInstance(Long.class));
-        String objectName = localHeap == null ? "" : localHeap.stringAtOffset(linkNameOffset);
-        HdfObjectHeaderPrefix objectHeader = HdfObjectHeaderPrefix.readFromSeekableByteChannel(
-                fileChannel,
-                hdfDataFile,
-                objectName,
-                cacheType == 0 ? AllocationType.DATASET_OBJECT_HEADER : AllocationType.GROUP_OBJECT_HEADER
-        );
-        fileChannel.position(savedPosition);
-        HdfSymbolTableEntryCache cache;
-        if (cacheType == 0) {
-            cache = HdfSymbolTableEntryCacheNotUsed.readFromSeekableByteChannel(fileChannel, hdfDataFile, objectHeader, objectName);
-        } else if (cacheType == 1) {
-            cache = HdfSymbolTableEntryCacheGroupMetadata.readFromSeekableByteChannel(fileChannel, hdfDataFile, objectHeader, objectName);
-        } else {
-            throw new IllegalStateException("Unsupported cache type: " + cacheType);
-        }
-        return new HdfSymbolTableEntry(linkNameOffset, cache);
     }
 
     /**

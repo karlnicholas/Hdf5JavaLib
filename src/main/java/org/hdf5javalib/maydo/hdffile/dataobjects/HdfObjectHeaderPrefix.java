@@ -43,48 +43,6 @@ public abstract class HdfObjectHeaderPrefix {
     }
 
     /**
-     * Reads an HdfObjectHeaderPrefixV1 from a file channel.
-     * <p>
-     * Parses the fixed-size header (version, reference count, header size) and header messages,
-     * including any continuation messages, from the specified file channel.
-     * </p>
-     *
-     * @param fileChannel the seekable byte channel to read from
-     * @param hdfDataFile the HDF5 file context
-     * @return the constructed HdfObjectHeaderPrefixV1 instance
-     * @throws IOException              if an I/O error occurs
-     * @throws IllegalArgumentException if reserved fields are non-zero
-     */
-    public static HdfObjectHeaderPrefix readFromSeekableByteChannel(
-            SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile,
-            String objectName,
-            AllocationType allocationType
-    ) throws IOException {
-        long offset = fileChannel.position();
-        ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
-        fileChannel.read(buffer);
-        buffer.flip();
-
-        // Parse Version (1 byte)
-        int version = Byte.toUnsignedInt(buffer.get());
-        if ( version == 1 ) {
-            fileChannel.position(offset);
-            return HdfObjectHeaderPrefixV1.readObjectHeader(fileChannel, hdfDataFile, objectName, allocationType);
-        } else {
-            buffer.rewind();
-            byte[] signature = new byte[HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE.length];
-            buffer.get(signature);
-            if (Arrays.compare(signature, HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE) != 0) {
-                throw new IllegalStateException("Object header signature mismatch");
-            }
-            fileChannel.position(offset);
-            return HdfObjectHeaderPrefixV2.readObjectHeader(fileChannel, hdfDataFile, objectName, allocationType);
-        }
-    }
-
-
-    /**
      * Finds a header message of the specified type.
      *
      * @param messageClass the class of the message to find

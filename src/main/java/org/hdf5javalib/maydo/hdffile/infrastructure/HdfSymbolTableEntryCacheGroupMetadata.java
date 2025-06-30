@@ -30,26 +30,6 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
                 hdfDataFile);
     }
 
-    public static HdfSymbolTableEntryCache readFromSeekableByteChannel(
-            SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile,
-            HdfObjectHeaderPrefix objectHeader,
-            String objectName
-    ) throws Exception {
-        // reading for group.
-        HdfFixedPoint bTreeAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
-        HdfFixedPoint localHeapAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
-        long savedPosition = fileChannel.position();
-
-        fileChannel.position(localHeapAddress.getInstance(Long.class));
-        HdfLocalHeap localHeap = HdfLocalHeap.readFromSeekableByteChannel(fileChannel, hdfDataFile, objectName);
-
-        fileChannel.position(bTreeAddress.getInstance(Long.class));
-        HdfBTree bTreeV1 = HdfBTree.readFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap, objectName);
-        fileChannel.position(savedPosition);
-        return new HdfSymbolTableEntryCacheGroupMetadata(objectName, objectHeader, bTreeV1, localHeap, hdfDataFile);
-    }
-
     @Override
     public void writeToBuffer(ByteBuffer buffer) {
         buffer.putInt(cacheType);

@@ -27,9 +27,9 @@ import static org.hdf5javalib.maydo.hdffile.dataobjects.messages.HdfMessage.HDF_
  * </p>
  */
 public class HdfObjectHeaderPrefixV1 extends HdfObjectHeaderPrefix {
-    private static final int OBJECT_HEADER_PREFIX_HEADER_SIZE =16;
-    private static final int OBJECT_HEADER_PREFIX_RESERVED_SIZE_1 =1;
-    private static final int OBJECT_HEADER_PREFIX_RESERVED_SIZE_2 =4;
+    public static final int OBJECT_HEADER_PREFIX_HEADER_SIZE =16;
+    public static final int OBJECT_HEADER_PREFIX_RESERVED_SIZE_1 =1;
+    public static final int OBJECT_HEADER_PREFIX_RESERVED_SIZE_2 =4;
     /**
      * The version of the object header (1 byte).
      */
@@ -55,48 +55,6 @@ public class HdfObjectHeaderPrefixV1 extends HdfObjectHeaderPrefix {
         super(headerMessages, allocationType, name, offset, objectHeaderSize, hdfDataFile, OBJECT_HEADER_PREFIX_HEADER_SIZE);
         this.version = version;
         this.objectReferenceCount = objectReferenceCount;
-    }
-
-    protected static HdfObjectHeaderPrefixV1 readObjectHeader(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, String objectName, AllocationType allocationType) throws IOException {
-        long offset = fileChannel.position();
-        ByteBuffer buffer = ByteBuffer.allocate(OBJECT_HEADER_PREFIX_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
-        fileChannel.read(buffer);
-        buffer.flip();
-
-        // Parse Version (1 byte)
-        int version = Byte.toUnsignedInt(buffer.get());
-
-        // Reserved (1 byte, should be zero)
-        buffer.position(buffer.position() + OBJECT_HEADER_PREFIX_RESERVED_SIZE_1);
-
-        // Total Number of Header Messages (2 bytes, little-endian)
-        int totalHeaderMessages = Short.toUnsignedInt(buffer.getShort());
-
-        // Object Reference Count (4 bytes, little-endian)
-        long objectReferenceCount = Integer.toUnsignedLong(buffer.getInt());
-
-        // Object Header Size (4 bytes, little-endian)
-        long objectHeaderSize = Integer.toUnsignedLong(buffer.getInt());
-
-        // Reserved (4 bytes, should be zero)
-        buffer.position(buffer.position() + OBJECT_HEADER_PREFIX_RESERVED_SIZE_2);
-
-        List<HdfMessage> dataObjectHeaderMessages = new ArrayList<>(
-                HdfMessage.readMessagesFromByteBuffer(fileChannel, objectHeaderSize, hdfDataFile, HdfMessage.V1_OBJECT_HEADER_READ_PREFIX)
-        );
-
-        for (HdfMessage hdfMessage : dataObjectHeaderMessages) {
-            if (hdfMessage instanceof ObjectHeaderContinuationMessage objectHeaderContinuationMessage) {
-                dataObjectHeaderMessages.addAll(HdfMessage.parseContinuationMessage(fileChannel, objectHeaderContinuationMessage, hdfDataFile, HdfMessage.V1_OBJECT_HEADER_READ_PREFIX));
-
-                break;
-            }
-        }
-
-        // Create the instance
-        return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages,
-                hdfDataFile, allocationType, objectName,
-                HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()));
     }
 
     /**

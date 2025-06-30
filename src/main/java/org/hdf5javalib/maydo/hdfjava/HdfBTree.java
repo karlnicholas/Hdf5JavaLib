@@ -30,9 +30,9 @@ import static org.hdf5javalib.maydo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfBTreeEntry
  */
 public class HdfBTree {
-    private static final byte[] BTREE_SIGNATURE = {'T', 'R', 'E', 'E'};
-    private static final int BTREE_HEADER_INITIAL_SIZE = 8;
-    private static final int MAX_SNOD_ENTRIES = 8;
+    public static final byte[] BTREE_SIGNATURE = {'T', 'R', 'E', 'E'};
+    public static final int BTREE_HEADER_INITIAL_SIZE = 8;
+    public static final int MAX_SNOD_ENTRIES = 8;
     /**
      * The type of the node (0 for group B-Tree).
      */
@@ -126,97 +126,6 @@ public class HdfBTree {
         this.entries = new ArrayList<>();
     }
 
-    /**
-     * Reads an HdfBTree from a file channel.
-     *
-     * @param fileChannel the file channel to read from
-     * @param hdfDataFile the HDF5 file context
-     * @return the constructed HdfBTree instance
-     * @throws IOException if an I/O error occurs or the B-Tree data is invalid
-     */
-    public static HdfBTree readFromSeekableByteChannel(
-            SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile,
-            HdfLocalHeap localHeap,
-            String objectName
-    ) throws Exception {
-        long initialAddress = fileChannel.position();
-        return readFromSeekableByteChannelRecursive(fileChannel, initialAddress, hdfDataFile, localHeap, objectName, new LinkedHashMap<>());
-    }
-
-    /**
-     * Recursively reads an HdfBTree from a file channel, handling cycles.
-     *
-     * @param fileChannel  the file channel to read from
-     * @param nodeAddress  the address of the current node
-     * @param visitedNodes a map of visited node addresses to detect cycles
-     * @param hdfDataFile  the HDF5 file context
-     * @return the constructed HdfBTree instance
-     * @throws IOException if an I/O error occurs or the B-Tree data is invalid
-     */
-    private static HdfBTree readFromSeekableByteChannelRecursive(SeekableByteChannel fileChannel,
-                                                                 long nodeAddress,
-                                                                 HdfDataFile hdfDataFile,
-                                                                 HdfLocalHeap localHeap,
-                                                                 String objectName,
-                                                                 Map<Long, HdfBTree> visitedNodes
-    ) throws Exception {
-        if (visitedNodes.containsKey(nodeAddress)) {
-            throw new IllegalStateException("Cycle detected or node re-visited: BTree node address "
-                    + nodeAddress + " encountered again during recursive read.");
-        }
-
-        fileChannel.position(nodeAddress);
-        FixedPointDatatype hdfOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset();
-        final int offsetSize = hdfOffset.getSize();
-        FixedPointDatatype hdfLength = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset();
-        final int lengthSize = hdfLength.getSize();
-
-        int headerSize = BTREE_HEADER_INITIAL_SIZE + offsetSize + offsetSize;
-        ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
-        fileChannel.read(headerBuffer);
-        headerBuffer.flip();
-
-        byte[] signatureBytes = new byte[BTREE_SIGNATURE.length];
-        headerBuffer.get(signatureBytes);
-        if (Arrays.compare(signatureBytes, BTREE_SIGNATURE) != 0) {
-            throw new IOException("Invalid B-tree node signature: '" + Arrays.toString(signatureBytes) + "' at position " + nodeAddress);
-        }
-
-        int nodeType = Byte.toUnsignedInt(headerBuffer.get());
-        int nodeLevel = Byte.toUnsignedInt(headerBuffer.get());
-        int entriesUsed = Short.toUnsignedInt(headerBuffer.getShort());
-
-        HdfFixedPoint leftSiblingAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfOffset, headerBuffer);
-        HdfFixedPoint rightSiblingAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfOffset, headerBuffer);
-
-        int entriesDataSize = lengthSize + (entriesUsed * (offsetSize + lengthSize));
-        ByteBuffer entriesBuffer = ByteBuffer.allocate(entriesDataSize).order(ByteOrder.LITTLE_ENDIAN);
-        fileChannel.read(entriesBuffer);
-        entriesBuffer.flip();
-
-        HdfFixedPoint keyZero = HdfReadUtils.readHdfFixedPointFromBuffer(hdfLength, entriesBuffer);
-
-        List<HdfBTreeEntry> entries = new ArrayList<>(entriesUsed);
-
-        HdfBTree currentNode = new HdfBTree(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries, hdfDataFile,
-                objectName + ":Btree", HdfWriteUtils.hdfFixedPointFromValue(nodeAddress, hdfOffset));
-        visitedNodes.put(nodeAddress, currentNode);
-
-        for (int i = 0; i < entriesUsed; i++) {
-            HdfFixedPoint childPointer = HdfReadUtils.readHdfFixedPointFromBuffer(hdfOffset, entriesBuffer);
-            HdfFixedPoint key = HdfReadUtils.readHdfFixedPointFromBuffer(hdfLength, entriesBuffer);
-            long filePosAfterEntriesBlock = fileChannel.position();
-            long childAddress = childPointer.getInstance(Long.class);
-            fileChannel.position(childAddress);
-            HdfGroupSymbolTableNode snod = HdfGroupSymbolTableNode.readFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap, objectName);
-            HdfBTreeEntry entry = new HdfBTreeEntry(key, childPointer, null, snod);
-
-            fileChannel.position(filePosAfterEntriesBlock);
-            entries.add(entry);
-        }
-        return currentNode;
-    }
 
     /**
      * Adds a dataset to the B-tree, inserting it into the appropriate symbol table node.

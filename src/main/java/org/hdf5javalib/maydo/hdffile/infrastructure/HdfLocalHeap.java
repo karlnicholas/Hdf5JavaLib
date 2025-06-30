@@ -32,9 +32,9 @@ import static org.hdf5javalib.maydo.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfFileAllocation
  */
 public class HdfLocalHeap {
-    private static final byte[] LOCAL_HEAP_SIGNATURE = new byte[]{'H', 'E', 'A', 'P'};
-    private static final int LOCAL_HEAP_HEADER_SIZE=32;
-    private static final int LOCAL_HEAP_HEADER_RESERVED_SIZE=3;
+    public static final byte[] LOCAL_HEAP_SIGNATURE = new byte[]{'H', 'E', 'A', 'P'};
+    public static final int LOCAL_HEAP_HEADER_SIZE=32;
+    public static final int LOCAL_HEAP_HEADER_RESERVED_SIZE=3;
     /**
      * The version of the local heap format.
      */
@@ -99,49 +99,6 @@ public class HdfLocalHeap {
      */
     public HdfFixedPoint addToHeap(String objectName) {
         return heapData.addToHeap(objectName, hdfDataFile);
-    }
-
-    /**
-     * Reads an HdfLocalHeap from a file channel.
-     *
-     * @param fileChannel the file channel to read from
-     * @param hdfDataFile the HDF5 file context
-     * @return the constructed HdfLocalHeap
-     * @throws IOException              if an I/O error occurs
-     * @throws IllegalArgumentException if the heap signature or reserved bytes are invalid
-     */
-    public static HdfLocalHeap readFromSeekableByteChannel(
-            SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile,
-            String objectName
-    ) throws IOException {
-        long heapOffset = fileChannel.position();
-        ByteBuffer buffer = ByteBuffer.allocate(LOCAL_HEAP_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
-
-        fileChannel.read(buffer);
-        buffer.flip();
-
-        byte[] signatureBytes = new byte[LOCAL_HEAP_SIGNATURE.length];
-        buffer.get(signatureBytes);
-//        String signature = new String(signatureBytes);
-        if (Arrays.compare(LOCAL_HEAP_SIGNATURE, signatureBytes) != 0) {
-            throw new IllegalArgumentException("Invalid heap signature: " + signatureBytes);
-        }
-
-        int version = Byte.toUnsignedInt(buffer.get());
-
-        buffer.position(buffer.position() + LOCAL_HEAP_HEADER_RESERVED_SIZE);
-
-        HdfFixedPoint dataSegmentSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), buffer);
-        HdfFixedPoint freeListOffset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
-        HdfFixedPoint dataSegmentAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
-
-        HdfLocalHeapData hdfLocalHeapData = HdfLocalHeapData.readFromSeekableByteChannel(
-                fileChannel, dataSegmentSize, freeListOffset, dataSegmentAddress, hdfDataFile, objectName);
-
-        return new HdfLocalHeap(version,
-                hdfDataFile, hdfLocalHeapData,
-                objectName + ":Local Heap Header", heapOffset);
     }
 
     /**
