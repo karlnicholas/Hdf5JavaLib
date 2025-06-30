@@ -1,10 +1,7 @@
-package org.hdf5javalib.maydo;
+package org.hdf5javalib.maydo.hdfjava;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
-import org.hdf5javalib.maydo.hdfjava.HdfFileAllocation;
 import org.hdf5javalib.maydo.hdffile.infrastructure.HdfGlobalHeap;
-import org.hdf5javalib.maydo.hdfjava.HdfGroup;
 import org.hdf5javalib.maydo.hdffile.infrastructure.HdfSymbolTableEntryCacheGroupMetadata;
 import org.hdf5javalib.maydo.hdffile.metadata.HdfSuperblock;
 

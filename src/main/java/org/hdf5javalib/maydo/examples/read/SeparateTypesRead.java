@@ -1,6 +1,6 @@
 package org.hdf5javalib.maydo.examples.read;
 
-import org.hdf5javalib.maydo.HdfFileReader;
+import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
 import org.hdf5javalib.maydo.dataclass.*;
 import org.hdf5javalib.maydo.datatype.CompoundDatatype;
 import org.hdf5javalib.maydo.hdfjava.HdfDataset;

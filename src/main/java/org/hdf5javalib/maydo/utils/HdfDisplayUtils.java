@@ -1,6 +1,6 @@
 package org.hdf5javalib.maydo.utils;
 
-import org.hdf5javalib.maydo.HdfFileReader;
+import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
 import org.hdf5javalib.maydo.dataclass.HdfData;
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
