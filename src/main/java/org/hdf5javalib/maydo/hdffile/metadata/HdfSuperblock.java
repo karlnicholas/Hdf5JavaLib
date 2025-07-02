@@ -2,20 +2,14 @@ package org.hdf5javalib.maydo.hdffile.metadata;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.datatype.FixedPointDatatype;
-import org.hdf5javalib.maydo.hdfjava.AllocationRecord;
-import org.hdf5javalib.maydo.hdfjava.AllocationType;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdfjava.HdfFileAllocation;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfSymbolTableEntry;
-import org.hdf5javalib.maydo.utils.HdfReadUtils;
-import org.hdf5javalib.maydo.utils.HdfWriteUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 
-import static org.hdf5javalib.maydo.datatype.FixedPointDatatype.BIT_MULTIPLIER;
 import static org.hdf5javalib.maydo.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 /**
@@ -76,8 +70,6 @@ public class HdfSuperblock {
     public static final int SUPERBLOCK_SIZE_V1 = 56;
     public static final int SUPERBLOCK_SIZE_V2 = 96;
 
-    private final AllocationRecord allocationRecord;
-
     private final int version;
     private final int freeSpaceVersion;
     private final int rootGroupVersion;
@@ -91,7 +83,6 @@ public class HdfSuperblock {
     private final HdfFixedPoint addressFileFreeSpaceInfo;
     private HdfFixedPoint endOfFileAddress;
     private final HdfFixedPoint driverInformationAddress;
-    private HdfSymbolTableEntry rootGroupSymbolTableEntry;
 
     // Working properties
     private final HdfDataFile hdfDataFile;
@@ -133,13 +124,6 @@ public class HdfSuperblock {
             FixedPointDatatype fixedPointDatatypeForOffset,
             FixedPointDatatype fixedPointDatatypeForLength
     ) {
-        this.allocationRecord = new AllocationRecord(
-                AllocationType.SUPERBLOCK,
-                name,
-                offset,
-                HdfWriteUtils.hdfFixedPointFromValue(HdfFileAllocation.SUPERBLOCK_SIZE,
-                        fixedPointDatatypeForLength),
-                null);
 //        hdfDataFile.getFileAllocation().addAllocationBlock(this);
         this.version = version;
         this.freeSpaceVersion = freeSpaceVersion;
@@ -156,10 +140,6 @@ public class HdfSuperblock {
         this.hdfDataFile = hdfDataFile;
         this.fixedPointDatatypeForOffset = fixedPointDatatypeForOffset;
         this.fixedPointDatatypeForLength = fixedPointDatatypeForLength;
-    }
-
-    public void setRootGroupSymbolTableEntry(HdfSymbolTableEntry rootGroupSymbolTableEntry) {
-        this.rootGroupSymbolTableEntry = rootGroupSymbolTableEntry;
     }
 
     /**
@@ -201,14 +181,12 @@ public class HdfSuperblock {
         writeFixedPointToBuffer(buffer, endOfFileAddress);    // End-of-file address
         writeFixedPointToBuffer(buffer, driverInformationAddress); // Driver info block address
 
-        rootGroupSymbolTableEntry.writeToBuffer(buffer);
-
         buffer.flip();
 
-        fileChannel.position(fileAllocation.getSuperblock().allocationRecord.getOffset().getInstance(Long.class));
-        while (buffer.hasRemaining()) {
-            fileChannel.write(buffer);
-        }
+//        fileChannel.position(fileAllocation.getSuperblock().allocationRecord.getOffset().getInstance(Long.class));
+//        while (buffer.hasRemaining()) {
+//            fileChannel.write(buffer);
+//        }
     }
 
     /**
@@ -231,7 +209,6 @@ public class HdfSuperblock {
                 ", freeSpaceAddress=" + (addressFileFreeSpaceInfo.isUndefined() ? "<Undefined>" : addressFileFreeSpaceInfo) +
                 ", endOfFileAddress=" + (endOfFileAddress.isUndefined() ? "<Undefined>" : endOfFileAddress) +
                 ", driverInformationAddress=" + (driverInformationAddress.isUndefined() ? "<Undefined>" : driverInformationAddress) +
-                "\r\nrootGroupSymbolTableEntry=" + rootGroupSymbolTableEntry +
                 '}';
     }
 
@@ -247,11 +224,4 @@ public class HdfSuperblock {
         return fixedPointDatatypeForLength;
     }
 
-    public HdfSymbolTableEntry getRootGroupSymbolTableEntry() {
-        return rootGroupSymbolTableEntry;
-    }
-
-    public AllocationRecord getAllocationRecord() {
-        return allocationRecord;
-    }
 }

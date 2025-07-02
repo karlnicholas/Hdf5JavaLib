@@ -93,7 +93,7 @@ public class HdfFileAllocation {
     private static final long SNOD_STORAGE_SIZE = SNOD_V1_HEADER_SIZE + (DEFAULT_SNOD_ENTRY_COUNT * SNOD_V1_ENTRY_SIZE);
     private static final long ALIGNMENT_BOUNDARY = 2048L;
 
-    public final HdfFixedPoint HDF_SUPERBLOCK_OFFSET;
+    public final HdfFixedPoint HDF_SUPERBLOCK_OFFSET = null;
     public final HdfFixedPoint HDF_SUPERBLOCK_SIZE;
     public final HdfFixedPoint HDF_OBJECT_HEADER_PREFIX_SIZE;
     public final HdfFixedPoint HDF_BTREE_NODE_SIZE;
@@ -166,7 +166,7 @@ public class HdfFileAllocation {
         this.superblock = superblock;
         this.metadataNextAvailableOffset = HdfWriteUtils.hdfFixedPointFromValue(METADATA_REGION_START, superblock.getFixedPointDatatypeForOffset());
         this.dataNextAvailableOffset = HdfWriteUtils.hdfFixedPointFromValue(MIN_DATA_OFFSET_THRESHOLD, superblock.getFixedPointDatatypeForOffset());
-        HDF_SUPERBLOCK_OFFSET = superblock.getAllocationRecord().getOffset();
+//        HDF_SUPERBLOCK_OFFSET = superblock.getAllocationRecord().getOffset();
         HDF_SUPERBLOCK_SIZE = HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_SIZE, superblock.getFixedPointDatatypeForLength());
         HDF_OBJECT_HEADER_PREFIX_SIZE = HdfWriteUtils.hdfFixedPointFromValue(OBJECT_HEADER_PREFIX_SIZE, superblock.getFixedPointDatatypeForLength());
         HDF_BTREE_NODE_SIZE = HdfWriteUtils.hdfFixedPointFromValue(BTREE_NODE_SIZE, superblock.getFixedPointDatatypeForLength());

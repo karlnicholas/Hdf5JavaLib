@@ -30,12 +30,8 @@ import static org.hdf5javalib.maydo.hdfjava.HdfFileAllocation.*;
  * management.
  * </p>
  */
-public class HdfGroup implements HdfDataObject, Closeable {
+public class HdfGroup extends HdfDataObject implements Closeable {
     private final HdfDataFile hdfDataFile;
-    /**
-     * The name of the group.
-     */
-    private final String groupName;
     /**
      * The object header prefix for the group.
      */
@@ -65,10 +61,6 @@ public class HdfGroup implements HdfDataObject, Closeable {
         return objectHeader;
     }
 
-    public String getGroupName() {
-        return groupName;
-    }
-
     /**
      * Constructs an HdfGroup for reading an existing HDF5 file.
      * <p>
@@ -88,7 +80,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
 //            HdfLocalHeap localHeap,
             HdfDataFile hdfDataFile
     ) {
-        this.groupName = groupName;
+        super(groupName);
         this.objectHeader = objectHeader;
         this.bTree = bTree;
 //        this.localHeap = localHeap;
@@ -107,8 +99,8 @@ public class HdfGroup implements HdfDataObject, Closeable {
      * @param localHeapAddress the file address for the local heap
      */
     public HdfGroup(String groupName, long btreeAddress, long localHeapAddress, HdfDataFile hdfDataFile) {
+        super(groupName);
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        this.groupName = groupName;
         this.hdfDataFile = hdfDataFile;
         HdfFixedPoint localHeapContentsSize = fileAllocation.getCurrentLocalHeapContentsSize();
 
@@ -121,13 +113,14 @@ public class HdfGroup implements HdfDataObject, Closeable {
 //
 //        localHeap.addToHeap("");
 
-        bTree = new HdfBTree(0, 0,
-                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
-                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
-                hdfDataFile,
-                groupName + "btree",
-                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
-        );
+//        bTree = new HdfBTree(0, 0,
+//                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
+//                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
+//                hdfDataFile,
+//                groupName + "btree",
+//                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+//        );
+        bTree = new HdfBTree(16);
 
         HdfFixedPoint btree = HdfWriteUtils.hdfFixedPointFromValue(btreeAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
         HdfFixedPoint localHeap = HdfWriteUtils.hdfFixedPointFromValue(localHeapAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
@@ -161,7 +154,8 @@ public class HdfGroup implements HdfDataObject, Closeable {
 
         HdfDataset newDataSet = new HdfDataset(hdfDataFile, datasetName, datatype, dataSpaceMessage);
 
-        bTree.addDataset(linkNameOffset, newDataSet, this);
+//        bTree.addDataset(linkNameOffset, newDataSet, this);
+        bTree.insert(newDataSet);
         return newDataSet;
     }
 
@@ -177,18 +171,18 @@ public class HdfGroup implements HdfDataObject, Closeable {
         return "";
     }
 
-    /**
-     * Writes the group's metadata and associated data to a file channel.
-     *
-     * @param seekableByteChannel the file channel to write to
-     * @throws IOException if an I/O error occurs
-     */
-    public void writeToFileChannel(SeekableByteChannel seekableByteChannel) throws IOException {
-        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        objectHeader.writeAsGroupToByteChannel(seekableByteChannel, fileAllocation);
-        bTree.writeToByteChannel(seekableByteChannel, fileAllocation);
-//        localHeap.writeToByteChannel(seekableByteChannel, fileAllocation);
-    }
+//    /**
+//     * Writes the group's metadata and associated data to a file channel.
+//     *
+//     * @param seekableByteChannel the file channel to write to
+//     * @throws IOException if an I/O error occurs
+//     */
+//    public void writeToFileChannel(SeekableByteChannel seekableByteChannel) throws IOException {
+//        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
+//        objectHeader.writeAsGroupToByteChannel(seekableByteChannel, fileAllocation);
+//        bTree.writeToByteChannel(seekableByteChannel, fileAllocation);
+////        localHeap.writeToByteChannel(seekableByteChannel, fileAllocation);
+//    }
 
     /**
      * Retrieves all datasets in the group.
@@ -225,7 +219,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
     @Override
     public String toString() {
         return "HdfGroup{" +
-                "name='" + groupName + '\'' +
+                "name='" + objectName + '\'' +
                 "\r\nobjectHeader=" + objectHeader +
                 "\r\nbTree=" + bTree +
 //                "\r\nlocalHeap=" + localHeap +
@@ -243,7 +237,7 @@ public class HdfGroup implements HdfDataObject, Closeable {
 
     @Override
     public String getObjectName() {
-        return groupName;
+        return objectName;
     }
 
     private Optional<HdfDataObject> findTypeInBTree(HdfBTree bTree, String[] components, int index, String currentComponent) {

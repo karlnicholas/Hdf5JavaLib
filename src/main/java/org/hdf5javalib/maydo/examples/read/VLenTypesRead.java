@@ -40,7 +40,7 @@ public class VLenTypesRead {
             for (HdfDataset dataSet : reader.getRootGroup().getDataSets()) {
                 try (HdfDataset ds = dataSet) {
                     System.out.println();
-                    System.out.println("Dataset name: " + ds.getDatasetName());
+                    System.out.println("Dataset name: " + ds.getObjectName());
                     HdfDisplayUtils.displayScalarData(channel, ds, HdfVariableLength.class, reader);
                     HdfDisplayUtils.displayScalarData(channel, ds, String.class, reader);
                     HdfDisplayUtils.displayScalarData(channel, ds, Object.class, reader);

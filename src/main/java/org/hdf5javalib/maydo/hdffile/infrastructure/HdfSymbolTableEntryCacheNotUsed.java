@@ -9,16 +9,15 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 
-public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache {
+public class HdfSymbolTableEntryCacheNotUsed extends HdfSymbolTableEntryCache {
     public static final int SYMBOL_TABLE_ENTRY_SCRATCH_SIZE = 16;
     /**
      * The cache type (0 for basic, 1 for additional B-Tree and heap offsets).
      */
     private final int cacheType = 0;
-    private final HdfDataset dataSet;
 
-    public HdfSymbolTableEntryCacheNotUsed(HdfDataFile hdfDataFile, HdfObjectHeaderPrefix objectHeader, String datasetName) {
-        dataSet = new HdfDataset(hdfDataFile, datasetName, objectHeader);
+    public HdfSymbolTableEntryCacheNotUsed(HdfObjectHeaderPrefix objectHeader) {
+        super(objectHeader);
     }
 
     @Override
@@ -35,7 +34,6 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
     @Override
     public String toString() {
         return "HdfSymbolTableEntryCacheNotUsed{" + "cacheType=" + cacheType +
-                ", dataSet=" + dataSet +
                 "}";
     }
 
@@ -44,12 +42,4 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
         return cacheType;
     }
 
-    @Override
-    public HdfObjectHeaderPrefix getObjectHeader() {
-        return dataSet.getDataObjectHeaderPrefix();
-    }
-
-    public HdfDataset getDataSet() {
-        return dataSet;
-    }
 }

@@ -110,7 +110,7 @@ public class FixedPointRead {
     void tryDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, hdfDataFile, dataSet, BigInteger.class);
         BigInteger allData = dataSource.readScalar();
-        System.out.println("Scalar dataset name = " + dataSet.getDatasetName());
+        System.out.println("Scalar dataset name = " + dataSet.getObjectName());
         System.out.println("Scalar readAll stats = " + Stream.of(allData)
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
         System.out.println("Scalar streaming list = " + dataSource.streamScalar().toList());
@@ -132,7 +132,7 @@ public class FixedPointRead {
     void tryScalarDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, hdfDataFile, dataSet, BigInteger.class);
         BigInteger allData = dataSource.readScalar();
-        System.out.println("Scalar dataset name = " + dataSet.getDatasetName());
+        System.out.println("Scalar dataset name = " + dataSet.getObjectName());
         System.out.println("Scalar readAll stats = " + Stream.of(allData)
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
         System.out.println("Scalar streaming list = " + dataSource.streamScalar().toList());

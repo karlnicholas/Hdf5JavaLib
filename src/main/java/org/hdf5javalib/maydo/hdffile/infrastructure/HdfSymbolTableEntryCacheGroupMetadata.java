@@ -10,25 +10,19 @@ import org.hdf5javalib.maydo.utils.HdfReadUtils;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 
-public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntryCache {
+public class HdfSymbolTableEntryCacheGroupMetadata extends HdfSymbolTableEntryCache {
     /**
      * The cache type (0 for basic, 1 for additional B-Tree and heap offsets).
      */
     private final int cacheType = 1;
+
+    public HdfSymbolTableEntryCacheGroupMetadata(HdfObjectHeaderPrefix objectHeader) {
+        super(objectHeader);
+    }
+
     /**
      * The offset of the B-Tree for cache type 1 entries (null for cache type 0).
      */
-//    private final HdfBTree bTree;
-//    /** The offset of the local heap for cache type 1 entries (null for cache type 0). */
-//    private final HdfLocalHeap localHeap;
-    private final HdfGroup group;
-
-    public HdfSymbolTableEntryCacheGroupMetadata(String groupName, HdfObjectHeaderPrefix objectHeader, HdfBTree bTree, HdfLocalHeap localHeap, HdfDataFile hdfDataFile) {
-        group = new HdfGroup(groupName, objectHeader, bTree,
-//                localHeap,
-//                new LinkedHashMap<>(),
-                hdfDataFile);
-    }
 
     @Override
     public void writeToBuffer(ByteBuffer buffer) {
@@ -45,7 +39,6 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
     @Override
     public String toString() {
         return "HdfSymbolTableEntryCacheGroupMetadata{" + "cacheType=" + cacheType +
-                "group=" + group +
                 "}";
     }
 
@@ -54,16 +47,4 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
         return cacheType;
     }
 
-    @Override
-    public HdfObjectHeaderPrefix getObjectHeader() {
-        return group.getObjectHeader();
-    }
-
-    public HdfBTree getBtree() {
-        return group.getBTree();
-    }
-
-    public HdfGroup getGroup() {
-        return group;
-    }
 }

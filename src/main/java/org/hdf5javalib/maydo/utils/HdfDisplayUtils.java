@@ -40,7 +40,7 @@ public class HdfDisplayUtils {
     }
 
     public static void displayData(SeekableByteChannel channel, HdfDataset ds, HdfFileReader reader) throws Exception {
-        System.out.println(ds.getDatasetName());
+        System.out.println(ds.getObjectName());
         if (ds.hasDataspaceMessage()) {
             switch (ds.getDimensionality()) {
                 case 0:
@@ -79,10 +79,10 @@ public class HdfDisplayUtils {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T result = dataSource.readScalar();
-        System.out.println(dataSet.getDatasetName() + ":" + displayType(clazz, result) + " read   = " + displayValue(result));
+        System.out.println(dataSet.getObjectName() + ":" + displayType(clazz, result) + " read   = " + displayValue(result));
 
         result = dataSource.streamScalar().findFirst().orElseThrow();
-        System.out.println(dataSet.getDatasetName() + ":" + displayType(clazz, result) + " stream = " + displayValue(result));
+        System.out.println(dataSet.getObjectName() + ":" + displayType(clazz, result) + " stream = " + displayValue(result));
     }
 
     /**
