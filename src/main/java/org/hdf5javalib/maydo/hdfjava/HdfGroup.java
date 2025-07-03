@@ -33,10 +33,6 @@ import static org.hdf5javalib.maydo.hdfjava.HdfFileAllocation.*;
 public class HdfGroup extends HdfDataObject implements Closeable {
     private final HdfDataFile hdfDataFile;
     /**
-     * The object header prefix for the group.
-     */
-    private final HdfObjectHeaderPrefix objectHeader;
-    /**
      * The B-tree managing symbol table entries.
      */
     private final HdfBTree bTree;
@@ -57,10 +53,6 @@ public class HdfGroup extends HdfDataObject implements Closeable {
 //        return localHeap;
 //    }
 
-    public HdfObjectHeaderPrefix getObjectHeader() {
-        return objectHeader;
-    }
-
     /**
      * Constructs an HdfGroup for reading an existing HDF5 file.
      * <p>
@@ -80,57 +72,55 @@ public class HdfGroup extends HdfDataObject implements Closeable {
 //            HdfLocalHeap localHeap,
             HdfDataFile hdfDataFile
     ) {
-        super(groupName);
-        this.objectHeader = objectHeader;
+        super(groupName, objectHeader);
         this.bTree = bTree;
 //        this.localHeap = localHeap;
         this.hdfDataFile = hdfDataFile;
     }
 
-    /**
-     * Constructs an HdfGroup for creating a new HDF5 file.
-     * <p>
-     * Initializes the group with a new B-tree, local heap, and empty dataset map,
-     * setting up the necessary metadata for writing to the file.
-     * </p>
-     *
-     * @param groupName        the name of the group
-     * @param btreeAddress     the file address for the B-tree
-     * @param localHeapAddress the file address for the local heap
-     */
-    public HdfGroup(String groupName, long btreeAddress, long localHeapAddress, HdfDataFile hdfDataFile) {
-        super(groupName);
-        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        this.hdfDataFile = hdfDataFile;
-        HdfFixedPoint localHeapContentsSize = fileAllocation.getCurrentLocalHeapContentsSize();
-
-//        localHeap = new HdfLocalHeap(
-//                localHeapContentsSize,
-//                fileAllocation.getCurrentLocalHeapContentsOffset(),
-//                hdfDataFile, groupName + "heap",
-//                HdfFileAllocation.SUPERBLOCK_SIZE + HdfFileAllocation.OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE
-//        );
-//
-//        localHeap.addToHeap("");
-
-//        bTree = new HdfBTree(0, 0,
-//                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
-//                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
+//    /**
+//     * Constructs an HdfGroup for creating a new HDF5 file.
+//     * <p>
+//     * Initializes the group with a new B-tree, local heap, and empty dataset map,
+//     * setting up the necessary metadata for writing to the file.
+//     * </p>
+//     *
+//     * @param groupName        the name of the group
+//     * @param btreeAddress     the file address for the B-tree
+//     * @param localHeapAddress the file address for the local heap
+//     */
+//    public HdfGroup(String groupName, long btreeAddress, long localHeapAddress, HdfDataFile hdfDataFile) {
+//        super(groupName, new HdfObjectHeaderPrefixV1(1, 1, 24,
+//                Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte) 0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))),
 //                hdfDataFile,
-//                groupName + "btree",
-//                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
-//        );
-        bTree = new HdfBTree(16);
-
-        HdfFixedPoint btree = HdfWriteUtils.hdfFixedPointFromValue(btreeAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
-        HdfFixedPoint localHeap = HdfWriteUtils.hdfFixedPointFromValue(localHeapAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
-
-        objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 24,
-                Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte) 0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))),
-                hdfDataFile,
-                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
-        );
-    }
+//                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+//        ));
+//        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
+//        this.hdfDataFile = hdfDataFile;
+//        HdfFixedPoint localHeapContentsSize = fileAllocation.getCurrentLocalHeapContentsSize();
+//
+////        localHeap = new HdfLocalHeap(
+////                localHeapContentsSize,
+////                fileAllocation.getCurrentLocalHeapContentsOffset(),
+////                hdfDataFile, groupName + "heap",
+////                HdfFileAllocation.SUPERBLOCK_SIZE + HdfFileAllocation.OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE
+////        );
+////
+////        localHeap.addToHeap("");
+//
+////        bTree = new HdfBTree(0, 0,
+////                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
+////                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
+////                hdfDataFile,
+////                groupName + "btree",
+////                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+////        );
+//        bTree = new HdfBTree(16);
+//
+//        HdfFixedPoint btree = HdfWriteUtils.hdfFixedPointFromValue(btreeAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
+//        HdfFixedPoint localHeap = HdfWriteUtils.hdfFixedPointFromValue(localHeapAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
+//
+//    }
 
     /**
      * Creates a dataset in the group.
@@ -218,7 +208,6 @@ public class HdfGroup extends HdfDataObject implements Closeable {
     public String toString() {
         return "HdfGroup{" +
                 "name='" + objectName + '\'' +
-                "\r\nobjectHeader=" + objectHeader +
                 "\r\nbTree=" + bTree +
 //                "\r\nlocalHeap=" + localHeap +
                 "}";

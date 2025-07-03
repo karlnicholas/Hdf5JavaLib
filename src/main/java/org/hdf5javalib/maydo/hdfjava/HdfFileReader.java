@@ -86,16 +86,37 @@ public class HdfFileReader implements HdfDataFile {
         superblock = readSuperblockFromSeekableByteChannel(fileChannel, this);
         HdfSymbolTableEntry rootGroupSymbolTableEntry = readSteFromSeekableByteChannel(fileChannel, this);
 //        superblock.setRootGroupSymbolTableEntry(rootGroupSymbolTableEntry);
-        return readInfrastructure(rootGroupSymbolTableEntry);
+        HdfBTree hdfBTree = new HdfBTree(superblock.getGroupInternalNodeK());
+        return readInfrastructure(hdfBTree, "/", rootGroupSymbolTableEntry);
 //        return ((HdfSymbolTableEntryCacheWithScratch)superblock.getRootGroupSymbolTableEntry().getCache()).getGroup();
     }
 
-    private HdfFileReader readInfrastructure(HdfSymbolTableEntry ste) throws Exception {
+    private HdfFileReader readInfrastructure(HdfBTree hdfBTree, String currentPath, HdfSymbolTableEntry ste) throws Exception {
         long heapOffset = ((HdfSymbolTableEntryCacheWithScratch)ste.getCache()).getLocalHeapAddress().getInstance(Long.class);
         long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch)ste.getCache()).getbTreeAddress().getInstance(Long.class);
         HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, heapOffset, this);
+        HdfObjectHeaderPrefixV1 objectHeader = readObjectHeader(fileChannel, ste.getObjectHeaderAddress().getInstance(Long.class), this);
         String groupName = localHeap.stringAtOffset(ste.getLinkNameOffset());
-        HdfBTreeV1 bTree = readBTreeFromSeekableByteChannel(fileChannel, bTreeAddress, this);
+        HdfGroupObject groupObject = new HdfGroupObject(groupName, objectHeader);
+        hdfBTree.insert(currentPath, groupObject);
+        String newPath = currentPath + (groupName.length() > 0 ? '/' + groupName : "");
+        HdfBTreeV1 groupBTree = readBTreeFromSeekableByteChannel(fileChannel, bTreeAddress, this);
+        for( HdfBTreeEntry entry: groupBTree.getEntries()) {
+            HdfGroupSymbolTableNode groupSymbolTableNode = entry.getGroupSymbolTableNode();
+            for( HdfSymbolTableEntry symbolTableEntry: groupSymbolTableNode.getSymbolTableEntries() ) {
+               switch ( symbolTableEntry.getCache().getCacheType()) {
+                case 0:
+                    String datasetName = localHeap.stringAtOffset(symbolTableEntry.getLinkNameOffset());
+                    HdfObjectHeaderPrefixV1 dataObjectHeader = readObjectHeader(fileChannel, symbolTableEntry.getObjectHeaderAddress().getInstance(Long.class), this);
+                    HdfDatasetObject datasetObject = new HdfDatasetObject(datasetName, dataObjectHeader);
+                    hdfBTree.insert(newPath, datasetObject);
+                    break;
+                case 1:
+                    readInfrastructure(hdfBTree, newPath, symbolTableEntry);
+                    break;
+                }
+            }
+        }
 //        HdfObjectHeaderPrefixV1 objectHeader = readObjectHeader(fileChannel, this);
 
         return this;
@@ -519,8 +540,7 @@ public class HdfFileReader implements HdfDataFile {
         // Parse Version (1 byte)
         int version = Byte.toUnsignedInt(buffer.get());
         if ( version == 1 ) {
-            fileChannel.position(offset);
-            return readObjectHeader(fileChannel, hdfDataFile);
+            return readObjectHeader(fileChannel, offset, hdfDataFile);
         } else {
             buffer.rewind();
             byte[] signature = new byte[HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE.length];
@@ -528,13 +548,16 @@ public class HdfFileReader implements HdfDataFile {
             if (Arrays.compare(signature, HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE) != 0) {
                 throw new IllegalStateException("Object header signature mismatch");
             }
-            fileChannel.position(offset);
-            return readObjectHeader(fileChannel, hdfDataFile);
+            return readObjectHeader(fileChannel, offset, hdfDataFile);
         }
     }
 
-    protected static HdfObjectHeaderPrefixV1 readObjectHeader(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
-        long offset = fileChannel.position();
+    protected static HdfObjectHeaderPrefixV1 readObjectHeader(
+            SeekableByteChannel fileChannel,
+            long objectHeaderOffset,
+            HdfDataFile hdfDataFile
+    ) throws IOException {
+        fileChannel.position(objectHeaderOffset);
         ByteBuffer buffer = ByteBuffer.allocate(OBJECT_HEADER_PREFIX_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
         fileChannel.read(buffer);
         buffer.flip();
@@ -572,7 +595,7 @@ public class HdfFileReader implements HdfDataFile {
         // Create the instance
         return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages,
                 hdfDataFile,
-                HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()));
+                HdfWriteUtils.hdfFixedPointFromValue(objectHeaderOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()));
     }
 
 

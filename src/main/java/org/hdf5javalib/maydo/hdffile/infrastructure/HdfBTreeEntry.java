@@ -108,12 +108,8 @@ public class HdfBTreeEntry {
         return childPointer;
     }
 
-    public Optional<HdfBTree> getChildBTree() {
-        return Optional.ofNullable(childBTree);
-    }
-
-    public Optional<HdfGroupSymbolTableNode> getGroupSymbolTableNode() {
-        return Optional.ofNullable(groupSymbolTableNode);
+    public HdfGroupSymbolTableNode getGroupSymbolTableNode() {
+        return groupSymbolTableNode;
     }
 
 //    public HdfGroupSymbolTableNode getSymbolTableNode() {

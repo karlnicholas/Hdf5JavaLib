@@ -36,12 +36,6 @@ public class HdfBTree {
      */
     public HdfDataObject findByPath(String path) {
         String[] pathArray = parsePath(path);
-        if (pathArray.length == 0) {
-            // A path of "/" refers to the root itself. We represent this as a virtual group.
-            HdfGroupObject virtualRoot = new HdfGroupObject("/");
-            virtualRoot.getChildren().add(this.root);
-            return virtualRoot;
-        }
         return findByPathArray(pathArray);
     }
 
@@ -155,7 +149,7 @@ public class HdfBTree {
                 this.root = newRoot;
                 // This is a complex case. For this model, we'll create a new HdfGroupObject to hold the old root.
                 // A better design might be needed for robust root splitting.
-                HdfGroupObject placeholderGroup = new HdfGroupObject(r.entries.get(0).getObjectName()); // Placeholder
+                HdfGroupObject placeholderGroup = new HdfGroupObject(r.entries.get(0).getObjectName(), null); // Placeholder
                 placeholderGroup.getChildren().add(r);
                 newRoot.entries.add(placeholderGroup);
                 splitChild(newRoot, r, 0);

@@ -70,9 +70,9 @@ public class TypedDataSource<T> {
         this.channel = channel;
         this.dataClass = dataClass;
         this.elementSize = dataset.getDatatype().getSize();
-        this.dimensions = extractDimensions(dataset.getDataObjectHeaderPrefix()
+        this.dimensions = extractDimensions(dataset.getObjectHeader()
                 .findMessageByType(DataspaceMessage.class).orElseThrow());
-        dataset.getDataObjectHeaderPrefix().findMessageByType(DatatypeMessage.class).orElseThrow()
+        dataset.getObjectHeader().findMessageByType(DatatypeMessage.class).orElseThrow()
                 .getHdfDatatype().setGlobalHeap(hdfDataFile.getGlobalHeap());
     }
 

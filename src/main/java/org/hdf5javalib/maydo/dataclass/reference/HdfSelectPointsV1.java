@@ -63,7 +63,7 @@ public class HdfSelectPointsV1 extends HdfDataspaceSelectionInstance {
         HdfDataset hdfDataSet = (HdfDataset) hdfDataObject;
 
         // 1. Get the shape of the full source dataset.
-        DataspaceMessage dataspaceMessage = hdfDataSet.getDataObjectHeaderPrefix().findMessageByType(DataspaceMessage.class).get();
+        DataspaceMessage dataspaceMessage = hdfDataSet.getObjectHeader().findMessageByType(DataspaceMessage.class).get();
         int[] sourceShape = Arrays.stream(dataspaceMessage.getDimensions())
                 .mapToInt(dim -> dim.getInstance(Long.class).intValue())
                 .toArray();

@@ -1,5 +1,7 @@
 package org.hdf5javalib.maydo.hdfjava;
 
+import org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefix;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -12,8 +14,8 @@ public class HdfGroupObject extends HdfDataObject {
     // This is the list of children BTreeNodes that "live inside" this group.
     private final List<HdfBTreeNode> children = new ArrayList<>();
 
-    public HdfGroupObject(String name) {
-        super(name);
+    public HdfGroupObject(String name, HdfObjectHeaderPrefix objectHeader) {
+        super(name,  objectHeader);
     }
 
     @Override

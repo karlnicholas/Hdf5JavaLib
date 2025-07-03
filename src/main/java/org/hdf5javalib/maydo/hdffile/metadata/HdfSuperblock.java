@@ -224,4 +224,7 @@ public class HdfSuperblock {
         return fixedPointDatatypeForLength;
     }
 
+    public int getGroupInternalNodeK() {
+        return groupInternalNodeK;
+    }
 }

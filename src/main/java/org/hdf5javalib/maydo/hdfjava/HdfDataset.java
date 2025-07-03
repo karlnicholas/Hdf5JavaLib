@@ -51,10 +51,6 @@ public class HdfDataset extends HdfDataObject implements Closeable {
      */
     private final List<AttributeMessage> attributes;
     /**
-     * The object header prefix for the dataset.
-     */
-    private HdfObjectHeaderPrefix dataObjectHeaderPrefix;
-    /**
      * Indicates whether the dataset is closed.
      */
     private boolean closed;
@@ -66,7 +62,7 @@ public class HdfDataset extends HdfDataObject implements Closeable {
                 ",\r\n\tobjectName='" + objectName + '\'' +
                 ",\r\n\tdatatype=" + datatype +
 //                ",\r\n\tattributes=" + attributes +
-                ",\r\n\tdataObjectHeaderPrefix=" + dataObjectHeaderPrefix +
+                ",\r\n\tdataObjectHeaderPrefix=" + getObjectHeader() +
                 ",\r\n\tclosed=" + closed +
                 "\r\n\t}";
     }
@@ -80,7 +76,7 @@ public class HdfDataset extends HdfDataObject implements Closeable {
      * @param dataSpaceMessage the dataspace message defining the dataset's dimensions
      */
     public HdfDataset(HdfDataFile hdfDataFile, String objectName, Datatype datatype, DataspaceMessage dataSpaceMessage) {
-        super(objectName);
+        super(objectName, null);
         this.hdfDataFile = hdfDataFile;
         this.datatype = datatype;
         this.attributes = new ArrayList<>();
@@ -96,11 +92,10 @@ public class HdfDataset extends HdfDataObject implements Closeable {
      * @param dataObjectHeaderPrefix the object header prefix for the dataset
      */
     public HdfDataset(HdfDataFile hdfDataFile, String objectName, HdfObjectHeaderPrefix dataObjectHeaderPrefix) {
-        super(objectName);
+        super(objectName, dataObjectHeaderPrefix);
         this.hdfDataFile = hdfDataFile;
         this.datatype = dataObjectHeaderPrefix.findMessageByType(DatatypeMessage.class).orElseThrow().getHdfDatatype();
         this.attributes = new ArrayList<>();
-        this.dataObjectHeaderPrefix = dataObjectHeaderPrefix;
         closed = false;
         dataObjectHeaderPrefix.findMessageByType(AttributeMessage.class).ifPresent(attributes::add);
     }
@@ -161,14 +156,14 @@ public class HdfDataset extends HdfDataObject implements Closeable {
             headerSize = allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getSize().getInstance(Long.class);
         }
 
-        this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(
-                1,
-                objectReferenceCount,
-                Math.max(objectHeaderSize, headerSize - 16),
-                headerMessages,
-                hdfDataFile,
-                allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getOffset()
-        );
+//        this.dataObjectHeaderPrefix = new HdfObjectHeaderPrefixV1(
+//                1,
+//                objectReferenceCount,
+//                Math.max(objectHeaderSize, headerSize - 16),
+//                headerMessages,
+//                hdfDataFile,
+//                allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getOffset()
+//        );
 
         // Allocate data block if needed
         if (allocationInfo.get(AllocationType.DATASET_DATA) == null) {
@@ -341,7 +336,7 @@ public class HdfDataset extends HdfDataObject implements Closeable {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         Map<AllocationType, AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(objectName);
         long headerSize = allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getSize().getInstance(Long.class);
-        List<HdfMessage> headerMessages = this.dataObjectHeaderPrefix.getHeaderMessages();
+        List<HdfMessage> headerMessages = getObjectHeader().getHeaderMessages();
         int objectHeaderSize = getObjectHeaderSize(headerMessages);
         int attributeSize = getAttributeSize();
 
@@ -360,7 +355,7 @@ public class HdfDataset extends HdfDataObject implements Closeable {
         HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
         Map<AllocationType, AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(objectName);
         long headerSize = allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getSize().getInstance(Long.class);
-        List<HdfMessage> headerMessages = this.dataObjectHeaderPrefix.getHeaderMessages();
+        List<HdfMessage> headerMessages = getObjectHeader().getHeaderMessages();
         int objectHeaderSize = getObjectHeaderSize(headerMessages);
         int attributeSize = getAttributeSize();
 
@@ -396,7 +391,7 @@ public class HdfDataset extends HdfDataObject implements Closeable {
             long nilSize = (headerSize - 16) - (objectHeaderSize + attributeSize) - 8;
             headerMessages.add(new NilMessage((byte) 0, (short) nilSize));
         }
-        DataLayoutMessage dataLayoutMessage = dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class).orElseThrow();
+        DataLayoutMessage dataLayoutMessage = getObjectHeader().findMessageByType(DataLayoutMessage.class).orElseThrow();
         dataLayoutMessage.setDataAddress(allocationInfo.get(AllocationType.DATASET_DATA).getOffset());
         writeToFileChannel(hdfDataFile.getSeekableByteChannel());
 
@@ -504,7 +499,7 @@ public class HdfDataset extends HdfDataObject implements Closeable {
      * @return the {@link HdfFixedPoint} representing the data address
      */
     public Optional<HdfFixedPoint> getDataAddress() {
-        return dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class)
+        return getObjectHeader().findMessageByType(DataLayoutMessage.class)
                 .flatMap(dataLayoutMessage -> Optional.ofNullable(dataLayoutMessage.getDataAddress()));
     }
 
@@ -514,7 +509,7 @@ public class HdfDataset extends HdfDataObject implements Closeable {
      * @return an array of {@link HdfFixedPoint} representing the dimension sizes
      */
     public Optional<HdfFixedPoint[]> getDimensionSizes() {
-        return dataObjectHeaderPrefix.findMessageByType(DataLayoutMessage.class)
+        return getObjectHeader().findMessageByType(DataLayoutMessage.class)
                 .flatMap(dataLayoutMessage -> Optional.ofNullable(dataLayoutMessage.getDimensionSizes()));
     }
 
@@ -525,39 +520,31 @@ public class HdfDataset extends HdfDataObject implements Closeable {
      * @throws IOException if an I/O error occurs
      */
     public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
-        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        Map<AllocationType, AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(objectName);
-        ByteBuffer buffer = ByteBuffer.allocate(allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getSize().getInstance(Integer.class)).order(ByteOrder.LITTLE_ENDIAN);
-        dataObjectHeaderPrefix.writeInitialMessageBlockToBuffer(buffer);
-        buffer.rewind();
-
-        fileChannel.position(allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getOffset().getInstance(Long.class));
-        while (buffer.hasRemaining()) {
-            fileChannel.write(buffer);
-        }
-
-        if (allocationInfo.get(AllocationType.DATASET_HEADER_CONTINUATION) != null) {
-            buffer = ByteBuffer.allocate(allocationInfo.get(AllocationType.DATASET_HEADER_CONTINUATION).getSize().getInstance(Integer.class)).order(ByteOrder.LITTLE_ENDIAN);
-            dataObjectHeaderPrefix.writeContinuationMessageBlockToBuffer(allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getSize().getInstance(Integer.class), buffer);
-            buffer.flip();
-
-            fileChannel.position(allocationInfo.get(AllocationType.DATASET_HEADER_CONTINUATION).getOffset().getInstance(Long.class));
-            while (buffer.hasRemaining()) {
-                fileChannel.write(buffer);
-            }
-        }
+//        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
+//        Map<AllocationType, AllocationRecord> allocationInfo = fileAllocation.getDatasetAllocationInfo(objectName);
+//        ByteBuffer buffer = ByteBuffer.allocate(allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getSize().getInstance(Integer.class)).order(ByteOrder.LITTLE_ENDIAN);
+//        dataObjectHeaderPrefix.writeInitialMessageBlockToBuffer(buffer);
+//        buffer.rewind();
+//
+//        fileChannel.position(allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getOffset().getInstance(Long.class));
+//        while (buffer.hasRemaining()) {
+//            fileChannel.write(buffer);
+//        }
+//
+//        if (allocationInfo.get(AllocationType.DATASET_HEADER_CONTINUATION) != null) {
+//            buffer = ByteBuffer.allocate(allocationInfo.get(AllocationType.DATASET_HEADER_CONTINUATION).getSize().getInstance(Integer.class)).order(ByteOrder.LITTLE_ENDIAN);
+//            dataObjectHeaderPrefix.writeContinuationMessageBlockToBuffer(allocationInfo.get(AllocationType.DATASET_OBJECT_HEADER).getSize().getInstance(Integer.class), buffer);
+//            buffer.flip();
+//
+//            fileChannel.position(allocationInfo.get(AllocationType.DATASET_HEADER_CONTINUATION).getOffset().getInstance(Long.class));
+//            while (buffer.hasRemaining()) {
+//                fileChannel.write(buffer);
+//            }
+//        }
     }
 
     public Datatype getDatatype() {
         return datatype;
-    }
-
-    public String getobjectName() {
-        return objectName;
-    }
-
-    public HdfObjectHeaderPrefix getDataObjectHeaderPrefix() {
-        return dataObjectHeaderPrefix;
     }
 
     @Override
@@ -570,11 +557,11 @@ public class HdfDataset extends HdfDataObject implements Closeable {
     }
 
     public int getDimensionality() {
-        return dataObjectHeaderPrefix.findMessageByType(DataspaceMessage.class).orElseThrow().getDimensionality();
+        return getObjectHeader().findMessageByType(DataspaceMessage.class).orElseThrow().getDimensionality();
     }
 
     public boolean hasDataspaceMessage() {
-        return dataObjectHeaderPrefix.findMessageByType(DataspaceMessage.class).isPresent();
+        return getObjectHeader().findMessageByType(DataspaceMessage.class).isPresent();
     }
 
     public List<AttributeMessage> getAttributeMessages() {
@@ -582,7 +569,7 @@ public class HdfDataset extends HdfDataObject implements Closeable {
     }
 
     public List<ReferenceDatatype> getReferenceInstances() {
-        DatatypeMessage dt = dataObjectHeaderPrefix.findMessageByType(DatatypeMessage.class).orElseThrow();
+        DatatypeMessage dt = getObjectHeader().findMessageByType(DatatypeMessage.class).orElseThrow();
         return dt.getHdfDatatype().getReferenceInstances();
     }
 }
