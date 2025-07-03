@@ -1,18 +1,14 @@
 package org.hdf5javalib.maydo.hdffile.dataobjects;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.hdfjava.AllocationType;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdfjava.HdfFileAllocation;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.HdfMessage;
-import org.hdf5javalib.maydo.hdffile.dataobjects.messages.ObjectHeaderContinuationMessage;
-import org.hdf5javalib.maydo.utils.HdfWriteUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.hdf5javalib.maydo.hdffile.dataobjects.messages.HdfMessage.HDF_MESSAGE_PREAMBLE_SIZE;
@@ -50,9 +46,9 @@ public class HdfObjectHeaderPrefixV1 extends HdfObjectHeaderPrefix {
      * @param headerMessages       the list of header messages
      */
     public HdfObjectHeaderPrefixV1(int version, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> headerMessages,
-                                   HdfDataFile hdfDataFile, AllocationType allocationType, String name, HdfFixedPoint offset
+                                   HdfDataFile hdfDataFile, HdfFixedPoint offset
     ) {
-        super(headerMessages, allocationType, name, offset, objectHeaderSize, hdfDataFile, OBJECT_HEADER_PREFIX_HEADER_SIZE);
+        super(headerMessages, offset, objectHeaderSize, hdfDataFile, OBJECT_HEADER_PREFIX_HEADER_SIZE);
         this.version = version;
         this.objectReferenceCount = objectReferenceCount;
     }

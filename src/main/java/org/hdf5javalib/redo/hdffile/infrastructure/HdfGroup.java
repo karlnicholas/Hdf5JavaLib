@@ -211,8 +211,8 @@ public class HdfGroup implements HdfDataObject, Closeable {
 //        return bTree.getEntries().stream()
 //                .filter(bte -> bte instanceof HdfBTreeSnodEntry)
 //                .flatMap(bte -> ((HdfBTreeSnodEntry) bte).getSymbolTableNode().getSymbolTableEntries().stream())
-//                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)
-//                .map(ste -> ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet())
+//                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNoScratch)
+//                .map(ste -> ((HdfSymbolTableEntryCacheNoScratch) ste.getCache()).getDataSet())
 //                .filter(dataSet -> dataSet.getDatasetName().equalsIgnoreCase(datasetName))
 //                .findFirst()
 //                .orElse(null);

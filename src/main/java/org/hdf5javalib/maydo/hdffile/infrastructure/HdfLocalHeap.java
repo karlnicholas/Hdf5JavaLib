@@ -63,7 +63,7 @@ public class HdfLocalHeap {
      * @param heapOffset
      */
     public HdfLocalHeap(int version, HdfDataFile hdfDataFile, HdfLocalHeapData heapData,
-                        String name, long heapOffset) {
+                        long heapOffset) {
         this.version = version;
         this.hdfDataFile = hdfDataFile;
         this.heapData = heapData;

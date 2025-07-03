@@ -43,7 +43,7 @@ public class HdfObjectHeaderPrefixV2 extends HdfObjectHeaderPrefix {
             long offset,
             long prefixSize
     ) {
-        super(headerMessages, allocationType, name,
+        super(headerMessages,
                 HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()),
             objectHeaderSize, hdfDataFile, (int) prefixSize);
         this.flags = flags;

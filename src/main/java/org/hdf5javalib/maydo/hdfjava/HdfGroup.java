@@ -128,8 +128,6 @@ public class HdfGroup extends HdfDataObject implements Closeable {
         objectHeader = new HdfObjectHeaderPrefixV1(1, 1, 24,
                 Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte) 0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))),
                 hdfDataFile,
-                AllocationType.GROUP_OBJECT_HEADER,
-                groupName,
                 HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
         );
     }
@@ -193,8 +191,8 @@ public class HdfGroup extends HdfDataObject implements Closeable {
 //        return bTree.getEntries().stream()
 //                .filter(bte -> bte.getGroupSymbolTableNode().isPresent())
 //                .flatMap(bte -> bte.getGroupSymbolTableNode().get().getSymbolTableEntries().stream())
-//                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)
-//                .map(ste -> ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet())
+//                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNoScratch)
+//                .map(ste -> ((HdfSymbolTableEntryCacheNoScratch) ste.getCache()).getDataSet())
 //                .toList();
         return Collections.emptyList();
 
@@ -204,8 +202,8 @@ public class HdfGroup extends HdfDataObject implements Closeable {
 //        return bTree.getEntries().stream()
 //                .filter(bte -> bte instanceof HdfBTreeSnodEntry)
 //                .flatMap(bte -> ((HdfBTreeSnodEntry) bte).getSymbolTableNode().getSymbolTableEntries().stream())
-//                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)
-//                .map(ste -> ((HdfSymbolTableEntryCacheNotUsed) ste.getCache()).getDataSet())
+//                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNoScratch)
+//                .map(ste -> ((HdfSymbolTableEntryCacheNoScratch) ste.getCache()).getDataSet())
 //                .filter(dataSet -> dataSet.getDatasetName().equalsIgnoreCase(datasetName))
 //                .findFirst()
 //                .orElse(null);

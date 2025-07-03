@@ -375,12 +375,12 @@ public class HdfBTreeV1 {
             HdfSymbolTableEntry entry = ste.get();
             if (entry.getCache().getCacheType() == 0) {
                 if (!(entry.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)) {
-                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheNotUsed for cacheType 0, found: " + entry.getCache().getClass().getName());
+                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheNoScratch for cacheType 0, found: " + entry.getCache().getClass().getName());
                 }
                 return Optional.of(((HdfSymbolTableEntryCacheNotUsed) entry.getCache()).getDataSet());
             } else if (entry.getCache().getCacheType() == 1) {
                 if (!(entry.getCache() instanceof HdfSymbolTableEntryCacheGroupMetadata)) {
-                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheGroupMetadata for cacheType 1, found: " + entry.getCache().getClass().getName());
+                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheWithScratch for cacheType 1, found: " + entry.getCache().getClass().getName());
                 }
                 return Optional.of(((HdfSymbolTableEntryCacheGroupMetadata) entry.getCache()).getGroup());
             } else {
@@ -674,13 +674,13 @@ public class HdfBTreeV1 {
             HdfSymbolTableEntry entry = steWithPath.get().entry;
             if (entry.getCache().getCacheType() == 0) {
                 if (!(entry.getCache() instanceof HdfSymbolTableEntryCacheNotUsed)) {
-                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheNotUsed for cacheType 0, found: " + entry.getCache().getClass().getName());
+                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheNoScratch for cacheType 0, found: " + entry.getCache().getClass().getName());
                 }
                 path.push(((HdfSymbolTableEntryCacheNotUsed) entry.getCache()).getDataSet());
                 return Optional.of(path);
             } else if (entry.getCache().getCacheType() == 1) {
                 if (!(entry.getCache() instanceof HdfSymbolTableEntryCacheGroupMetadata)) {
-                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheGroupMetadata for cacheType 1, found: " + entry.getCache().getClass().getName());
+                    throw new IllegalStateException("Expected HdfSymbolTableEntryCacheWithScratch for cacheType 1, found: " + entry.getCache().getClass().getName());
                 }
                 path.push(((HdfSymbolTableEntryCacheGroupMetadata) entry.getCache()).getGroup());
                 return Optional.of(path);

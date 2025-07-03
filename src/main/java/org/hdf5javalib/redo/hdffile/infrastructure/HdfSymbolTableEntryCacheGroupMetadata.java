@@ -63,7 +63,7 @@ public class HdfSymbolTableEntryCacheGroupMetadata implements HdfSymbolTableEntr
 
     @Override
     public String toString() {
-        return "HdfSymbolTableEntryCacheGroupMetadata{" + "cacheType=" + cacheType +
+        return "HdfSymbolTableEntryCacheWithScratch{" + "cacheType=" + cacheType +
                 "group=" + group +
                 "}";
     }

@@ -47,7 +47,7 @@ public class HdfBTreeV1 {
     /**
      * The list of B-Tree entries.
      */
-    private final List<org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeEntry> entries;
+    private final List<HdfBTreeEntry> entries;
     /**
      * The HDF5 file context.
      */
@@ -72,9 +72,9 @@ public class HdfBTreeV1 {
             HdfFixedPoint leftSiblingAddress,
             HdfFixedPoint rightSiblingAddress,
             HdfFixedPoint keyZero,
-            List<org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeEntry> entries,
+            List<HdfBTreeEntry> entries,
             HdfDataFile hdfDataFile,
-            String name, HdfFixedPoint offset
+            HdfFixedPoint offset
     ) {
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;
@@ -101,7 +101,7 @@ public class HdfBTreeV1 {
             HdfFixedPoint leftSiblingAddress,
             HdfFixedPoint rightSiblingAddress,
             HdfDataFile hdfDataFile,
-            String name, HdfFixedPoint offset
+            HdfFixedPoint offset
     ) {
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;
@@ -132,7 +132,7 @@ public class HdfBTreeV1 {
         sb.append(", entries=[");
         if (entries != null && !entries.isEmpty()) {
             boolean first = true;
-            for (org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeEntry entry : entries) {
+            for (HdfBTreeEntry entry : entries) {
                 if (!first) {
                     sb.append(", ");
                 }
@@ -149,7 +149,7 @@ public class HdfBTreeV1 {
         return sb.toString();
     }
 
-    public List<org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeEntry> getEntries() {
+    public List<HdfBTreeEntry> getEntries() {
         return entries;
     }
 

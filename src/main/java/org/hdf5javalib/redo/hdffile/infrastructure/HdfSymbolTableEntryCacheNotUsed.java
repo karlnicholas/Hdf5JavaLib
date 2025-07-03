@@ -44,7 +44,7 @@ public class HdfSymbolTableEntryCacheNotUsed implements HdfSymbolTableEntryCache
 
     @Override
     public String toString() {
-        return "HdfSymbolTableEntryCacheNotUsed{" + "cacheType=" + cacheType +
+        return "HdfSymbolTableEntryCacheNoScratch{" + "cacheType=" + cacheType +
                 ", dataSet=" + dataSet +
                 "}";
     }

@@ -25,7 +25,7 @@ import static org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefixV1.
 import static org.hdf5javalib.maydo.hdffile.infrastructure.HdfGroupSymbolTableNode.GROUP_SYMBOL_TABLE_NODE_SIGNATURE;
 import static org.hdf5javalib.maydo.hdffile.infrastructure.HdfLocalHeap.*;
 import static org.hdf5javalib.maydo.hdffile.infrastructure.HdfSymbolTableEntry.RESERVED_FIELD_1_SIZE;
-import static org.hdf5javalib.maydo.hdffile.infrastructure.HdfSymbolTableEntryCacheNotUsed.SYMBOL_TABLE_ENTRY_SCRATCH_SIZE;
+import static org.hdf5javalib.maydo.hdffile.infrastructure.HdfSymbolTableEntryCacheNoScratch.SYMBOL_TABLE_ENTRY_SCRATCH_SIZE;
 import static org.hdf5javalib.maydo.hdffile.metadata.HdfSuperblock.*;
 
 /**
@@ -58,6 +58,7 @@ public class HdfFileReader implements HdfDataFile {
      * The file allocation manager for tracking storage blocks.
      */
     private HdfFileAllocation fileAllocation;
+    private HdfSuperblock superblock;
 
     /**
      * Constructs an HdfFileReader for reading an HDF5 file.
@@ -69,6 +70,37 @@ public class HdfFileReader implements HdfDataFile {
 //        this.fileAllocation = null;
         this.globalHeap = new HdfGlobalHeap(this::initializeGlobalHeap, this);
     }
+
+    /**
+     * Reads and parses the HDF5 file structure.
+     * <p>
+     * Initializes the superblock, root group, B-tree, local heap, and datasets by
+     * reading from the file channel. Constructs the group and dataset hierarchy and
+     * returns this reader instance for further operations.
+     * </p>
+     *
+     * @return this HdfFileReader instance
+     * @throws IOException if an I/O error occurs during reading
+     */
+    public HdfFileReader readFile() throws Exception {
+        superblock = readSuperblockFromSeekableByteChannel(fileChannel, this);
+        HdfSymbolTableEntry rootGroupSymbolTableEntry = readSteFromSeekableByteChannel(fileChannel, this);
+//        superblock.setRootGroupSymbolTableEntry(rootGroupSymbolTableEntry);
+        return readInfrastructure(rootGroupSymbolTableEntry);
+//        return ((HdfSymbolTableEntryCacheWithScratch)superblock.getRootGroupSymbolTableEntry().getCache()).getGroup();
+    }
+
+    private HdfFileReader readInfrastructure(HdfSymbolTableEntry ste) throws Exception {
+        long heapOffset = ((HdfSymbolTableEntryCacheWithScratch)ste.getCache()).getLocalHeapAddress().getInstance(Long.class);
+        long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch)ste.getCache()).getbTreeAddress().getInstance(Long.class);
+        HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, heapOffset, this);
+        String groupName = localHeap.stringAtOffset(ste.getLinkNameOffset());
+        HdfBTreeV1 bTree = readBTreeFromSeekableByteChannel(fileChannel, bTreeAddress, this);
+//        HdfObjectHeaderPrefixV1 objectHeader = readObjectHeader(fileChannel, this);
+
+        return this;
+    }
+
     /**
      * Reads a Superblock from a file channel.
      * <p>
@@ -172,8 +204,6 @@ public class HdfFileReader implements HdfDataFile {
                 fixedPointDatatypeForOffset,
                 fixedPointDatatypeForLength
         );
-        HdfSymbolTableEntry rootGroupSymbolTableEntry = readSnodFromSeekableByteChannel(fileChannel, hdfDataFile, null);
-//        superblock.setRootGroupSymbolTableEntry(rootGroupSymbolTableEntry);
         return superblock;
     }
 
@@ -185,14 +215,12 @@ public class HdfFileReader implements HdfDataFile {
      * @return the constructed HdfBTree instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
-    public static HdfBTree readBTreeFromSeekableByteChannel(
+    public static HdfBTreeV1 readBTreeFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile,
-            HdfLocalHeap localHeap,
-            String objectName
+            long btreeAddress,
+            HdfDataFile hdfDataFile
     ) throws Exception {
-        long initialAddress = fileChannel.position();
-        return readFromSeekableByteChannelRecursive(fileChannel, initialAddress, hdfDataFile, localHeap, objectName, new LinkedHashMap<>());
+        return readFromSeekableByteChannelRecursive(fileChannel, btreeAddress, hdfDataFile, new LinkedHashMap<>());
     }
 
     /**
@@ -205,12 +233,10 @@ public class HdfFileReader implements HdfDataFile {
      * @return the constructed HdfBTree instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
-    private static HdfBTree readFromSeekableByteChannelRecursive(SeekableByteChannel fileChannel,
+    private static HdfBTreeV1 readFromSeekableByteChannelRecursive(SeekableByteChannel fileChannel,
                                                                  long nodeAddress,
                                                                  HdfDataFile hdfDataFile,
-                                                                 HdfLocalHeap localHeap,
-                                                                 String objectName,
-                                                                 Map<Long, HdfBTree> visitedNodes
+                                                                 Map<Long, HdfBTreeV1> visitedNodes
     ) throws Exception {
         if (visitedNodes.containsKey(nodeAddress)) {
             throw new IllegalStateException("Cycle detected or node re-visited: BTree node address "
@@ -250,9 +276,8 @@ public class HdfFileReader implements HdfDataFile {
 
         List<HdfBTreeEntry> entries = new ArrayList<>(entriesUsed);
 
-//        HdfBTree currentNode = new HdfBTree(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries, hdfDataFile,
-//                objectName + ":Btree", HdfWriteUtils.hdfFixedPointFromValue(nodeAddress, hdfOffset));
-        HdfBTree currentNode = new HdfBTree(16);
+        HdfBTreeV1 currentNode = new HdfBTreeV1(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries, hdfDataFile,
+                HdfWriteUtils.hdfFixedPointFromValue(nodeAddress, hdfOffset));
         visitedNodes.put(nodeAddress, currentNode);
 
         for (int i = 0; i < entriesUsed; i++) {
@@ -261,7 +286,7 @@ public class HdfFileReader implements HdfDataFile {
             long filePosAfterEntriesBlock = fileChannel.position();
             long childAddress = childPointer.getInstance(Long.class);
             fileChannel.position(childAddress);
-            HdfGroupSymbolTableNode snod = readGroupFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap, objectName);
+            HdfGroupSymbolTableNode snod = readSnodFromSeekableByteChannel(fileChannel, hdfDataFile);
             HdfBTreeEntry entry = new HdfBTreeEntry(key, childPointer, null, snod);
 
             fileChannel.position(filePosAfterEntriesBlock);
@@ -281,10 +306,11 @@ public class HdfFileReader implements HdfDataFile {
      */
     public static HdfLocalHeap readLocalHeapFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile,
-            String objectName
+            long localHeapOffset,
+            HdfDataFile hdfDataFile
     ) throws IOException {
-        long heapOffset = fileChannel.position();
+
+        fileChannel.position(localHeapOffset);
         ByteBuffer buffer = ByteBuffer.allocate(LOCAL_HEAP_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
 
         fileChannel.read(buffer);
@@ -306,11 +332,9 @@ public class HdfFileReader implements HdfDataFile {
         HdfFixedPoint dataSegmentAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
 
         HdfLocalHeapData hdfLocalHeapData = readLocalHeapDataFromSeekableByteChannel(
-                fileChannel, dataSegmentSize, freeListOffset, dataSegmentAddress, hdfDataFile, objectName);
+                fileChannel, dataSegmentSize, freeListOffset, dataSegmentAddress, hdfDataFile);
 
-        return new HdfLocalHeap(version,
-                hdfDataFile, hdfLocalHeapData,
-                objectName + ":Local Heap Header", heapOffset);
+        return new HdfLocalHeap(version,hdfDataFile, hdfLocalHeapData, localHeapOffset);
     }
     /**
      * Reads an HdfGroupSymbolTableNode from a file channel.
@@ -321,11 +345,9 @@ public class HdfFileReader implements HdfDataFile {
      * @throws IOException              if an I/O error occurs or the SNOD signature is invalid
      * @throws IllegalArgumentException if the SNOD signature is invalid
      */
-    public static HdfGroupSymbolTableNode readGroupFromSeekableByteChannel(
+    public static HdfGroupSymbolTableNode readSnodFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile,
-            HdfLocalHeap localHeap,
-            String objectName
+            HdfDataFile hdfDataFile
     ) throws Exception {
         long offset = fileChannel.position();
         ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
@@ -353,7 +375,7 @@ public class HdfFileReader implements HdfDataFile {
         // Read Symbol Table Entries
         List<HdfSymbolTableEntry> symbolTableEntries = new ArrayList<>(numberOfSymbols);
         for (int i = 0; i < numberOfSymbols; i++) {
-            HdfSymbolTableEntry entry = readSnodFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap);
+            HdfSymbolTableEntry entry = readSteFromSeekableByteChannel(fileChannel, hdfDataFile);
             symbolTableEntries.add(entry);
         }
 
@@ -361,7 +383,6 @@ public class HdfFileReader implements HdfDataFile {
                 version,
                 symbolTableEntries,
                 hdfDataFile,
-                objectName + ":Snod",
                 HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()));
     }
 
@@ -370,8 +391,7 @@ public class HdfFileReader implements HdfDataFile {
             HdfFixedPoint dataSegmentSize,
             HdfFixedPoint freeListOffset,
             HdfFixedPoint dataSegmentAddress,
-            HdfDataFile hdfDataFile,
-            String objectName
+            HdfDataFile hdfDataFile
     ) throws IOException {
 
         Map<HdfFixedPoint, HdfLocalHeapDataValue> data = new LinkedHashMap<>();
@@ -401,28 +421,26 @@ public class HdfFileReader implements HdfDataFile {
             buffer.position((int) iOffset);
         }
 
-        return new HdfLocalHeapData(dataSegmentAddress, dataSegmentSize, freeListOffset, data, hdfDataFile, objectName);
+        return new HdfLocalHeapData(dataSegmentAddress, dataSegmentSize, freeListOffset, data);
     }
 
-    public static HdfSymbolTableEntryCache readGroupFromSeekableByteChannel(
+    public static HdfSymbolTableEntryCache readCacheWithScratchFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile,
-            HdfObjectHeaderPrefix objectHeader,
-            String objectName
+            HdfDataFile hdfDataFile
     ) throws Exception {
         // reading for group.
         HdfFixedPoint bTreeAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
         HdfFixedPoint localHeapAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
-        long savedPosition = fileChannel.position();
-
-        fileChannel.position(localHeapAddress.getInstance(Long.class));
-        HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, hdfDataFile, objectName);
-
-        fileChannel.position(bTreeAddress.getInstance(Long.class));
-        HdfBTree bTreeV1 = readBTreeFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap, objectName);
-        fileChannel.position(savedPosition);
-//        return new HdfSymbolTableEntryCacheGroupMetadata(objectName, objectHeader, bTreeV1, localHeap, hdfDataFile);
-        return new HdfSymbolTableEntryCacheGroupMetadata(objectHeader);
+//        long savedPosition = fileChannel.position();
+//
+//        fileChannel.position(localHeapAddress.getInstance(Long.class));
+//        HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, hdfDataFile, objectName);
+//
+//        fileChannel.position(bTreeAddress.getInstance(Long.class));
+//        HdfBTree bTreeV1 = readBTreeFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap, objectName);
+//        fileChannel.position(savedPosition);
+//        return new HdfSymbolTableEntryCacheWithScratch(objectName, objectHeader, bTreeV1, localHeap, hdfDataFile);
+        return new HdfSymbolTableEntryCacheWithScratch(bTreeAddress, localHeapAddress);
     }
 
     /**
@@ -433,10 +451,9 @@ public class HdfFileReader implements HdfDataFile {
      * @return the constructed HdfSymbolTableEntry
      * @throws IOException if an I/O error occurs
      */
-    public static HdfSymbolTableEntry readSnodFromSeekableByteChannel(
+    public static HdfSymbolTableEntry readSteFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile,
-            HdfLocalHeap localHeap
+            HdfDataFile hdfDataFile
     ) throws Exception {
         // Read the fixed-point values for linkNameOffset and objectHeaderAddress
         HdfFixedPoint linkNameOffset = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
@@ -446,36 +463,34 @@ public class HdfFileReader implements HdfDataFile {
         int cacheType = HdfReadUtils.readIntFromFileChannel(fileChannel);
         HdfReadUtils.skipBytes(fileChannel, RESERVED_FIELD_1_SIZE); // Skip reserved field
 
-        long savedPosition = fileChannel.position();
-        fileChannel.position(objectHeaderAddress.getInstance(Long.class));
-        String objectName = localHeap == null ? "" : localHeap.stringAtOffset(linkNameOffset);
-        HdfObjectHeaderPrefix objectHeader = readObjectHeaderPrefixFromSeekableByteChannel(
-                fileChannel,
-                hdfDataFile,
-                objectName,
-                cacheType == 0 ? AllocationType.DATASET_OBJECT_HEADER : AllocationType.GROUP_OBJECT_HEADER
-        );
-        fileChannel.position(savedPosition);
+//        long savedPosition = fileChannel.position();
+//        fileChannel.position(objectHeaderAddress.getInstance(Long.class));
+//        String objectName = localHeap == null ? "" : localHeap.stringAtOffset(linkNameOffset);
+//        HdfObjectHeaderPrefix objectHeader = readObjectHeaderPrefixFromSeekableByteChannel(
+//                fileChannel,
+//                hdfDataFile,
+//                objectName
+//        );
+//        fileChannel.position(savedPosition);
         HdfSymbolTableEntryCache cache;
         if (cacheType == 0) {
-            cache = readDatasetFromSeekableByteChannel(fileChannel, hdfDataFile, objectHeader, objectName);
+            cache = readCacheNoScratchFromSeekableByteChannel(fileChannel, hdfDataFile);
         } else if (cacheType == 1) {
-            cache = readGroupFromSeekableByteChannel(fileChannel, hdfDataFile, objectHeader, objectName);
+            cache = readCacheWithScratchFromSeekableByteChannel(fileChannel, hdfDataFile);
         } else {
             throw new IllegalStateException("Unsupported cache type: " + cacheType);
         }
-        return new HdfSymbolTableEntry(linkNameOffset, cache);
+
+        return new HdfSymbolTableEntry(linkNameOffset, objectHeaderAddress, cache);
     }
 
-    public static HdfSymbolTableEntryCacheNotUsed readDatasetFromSeekableByteChannel(
+    public static HdfSymbolTableEntryCacheNoScratch readCacheNoScratchFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
-            HdfDataFile hdfDataFile,
-            HdfObjectHeaderPrefix objectHeader,
-            String objectName
+            HdfDataFile hdfDataFile
     ) throws IOException {
         HdfReadUtils.skipBytes(fileChannel, SYMBOL_TABLE_ENTRY_SCRATCH_SIZE); // Skip 16 bytes for scratch-pad
-//        return new HdfSymbolTableEntryCacheNotUsed(hdfDataFile, objectHeader, objectName);
-        return new HdfSymbolTableEntryCacheNotUsed(objectHeader);
+//        return new HdfSymbolTableEntryCacheNoScratch(hdfDataFile, objectHeader, objectName);
+        return new HdfSymbolTableEntryCacheNoScratch();
     }
     /**
      * Reads an HdfObjectHeaderPrefixV1 from a file channel.
@@ -494,8 +509,7 @@ public class HdfFileReader implements HdfDataFile {
     public static HdfObjectHeaderPrefix readObjectHeaderPrefixFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
             HdfDataFile hdfDataFile,
-            String objectName,
-            AllocationType allocationType
+            String objectName
     ) throws IOException {
         long offset = fileChannel.position();
         ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
@@ -506,7 +520,7 @@ public class HdfFileReader implements HdfDataFile {
         int version = Byte.toUnsignedInt(buffer.get());
         if ( version == 1 ) {
             fileChannel.position(offset);
-            return readObjectHeader(fileChannel, hdfDataFile, objectName, allocationType);
+            return readObjectHeader(fileChannel, hdfDataFile);
         } else {
             buffer.rewind();
             byte[] signature = new byte[HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE.length];
@@ -515,11 +529,11 @@ public class HdfFileReader implements HdfDataFile {
                 throw new IllegalStateException("Object header signature mismatch");
             }
             fileChannel.position(offset);
-            return readObjectHeader(fileChannel, hdfDataFile, objectName, allocationType);
+            return readObjectHeader(fileChannel, hdfDataFile);
         }
     }
 
-    protected static HdfObjectHeaderPrefixV1 readObjectHeader(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, String objectName, AllocationType allocationType) throws IOException {
+    protected static HdfObjectHeaderPrefixV1 readObjectHeader(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
         long offset = fileChannel.position();
         ByteBuffer buffer = ByteBuffer.allocate(OBJECT_HEADER_PREFIX_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
         fileChannel.read(buffer);
@@ -557,7 +571,7 @@ public class HdfFileReader implements HdfDataFile {
 
         // Create the instance
         return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages,
-                hdfDataFile, allocationType, objectName,
+                hdfDataFile,
                 HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()));
     }
 
@@ -579,23 +593,6 @@ public class HdfFileReader implements HdfDataFile {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Reads and parses the HDF5 file structure.
-     * <p>
-     * Initializes the superblock, root group, B-tree, local heap, and datasets by
-     * reading from the file channel. Constructs the group and dataset hierarchy and
-     * returns this reader instance for further operations.
-     * </p>
-     *
-     * @return this HdfFileReader instance
-     * @throws IOException if an I/O error occurs during reading
-     */
-    public HdfFileReader readFile() throws Exception {
-        HdfSuperblock superblock = readSuperblockFromSeekableByteChannel(fileChannel, this);
-        return this;
-//        return ((HdfSymbolTableEntryCacheGroupMetadata)superblock.getRootGroupSymbolTableEntry().getCache()).getGroup();
     }
 
 //    /**
@@ -687,7 +684,7 @@ public class HdfFileReader implements HdfDataFile {
 
     @Override
     public HdfSuperblock getSuperblock() {
-        return null;
+        return superblock;
     }
 
 //    @Override
@@ -701,7 +698,7 @@ public class HdfFileReader implements HdfDataFile {
     }
 
     public HdfGroup getRootGroup() {
-//        return ((HdfSymbolTableEntryCacheGroupMetadata) getSuperblock().getRootGroupSymbolTableEntry().getCache())
+//        return ((HdfSymbolTableEntryCacheWithScratch) getSuperblock().getRootGroupSymbolTableEntry().getCache())
 //                .getGroup();
         return null;
     }

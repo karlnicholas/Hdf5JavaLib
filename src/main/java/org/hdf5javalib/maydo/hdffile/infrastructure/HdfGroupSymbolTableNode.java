@@ -47,7 +47,6 @@ public class HdfGroupSymbolTableNode {
             int version,
             List<HdfSymbolTableEntry> symbolTableEntries,
             HdfDataFile hdfDataFile,
-            String name,
             HdfFixedPoint offset
     ) {
         this.version = version;

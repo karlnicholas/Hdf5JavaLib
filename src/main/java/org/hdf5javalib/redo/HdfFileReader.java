@@ -82,7 +82,7 @@ public class HdfFileReader implements HdfDataFile {
     public HdfFileReader readFile() throws Exception {
         HdfSuperblock superblock = HdfSuperblock.readFromSeekableByteChannel(fileChannel, this);
         return this;
-//        return ((HdfSymbolTableEntryCacheGroupMetadata)superblock.getRootGroupSymbolTableEntry().getCache()).getGroup();
+//        return ((HdfSymbolTableEntryCacheWithScratch)superblock.getRootGroupSymbolTableEntry().getCache()).getGroup();
     }
 
 //    /**

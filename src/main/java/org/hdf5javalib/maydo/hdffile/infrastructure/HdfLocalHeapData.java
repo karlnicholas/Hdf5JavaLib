@@ -43,9 +43,7 @@ public class HdfLocalHeapData {
             HdfFixedPoint heapContentsOffset,
             HdfFixedPoint heapContentsSize,
             HdfFixedPoint freeListOffset,
-            Map<HdfFixedPoint, HdfLocalHeapDataValue> data,
-            HdfDataFile hdfDataFile,
-            String objectName
+            Map<HdfFixedPoint, HdfLocalHeapDataValue> data
     ) {
         this.heapContentsSize = heapContentsSize;
         this.freeListOffset = freeListOffset;

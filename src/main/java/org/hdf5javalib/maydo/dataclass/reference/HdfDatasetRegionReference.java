@@ -50,7 +50,7 @@ public class HdfDatasetRegionReference implements HdfReferenceInstance {
 //        if (localHdfFixedPoint != null) {
 //            // TODO: btree search logic
 //            HdfSymbolTableEntry rootSte = dt.getDataFile().getSuperblock().getRootGroupSymbolTableEntry();
-//            HdfBTreeV1 btree = ((HdfSymbolTableEntryCacheGroupMetadata) rootSte.getCache()).getBtree();
+//            HdfBTreeV1 btree = ((HdfSymbolTableEntryCacheWithScratch) rootSte.getCache()).getBtree();
 //            btree.mapOffsetToSnod().values().forEach(snod -> {
 //                snod.getSymbolTableEntries().forEach(ste -> {
 ////                    HdfFixedPoint objectOffset = ste.getObjectHeader().getDataObjectAllocationRecord().getOffset();
@@ -58,9 +58,9 @@ public class HdfDatasetRegionReference implements HdfReferenceInstance {
 //                    if (objectOffset.compareTo(localHdfFixedPoint) == 0) {
 //                        HdfSymbolTableEntryCache cache = ste.getCache();
 //                        if (cache.getCacheType() == 0) {
-//                            localHdfDataObject.set(((HdfSymbolTableEntryCacheNotUsed) cache).getDataSet());
+//                            localHdfDataObject.set(((HdfSymbolTableEntryCacheNoScratch) cache).getDataSet());
 //                        } else if (cache.getCacheType() == 1) {
-//                            localHdfDataObject.set(((HdfSymbolTableEntryCacheGroupMetadata) cache).getGroup());
+//                            localHdfDataObject.set(((HdfSymbolTableEntryCacheWithScratch) cache).getGroup());
 //                        } else {
 //                            throw new IllegalStateException("reference type not a good type: " + cache.getCacheType());
 //                        }
