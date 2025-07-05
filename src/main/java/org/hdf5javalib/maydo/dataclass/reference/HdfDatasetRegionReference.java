@@ -1,16 +1,9 @@
 package org.hdf5javalib.maydo.dataclass.reference;
 
-import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.datatype.FixedPointDatatype;
 import org.hdf5javalib.maydo.datatype.ReferenceDatatype;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdfjava.HdfDataObject;
 import org.hdf5javalib.maydo.utils.HdfDataHolder;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class HdfDatasetRegionReference implements HdfReferenceInstance {
     private final boolean external;

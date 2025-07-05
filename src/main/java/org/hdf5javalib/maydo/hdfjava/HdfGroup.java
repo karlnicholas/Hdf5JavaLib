@@ -1,281 +1,89 @@
 package org.hdf5javalib.maydo.hdfjava;
 
-import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.dataclass.HdfString;
-import org.hdf5javalib.maydo.datatype.Datatype;
-import org.hdf5javalib.maydo.datatype.StringDatatype;
 import org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefix;
-import org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
-import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DataspaceMessage;
-import org.hdf5javalib.maydo.hdffile.dataobjects.messages.SymbolTableMessage;
-import org.hdf5javalib.maydo.utils.HdfWriteUtils;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.nio.channels.SeekableByteChannel;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hdf5javalib.maydo.hdfjava.HdfFileAllocation.*;
+public class HdfGroup extends HdfDataObject {
 
-/**
- * Represents an HDF5 group within an HDF5 file.
- * <p>
- * The {@code HdfGroup} class manages a group, which is a container for datasets and
- * other groups in an HDF5 file. It handles the group's metadata, including its B-tree
- * for symbol table entries, local heap for link names, and object header. This class
- * supports creating datasets, writing group data to a file channel, and closing
- * associated resources. It implements {@link Closeable} to ensure proper resource
- * management.
- * </p>
- */
-public class HdfGroup extends HdfDataObject implements Closeable {
-    private final HdfDataFile hdfDataFile;
-    /**
-     * The B-tree managing symbol table entries.
-     */
-    private final HdfBTree bTree;
-    /**
-     * The local heap storing link names.
-     */
-//    private final HdfLocalHeap localHeap;
+    private final List<HdfBTreeNode> children;
 
-    public HdfBTree getBTree() {
-        return bTree;
+    public HdfGroup(String name, HdfObjectHeaderPrefix objectHeader) {
+        super(name, objectHeader);
+        this.children = new ArrayList<>();
     }
 
-    public Optional<HdfBTree> getBTreeOptionally() {
-        return Optional.of(bTree);
-    }
-
-//    public HdfLocalHeap getLocalHeap() {
-//        return localHeap;
-//    }
-
     /**
-     * Constructs an HdfGroup for reading an existing HDF5 file.
-     * <p>
-     * Initializes the group with metadata and datasets parsed from the file, including
-     * the object header, B-tree, local heap, and dataset map.
-     * </p>
+     * Adds a child node, maintaining the sorted order of the children list.
+     * Prevents adding children with duplicate names.
      *
-     * @param groupName    the name of the group
-     * @param objectHeader the object header prefix containing group metadata
-     * @param bTree        the B-tree managing symbol table entries
-//     * @param localHeap    the local heap storing link names
+     * @param child The HdfBTreeNode to add as a child.
+     * @throws IllegalArgumentException if a child with the same name already exists.
      */
-    public HdfGroup(
-            String groupName,
-            HdfObjectHeaderPrefix objectHeader,
-            HdfBTree bTree,
-//            HdfLocalHeap localHeap,
-            HdfDataFile hdfDataFile
-    ) {
-        super(groupName, objectHeader);
-        this.bTree = bTree;
-//        this.localHeap = localHeap;
-        this.hdfDataFile = hdfDataFile;
-    }
+    public void addChild(HdfBTreeNode child) {
+        if (child == null) {
+            return;
+        }
 
-//    /**
-//     * Constructs an HdfGroup for creating a new HDF5 file.
-//     * <p>
-//     * Initializes the group with a new B-tree, local heap, and empty dataset map,
-//     * setting up the necessary metadata for writing to the file.
-//     * </p>
-//     *
-//     * @param groupName        the name of the group
-//     * @param btreeAddress     the file address for the B-tree
-//     * @param localHeapAddress the file address for the local heap
-//     */
-//    public HdfGroup(String groupName, long btreeAddress, long localHeapAddress, HdfDataFile hdfDataFile) {
-//        super(groupName, new HdfObjectHeaderPrefixV1(1, 1, 24,
-//                Collections.singletonList(new SymbolTableMessage(btree, localHeap, (byte) 0, (short) (btree.getDatatype().getSize() + localHeap.getDatatype().getSize()))),
-//                hdfDataFile,
-//                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
-//        ));
-//        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-//        this.hdfDataFile = hdfDataFile;
-//        HdfFixedPoint localHeapContentsSize = fileAllocation.getCurrentLocalHeapContentsSize();
-//
-////        localHeap = new HdfLocalHeap(
-////                localHeapContentsSize,
-////                fileAllocation.getCurrentLocalHeapContentsOffset(),
-////                hdfDataFile, groupName + "heap",
-////                HdfFileAllocation.SUPERBLOCK_SIZE + HdfFileAllocation.OBJECT_HEADER_PREFIX_SIZE + BTREE_NODE_SIZE + BTREE_STORAGE_SIZE
-////        );
-////
-////        localHeap.addToHeap("");
-//
-////        bTree = new HdfBTree(0, 0,
-////                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
-////                hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset().undefined(),
-////                hdfDataFile,
-////                groupName + "btree",
-////                HdfWriteUtils.hdfFixedPointFromValue(SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE + OBJECT_HEADER_PREFIX_SIZE, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
-////        );
-//        bTree = new HdfBTree(16);
-//
-//        HdfFixedPoint btree = HdfWriteUtils.hdfFixedPointFromValue(btreeAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
-//        HdfFixedPoint localHeap = HdfWriteUtils.hdfFixedPointFromValue(localHeapAddress, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
-//
-//    }
+        // Use binary search to find the correct insertion point or check for duplicates.
+        int index = Collections.binarySearch(children, child);
 
-    /**
-     * Creates a dataset in the group.
-     * <p>
-     * Allocates storage for the dataset, adds its name to the local heap, and updates
-     * the B-tree with the dataset's metadata. The dataset is added to the group's dataset map.
-     * </p>
-     *
-     * @param hdfDataFile      the HDF5 file context
-     * @param datasetName      the name of the dataset
-     * @param datatype      the datatype of the dataset
-     * @param dataSpaceMessage the dataspace message defining the dataset's dimensions
-     * @return the created {@link HdfDataset}
-     */
-    public HdfDataset createDataSet(HdfDataFile hdfDataFile, String datasetName, Datatype datatype, DataspaceMessage dataSpaceMessage) {
-        HdfString hdfDatasetName = new HdfString(datasetName.getBytes(), new StringDatatype(StringDatatype.createClassAndVersion(), StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII), datasetName.getBytes().length, hdfDataFile));
-        HdfFixedPoint linkNameOffset = null;
-//        linkNameOffset = localHeap.addToHeap(hdfDatasetName.toString());
+        if (index >= 0) {
+            // A child with the same name already exists.
+            throw new IllegalArgumentException(
+                    "A child with the name '" + child.getObjectName() + "' already exists in this group."
+            );
+        }
 
-        HdfDataset newDataSet = new HdfDataset(hdfDataFile, datasetName, datatype, dataSpaceMessage);
-
-//        bTree.addDataset(linkNameOffset, newDataSet, this);
-        bTree.insert(newDataSet);
-        return newDataSet;
+        // `binarySearch` returns `(-(insertion point) - 1)` if not found.
+        int insertionPoint = -(index + 1);
+        children.add(insertionPoint, child);
+        child.setParent(this);
     }
 
     /**
-     * Retrieves the dataset name associated with a given link name offset.
+     * Finds a direct child by its name using an efficient binary search.
      *
-     * @param linkNameOffset the link name offset to look up
-     * @return the dataset name associated with the offset
-     * @throws IllegalArgumentException if the offset is not found
+     * @param name The name of the child to find.
+     * @return An Optional containing the found node, or an empty Optional.
      */
-    public String getDatasetNameByLinkNameOffset(HdfFixedPoint linkNameOffset) {
-//        return localHeap.stringAtOffset(linkNameOffset);
-        return "";
+    public Optional<HdfBTreeNode> findChildByName(String name) {
+        // To use binarySearch, we need a "key" object of the same type.
+        // We can create a temporary, lightweight HdfDataset object for this purpose.
+        // The value doesn't matter, as the comparison is only on the name.
+        HdfBTreeNode searchKey = new HdfDataset(name, null);
+
+        int index = Collections.binarySearch(children, searchKey);
+
+        if (index >= 0) {
+            return Optional.of(children.get(index));
+        } else {
+            return Optional.empty(); // Not found
+        }
     }
 
-//    /**
-//     * Writes the group's metadata and associated data to a file channel.
-//     *
-//     * @param seekableByteChannel the file channel to write to
-//     * @throws IOException if an I/O error occurs
-//     */
-//    public void writeToFileChannel(SeekableByteChannel seekableByteChannel) throws IOException {
-//        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-//        objectHeader.writeAsGroupToByteChannel(seekableByteChannel, fileAllocation);
-//        bTree.writeToByteChannel(seekableByteChannel, fileAllocation);
-////        localHeap.writeToByteChannel(seekableByteChannel, fileAllocation);
-//    }
-
-    /**
-     * Retrieves all datasets in the group.
-     *
-     * @return a collection of
-     */
-    public List<HdfDataset> getDataSets() {
-//        return bTree.getEntries().stream()
-//                .filter(bte -> bte.getGroupSymbolTableNode().isPresent())
-//                .flatMap(bte -> bte.getGroupSymbolTableNode().get().getSymbolTableEntries().stream())
-//                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNoScratch)
-//                .map(ste -> ((HdfSymbolTableEntryCacheNoScratch) ste.getCache()).getDataSet())
-//                .toList();
-        return Collections.emptyList();
-
+    public List<HdfBTreeNode> getChildren() {
+        return Collections.unmodifiableList(children);
     }
 
-//    public HdfDataset findDataset(String datasetName) {
-//        return bTree.getEntries().stream()
-//                .filter(bte -> bte instanceof HdfBTreeSnodEntry)
-//                .flatMap(bte -> ((HdfBTreeSnodEntry) bte).getSymbolTableNode().getSymbolTableEntries().stream())
-//                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNoScratch)
-//                .map(ste -> ((HdfSymbolTableEntryCacheNoScratch) ste.getCache()).getDataSet())
-//                .filter(dataSet -> dataSet.getDatasetName().equalsIgnoreCase(datasetName))
-//                .findFirst()
-//                .orElse(null);
-//    }
-
-    /**
-     * Returns a string representation of the HdfGroup.
-     *
-     * @return a string describing the group's name, object header, B-tree, local heap, and datasets
-     */
+    // getLevel() method remains the same
     @Override
-    public String toString() {
-        return "HdfGroup{" +
-                "name='" + objectName + '\'' +
-                "\r\nbTree=" + bTree +
-//                "\r\nlocalHeap=" + localHeap +
-                "}";
-    }
-
-    /**
-     * Closes the group and all its datasets.
-     *
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    public void close() throws IOException {
+    public int getLevel() {
+        if (children.isEmpty()) {
+            return 0;
+        }
+        int maxChildLevel = children.stream()
+                .mapToInt(HdfBTreeNode::getLevel)
+                .max()
+                .orElse(-1);
+        return 1 + maxChildLevel;
     }
 
     @Override
-    public String getObjectName() {
-        return objectName;
-    }
-
-    private Optional<HdfDataObject> findTypeInBTree(HdfBTree bTree, String[] components, int index, String currentComponent) {
-        if (bTree == null || components == null || index >= components.length || currentComponent == null) {
-            return Optional.empty();
-        }
-        Optional<HdfDataObject> result = bTree.findObjectByName(currentComponent, this);
-        if (result.isPresent()) {
-            return findTypeByPath(components, index + 1, result.get());
-        }
-        return Optional.empty();
-    }
-
-    private Optional<HdfDataObject> findTypeByPath(String[] components, int index, HdfDataObject currentInstance) {
-        if (index >= components.length || components[index].isEmpty() || currentInstance == null) {
-            return Optional.empty();
-        }
-        String currentComponent = components[index];
-        if (index == components.length - 1) {
-            if (currentInstance.getObjectName().equals(currentComponent)) {
-                return Optional.of(currentInstance);
-            }
-            return currentInstance.getBTreeOptionally()
-                    .flatMap(bTree -> bTree.findObjectByName(currentComponent, (HdfGroup) currentInstance));
-        }
-        return currentInstance.getBTreeOptionally()
-                .flatMap(bTree -> findTypeInBTree(bTree, components, index, currentComponent));
-    }
-
-    public Optional<HdfDataset> getDataset(String path) {
-        return getObjectByPath(path, HdfDataset.class);
-    }
-
-    public Optional<HdfGroup> getGroup(String path) {
-        return getObjectByPath(path, HdfGroup.class);
-    }
-
-    private <T extends HdfDataObject> Optional<T> getObjectByPath(String path, Class<T> type) {
-        if (path == null || path.isEmpty()) {
-            return Optional.empty();
-        }
-        String cleanedPath = path.startsWith("/") ? path.substring(1) : path;
-        if (cleanedPath.isEmpty()) {
-            return Optional.empty();
-        }
-        String[] components = cleanedPath.split("/");
-        if (components.length == 0) {
-            return Optional.empty();
-        }
-        return findTypeByPath(components, 0, this)
-                .filter(type::isInstance)
-                .map(type::cast);
+    public boolean isDataset() {
+        return false;
     }
 }

@@ -1,9 +1,9 @@
 package org.hdf5javalib.maydo.examples.read;
 
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
 import org.hdf5javalib.maydo.dataclass.*;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
-import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class CompoundRead {
             Path filePath = getResourcePath("compound_example.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/CompoundData").orElseThrow()) {
+                try (HdfDataset dataSet = reader.getDataset("/CompoundData").orElseThrow()) {
                     displayData(channel, dataSet, reader);
                 }
                 log.debug("Root Group: {} ", reader.getRootGroup());

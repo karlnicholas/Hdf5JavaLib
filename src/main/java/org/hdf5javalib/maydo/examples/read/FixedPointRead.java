@@ -1,11 +1,11 @@
 package org.hdf5javalib.maydo.examples.read;
 
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdfjava.HdfGroup;
-import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.FlattenedArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,8 +61,7 @@ public class FixedPointRead {
             HdfFileReader hdfFileReader = new HdfFileReader(channel).readFile();
             hdfFileReader.getFileAllocation().printBlocks();
             log.debug("Root Group: {} ", hdfFileReader.getRootGroup());
-            HdfGroup group = hdfFileReader.getRootGroup().getGroup("/Group1").orElseThrow();
-            for (HdfDataset dataset : group.getDataSets()) {
+            for (HdfDataset dataset : hdfFileReader.getDatasets()) {
                 tryScalarDataSpliterator(channel, hdfFileReader, dataset);
             }
         }
@@ -72,7 +71,7 @@ public class FixedPointRead {
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("rootGroup {} ", reader.getRootGroup());
-                tryScalarDataSpliterator(channel, reader, reader.getRootGroup().getDataSets().get(0));
+                tryScalarDataSpliterator(channel, reader, reader.getDatasets().get(0));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -82,7 +81,7 @@ public class FixedPointRead {
             filePath = getResourcePath("weatherdata.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                tryMatrixSpliterator(channel, reader, reader.getRootGroup().getDataset("/weatherdata").orElseThrow());
+                tryMatrixSpliterator(channel, reader, reader.getDataset("/weatherdata").orElseThrow());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -92,7 +91,7 @@ public class FixedPointRead {
             filePath = getResourcePath("tictactoe_4d_state.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                display4DData(channel, reader, reader.getRootGroup().getDataset("/game").orElseThrow());
+                display4DData(channel, reader, reader.getDataset("/game").orElseThrow());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

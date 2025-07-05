@@ -1,8 +1,8 @@
 package org.hdf5javalib.maydo.examples.HDF5Examples;
 
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
-import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.HdfDisplayUtils;
 
 import java.io.IOException;
@@ -12,6 +12,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Iterator;
+
+import static org.hdf5javalib.maydo.utils.HdfDisplayUtils.displayData;
 
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.
@@ -58,8 +61,8 @@ public class ExamplesRead {
     public void displayFile(Path filePath) {
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            for (HdfDataset ds : reader.getRootGroup().getDataSets()) {
-                HdfDisplayUtils.displayData(channel, ds, reader);
+            for (HdfDataset dataSet : reader.getDatasets()) {
+                displayData(channel, dataSet, reader);
             }
             log.info("Superblock: {}", reader.getSuperblock());
         } catch (Exception e) {

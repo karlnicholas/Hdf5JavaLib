@@ -1,7 +1,7 @@
 package org.hdf5javalib.maydo.examples.read;
 
-import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
 import org.hdf5javalib.maydo.hdfjava.HdfDataset;
+import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
 import org.hdf5javalib.maydo.utils.HdfDisplayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ public class TwentyScalarRead {
         Path filePath = getResourcePath("twenty_datasets.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            for (HdfDataset dataSet : reader.getRootGroup().getDataSets()) {
+            for (HdfDataset dataSet : reader.getDatasets()) {
                 try (HdfDataset ds = dataSet) {
                     HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
                 }

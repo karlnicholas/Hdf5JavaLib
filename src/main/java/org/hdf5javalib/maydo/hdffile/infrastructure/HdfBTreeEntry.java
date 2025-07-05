@@ -1,9 +1,6 @@
 package org.hdf5javalib.maydo.hdffile.infrastructure;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.hdfjava.HdfBTree;
-
-import java.util.Optional;
 
 /**
  * Represents an entry in an HDF5 B-Tree (version 1) as defined in the HDF5 specification.
@@ -16,7 +13,7 @@ import java.util.Optional;
  *
  * @see HdfFixedPoint
  * @see HdfGroupSymbolTableNode
- * @see HdfBTree
+ * @see HdfBTreeV1
  */
 public class HdfBTreeEntry {
     /**
@@ -30,7 +27,7 @@ public class HdfBTreeEntry {
     /**
      * The child B-Tree payload, non-null for internal entries (nodeLevel > 0).
      */
-    private final HdfBTree childBTree;
+    private final HdfBTreeV1 childBTree;
 
     /**
      * The symbol table node payload, non-null for leaf entries (nodeLevel == 0).
@@ -43,7 +40,7 @@ public class HdfBTreeEntry {
      * @param key          the key for the entry
      * @param childPointer the address of the symbol table node
      */
-    public HdfBTreeEntry(HdfFixedPoint key, HdfFixedPoint childPointer, HdfBTree childBTree, HdfGroupSymbolTableNode groupSymbolTableNode) {
+    public HdfBTreeEntry(HdfFixedPoint key, HdfFixedPoint childPointer, HdfBTreeV1 childBTree, HdfGroupSymbolTableNode groupSymbolTableNode) {
         this.key = key;
         this.childPointer = childPointer;
         this.childBTree = childBTree;

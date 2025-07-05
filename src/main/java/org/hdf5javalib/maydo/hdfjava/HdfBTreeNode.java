@@ -1,48 +1,24 @@
 package org.hdf5javalib.maydo.hdfjava;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefix;
+
+import java.math.BigInteger;
 
 /**
- * A node in the B-Tree. It holds a list of BTreeObjects.
+ * Defines the contract for any node in the B-Tree.
+ * Nodes are comparable based on their name.
  */
-public class HdfBTreeNode {
-    // A node contains a list of named objects (Datasets or Groups).
-    final List<HdfDataObject> entries;
-    final int groupInternalNodeK;
+public interface HdfBTreeNode extends Comparable<HdfBTreeNode> {
 
-    public HdfBTreeNode(int groupInternalNodeK) {
-        this.groupInternalNodeK = groupInternalNodeK;
-        this.entries = new ArrayList<>();
-    }
+    String getObjectName();
 
-    public boolean isLeaf() {
-        for (HdfDataObject obj : entries) {
-            if (obj instanceof HdfGroupObject) {
-                if (!((HdfGroupObject) obj).getChildren().isEmpty()) {
-                    return false; // If any group has children, this node is not a leaf.
-                }
-            }
-        }
-        return true;
-    }
+    HdfObjectHeaderPrefix getObjectHeader();
 
-    public boolean isFull() {
-        return entries.size() == 2 * groupInternalNodeK - 1;
-    }
+    int getLevel();
 
-    // Helper to find an object by name within this node's entries.
-    public HdfDataObject findObjectByName(String name) {
-        for (HdfDataObject obj : entries) {
-            if (obj.getObjectName().equals(name)) {
-                return obj;
-            }
-        }
-        return null;
-    }
+    HdfBTreeNode getParent();
 
-    @Override
-    public String toString() {
-        return "Node" + entries;
-    }
+    void setParent(HdfBTreeNode parent);
+
+    boolean isDataset();
 }

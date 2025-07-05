@@ -1,8 +1,8 @@
 package org.hdf5javalib.maydo.dataclass.reference;
 
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
-import org.hdf5javalib.maydo.hdfjava.HdfDataObject;
 import org.hdf5javalib.maydo.utils.HdfDataHolder;
+import org.hdf5javalib.maydo.hdfjava.HdfDataObject;
 
 public class HdfSelectionNone extends HdfDataspaceSelectionInstance {
     private final int version;

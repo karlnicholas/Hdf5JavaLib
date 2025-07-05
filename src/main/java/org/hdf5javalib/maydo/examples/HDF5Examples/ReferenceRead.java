@@ -1,8 +1,8 @@
 package org.hdf5javalib.maydo.examples.HDF5Examples;
 
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
-import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -44,7 +44,7 @@ public class ReferenceRead {
 //                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
 //                    displayReference(channel, dataSet, reader);
 //                }
-                for (HdfDataset dataSet : reader.getRootGroup().getDataSets()) {
+                for (HdfDataset dataSet : reader.getDatasets()) {
                     displayData(channel, dataSet, reader);
                 }
                 log.debug("Superblock: {} ", reader.getSuperblock());

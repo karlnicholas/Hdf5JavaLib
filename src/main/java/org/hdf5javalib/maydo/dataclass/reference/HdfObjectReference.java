@@ -1,23 +1,14 @@
 package org.hdf5javalib.maydo.dataclass.reference;
 
-import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.dataclass.HdfString;
-import org.hdf5javalib.maydo.datatype.FixedPointDatatype;
 import org.hdf5javalib.maydo.datatype.ReferenceDatatype;
-import org.hdf5javalib.maydo.datatype.StringDatatype;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
-import org.hdf5javalib.maydo.hdffile.metadata.HdfSuperblock;
-import org.hdf5javalib.maydo.hdfjava.HdfDataObject;
 import org.hdf5javalib.maydo.utils.HdfDataHolder;
+import org.hdf5javalib.redo.hdffile.infrastructure.HdfDataObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.Arrays;
 import java.util.Deque;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class HdfObjectReference implements HdfReferenceInstance {
