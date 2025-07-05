@@ -85,21 +85,22 @@ public class HdfFileReader implements HdfDataFile {
     public HdfFileReader readFile() throws Exception {
         superblock = readSuperblockFromSeekableByteChannel(fileChannel, this);
         HdfSymbolTableEntry rootGroupSymbolTableEntry = readSteFromSeekableByteChannel(fileChannel, this);
-//        superblock.setRootGroupSymbolTableEntry(rootGroupSymbolTableEntry);
+        // create root Group
         long heapOffset = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
         long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
         HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, heapOffset, this);
+        HdfBTreeV1 groupBTree = readBTreeFromSeekableByteChannel(fileChannel, bTreeAddress, this);
         HdfObjectHeaderPrefixV1 objectHeader = readObjectHeader(fileChannel, rootGroupSymbolTableEntry.getObjectHeaderAddress().getInstance(Long.class), this);
         String groupName = localHeap.stringAtOffset(rootGroupSymbolTableEntry.getLinkNameOffset());
         HdfGroup groupObject = new HdfGroup(groupName, objectHeader);
+        // set BTree
         bTree = new HdfBTree(groupObject);
-        readInfrastructure(groupObject, localHeap, bTreeAddress);
+        // recurse through infrastructure
+        readInfrastructure(groupObject, localHeap, groupBTree);
         return this;
-//        return ((HdfSymbolTableEntryCacheWithScratch)superblock.getRootGroupSymbolTableEntry().getCache()).getGroup();
     }
 
-    private void readInfrastructure(HdfGroup parentGroup, HdfLocalHeap localHeap, long bTreeAddress) throws Exception {
-        HdfBTreeV1 groupBTree = readBTreeFromSeekableByteChannel(fileChannel, bTreeAddress, this);
+    private void readInfrastructure(HdfGroup parentGroup, HdfLocalHeap localHeap, HdfBTreeV1 groupBTree) throws Exception {
         for( HdfBTreeEntry entry: groupBTree.getEntries()) {
             HdfGroupSymbolTableNode groupSymbolTableNode = entry.getGroupSymbolTableNode();
             for( HdfSymbolTableEntry symbolTableEntry: groupSymbolTableNode.getSymbolTableEntries() ) {
@@ -114,9 +115,10 @@ public class HdfFileReader implements HdfDataFile {
                     long newHeapOffset = ((HdfSymbolTableEntryCacheWithScratch)symbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
                     long newBTreeAddress = ((HdfSymbolTableEntryCacheWithScratch)symbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
                     HdfLocalHeap newLocalHeap = readLocalHeapFromSeekableByteChannel(fileChannel, newHeapOffset, this);
+                    HdfBTreeV1 newGroupBTree = readBTreeFromSeekableByteChannel(fileChannel, newBTreeAddress, this);
                     HdfGroup groupObject = new HdfGroup(objectName, objectHeader);
                     parentGroup.addChild(groupObject);
-                    readInfrastructure(groupObject, newLocalHeap, newBTreeAddress);
+                    readInfrastructure(groupObject, newLocalHeap, newGroupBTree);
                     break;
                 }
             }
