@@ -1,14 +1,13 @@
 package org.hdf5javalib.maydo.hdfjava;
 
-import org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefix;
+import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.datatype.Datatype;
 import org.hdf5javalib.maydo.datatype.ReferenceDatatype;
+import org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.AttributeMessage;
+import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DataLayoutMessage;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DataspaceMessage;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DatatypeMessage;
-import org.hdf5javalib.maydo.hdffile.infrastructure.HdfBTreeV1;
-import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DataLayoutMessage;
 
 import java.util.Collections;
 import java.util.List;

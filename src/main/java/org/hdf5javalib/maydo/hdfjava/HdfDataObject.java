@@ -2,7 +2,6 @@ package org.hdf5javalib.maydo.hdfjava;
 
 import org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefix;
 
-import java.math.BigInteger;
 import java.util.Objects;
 
 /**

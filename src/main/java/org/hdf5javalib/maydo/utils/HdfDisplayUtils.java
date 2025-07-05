@@ -1,11 +1,11 @@
 package org.hdf5javalib.maydo.utils;
 
-import org.hdf5javalib.maydo.hdfjava.HdfDataset;
-import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
 import org.hdf5javalib.maydo.dataclass.HdfData;
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
+import org.hdf5javalib.maydo.hdfjava.HdfDataset;
+import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;

@@ -1,18 +1,15 @@
 package org.hdf5javalib.maydo.examples.read;
 
+import org.hdf5javalib.maydo.datasource.TypedDataSource;
 import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
-import org.hdf5javalib.maydo.dataclass.HdfData;
-import org.hdf5javalib.maydo.datasource.TypedDataSource;
 
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Iterator;
 
 import static org.hdf5javalib.maydo.utils.HdfDisplayUtils.displayData;
-import static org.hdf5javalib.maydo.utils.HdfDisplayUtils.displayScalarData;
 import static org.hdf5javalib.maydo.utils.HdfReadUtils.getResourcePath;
 
 /**

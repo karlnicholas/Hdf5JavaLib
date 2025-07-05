@@ -1,17 +1,9 @@
 package org.hdf5javalib.maydo.hdffile.infrastructure;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.hdfjava.AllocationRecord;
-import org.hdf5javalib.maydo.hdfjava.AllocationType;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
-import org.hdf5javalib.maydo.utils.HdfWriteUtils;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.channels.SeekableByteChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**

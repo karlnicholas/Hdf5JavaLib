@@ -2,8 +2,6 @@ package org.hdf5javalib.maydo.hdfjava;
 
 import org.hdf5javalib.maydo.hdffile.dataobjects.HdfObjectHeaderPrefix;
 
-import java.math.BigInteger;
-
 /**
  * Defines the contract for any node in the B-Tree.
  * Nodes are comparable based on their name.

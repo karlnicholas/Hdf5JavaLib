@@ -2,9 +2,9 @@ package org.hdf5javalib.maydo.datatype;
 
 import org.hdf5javalib.maydo.dataclass.HdfCompound;
 import org.hdf5javalib.maydo.dataclass.HdfData;
-import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DatatypeMessage;
 import org.hdf5javalib.maydo.hdffile.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 
 import java.lang.reflect.*;
 import java.nio.ByteBuffer;

@@ -1,8 +1,8 @@
 package org.hdf5javalib.maydo.examples.read;
 
+import org.hdf5javalib.maydo.dataclass.HdfVariableLength;
 import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
-import org.hdf5javalib.maydo.dataclass.HdfVariableLength;
 import org.hdf5javalib.maydo.utils.HdfDisplayUtils;
 
 import java.io.FileInputStream;

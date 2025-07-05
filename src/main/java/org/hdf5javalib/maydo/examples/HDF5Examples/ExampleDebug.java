@@ -1,8 +1,8 @@
 package org.hdf5javalib.maydo.examples.HDF5Examples;
 
+import org.hdf5javalib.maydo.datasource.TypedDataSource;
 import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
-import org.hdf5javalib.maydo.datasource.TypedDataSource;
 
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;

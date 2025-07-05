@@ -1,7 +1,6 @@
 package org.hdf5javalib.maydo.hdffile.infrastructure;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.utils.HdfReadUtils;
 
 public class HdfSymbolTableEntryCacheWithScratch implements HdfSymbolTableEntryCache {
     /**

@@ -2,8 +2,8 @@ package org.hdf5javalib.maydo.datatype;
 
 import org.hdf5javalib.maydo.dataclass.HdfBitField;
 import org.hdf5javalib.maydo.dataclass.HdfData;
-import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdffile.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;

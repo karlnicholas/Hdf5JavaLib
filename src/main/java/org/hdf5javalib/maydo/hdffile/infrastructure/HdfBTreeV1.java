@@ -4,7 +4,8 @@ import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.utils.HdfWriteUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents an HDF5 B-Tree (version 1) as defined in the HDF5 specification.

@@ -1,9 +1,9 @@
 package org.hdf5javalib.maydo.hdffile.dataobjects;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
+import org.hdf5javalib.maydo.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdfjava.HdfFileAllocation;
-import org.hdf5javalib.maydo.hdffile.dataobjects.messages.HdfMessage;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
