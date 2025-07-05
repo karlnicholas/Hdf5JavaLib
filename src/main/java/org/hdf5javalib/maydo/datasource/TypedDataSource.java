@@ -1,9 +1,9 @@
 package org.hdf5javalib.maydo.datasource;
 
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DataspaceMessage;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DatatypeMessage;
-import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.FlattenedArrayUtils;
 
