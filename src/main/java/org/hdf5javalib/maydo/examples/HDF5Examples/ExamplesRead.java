@@ -62,10 +62,8 @@ public class ExamplesRead {
             for (HdfDataset dataSet : reader.getDatasets()) {
                 displayData(channel, dataSet, reader);
             }
-            log.info("Superblock: {}", reader.getSuperblock());
         } catch (Exception e) {
-            System.out.println("Exception in displayFile: " + filePath);
-            e.printStackTrace(System.out);
+            log.error("Exception in displayFile: {}", filePath, e);
         }
     }
 }
