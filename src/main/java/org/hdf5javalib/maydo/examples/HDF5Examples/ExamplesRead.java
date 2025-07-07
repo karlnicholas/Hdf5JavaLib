@@ -61,6 +61,7 @@ public class ExamplesRead {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             for (HdfDataset dataSet : reader.getDatasets()) {
                 displayData(channel, dataSet, reader);
+                log.info("{} ", dataSet);
             }
         } catch (Exception e) {
             log.error("Exception in displayFile: {}", filePath, e);
