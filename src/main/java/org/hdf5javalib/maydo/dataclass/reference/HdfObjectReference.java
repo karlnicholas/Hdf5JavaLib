@@ -101,17 +101,17 @@ public class HdfObjectReference implements HdfReferenceInstance {
         } else {
             List<String> parents = new ArrayList<>();
             HdfDataObject currentNode = hdfDataObject;
-            while(currentNode != null) {
+            while(currentNode.getParent() != null) {
                 parents.add(currentNode.getObjectName());
                 currentNode = currentNode.getParent().getDataObject();
             }
             Collections.reverse(parents);
-            String objectPathString = String.join("/", parents);
+            String objectPathString = '/' + String.join("/", parents);
             this.hdfDataHolder = HdfDataHolder.ofScalar(
                     new HdfString(objectPathString, new StringDatatype(
                     StringDatatype.createClassAndVersion(),
                     StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_PAD, StringDatatype.CharacterSet.ASCII),
-                    hdfDataObject.getObjectName().length(),
+                            objectPathString.length(),
                     dt.getDataFile())
             ));
         }
