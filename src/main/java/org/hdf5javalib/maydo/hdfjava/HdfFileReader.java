@@ -795,6 +795,11 @@ public class HdfFileReader implements HdfDataFile {
         return superblock;
     }
 
+    @Override
+    public HdfBTree getBTree() {
+        return bTree;
+    }
+
 //    @Override
 //    public HdfSuperblock getSuperblock() {
 //        return superblock;

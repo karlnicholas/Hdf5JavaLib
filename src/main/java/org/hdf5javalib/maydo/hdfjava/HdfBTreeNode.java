@@ -19,4 +19,6 @@ public interface HdfBTreeNode extends Comparable<HdfBTreeNode> {
     void setParent(HdfBTreeNode parent);
 
     boolean isDataset();
+
+    HdfDataObject getDataObject();
 }

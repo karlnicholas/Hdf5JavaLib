@@ -16,11 +16,13 @@ public abstract class HdfObjectHeaderPrefix {
      * The size of the object header (4 bytes).
      */
     protected final long objectHeaderSize;
+    protected final HdfFixedPoint offset;
 
     /**
      * The list of header messages associated with the object.
      */
     protected final List<HdfMessage> headerMessages;
+
 
     protected HdfObjectHeaderPrefix(
             List<HdfMessage> headerMessages,
@@ -31,6 +33,7 @@ public abstract class HdfObjectHeaderPrefix {
     ) {
         this.headerMessages = headerMessages;
         this.objectHeaderSize = objectHeaderSize;
+        this.offset = offset;
     }
 
     /**
@@ -48,6 +51,8 @@ public abstract class HdfObjectHeaderPrefix {
         }
         return Optional.empty();
     }
+
+    public HdfFixedPoint getOffset() { return offset; }
 
     public List<HdfMessage> getHeaderMessages() {
         return headerMessages;

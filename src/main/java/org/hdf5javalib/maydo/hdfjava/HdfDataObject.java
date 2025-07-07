@@ -51,4 +51,9 @@ public abstract class HdfDataObject implements HdfBTreeNode {
         String displayName = objectName.isEmpty() ? "/" : objectName;
         return String.format("%s[name='%s', value=%s]", this.getClass().getSimpleName(), displayName, objectHeader);
     }
+
+    @Override
+    public HdfDataObject getDataObject() {
+        return this;
+    }
 }
