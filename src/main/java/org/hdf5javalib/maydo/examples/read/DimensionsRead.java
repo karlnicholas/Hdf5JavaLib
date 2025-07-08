@@ -58,7 +58,7 @@ public class DimensionsRead {
             filePath = getResourcePath("array_datasets.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                log.debug("Root Group: {} ", reader.getRootGroup());
+                log.debug("File BTree: {} ", reader.getBTree());
                 for (HdfDataset dataSet : reader.getDatasets()) {
                     displayData(channel, dataSet, reader);
                 }

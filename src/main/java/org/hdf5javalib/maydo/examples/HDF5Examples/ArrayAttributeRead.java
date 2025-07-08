@@ -44,7 +44,7 @@ public class ArrayAttributeRead {
             Path filePath = getResourcePath("HDF5Examples/h5ex_t_arrayatt.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                log.debug("Root Group: {} ", reader.getRootGroup());
+                log.debug("BTree: {} ", reader.getBTree().getRoot());
     //                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
 //                    displayData(channel, dataSet, reader);
 //                }

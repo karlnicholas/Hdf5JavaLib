@@ -69,29 +69,30 @@ public class HdfLocalHeapData {
      */
 //    public int addToHeap(HdfString objectName) {
     public HdfFixedPoint addToHeap(String objectName, HdfDataFile hdfDataFile) {
-        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        byte[] objectNameBytes = objectName.getBytes(StandardCharsets.US_ASCII);
-        // Calculate string size and alignment
-        int stringSize = objectNameBytes.length + 1; // Include null terminator
-        int alignedStringSize = (stringSize + 7) & ~7; // Pad to 8-byte boundary
-
-        // Determine current heap offset
-        HdfFixedPoint currentOffset = freeListOffset.getInstance(Long.class) == 1 ? heapContentsSize.clone() : freeListOffset.clone();
-
-        // Calculate initial required space (string only)
-        byte[] requiredSpace = HdfWriteUtils.toFixedPointBytes(alignedStringSize, currentOffset.getDatatype(), Integer.class);
-
-
-        // Check if there's enough space for the string
-        if (HdfFixedPoint.compareToBytes(HdfFixedPoint.addBytes(currentOffset.getBytes(), requiredSpace), heapContentsSize.getBytes()) > 0) {
-            // Resize heap
-            this.heapContentsSize = fileAllocation.expandLocalHeapContents();
-            this.heapContentsOffset = fileAllocation.getCurrentLocalHeapContentsOffset();
-        }
-
-        data.put(currentOffset, new HdfLocalHeapDataValue(objectName, currentOffset));
-
-        return currentOffset;
+//        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
+//        byte[] objectNameBytes = objectName.getBytes(StandardCharsets.US_ASCII);
+//        // Calculate string size and alignment
+//        int stringSize = objectNameBytes.length + 1; // Include null terminator
+//        int alignedStringSize = (stringSize + 7) & ~7; // Pad to 8-byte boundary
+//
+//        // Determine current heap offset
+//        HdfFixedPoint currentOffset = freeListOffset.getInstance(Long.class) == 1 ? heapContentsSize.clone() : freeListOffset.clone();
+//
+//        // Calculate initial required space (string only)
+//        byte[] requiredSpace = HdfWriteUtils.toFixedPointBytes(alignedStringSize, currentOffset.getDatatype(), Integer.class);
+//
+//
+//        // Check if there's enough space for the string
+//        if (HdfFixedPoint.compareToBytes(HdfFixedPoint.addBytes(currentOffset.getBytes(), requiredSpace), heapContentsSize.getBytes()) > 0) {
+//            // Resize heap
+//            this.heapContentsSize = fileAllocation.expandLocalHeapContents();
+//            this.heapContentsOffset = fileAllocation.getCurrentLocalHeapContentsOffset();
+//        }
+//
+//        data.put(currentOffset, new HdfLocalHeapDataValue(objectName, currentOffset));
+//
+//        return currentOffset;
+        return null;
     }
 
     public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfDataFile hdfDataFile) throws IOException {

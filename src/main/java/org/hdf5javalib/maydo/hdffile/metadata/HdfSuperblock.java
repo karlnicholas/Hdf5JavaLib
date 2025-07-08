@@ -153,41 +153,41 @@ public class HdfSuperblock {
      * @param fileChannel the seekable byte channel to write to
      * @throws IOException if an I/O error occurs
      */
-    public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
-        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-        ByteBuffer buffer = ByteBuffer.allocate((int) HdfFileAllocation.SUPERBLOCK_SIZE).order(ByteOrder.LITTLE_ENDIAN);
-
-        // Step 1: Write the HDF5 file signature (8 bytes)
-        buffer.put(FILE_SIGNATURE);
-
-        // Step 2: Superblock metadata (8 bytes)
-        buffer.put((byte) version);              // Superblock version (1 byte)
-        buffer.put((byte) freeSpaceVersion);     // Free space storage version (1 byte)
-        buffer.put((byte) rootGroupVersion);     // Root group symbol table entry version (1 byte)
-        buffer.put((byte) 0);                    // Reserved (must be 0) (1 byte)
-        buffer.put((byte) sharedHeaderVersion);  // Shared object header format version (1 byte)
-        buffer.put((byte) sizeOfOffsets);        // Size of offsets (1 byte)
-        buffer.put((byte) sizeOfLengths);        // Size of lengths (1 byte)
-        buffer.put((byte) 0);                    // Reserved (must be 0) (1 byte)
-
-        // Step 3: B-tree settings & consistency flags
-        buffer.putShort((short) groupLeafNodeK);      // B-tree group leaf node K (2 bytes)
-        buffer.putShort((short) groupInternalNodeK);  // B-tree group internal node K (2 bytes)
-        buffer.putInt(0);                             // File consistency flags (must be 0) (4 bytes)
-
-        // Step 4: Address fields (sizeOfOffsets bytes each) in little-endian
-        writeFixedPointToBuffer(buffer, baseAddress);         // Base Address
-        writeFixedPointToBuffer(buffer, addressFileFreeSpaceInfo);    // Free space address
-        writeFixedPointToBuffer(buffer, endOfFileAddress);    // End-of-file address
-        writeFixedPointToBuffer(buffer, driverInformationAddress); // Driver info block address
-
-        buffer.flip();
-
-//        fileChannel.position(fileAllocation.getSuperblock().allocationRecord.getOffset().getInstance(Long.class));
-//        while (buffer.hasRemaining()) {
-//            fileChannel.write(buffer);
-//        }
-    }
+//    public void writeToFileChannel(SeekableByteChannel fileChannel) throws IOException {
+//        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
+//        ByteBuffer buffer = ByteBuffer.allocate((int) HdfFileAllocation.SUPERBLOCK_SIZE).order(ByteOrder.LITTLE_ENDIAN);
+//
+//        // Step 1: Write the HDF5 file signature (8 bytes)
+//        buffer.put(FILE_SIGNATURE);
+//
+//        // Step 2: Superblock metadata (8 bytes)
+//        buffer.put((byte) version);              // Superblock version (1 byte)
+//        buffer.put((byte) freeSpaceVersion);     // Free space storage version (1 byte)
+//        buffer.put((byte) rootGroupVersion);     // Root group symbol table entry version (1 byte)
+//        buffer.put((byte) 0);                    // Reserved (must be 0) (1 byte)
+//        buffer.put((byte) sharedHeaderVersion);  // Shared object header format version (1 byte)
+//        buffer.put((byte) sizeOfOffsets);        // Size of offsets (1 byte)
+//        buffer.put((byte) sizeOfLengths);        // Size of lengths (1 byte)
+//        buffer.put((byte) 0);                    // Reserved (must be 0) (1 byte)
+//
+//        // Step 3: B-tree settings & consistency flags
+//        buffer.putShort((short) groupLeafNodeK);      // B-tree group leaf node K (2 bytes)
+//        buffer.putShort((short) groupInternalNodeK);  // B-tree group internal node K (2 bytes)
+//        buffer.putInt(0);                             // File consistency flags (must be 0) (4 bytes)
+//
+//        // Step 4: Address fields (sizeOfOffsets bytes each) in little-endian
+//        writeFixedPointToBuffer(buffer, baseAddress);         // Base Address
+//        writeFixedPointToBuffer(buffer, addressFileFreeSpaceInfo);    // Free space address
+//        writeFixedPointToBuffer(buffer, endOfFileAddress);    // End-of-file address
+//        writeFixedPointToBuffer(buffer, driverInformationAddress); // Driver info block address
+//
+//        buffer.flip();
+//
+////        fileChannel.position(fileAllocation.getSuperblock().allocationRecord.getOffset().getInstance(Long.class));
+////        while (buffer.hasRemaining()) {
+////            fileChannel.write(buffer);
+////        }
+//    }
 
     /**
      * Returns a string representation of the Superblock.

@@ -14,13 +14,13 @@ public abstract class HdfDataObject implements HdfBTreeNode {
     protected final HdfObjectHeaderPrefix objectHeader;
     protected HdfBTreeNode parent;
 
-    public HdfDataObject(String objectName, HdfObjectHeaderPrefix objectHeader) {
+    public HdfDataObject(String objectName, HdfObjectHeaderPrefix objectHeader, HdfBTreeNode parent) {
         this.objectName = Objects.requireNonNull(objectName, "Node name cannot be null.");
         if (objectName.contains("/")) {
             throw new IllegalArgumentException("Node name cannot contain '/' character.");
         }
-        this.objectHeader = Objects.requireNonNull(objectHeader, "Node value cannot be null.");
-        this.parent = null;
+        this.objectHeader = objectHeader;
+        this.parent = parent;
     }
 
     // other getters and setters remain the same...

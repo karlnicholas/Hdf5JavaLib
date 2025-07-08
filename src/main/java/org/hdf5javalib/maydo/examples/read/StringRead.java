@@ -34,7 +34,7 @@ public class StringRead {
         try (FileInputStream fis = new FileInputStream(filePath)) {
             FileChannel channel = fis.getChannel();
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            try (HdfDataset dataSet = reader.findByPath("/strings").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getDataset("/strings").orElseThrow()) {
                 HdfDisplayUtils.displayVectorData(channel, dataSet, String.class, reader);
             }
         }
@@ -42,7 +42,7 @@ public class StringRead {
         try (FileInputStream fis = new FileInputStream(filePath)) {
             FileChannel channel = fis.getChannel();
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            try (HdfDataset dataSet = reader.getDataset("strings").orElseThrow()) {
+            try (HdfDataset dataSet = reader.getDataset("/strings").orElseThrow()) {
                 HdfDisplayUtils.displayVectorData(channel, dataSet, String.class, reader);
             }
         }

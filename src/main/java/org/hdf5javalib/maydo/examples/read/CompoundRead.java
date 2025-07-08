@@ -47,7 +47,7 @@ public class CompoundRead {
                 try (HdfDataset dataSet = reader.getDataset("/CompoundData").orElseThrow()) {
                     displayData(channel, dataSet, reader);
                 }
-                log.debug("Root Group: {} ", reader.getRootGroup());
+                log.debug("File BTree: {} ", reader.getBTree());
                 }
 
         } catch (Exception e) {

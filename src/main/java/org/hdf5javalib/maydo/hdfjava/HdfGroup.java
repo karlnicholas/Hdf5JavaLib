@@ -11,8 +11,8 @@ public class HdfGroup extends HdfDataObject {
 
     private final List<HdfBTreeNode> children;
 
-    public HdfGroup(String name, HdfObjectHeaderPrefix objectHeader) {
-        super(name, objectHeader);
+    public HdfGroup(String name, HdfObjectHeaderPrefix objectHeader, HdfBTreeNode parent) {
+        super(name, objectHeader, parent);
         this.children = new ArrayList<>();
     }
 
@@ -54,7 +54,7 @@ public class HdfGroup extends HdfDataObject {
         // To use binarySearch, we need a "key" object of the same type.
         // We can create a temporary, lightweight HdfDataset object for this purpose.
         // The value doesn't matter, as the comparison is only on the name.
-        HdfBTreeNode searchKey = new HdfDataset(name, null);
+        HdfBTreeNode searchKey = new HdfDataset(name, null, null);
 
         int index = Collections.binarySearch(children, searchKey);
 

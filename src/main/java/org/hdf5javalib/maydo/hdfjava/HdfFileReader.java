@@ -92,7 +92,7 @@ public class HdfFileReader implements HdfDataFile {
         HdfBTreeV1 groupBTree = readBTreeFromSeekableByteChannel(fileChannel, bTreeAddress, this);
         HdfObjectHeaderPrefixV1 objectHeader = readObjectHeader(fileChannel, rootGroupSymbolTableEntry.getObjectHeaderAddress().getInstance(Long.class), this);
         String groupName = localHeap.stringAtOffset(rootGroupSymbolTableEntry.getLinkNameOffset());
-        HdfGroup groupObject = new HdfGroup(groupName, objectHeader);
+        HdfGroup groupObject = new HdfGroup(groupName, objectHeader, null);
         // set BTree
         bTree = new HdfBTree(groupObject);
         // recurse through infrastructure
@@ -108,7 +108,7 @@ public class HdfFileReader implements HdfDataFile {
                 HdfObjectHeaderPrefixV1 objectHeader = readObjectHeader(fileChannel, symbolTableEntry.getObjectHeaderAddress().getInstance(Long.class), this);
                 switch ( symbolTableEntry.getCache().getCacheType()) {
                 case 0:
-                    HdfDataset datasetObject = new HdfDataset(objectName, objectHeader);
+                    HdfDataset datasetObject = new HdfDataset(objectName, objectHeader, parentGroup);
                     parentGroup.addChild(datasetObject);
                     break;
                 case 1:
@@ -116,7 +116,7 @@ public class HdfFileReader implements HdfDataFile {
                     long newBTreeAddress = ((HdfSymbolTableEntryCacheWithScratch)symbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
                     HdfLocalHeap newLocalHeap = readLocalHeapFromSeekableByteChannel(fileChannel, newHeapOffset, this);
                     HdfBTreeV1 newGroupBTree = readBTreeFromSeekableByteChannel(fileChannel, newBTreeAddress, this);
-                    HdfGroup groupObject = new HdfGroup(objectName, objectHeader);
+                    HdfGroup groupObject = new HdfGroup(objectName, objectHeader, parentGroup);
                     parentGroup.addChild(groupObject);
                     readInfrastructure(groupObject, newLocalHeap, newGroupBTree);
                     break;
@@ -150,10 +150,6 @@ public class HdfFileReader implements HdfDataFile {
         return resultList;
     }
 
-    public Optional<HdfDataset> findByPath(String path) {
-        return null;
-    }
-
 //    private Optional<HdfDataObject> findTypeInBTree(HdfBTree bTree, String[] components, int index, String currentComponent) {
 //        if (bTree == null || components == null || index >= components.length || currentComponent == null) {
 //            return Optional.empty();
@@ -164,33 +160,14 @@ public class HdfFileReader implements HdfDataFile {
 ////        }
 //        return Optional.empty();
 //    }
-
-    private Optional<HdfDataObject> findTypeByPath(String[] components, int index, HdfDataObject currentInstance) {
-        if (index >= components.length || components[index].isEmpty() || currentInstance == null) {
-            return Optional.empty();
-        }
-//        String currentComponent = components[index];
-//        if (index == components.length - 1) {
-//            if (currentInstance.getObjectName().equals(currentComponent)) {
-//                return Optional.of(currentInstance);
-//            }
-//            return currentInstance.getBTreeOptionally()
-//                    .flatMap(bTree -> bTree.findObjectByName(currentComponent, (HdfGroup) currentInstance));
-//        }
-//        return currentInstance.getBTreeOptionally()
-//                .flatMap(bTree -> findTypeInBTree(bTree, components, index, currentComponent));
-        return Optional.empty();
-    }
-
     public Optional<HdfDataset> getDataset(String path) {
-        return getObjectByPath(path, HdfDataset.class);
+        return getHdfDataObject(path, HdfDataset.class);
     }
-
     public Optional<HdfGroup> getGroup(String path) {
-        return getObjectByPath(path, HdfGroup.class);
+        return getHdfDataObject(path, HdfGroup.class);
     }
 
-    private <T extends HdfDataObject> Optional<T> getObjectByPath(String path, Class<T> type) {
+    public <T extends HdfDataObject> Optional<T> getHdfDataObject(String path, Class<T> clazz) {
         if (path == null || path.isEmpty()) {
             return Optional.empty();
         }
@@ -202,9 +179,21 @@ public class HdfFileReader implements HdfDataFile {
         if (components.length == 0) {
             return Optional.empty();
         }
-        return findTypeByPath(components, 0, null)
-                .filter(type::isInstance)
-                .map(type::cast);
+        HdfGroup currentGroup = bTree.getRoot();
+        int compIndex = 0;
+        while (currentGroup != null) {
+            Optional<HdfBTreeNode> child = currentGroup.findChildByName(components[compIndex++]);
+            if ( child.isEmpty() ) {
+                return Optional.empty();
+            } else if (compIndex == components.length && clazz.isAssignableFrom(child.get().getDataObject().getClass())) {
+                return child.map(clazz::cast);
+            } else if ( compIndex < components.length - 1 && HdfGroup.class.isAssignableFrom(child.get().getDataObject().getClass()) ) {
+                currentGroup = (HdfGroup) child.get();
+            } else {
+                currentGroup = null;
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -773,10 +762,10 @@ public class HdfFileReader implements HdfDataFile {
      *
      * @return the {@link HdfFileAllocation} instance
      */
-        @Override
-        public HdfFileAllocation getFileAllocation() {
-            return fileAllocation;
-        }
+//        @Override
+//        public HdfFileAllocation getFileAllocation() {
+//            return fileAllocation;
+//        }
 
     /**
      * Retrieves the seekable byte channel for reading the HDF5 file.
@@ -810,10 +799,10 @@ public class HdfFileReader implements HdfDataFile {
         this.fileAllocation = hdfFileAllocation;
     }
 
-    public HdfGroup getRootGroup() {
-//        return ((HdfSymbolTableEntryCacheWithScratch) getSuperblock().getRootGroupSymbolTableEntry().getCache())
-//                .getGroup();
-        return null;
-    }
+//    public HdfGroup getRootGroup() {
+////        return ((HdfSymbolTableEntryCacheWithScratch) getSuperblock().getRootGroupSymbolTableEntry().getCache())
+////                .getGroup();
+//        return null;
+//    }
 
 }

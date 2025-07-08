@@ -58,8 +58,7 @@ public class FixedPointRead {
         Path filePath = getResourcePath("dsgroup.h5");
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader hdfFileReader = new HdfFileReader(channel).readFile();
-            hdfFileReader.getFileAllocation().printBlocks();
-            log.debug("Root Group: {} ", hdfFileReader.getRootGroup());
+            log.debug("File BTree: {} ", hdfFileReader.getBTree());
             for (HdfDataset dataset : hdfFileReader.getDatasets()) {
                 tryScalarDataSpliterator(channel, hdfFileReader, dataset);
             }
@@ -69,7 +68,7 @@ public class FixedPointRead {
             filePath = getResourcePath("scalar.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
-                log.debug("rootGroup {} ", reader.getRootGroup());
+                log.debug("File BTree: {} ", reader.getBTree());
                 tryScalarDataSpliterator(channel, reader, reader.getDatasets().get(0));
             }
         } catch (IOException e) {

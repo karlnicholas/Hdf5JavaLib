@@ -18,8 +18,8 @@ import java.util.Optional;
  */
 public class HdfDataset extends HdfDataObject implements AutoCloseable {
 
-    public HdfDataset(String objectName, HdfObjectHeaderPrefix objectHeader) {
-        super(objectName, objectHeader);
+    public HdfDataset(String objectName, HdfObjectHeaderPrefix objectHeader, HdfBTreeNode parent) {
+        super(objectName, objectHeader, parent);
     }
 
     @Override
