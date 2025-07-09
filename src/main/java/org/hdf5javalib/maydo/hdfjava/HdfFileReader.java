@@ -84,38 +84,63 @@ public class HdfFileReader implements HdfDataFile {
      * @throws IOException if an I/O error occurs during reading
      */
     public HdfFileReader readFile() throws Exception {
-        superblock = readSuperblockFromSeekableByteChannel(fileChannel, this);
+        long superblockOffset = findSuperblockOffset(fileChannel);
+        superblock = readSuperblockFromSeekableByteChannel(fileChannel, superblockOffset, this);
         HdfSymbolTableEntry rootGroupSymbolTableEntry = readSteFromSeekableByteChannel(fileChannel, this);
         // determine version of data object headers
         long objectHeaderAddress = rootGroupSymbolTableEntry.getObjectHeaderAddress().getInstance(Long.class);
-
-
-        // --- 1. Read Signature, Version, and Flags ---
         // The first part of the header is 6 bytes: Signature (4) + Version (1) + Flags (1)
         ByteBuffer headerStartBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(headerStartBuffer);
         headerStartBuffer.flip();
-        // Verify Signature ("OHDR")
-        byte[] signatureBytes = new byte[4];
-        headerStartBuffer.get(signatureBytes);
-        String signature = new String(signatureBytes, "ASCII");
-        if ("OHDR".equals(signature)) {
-            HdfObjectHeaderPrefix objectHeader = readV2ObjectHeader(fileChannel, objectHeaderAddress, this);
-            System.out.println(objectHeader);
-        } else {
-            HdfObjectHeaderPrefix objectHeader = readObjectHeader(fileChannel, objectHeaderAddress, this);
-            long heapOffset = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
-            long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
-            HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, heapOffset, this);
-            HdfBTreeV1 groupBTree = readBTreeFromSeekableByteChannel(fileChannel, bTreeAddress, this);
-            String groupName = localHeap.stringAtOffset(rootGroupSymbolTableEntry.getLinkNameOffset());
-            // set BTree
-            HdfGroup groupObject = new HdfGroup(groupName, objectHeader, null);
-            bTree = new HdfBTree(groupObject);
-            // recurse through infrastructure
-            readInfrastructure(groupObject, localHeap, groupBTree);
+        int version = Byte.toUnsignedInt(headerStartBuffer.get());
+        if( version > 1 ) {
+            throw new UnsupportedOperationException("V2 architecture not supported. Header Object version: " + version);
         }
+        HdfObjectHeaderPrefix objectHeader = readObjectHeader(fileChannel, objectHeaderAddress, this);
+        long heapOffset = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
+        long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
+        HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, heapOffset, this);
+        HdfBTreeV1 groupBTree = readBTreeFromSeekableByteChannel(fileChannel, bTreeAddress, this);
+        String groupName = localHeap.stringAtOffset(rootGroupSymbolTableEntry.getLinkNameOffset());
+        // set BTree
+        HdfGroup groupObject = new HdfGroup(groupName, objectHeader, null);
+        bTree = new HdfBTree(groupObject);
+        // recurse through infrastructure
+        readInfrastructure(groupObject, localHeap, groupBTree);
+
         return this;
+    }
+
+    private static long findSuperblockOffset(SeekableByteChannel fileChannel) throws IOException {
+        long size = fileChannel.size();
+        long offset = 0;
+        while ( (offset + SIGNATURE_SIZE + VERSION_SIZE) < size ) {
+            fileChannel.position(offset);
+            // Step 1: Allocate the minimum buffer size to determine the version
+            ByteBuffer buffer = ByteBuffer.allocate(SIGNATURE_SIZE + VERSION_SIZE); // File signature (8 bytes) + version (1 byte)
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+
+            // Read the initial bytes to determine the version
+            fileChannel.read(buffer);
+            buffer.flip();
+
+            // Verify file signature
+            byte[] signature = new byte[FILE_SIGNATURE.length];
+            buffer.get(signature);
+            if (!java.util.Arrays.equals(signature, FILE_SIGNATURE)) {
+                offset += 500;
+                continue;
+            }
+
+            // Read version
+            int version = Byte.toUnsignedInt(buffer.get());
+            if ( version > 1) {
+                throw new UnsupportedOperationException("V2 architecture not supported. Superblock version: " + version);
+            }
+            return offset;
+        }
+        throw new IllegalArgumentException("HDF file signature not found");
     }
 
     private void readInfrastructure(HdfGroup parentGroup, HdfLocalHeap localHeap, HdfBTreeV1 groupBTree) throws Exception {
@@ -228,8 +253,8 @@ public class HdfFileReader implements HdfDataFile {
      * @throws IOException              if an I/O error occurs
      * @throws IllegalArgumentException if the file signature is invalid or the version is unsupported
      */
-    public static HdfSuperblock readSuperblockFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws Exception {
-        long offset = fileChannel.position();
+    public static HdfSuperblock readSuperblockFromSeekableByteChannel(SeekableByteChannel fileChannel, long superblockOffset, HdfDataFile hdfDataFile) throws Exception {
+        fileChannel.position(superblockOffset);
         // Step 1: Allocate the minimum buffer size to determine the version
         ByteBuffer buffer = ByteBuffer.allocate(SIGNATURE_SIZE + VERSION_SIZE); // File signature (8 bytes) + version (1 byte)
         buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -296,7 +321,7 @@ public class HdfFileReader implements HdfDataFile {
         HdfFixedPoint freeSpaceAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
         HdfFixedPoint endOfFileAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
         HdfFixedPoint driverInformationAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
-        HdfFixedPoint hdfOffset = HdfWriteUtils.hdfFixedPointFromValue(offset, fixedPointDatatypeForOffset);
+        HdfFixedPoint hdfOffset = HdfWriteUtils.hdfFixedPointFromValue(superblockOffset, fixedPointDatatypeForOffset);
 
         HdfSuperblock superblock = new HdfSuperblock(
                 version,
