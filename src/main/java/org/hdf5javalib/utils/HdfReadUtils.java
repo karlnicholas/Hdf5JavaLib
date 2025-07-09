@@ -61,6 +61,21 @@ public class HdfReadUtils {
     }
 
     /**
+     * Reverses the order of bytes in an array in place.
+     *
+     * @param input the byte array to reverse
+     */
+    public static byte[] trimZeroBytes(byte[] input) {
+        int inputLength = input.length;
+        while ( input[inputLength - 1] == 0 ) {
+            inputLength--;
+        }
+        byte[] returnBytes = new byte[inputLength];
+        System.arraycopy(input, 0, returnBytes, 0, inputLength);
+        return returnBytes;
+    }
+
+    /**
      * Reads a fixed-point value from a ByteBuffer using the specified datatype.
      *
      * @param fixedPointDatatype the fixed-point datatype defining the format

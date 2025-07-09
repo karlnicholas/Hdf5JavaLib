@@ -60,8 +60,8 @@ public class ExamplesRead {
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             for (HdfDataset dataSet : reader.getDatasets()) {
-                displayData(channel, dataSet, reader);
                 log.info("{} ", dataSet);
+                displayData(channel, dataSet, reader);
             }
         } catch (Exception e) {
             log.error("Exception in displayFile: {}", filePath, e);

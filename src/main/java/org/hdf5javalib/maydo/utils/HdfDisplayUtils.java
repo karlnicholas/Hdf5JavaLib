@@ -55,11 +55,9 @@ public class HdfDisplayUtils {
                 case 2:
                     displayMatrixData(channel, ds, HdfData.class, reader);
                     break;
-                case 3:
-                    displayCubeData(channel, ds, HdfData.class, reader);
-                    break;
                 default:
-                    throw new IllegalStateException("Unexpected value: " + ds.getDimensionality());
+                    displayNDimData(channel, ds, HdfData.class, reader);
+                    break;
 
             }
         }
@@ -162,7 +160,7 @@ public class HdfDisplayUtils {
      * @param <T>         the type of the data elements
      * @throws IOException if an I/O error occurs
      */
-    private static <T> void displayCubeData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+    private static <T> void displayNDimData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         System.out.print("read = " );
