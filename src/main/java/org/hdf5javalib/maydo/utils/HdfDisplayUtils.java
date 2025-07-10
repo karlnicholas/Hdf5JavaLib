@@ -45,7 +45,7 @@ public class HdfDisplayUtils {
         if (ds.hasDataspaceMessage()) {
             switch (ds.getDimensionality()) {
                 case 0:
-                    if (HdfFixedPoint.compareToZero(ds.getDimensionSizes().orElseThrow()[0]) != 0) {
+                    if (HdfFixedPoint.compareToZero(ds.getDimensionSizes()[0]) != 0) {
                         displayScalarData(channel, ds, HdfData.class, reader);
                     }
                     break;

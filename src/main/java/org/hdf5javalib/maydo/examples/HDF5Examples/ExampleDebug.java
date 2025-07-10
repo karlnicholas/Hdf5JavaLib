@@ -39,6 +39,7 @@ public class ExampleDebug {
     private void run() {
         try {
             Path filePath = Paths.get("c:/users/karln/downloads/ATL03_20250302235544_11742607_006_01.h5");
+            // h5ex_vds-percival-unlim
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Superblock: {} ", reader.getSuperblock());

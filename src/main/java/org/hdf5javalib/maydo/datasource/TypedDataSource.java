@@ -69,9 +69,8 @@ public class TypedDataSource<T> {
         this.dataset = dataset;
         this.channel = channel;
         this.dataClass = dataClass;
-        this.elementSize = dataset.getDatatype().getSize();
-        this.dimensions = extractDimensions(dataset.getObjectHeader()
-                .findMessageByType(DataspaceMessage.class).orElseThrow());
+        this.elementSize = dataset.getElementSize();
+        this.dimensions = dataset.extractDimensions();
         dataset.getObjectHeader().findMessageByType(DatatypeMessage.class).orElseThrow()
                 .getHdfDatatype().setGlobalHeap(hdfDataFile.getGlobalHeap());
     }
@@ -83,21 +82,6 @@ public class TypedDataSource<T> {
      */
     public int[] getShape() {
         return dimensions.clone();
-    }
-
-    /**
-     * Extracts the dimensions from a DataspaceMessage.
-     *
-     * @param dataspace the DataspaceMessage containing dimension information
-     * @return an array of dimension sizes
-     */
-    private int[] extractDimensions(DataspaceMessage dataspace) {
-        HdfFixedPoint[] dims = dataspace.getDimensions();
-        int[] result = new int[dims.length];
-        for (int i = 0; i < dims.length; i++) {
-            result[i] = dims[i].getInstance(Long.class).intValue();
-        }
-        return result;
     }
 
     /**
@@ -113,16 +97,7 @@ public class TypedDataSource<T> {
         if (size > Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Size too large: " + size);
         }
-        ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
-        synchronized (channel) {
-            channel.position(dataset.getDataAddress().orElseThrow().getInstance(Long.class) + offset);
-            int bytesRead = channel.read(buffer);
-            if (bytesRead != size) {
-                throw new IOException("Failed to read the expected number of bytes: read " + bytesRead + ", expected " + size);
-            }
-            buffer.flip();
-            return buffer;
-        }
+        return dataset.getDatasetData(channel, offset, size);
     }
 
     /**
@@ -201,7 +176,7 @@ public class TypedDataSource<T> {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
         }
-        if (HdfFixedPoint.compareToZero(dataset.getDimensionSizes().orElseThrow()[0]) <= 0) {
+        if (HdfFixedPoint.compareToZero(dataset.getDimensionSizes()[0]) <= 0) {
             throw new IllegalStateException("Dataset has no data");
         }
         ByteBuffer buffer = readBytes(0, elementSize);
@@ -219,7 +194,7 @@ public class TypedDataSource<T> {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
         }
-        if (HdfFixedPoint.compareToZero(dataset.getDimensionSizes().orElseThrow()[0]) <= 0) {
+        if (HdfFixedPoint.compareToZero(dataset.getDimensionSizes()[0]) <= 0) {
             throw new IllegalStateException("Dataset has no data");
         }
         try {

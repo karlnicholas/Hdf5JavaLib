@@ -129,10 +129,17 @@ public class DataLayoutMessage extends HdfMessage {
 
         // Read version (1 byte)
         int version = Byte.toUnsignedInt(buffer.get());
-        if (version < 1 || version > 3) {
-            throw new IllegalArgumentException("Unsupported Data Layout Message version: " + version);
-        }
+        return switch(version) {
+            case 1 -> parseVersion1And2(version, data.length, flags, buffer, hdfDataFile);
+            case 2 -> parseVersion1And2(version, data.length, flags, buffer, hdfDataFile);
+            case 3 -> parseVersion3(version, data.length, flags, buffer, hdfDataFile);
+            case 4 -> parseVersion4(version, data.length, flags, buffer, hdfDataFile);
+            default -> throw new IllegalStateException("Unexpected value: " + version);
+        };
 
+    }
+
+    private static DataLayoutMessage parseVersion1And2(int version, int length, int flags, ByteBuffer buffer, HdfDataFile hdfDataFile) {
         // Read layout class (1 byte)
         int layoutClass = Byte.toUnsignedInt(buffer.get());
 
@@ -180,7 +187,116 @@ public class DataLayoutMessage extends HdfMessage {
         }
 
         // Return a constructed instance of DataLayoutMessage
-        return new DataLayoutMessage(version, layoutClass, dataAddress, dimensionSizes, compactDataSize, compactData, datasetElementSize, flags, (short) data.length);
+        return new DataLayoutMessage(version, layoutClass, dataAddress, dimensionSizes, compactDataSize, compactData, datasetElementSize, flags, length);
+
+    }
+
+    private static DataLayoutMessage parseVersion3(int version, int length, int flags, ByteBuffer buffer, HdfDataFile hdfDataFile) {
+        // Read layout class (1 byte)
+        int layoutClass = Byte.toUnsignedInt(buffer.get());
+
+        // Initialize fields
+        HdfFixedPoint dataAddress = null;
+        HdfFixedPoint[] dimensionSizes = null;
+        int compactDataSize = 0;
+        byte[] compactData = null;
+        HdfFixedPoint datasetElementSize = null;
+
+        // Parse based on layout class
+        switch (layoutClass) {
+            case 0: // Compact Storage
+                compactDataSize = Short.toUnsignedInt(buffer.getShort()); // Compact data size (2 bytes)
+                compactData = new byte[compactDataSize];
+                buffer.get(compactData); // Read compact data
+                break;
+
+            case 1: // Contiguous Storage
+                dataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+                dimensionSizes = new HdfFixedPoint[1];
+                dimensionSizes[0] = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+                break;
+
+            case 2: // Chunked Storage
+                dataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+                int numDimensions = Byte.toUnsignedInt(buffer.get()); // Number of dimensions (1 byte)
+                dimensionSizes = new HdfFixedPoint[numDimensions];
+                for (int i = 0; i < numDimensions; i++) {
+                    dimensionSizes[i] = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+                }
+                // Dataset element size (4 bytes)
+                FixedPointDatatype fourByteFixedPointDatatype = new FixedPointDatatype(
+                        FixedPointDatatype.createClassAndVersion(),
+                        FixedPointDatatype.createClassBitField(false, false, false, false),
+                        4, (short) 0, (short) (4 * 8),
+                        hdfDataFile);
+                byte[] fourByteBytes = new byte[4];
+                buffer.get(fourByteBytes);
+                datasetElementSize = fourByteFixedPointDatatype.getInstance(HdfFixedPoint.class, fourByteBytes);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unsupported layout class: " + layoutClass);
+        }
+
+        // Return a constructed instance of DataLayoutMessage
+        return new DataLayoutMessage(version, layoutClass, dataAddress, dimensionSizes, compactDataSize, compactData, datasetElementSize, flags, length);
+
+    }
+
+    private static DataLayoutMessage parseVersion4(int version, int length, int flags, ByteBuffer buffer, HdfDataFile hdfDataFile) {
+        // Read layout class (1 byte)
+        int layoutClass = Byte.toUnsignedInt(buffer.get());
+
+        // Initialize fields
+        HdfFixedPoint dataAddress = null;
+        HdfFixedPoint[] dimensionSizes = null;
+        int compactDataSize = 0;
+        byte[] compactData = null;
+        HdfFixedPoint datasetElementSize = null;
+
+        // Parse based on layout class
+        switch (layoutClass) {
+            case 0: // Compact Storage
+                compactDataSize = Short.toUnsignedInt(buffer.getShort()); // Compact data size (2 bytes)
+                compactData = new byte[compactDataSize];
+                buffer.get(compactData); // Read compact data
+                break;
+
+            case 1: // Contiguous Storage
+                dataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+                dimensionSizes = new HdfFixedPoint[1];
+                dimensionSizes[0] = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+                break;
+
+            case 2: // Chunked Storage
+                dataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+                int numDimensions = Byte.toUnsignedInt(buffer.get()); // Number of dimensions (1 byte)
+                dimensionSizes = new HdfFixedPoint[numDimensions];
+                for (int i = 0; i < numDimensions; i++) {
+                    dimensionSizes[i] = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+                }
+                // Dataset element size (4 bytes)
+                FixedPointDatatype fourByteFixedPointDatatype = new FixedPointDatatype(
+                        FixedPointDatatype.createClassAndVersion(),
+                        FixedPointDatatype.createClassBitField(false, false, false, false),
+                        4, (short) 0, (short) (4 * 8),
+                        hdfDataFile);
+                byte[] fourByteBytes = new byte[4];
+                buffer.get(fourByteBytes);
+                datasetElementSize = fourByteFixedPointDatatype.getInstance(HdfFixedPoint.class, fourByteBytes);
+                break;
+            case 3: // Virtual Storage
+                dataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+                long index = Integer.toUnsignedLong(buffer.getInt());
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unsupported layout class: " + layoutClass);
+        }
+
+        // Return a constructed instance of DataLayoutMessage
+        return new DataLayoutMessage(version, layoutClass, dataAddress, dimensionSizes, compactDataSize, compactData, datasetElementSize, flags, length);
+
     }
 
     /**
