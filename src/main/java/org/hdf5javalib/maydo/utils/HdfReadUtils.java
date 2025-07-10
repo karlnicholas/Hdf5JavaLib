@@ -76,6 +76,15 @@ public class HdfReadUtils {
         }
     }
 
+    public static String readNullTerminatedString(ByteBuffer buffer) {
+        StringBuilder nameBuilder = new StringBuilder();
+        byte b;
+        while ((b = buffer.get()) != 0) {
+            nameBuilder.append((char) b);
+        }
+        return nameBuilder.toString();
+    }
+
     /**
      * Reads a fixed-point value from a ByteBuffer using the specified datatype.
      *

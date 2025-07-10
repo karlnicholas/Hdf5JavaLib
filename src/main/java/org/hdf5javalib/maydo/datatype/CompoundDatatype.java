@@ -5,6 +5,7 @@ import org.hdf5javalib.maydo.dataclass.HdfData;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DatatypeMessage;
 import org.hdf5javalib.maydo.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
+import org.hdf5javalib.maydo.utils.HdfReadUtils;
 
 import java.lang.reflect.*;
 import java.nio.ByteBuffer;
@@ -144,7 +145,7 @@ public class CompoundDatatype implements Datatype {
         int numberOfMembers = extractNumberOfMembersFromBitSet();
         for (int i = 0; i < numberOfMembers; i++) {
             buffer.mark();
-            String name = readNullTerminatedString(buffer);
+            String name = HdfReadUtils.readNullTerminatedString(buffer);
 
             // Align to 8-byte boundary
             alignBufferTo8ByteBoundary(buffer, name.length() + 1);
@@ -187,14 +188,6 @@ public class CompoundDatatype implements Datatype {
         }
     }
 
-    private static String readNullTerminatedString(ByteBuffer buffer) {
-        StringBuilder nameBuilder = new StringBuilder();
-        byte b;
-        while ((b = buffer.get()) != 0) {
-            nameBuilder.append((char) b);
-        }
-        return nameBuilder.toString();
-    }
 
     private static void alignBufferTo8ByteBoundary(ByteBuffer buffer, int dataLength) {
         int padding = (8 - (dataLength % 8)) % 8;
