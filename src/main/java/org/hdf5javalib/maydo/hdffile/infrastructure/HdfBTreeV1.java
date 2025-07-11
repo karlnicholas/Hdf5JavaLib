@@ -48,7 +48,7 @@ public class HdfBTreeV1 {
     /**
      * The list of B-Tree entries.
      */
-    private final List<HdfBTreeEntry> entries;
+    private final List<HdfBTreeEntryBase> entries;
     /**
      * The HDF5 file context.
      */
@@ -73,7 +73,7 @@ public class HdfBTreeV1 {
             HdfFixedPoint leftSiblingAddress,
             HdfFixedPoint rightSiblingAddress,
             HdfFixedPoint keyZero,
-            List<HdfBTreeEntry> entries,
+            List<HdfBTreeEntryBase> entries,
             HdfDataFile hdfDataFile,
             HdfFixedPoint offset
     ) {
@@ -133,7 +133,7 @@ public class HdfBTreeV1 {
         sb.append(", entries=[");
         if (entries != null && !entries.isEmpty()) {
             boolean first = true;
-            for (HdfBTreeEntry entry : entries) {
+            for (HdfBTreeEntryBase entry : entries) {
                 if (!first) {
                     sb.append(", ");
                 }
@@ -150,7 +150,7 @@ public class HdfBTreeV1 {
         return sb.toString();
     }
 
-    public List<HdfBTreeEntry> getEntries() {
+    public List<HdfBTreeEntryBase> getEntries() {
         return entries;
     }
 

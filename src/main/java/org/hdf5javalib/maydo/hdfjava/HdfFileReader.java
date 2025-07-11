@@ -40,8 +40,8 @@ import static org.hdf5javalib.maydo.hdffile.metadata.HdfSuperblock.*;
 public class HdfFileReader implements HdfDataFile {
 //    /** The superblock containing metadata about the HDF5 file. */
 //    private HdfSuperblock superblock;
-    private static final byte[] BTREE_SIGNATURE = {'T', 'R', 'E', 'E'};
-    private static final int BTREE_HEADER_INITIAL_SIZE = 8;
+    public static final byte[] BTREE_SIGNATURE = {'T', 'R', 'E', 'E'};
+    public static final int BTREE_HEADER_INITIAL_SIZE = 8;
     private static final int MAX_SNOD_ENTRIES = 8;
 
     /**
@@ -144,8 +144,8 @@ public class HdfFileReader implements HdfDataFile {
     }
 
     private void readInfrastructure(HdfGroup parentGroup, HdfLocalHeap localHeap, HdfBTreeV1 groupBTree) throws Exception {
-        for( HdfBTreeEntry entry: groupBTree.getEntries()) {
-            HdfGroupSymbolTableNode groupSymbolTableNode = entry.getGroupSymbolTableNode();
+        for( HdfBTreeEntryBase entry: groupBTree.getEntries()) {
+            HdfGroupSymbolTableNode groupSymbolTableNode = ((HdfGroupBTreeEntry)entry).getGroupSymbolTableNode();
             for( HdfSymbolTableEntry symbolTableEntry: groupSymbolTableNode.getSymbolTableEntries() ) {
                 String objectName = localHeap.stringAtOffset(symbolTableEntry.getLinkNameOffset());
                 HdfObjectHeaderPrefixV1 objectHeader = readObjectHeader(fileChannel, symbolTableEntry.getObjectHeaderAddress().getInstance(Long.class), this);
@@ -412,7 +412,7 @@ public class HdfFileReader implements HdfDataFile {
 
         HdfFixedPoint keyZero = HdfReadUtils.readHdfFixedPointFromBuffer(hdfLength, entriesBuffer);
 
-        List<HdfBTreeEntry> entries = new ArrayList<>(entriesUsed);
+        List<HdfBTreeEntryBase> entries = new ArrayList<>(entriesUsed);
 
         HdfBTreeV1 currentNode = new HdfBTreeV1(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries, hdfDataFile,
                 HdfWriteUtils.hdfFixedPointFromValue(nodeAddress, hdfOffset));
@@ -425,7 +425,7 @@ public class HdfFileReader implements HdfDataFile {
             long childAddress = childPointer.getInstance(Long.class);
             fileChannel.position(childAddress);
             HdfGroupSymbolTableNode snod = readSnodFromSeekableByteChannel(fileChannel, hdfDataFile);
-            HdfBTreeEntry entry = new HdfBTreeEntry(key, childPointer, null, snod);
+            HdfGroupBTreeEntry entry = new HdfGroupBTreeEntry(key, childPointer, null, snod);
 
             fileChannel.position(filePosAfterEntriesBlock);
             entries.add(entry);
@@ -875,7 +875,7 @@ public class HdfFileReader implements HdfDataFile {
 //                                          Map<String, HdfGroup.DataSetInfo> dataSets,
 //                                          HdfLocalHeap localHeap,
 //                                          SeekableByteChannel fileChannel) throws IOException {
-//        for (HdfBTreeEntry entry : currentNode.getEntries()) {
+//        for (HdfGroupBTreeEntry entry : currentNode.getEntries()) {
 //            if (entry.isLeafEntry()) {
 //                HdfGroupSymbolTableNode snod = entry.getSymbolTableNode();
 //                for (HdfSymbolTableEntry ste : snod.getSymbolTableEntries()) {

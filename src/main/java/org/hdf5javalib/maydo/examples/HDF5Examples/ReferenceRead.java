@@ -46,6 +46,7 @@ public class ReferenceRead {
 //                    displayReference(channel, dataSet, reader);
 //                }
                 for (HdfDataset dataSet : reader.getDatasets()) {
+                    log.debug("dataSet: {} ", dataSet);
                     displayData(channel, dataSet, reader);
                 }
                 log.debug("Superblock: {} ", reader.getSuperblock());

@@ -5,7 +5,7 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 /**
  * Represents an entry in an HDF5 B-Tree (version 1) as defined in the HDF5 specification.
  * <p>
- * The {@code HdfBTreeEntry} class models a single entry in a B-Tree, which is used for indexing
+ * The {@code HdfGroupBTreeEntry} class models a single entry in a B-Tree, which is used for indexing
  * group entries in HDF5 files. Each entry contains a key, a child pointer (address), and a payload
  * that is either a symbol table node (for leaf entries) or a child B-Tree (for internal entries).
  * Only one type of payload is non-null at a time.
@@ -26,7 +26,7 @@ public class HdfBTreeEntry {
     private final HdfBTreeV1 childBTree;
 
     /**
-     * Constructs an HdfBTreeEntry for a leaf node, pointing to a symbol table node.
+     * Constructs an HdfGroupBTreeEntry for a leaf node, pointing to a symbol table node.
      *
      * @param key             the key for the entry
      * @param snodAddress     the address of the symbol table node
@@ -40,7 +40,7 @@ public class HdfBTreeEntry {
     }
 
     /**
-     * Constructs an HdfBTreeEntry for an internal node, pointing to a child B-Tree.
+     * Constructs an HdfGroupBTreeEntry for an internal node, pointing to a child B-Tree.
      *
      * @param key              the key for the entry
      * @param childBTreeAddress the address of the child B-Tree
@@ -72,7 +72,7 @@ public class HdfBTreeEntry {
     }
 
     /**
-     * Returns a string representation of the HdfBTreeEntry.
+     * Returns a string representation of the HdfGroupBTreeEntry.
      * <p>
      * Includes the key, child pointer, and the full payload content (symbol table node
      * or child B-Tree) by calling their respective {@code toString()} methods.
@@ -82,7 +82,7 @@ public class HdfBTreeEntry {
      */
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("HdfBTreeEntry{");
+        StringBuilder sb = new StringBuilder("HdfGroupBTreeEntry{");
         sb.append("key=").append(key);
         sb.append(", childPointer=").append(childPointer);
 

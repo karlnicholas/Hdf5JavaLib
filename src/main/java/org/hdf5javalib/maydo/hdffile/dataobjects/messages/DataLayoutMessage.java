@@ -3,14 +3,22 @@ package org.hdf5javalib.maydo.hdffile.dataobjects.messages;
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.dataclass.reference.HdfDataspaceSelectionInstance;
 import org.hdf5javalib.maydo.datatype.FixedPointDatatype;
+import org.hdf5javalib.maydo.hdffile.infrastructure.HdfBTreeEntryBase;
+import org.hdf5javalib.maydo.hdffile.infrastructure.HdfChunkBTreeEntry;
+import org.hdf5javalib.maydo.hdffile.infrastructure.HdfGroupBTreeEntry;
+import org.hdf5javalib.maydo.hdffile.infrastructure.HdfBTreeV1;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.utils.HdfReadUtils;
+import org.hdf5javalib.maydo.utils.HdfWriteUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
-import java.util.Arrays;
+import java.util.*;
+
+import static org.hdf5javalib.maydo.hdfjava.HdfFileReader.BTREE_HEADER_INITIAL_SIZE;
+import static org.hdf5javalib.maydo.hdfjava.HdfFileReader.BTREE_SIGNATURE;
 
 /**
  * Represents a Data Layout Message in the HDF5 file format.
@@ -124,9 +132,11 @@ public class DataLayoutMessage extends HdfMessage {
                 HdfFixedPoint chunkedDataAddress;
                 HdfFixedPoint[] dimensionSizes;
                 HdfFixedPoint datasetElementSize;
+                HdfBTreeV1 bTree;
+                int numDimensions;
                 if (version == 1 || version == 2) {
                     chunkedDataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
-                    int numDimensions = Byte.toUnsignedInt(buffer.get()); // Number of dimensions (1 byte)
+                    numDimensions = Byte.toUnsignedInt(buffer.get()); // Number of dimensions (1 byte)
                     dimensionSizes = new HdfFixedPoint[numDimensions];
                     for (int i = 0; i < numDimensions; i++) {
                         dimensionSizes[i] = HdfReadUtils.readHdfFixedPointFromBuffer(fourByteDt, buffer);
@@ -135,14 +145,25 @@ public class DataLayoutMessage extends HdfMessage {
                 } else {
                     int dimensionality = Byte.toUnsignedInt(buffer.get()); // Number of dimensions (1 byte)
                     chunkedDataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
-                    int numDimensions = dimensionality - 1;
+                    numDimensions = dimensionality - 1;
                     dimensionSizes = new HdfFixedPoint[numDimensions];
                     for (int i = 0; i < numDimensions; i++) {
                         dimensionSizes[i] = HdfReadUtils.readHdfFixedPointFromBuffer(fourByteDt, buffer);
                     }
                     datasetElementSize = HdfReadUtils.readHdfFixedPointFromBuffer(fourByteDt, buffer);
                 }
-                dataLayoutStorage = new ChunkedStorage(chunkedDataAddress, dimensionSizes, datasetElementSize);
+                try {
+                    FixedPointDatatype eightByteFixedPointType =  new FixedPointDatatype(
+                            FixedPointDatatype.createClassAndVersion(),
+                            FixedPointDatatype.createClassBitField(false, false, false, false),
+                            8, (short) 0, (short) (8 * 8),
+                            hdfDataFile);
+
+                    bTree = readBTreeFromSeekableByteChannel(hdfDataFile.getSeekableByteChannel(), chunkedDataAddress.getInstance(Long.class), numDimensions, eightByteFixedPointType, hdfDataFile);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                dataLayoutStorage = new ChunkedStorage(chunkedDataAddress, dimensionSizes, datasetElementSize, bTree);
                 break;
 
             case 3: // Virtual Storage
@@ -173,6 +194,95 @@ public class DataLayoutMessage extends HdfMessage {
         // Return a constructed instance of DataLayoutMessage
         return new DataLayoutMessage(version, dataLayoutStorage, flags, data.length);
     }
+
+    /**
+     * Reads an HdfBTree from a file channel.
+     *
+     * @param fileChannel the file channel to read from
+     * @param hdfDataFile the HDF5 file context
+     * @return the constructed HdfBTree instance
+     * @throws IOException if an I/O error occurs or the B-Tree data is invalid
+     */
+    public static HdfBTreeV1 readBTreeFromSeekableByteChannel(
+            SeekableByteChannel fileChannel,
+            long btreeAddress,
+            int dimensions,
+            FixedPointDatatype eightByteFixedPointType,
+            HdfDataFile hdfDataFile
+    ) throws Exception {
+        return readFromSeekableByteChannelRecursive(fileChannel, btreeAddress, dimensions, eightByteFixedPointType, hdfDataFile, new LinkedHashMap<>());
+    }
+
+    /**
+     * Recursively reads an HdfBTree from a file channel, handling cycles.
+     *
+     * @param fileChannel  the file channel to read from
+     * @param nodeAddress  the address of the current node
+     * @param visitedNodes a map of visited node addresses to detect cycles
+     * @param hdfDataFile  the HDF5 file context
+     * @return the constructed HdfBTree instance
+     * @throws IOException if an I/O error occurs or the B-Tree data is invalid
+     */
+    private static HdfBTreeV1 readFromSeekableByteChannelRecursive(SeekableByteChannel fileChannel,
+                                                                   long nodeAddress,
+                                                                   int dimensions,
+                                                                   FixedPointDatatype eightByteFixedPointType,
+                                                                   HdfDataFile hdfDataFile,
+                                                                   Map<Long, HdfBTreeV1> visitedNodes
+    ) throws Exception {
+        if (visitedNodes.containsKey(nodeAddress)) {
+            throw new IllegalStateException("Cycle detected or node re-visited: BTree node address "
+                    + nodeAddress + " encountered again during recursive read.");
+        }
+
+        fileChannel.position(nodeAddress);
+        FixedPointDatatype hdfOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset();
+        final int offsetSize = hdfOffset.getSize();
+
+        int headerSize = BTREE_HEADER_INITIAL_SIZE + offsetSize + offsetSize;
+        ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
+        fileChannel.read(headerBuffer);
+        headerBuffer.flip();
+
+        byte[] signatureBytes = new byte[BTREE_SIGNATURE.length];
+        headerBuffer.get(signatureBytes);
+        if (Arrays.compare(signatureBytes, BTREE_SIGNATURE) != 0) {
+            throw new IOException("Invalid B-tree node signature: '" + Arrays.toString(signatureBytes) + "' at position " + nodeAddress);
+        }
+
+        int nodeType = Byte.toUnsignedInt(headerBuffer.get());
+        int nodeLevel = Byte.toUnsignedInt(headerBuffer.get());
+        int entriesUsed = Short.toUnsignedInt(headerBuffer.getShort());
+
+        HdfFixedPoint leftSiblingAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfOffset, headerBuffer);
+        HdfFixedPoint rightSiblingAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfOffset, headerBuffer);
+
+        int entriesDataSize = (5 * 8 * entriesUsed);
+        ByteBuffer entriesBuffer = ByteBuffer.allocate(entriesDataSize).order(ByteOrder.LITTLE_ENDIAN);
+        fileChannel.read(entriesBuffer);
+        entriesBuffer.flip();
+
+        List<HdfBTreeEntryBase> entries = new ArrayList<>(entriesUsed);
+
+        HdfBTreeV1 currentNode = new HdfBTreeV1(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, null, entries, hdfDataFile,
+                HdfWriteUtils.hdfFixedPointFromValue(nodeAddress, hdfOffset));
+        visitedNodes.put(nodeAddress, currentNode);
+
+        for (int i = 0; i < entriesUsed; i++) {
+            long sizeOfChunk = Integer.toUnsignedLong(entriesBuffer.getInt());
+            long filterMask = Integer.toUnsignedLong(entriesBuffer.getInt());
+            List<HdfFixedPoint> dimensionOffsets = new ArrayList<>();
+            for (int j = 0; j < dimensions; j++) {
+                dimensionOffsets.add(HdfReadUtils.readHdfFixedPointFromBuffer(eightByteFixedPointType, entriesBuffer));
+            }
+            HdfFixedPoint zeroValue = HdfReadUtils.readHdfFixedPointFromBuffer(hdfOffset, entriesBuffer);
+            HdfFixedPoint childPointer = HdfReadUtils.readHdfFixedPointFromBuffer(hdfOffset, entriesBuffer);
+
+            entries.add(new HdfChunkBTreeEntry(null, childPointer, null, sizeOfChunk, filterMask, dimensionOffsets));
+        }
+        return currentNode;
+    }
+
 
     /**
      * Returns a string representation of this DataLayoutMessage.
@@ -308,6 +418,7 @@ public class DataLayoutMessage extends HdfMessage {
         private final HdfFixedPoint chunkedDataAddress;
         private final HdfFixedPoint[] dimensionSizes;
         private final HdfFixedPoint datasetElementSize;
+        private final HdfBTreeV1 bTree;
 
         /**
          * Constructs a ChunkedStorage instance.
@@ -316,10 +427,11 @@ public class DataLayoutMessage extends HdfMessage {
          * @param chunkedDataAddress    the file address of the chunked data
          * @param datasetElementSize datasetElementSize
          */
-        public ChunkedStorage(HdfFixedPoint chunkedDataAddress, HdfFixedPoint[] dimensionSizes, HdfFixedPoint datasetElementSize) {
+        public ChunkedStorage(HdfFixedPoint chunkedDataAddress, HdfFixedPoint[] dimensionSizes, HdfFixedPoint datasetElementSize, HdfBTreeV1 bTree) {
             this.chunkedDataAddress = chunkedDataAddress;
             this.dimensionSizes = dimensionSizes;
             this.datasetElementSize = datasetElementSize;
+            this.bTree = bTree;
         }
 
         /**
@@ -333,6 +445,7 @@ public class DataLayoutMessage extends HdfMessage {
                     ", chunkedDataAddress=" + chunkedDataAddress +
                     ", dimensionSizes=" + Arrays.toString(dimensionSizes) +
                     ", datasetElementSize=" + datasetElementSize +
+                    ", bTree=" + bTree +
                     '}';
         }
 

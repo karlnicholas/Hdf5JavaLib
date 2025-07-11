@@ -117,7 +117,7 @@ public class HdfFileReader implements HdfDataFile {
 //                                          Map<String, HdfGroup.DataSetInfo> dataSets,
 //                                          HdfLocalHeap localHeap,
 //                                          SeekableByteChannel fileChannel) throws IOException {
-//        for (HdfBTreeEntry entry : currentNode.getEntries()) {
+//        for (HdfGroupBTreeEntry entry : currentNode.getEntries()) {
 //            if (entry.isLeafEntry()) {
 //                HdfGroupSymbolTableNode snod = entry.getSymbolTableNode();
 //                for (HdfSymbolTableEntry ste : snod.getSymbolTableEntries()) {
