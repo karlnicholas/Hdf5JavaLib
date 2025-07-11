@@ -42,12 +42,10 @@ public class HdfDisplayUtils {
 
     public static void displayData(SeekableByteChannel channel, HdfDataset ds, HdfFileReader reader) throws Exception {
         System.out.println(ds.getObjectName());
-        if (ds.hasDataspaceMessage()) {
+        if (ds.hasData()) {
             switch (ds.getDimensionality()) {
                 case 0:
-                    if (HdfFixedPoint.compareToZero(ds.getDimensionSizes()[0]) != 0) {
-                        displayScalarData(channel, ds, HdfData.class, reader);
-                    }
+                    displayScalarData(channel, ds, HdfData.class, reader);
                     break;
                 case 1:
                     displayVectorData(channel, ds, HdfData.class, reader);

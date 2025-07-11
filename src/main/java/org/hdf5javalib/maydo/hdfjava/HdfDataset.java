@@ -48,14 +48,14 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
         return objectHeader.findMessageByType(DatatypeMessage.class).orElseThrow().getHdfDatatype();
     }
 
-    /**
-     * Retrieves the dimension sizes of the dataset.
-     *
-     * @return an array of {@link HdfFixedPoint} representing the dimension sizes
-     */
-    public HdfFixedPoint[] getDimensionSizes() {
-        return objectHeader.findMessageByType(DataLayoutMessage.class).orElseThrow().getDimensionSizes();
-    }
+//    /**
+//     * Retrieves the dimension sizes of the dataset.
+//     *
+//     * @return an array of {@link HdfFixedPoint} representing the dimension sizes
+//     */
+//    public HdfFixedPoint[] getDimensionSizes() {
+//        return objectHeader.findMessageByType(DataLayoutMessage.class).orElseThrow().getDimensionSizes();
+//    }
 
     @Override
     public String getObjectName() {
@@ -99,14 +99,12 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
     }
 
     public synchronized ByteBuffer getDatasetData(SeekableByteChannel channel, long offset, long size) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
-        channel.position(getDataAddress().orElseThrow().getInstance(Long.class) + offset);
-        int bytesRead = channel.read(buffer);
-        if (bytesRead != size) {
-            throw new IOException("Failed to read the expected number of bytes: read " + bytesRead + ", expected " + size);
-        }
-        buffer.flip();
-        return buffer;
+        return objectHeader.findMessageByType(DataLayoutMessage.class).orElseThrow().getData(channel, offset, size);
+    }
+
+    public boolean hasData() {
+        return hasDataspaceMessage()
+                && objectHeader.findMessageByType(DataLayoutMessage.class).orElseThrow().hasData();
     }
 
     /**
@@ -114,10 +112,10 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
      *
      * @return the {@link org.hdf5javalib.redo.dataclass.HdfFixedPoint} representing the data address
      */
-    private Optional<HdfFixedPoint> getDataAddress() {
-        return objectHeader.findMessageByType(DataLayoutMessage.class)
-                .flatMap(dataLayoutMessage -> Optional.ofNullable(dataLayoutMessage.getDataAddress()));
-    }
+//    private Optional<HdfFixedPoint> getDataAddress() {
+//        return objectHeader.findMessageByType(DataLayoutMessage.class)
+//                .flatMap(dataLayoutMessage -> Optional.ofNullable(dataLayoutMessage.getDataAddress()));
+//    }
 
 
 }
