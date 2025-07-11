@@ -1,18 +1,13 @@
 package org.hdf5javalib.maydo.hdffile.dataobjects;
 
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.HdfMessage;
-import org.hdf5javalib.maydo.hdffile.dataobjects.messages.ObjectHeaderContinuationMessage;
-import org.hdf5javalib.maydo.hdfjava.AllocationType;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdfjava.HdfFileAllocation;
 import org.hdf5javalib.maydo.utils.HdfWriteUtils;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 public class HdfObjectHeaderPrefixV2 extends HdfObjectHeaderPrefix {

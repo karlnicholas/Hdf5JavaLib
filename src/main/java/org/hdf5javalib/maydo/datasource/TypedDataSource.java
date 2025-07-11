@@ -1,9 +1,7 @@
 package org.hdf5javalib.maydo.datasource;
 
-import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
-import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
-import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DataspaceMessage;
 import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DatatypeMessage;
+import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.utils.FlattenedArrayUtils;
 
@@ -11,7 +9,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Spliterator;
 import java.util.function.Consumer;

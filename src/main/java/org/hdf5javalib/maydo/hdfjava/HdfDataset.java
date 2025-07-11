@@ -11,11 +11,9 @@ import org.hdf5javalib.maydo.hdffile.dataobjects.messages.DatatypeMessage;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Represents a leaf node (HdfDataset) in the B-Tree.

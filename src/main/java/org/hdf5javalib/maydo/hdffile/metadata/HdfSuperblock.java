@@ -3,14 +3,8 @@ package org.hdf5javalib.maydo.hdffile.metadata;
 import org.hdf5javalib.maydo.dataclass.HdfFixedPoint;
 import org.hdf5javalib.maydo.datatype.FixedPointDatatype;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
-import org.hdf5javalib.maydo.hdfjava.HdfFileAllocation;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.channels.SeekableByteChannel;
-
-import static org.hdf5javalib.maydo.utils.HdfWriteUtils.writeFixedPointToBuffer;
 
 /**
  * Represents the Superblock in the HDF5 file format.
