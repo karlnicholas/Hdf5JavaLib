@@ -117,13 +117,13 @@ public class DataLayoutMessage extends HdfMessage {
                 int compactDataSize = Short.toUnsignedInt(buffer.getShort()); // Compact data size (2 bytes)
                 byte[] compactData = compactData = new byte[compactDataSize];
                 buffer.get(compactData); // Read compact data
-                dataLayoutStorage = new CompactStorage(compactDataSize, compactData);
+                dataLayoutStorage = new CompactStorage(compactDataSize, compactData, hdfDataFile);
                 break;
 
             case 1: // Contiguous Storage
                 HdfFixedPoint dataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
                 HdfFixedPoint dataSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), buffer);
-                dataLayoutStorage = new ContiguousStorage(dataAddress, dataSize);
+                dataLayoutStorage = new ContiguousStorage(dataAddress, dataSize, hdfDataFile);
                 break;
 
             case 2: // Chunked Storage
@@ -162,7 +162,7 @@ public class DataLayoutMessage extends HdfMessage {
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                dataLayoutStorage = new ChunkedStorage(chunkedDataAddress, dimensionSizes, datasetElementSize, bTree);
+                dataLayoutStorage = new ChunkedStorage(chunkedDataAddress, dimensionSizes, datasetElementSize, bTree, hdfDataFile);
                 break;
 
             case 3: // Virtual Storage
@@ -300,8 +300,8 @@ public class DataLayoutMessage extends HdfMessage {
         return dataLayoutStorage.hasData();
     }
 
-    public ByteBuffer getData(SeekableByteChannel channel, long offset, long size) throws IOException {
-        return dataLayoutStorage.getData(channel, offset, size);
+    public DataLayoutStorage getDataLayoutStorage() throws IOException {
+        return dataLayoutStorage;
     }
 
 //    public void setDataAddress(HdfFixedPoint dataAddress) {
@@ -316,16 +316,19 @@ public class DataLayoutMessage extends HdfMessage {
 //        return d;
 //    }
 
-    public interface DataLayoutStorage {
+    public static abstract class DataLayoutStorage {
+        protected final HdfDataFile hdfDataFile;
+        public DataLayoutStorage(HdfDataFile hdfDataFile) {
+            this.hdfDataFile = hdfDataFile;
+        }
+        abstract boolean hasData();
 
-        boolean hasData();
-
-        ByteBuffer getData(SeekableByteChannel channel, long offset, long size) throws IOException ;
     }
+
     /**
      * Represents contiguous storage properties for a dataset.
      */
-    public static class CompactStorage implements DataLayoutStorage {
+    public static class CompactStorage extends DataLayoutStorage {
         private final int compactDataSize;
         private final byte[] compactData;
 
@@ -334,9 +337,18 @@ public class DataLayoutMessage extends HdfMessage {
          * @param compactDataSize size of data
          * @param compactData      data
          */
-        public CompactStorage(int compactDataSize, byte[] compactData) {
+        public CompactStorage(int compactDataSize, byte[] compactData, HdfDataFile hdfDataFile) {
+            super(hdfDataFile);
             this.compactDataSize = compactDataSize;
             this.compactData = compactData;
+        }
+
+        public int getCompactDataSize() {
+            return compactDataSize;
+        }
+
+        public byte[] getCompactData() {
+            return compactData;
         }
 
         /**
@@ -357,15 +369,11 @@ public class DataLayoutMessage extends HdfMessage {
             return compactDataSize > 0;
         }
 
-        @Override
-        public ByteBuffer getData(SeekableByteChannel channel, long offset, long size) {
-            return null;
-        }
     }
     /**
      * Represents contiguous storage properties for a dataset.
      */
-    public static class ContiguousStorage implements DataLayoutStorage {
+    public static class ContiguousStorage extends DataLayoutStorage {
         private final HdfFixedPoint dataAddress;
         private final HdfFixedPoint dataSize;
 
@@ -375,9 +383,18 @@ public class DataLayoutMessage extends HdfMessage {
          * @param dataAddress the file address of the contiguous data
          * @param dataSize    the size of the contiguous data
          */
-        public ContiguousStorage(HdfFixedPoint dataAddress, HdfFixedPoint dataSize) {
+        public ContiguousStorage(HdfFixedPoint dataAddress, HdfFixedPoint dataSize, HdfDataFile hdfDataFile) {
+            super(hdfDataFile);
             this.dataAddress = dataAddress;
             this.dataSize = dataSize;
+        }
+
+        public HdfFixedPoint getDataAddress() {
+            return dataAddress;
+        }
+
+        public HdfFixedPoint getDataSize() {
+            return dataSize;
         }
 
         /**
@@ -398,22 +415,11 @@ public class DataLayoutMessage extends HdfMessage {
             return HdfFixedPoint.compareToZero(dataSize) > 0;
         }
 
-        @Override
-        public ByteBuffer getData(SeekableByteChannel channel, long offset, long size) throws IOException {
-            ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
-            channel.position(dataAddress.getInstance(Long.class) + offset);
-            int bytesRead = channel.read(buffer);
-            if (bytesRead != size) {
-                throw new IOException("Failed to read the expected number of bytes: read " + bytesRead + ", expected " + size);
-            }
-            buffer.flip();
-            return buffer;
-        }
     }
     /**
      * Represents chunked storage properties for a dataset.
      */
-    public static class ChunkedStorage implements DataLayoutStorage {
+    public static class ChunkedStorage extends DataLayoutStorage {
         private final HdfFixedPoint chunkedDataAddress;
         private final HdfFixedPoint[] dimensionSizes;
         private final HdfFixedPoint datasetElementSize;
@@ -426,11 +432,24 @@ public class DataLayoutMessage extends HdfMessage {
          * @param chunkedDataAddress    the file address of the chunked data
          * @param datasetElementSize datasetElementSize
          */
-        public ChunkedStorage(HdfFixedPoint chunkedDataAddress, HdfFixedPoint[] dimensionSizes, HdfFixedPoint datasetElementSize, HdfBTreeV1 bTree) {
+        public ChunkedStorage(HdfFixedPoint chunkedDataAddress, HdfFixedPoint[] dimensionSizes, HdfFixedPoint datasetElementSize, HdfBTreeV1 bTree, HdfDataFile hdfDataFile) {
+            super(hdfDataFile);
             this.chunkedDataAddress = chunkedDataAddress;
             this.dimensionSizes = dimensionSizes;
             this.datasetElementSize = datasetElementSize;
             this.bTree = bTree;
+        }
+
+        public HdfFixedPoint[] getDimensionSizes() {
+            return dimensionSizes;
+        }
+
+        public HdfFixedPoint getDatasetElementSize() {
+            return datasetElementSize;
+        }
+
+        public HdfBTreeV1 getBTree() {
+            return bTree;
         }
 
         /**
@@ -453,10 +472,6 @@ public class DataLayoutMessage extends HdfMessage {
             return HdfFixedPoint.compareToZero(datasetElementSize) > 0 && dimensionSizes.length > 0 && HdfFixedPoint.compareToZero(dimensionSizes[0]) > 0;
         }
 
-        @Override
-        public ByteBuffer getData(SeekableByteChannel channel, long offset, long size) throws IOException {
-            return null;
-        }
     }
 
     /**

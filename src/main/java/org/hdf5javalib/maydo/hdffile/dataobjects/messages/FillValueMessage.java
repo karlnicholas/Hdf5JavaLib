@@ -94,6 +94,18 @@ public class FillValueMessage extends HdfMessage {
         this.fillValue = fillValue;
     }
 
+    public int getFillValueDefined() {
+        return fillValueDefined;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public byte[] getFillValue() {
+        return fillValue;
+    }
+
     /**
      * Parses a FillValueMessage from the provided data and file context.
      *

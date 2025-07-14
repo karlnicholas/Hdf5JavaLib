@@ -1,3 +1,21 @@
+14:41:35.978 [main] DEBUG org.hdf5javalib.maydo.examples.HDF5Examples.ReferenceRead -- dataSet: HdfDataset[name='DS1', value=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+		DataspaceMessage(48){version=1, dimensionality=2, flags={0}, dimensions=[6, 8], maxDimensions=[6, 8], hasMaxDimensions=true}
+		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
+		FillValueMessage(16){version=2, spaceAllocationTime=3, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}
+		
+
+DataLayoutMessage(32){version=3dataLayoutStorage=ChunkedStorage{, chunkedDataAddress=1400, dimensionSizes=[4, 4], datasetElementSize=4, 
+  bTree=HdfBTree{signature='TREE', nodeType=1, nodeLevel=0, entriesUsed=4, leftSiblingAddress=undefined, rightSiblingAddress=undefined, keyZero=null, entries=[
+    HdfChunkBTreeEntry{key=null, childPointer="4016", sizeOfChunk=64, filterMask=0, dimensionOffsets=[0, 0]}, 
+	HdfChunkBTreeEntry{key=null, childPointer="4080", sizeOfChunk=64, filterMask=0, dimensionOffsets=[0, 4]}, 
+	HdfChunkBTreeEntry{key=null, childPointer="4144", sizeOfChunk=64, filterMask=0, dimensionOffsets=[4, 0]}, 
+	HdfChunkBTreeEntry{key=null, childPointer="4208", sizeOfChunk=64, filterMask=0, dimensionOffsets=[4, 4]}]}}}
+
+		ObjectModificationTimeMessage(16){version=1, secondsAfterEpoch=2025-07-09T14:24:01Z}
+		NilMessage(120){}}] 
+DS1
+
+
 Version 1 ohdr:
 
 Header Message Type #1	(SHORT)

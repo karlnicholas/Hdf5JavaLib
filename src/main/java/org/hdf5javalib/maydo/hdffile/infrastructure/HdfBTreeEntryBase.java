@@ -85,7 +85,7 @@ public abstract class HdfBTreeEntryBase {
      */
     @Override
     public String toString() {
-        return "key=\"+key\", childPointer=\"" + childPointer + "\"";
+        return "key="+key+", childPointer=\"" + childPointer + "\"";
     }
 
     public void setKey(HdfFixedPoint key) {
