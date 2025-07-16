@@ -132,13 +132,13 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
     // Assuming necessary imports for HDF5 classes
 
     // Helper method (place this as a static method in your class)
-    private static long computeFlattenedIndex(long[] indices, long[] strides) {
+    private static long computeFlattenedIndex(long[] indices, long[] dims) {
         int rank = indices.length;
         long index = 0;
-        long multiplier = 1;
+        long stride = 1;
         for (int d = rank - 1; d >= 0; d--) {
-            index += indices[d] * multiplier;
-            multiplier *= strides[d];
+            index += indices[d] * stride;
+            stride *= dims[d];
         }
         return index;
     }
@@ -172,7 +172,7 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
         } else if (dataLayoutStorage instanceof DataLayoutMessage.ChunkedStorage chunked) {
             // The full chunked branch:
             DataspaceMessage dataspace = objectHeader.findMessageByType(DataspaceMessage.class).orElseThrow();
-            int rank = dataspace.getDimensionality();
+            int dimensions = dataspace.getDimensionality();
             HdfFixedPoint[] datasetDimsHdf = dataspace.getDimensions(); // e.g., [6, 8]
             long[] datasetDims = new long[datasetDimsHdf.length];
             for (int i = 0; i < datasetDims.length; i++) {
@@ -225,28 +225,28 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
                     .map(e -> (HdfChunkBTreeEntry) e)
                     .collect(Collectors.toList());
 
-            long[] chunkDims = new long[rank];
-            for (int i = 0; i < rank; i++) {
+            long[] chunkDims = new long[dimensions];
+            for (int i = 0; i < dimensions; i++) {
                 chunkDims[i] = chunked.getDimensionSizes()[i].getInstance(Long.class); // e.g., [4, 4]
             }
 
             for (HdfChunkBTreeEntry entry : chunkEntries) {
                 List<HdfFixedPoint> offsets = entry.getDimensionOffsets();
-                if (offsets.size() != rank + 1) {
+                if (offsets.size() != dimensions) {
                     throw new IOException("Invalid dimension offsets size");
                 }
-                long lastOffset = offsets.get(rank).getInstance(Long.class);
-                if (lastOffset != 0) {
-                    throw new IOException("Last dimension offset should be zero");
-                }
+                long lastOffset = offsets.get(dimensions-1).getInstance(Long.class);
+//                if (lastOffset != 0) {
+//                    throw new IOException("Last dimension offset should be zero");
+//                }
 
-                long[] chunkOffset = new long[rank];
-                for (int i = 0; i < rank; i++) {
+                long[] chunkOffset = new long[dimensions];
+                for (int i = 0; i < dimensions; i++) {
                     chunkOffset[i] = offsets.get(i).getInstance(Long.class);
                 }
 
-                long[] chunkActualSize = new long[rank];
-                for (int i = 0; i < rank; i++) {
+                long[] chunkActualSize = new long[dimensions];
+                for (int i = 0; i < dimensions; i++) {
                     chunkActualSize[i] = Math.min(chunkDims[i], datasetDims[i] - chunkOffset[i]);
                 }
 
@@ -254,8 +254,8 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
                 long[] minIdx = chunkOffset.clone();
                 long chunkMinElement = computeFlattenedIndex(minIdx, datasetDims);
 
-                long[] maxIdx = new long[rank];
-                for (int i = 0; i < rank; i++) {
+                long[] maxIdx = new long[dimensions];
+                for (int i = 0; i < dimensions; i++) {
                     maxIdx[i] = chunkOffset[i] + chunkActualSize[i] - 1;
                 }
                 long chunkMaxElement = computeFlattenedIndex(maxIdx, datasetDims);
@@ -276,7 +276,7 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
                 chunkBuffer.flip();
 
                 // Handle filters/decompression (stubbed)
-                if (entry.getFilterMask() != 0 || objectHeader.findMessageByType(FilterPipelineMessage.class) != null) {
+                if (entry.getFilterMask() != 0 || objectHeader.findMessageByType(FilterPipelineMessage.class).isPresent()) {
                     throw new UnsupportedOperationException("Filters and decompression not supported yet");
                 }
 
@@ -291,12 +291,12 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
                 }
 
                 // Iterate over all valid local indices using odometer
-                long[] localIdx = new long[rank];
+                long[] localIdx = new long[dimensions];
                 boolean done = false;
+                long[] globalIdx = new long[dimensions];
                 while (!done) {
                     // Compute global element index
-                    long[] globalIdx = new long[rank];
-                    for (int i = 0; i < rank; i++) {
+                    for (int i = 0; i < dimensions; i++) {
                         globalIdx[i] = chunkOffset[i] + localIdx[i];
                     }
                     long globalElement = computeFlattenedIndex(globalIdx, datasetDims);
@@ -316,7 +316,7 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
                     }
 
                     // Increment localIdx
-                    int pos = rank - 1;
+                    int pos = dimensions - 1;
                     while (pos >= 0) {
                         localIdx[pos]++;
                         if (localIdx[pos] < chunkActualSize[pos]) {
