@@ -4,6 +4,7 @@ import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 /**
  * Represents a Fill Value Message in the HDF5 file format.
@@ -154,7 +155,7 @@ public class FillValueMessage extends HdfMessage {
                 ", fillValueWriteTime=" + fillValueWriteTime +
                 ", fillValueDefined=" + fillValueDefined +
                 ", size=" + size +
-                ", fillValue=" + (fillValue != null ? fillValue.length + " bytes" : "undefined") +
+                ", fillValue=" + (fillValue != null ? Arrays.toString(fillValue) : "undefined") +
                 '}';
     }
 

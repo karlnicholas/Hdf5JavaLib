@@ -89,9 +89,12 @@ public class HdfFileReader implements HdfDataFile {
         HdfSymbolTableEntry rootGroupSymbolTableEntry = readSteFromSeekableByteChannel(fileChannel, this);
         // determine version of data object headers
         long objectHeaderAddress = rootGroupSymbolTableEntry.getObjectHeaderAddress().getInstance(Long.class);
+        if ( fileChannel.size() <= objectHeaderAddress ) {
+            throw new UnsupportedOperationException("File only contains a superblock.");
+        }
         // The first part of the header is 6 bytes: Signature (4) + Version (1) + Flags (1)
         ByteBuffer headerStartBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
-        fileChannel.read(headerStartBuffer);
+        int bytesRead = fileChannel.read(headerStartBuffer);
         headerStartBuffer.flip();
         int version = Byte.toUnsignedInt(headerStartBuffer.get());
         if( version > 1 ) {
