@@ -6,6 +6,8 @@ import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
 import org.hdf5javalib.redo.utils.FlattenedArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
@@ -22,7 +24,7 @@ import java.util.stream.Collectors;
  * </p>
  */
 public class HdfDisplayUtils {
-
+    private static Logger log = LoggerFactory.getLogger(HdfDisplayUtils.class);
     /**
      * Creates a version attribute for a dataset.
      * <p>
@@ -40,7 +42,7 @@ public class HdfDisplayUtils {
     }
 
     public static void displayData(SeekableByteChannel channel, HdfDataset ds, HdfFileReader reader) throws Exception {
-        System.out.println(ds.getObjectName());
+        log.debug("Dataset path: {}", ds.getObjectPath());
         if (ds.hasData()) {
             switch (ds.getDimensionality()) {
                 case 0:

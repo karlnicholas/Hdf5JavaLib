@@ -32,6 +32,15 @@ public abstract class HdfDataObject implements HdfBTreeNode {
     public HdfBTreeNode getParent() { return parent; }
     @Override
     public void setParent(HdfBTreeNode parent) { this.parent = parent; }
+    public String getObjectPath() {
+        StringBuilder path = new StringBuilder(Objects.requireNonNull(objectName, "Node name cannot be null."));
+        while(parent!=null) {
+            path.insert(0, '/');
+            path.insert(0, parent.getObjectName());
+            parent=parent.getParent();
+        }
+        return path.toString();
+    }
 
     /**
      * Compares this node to another node based on their names.

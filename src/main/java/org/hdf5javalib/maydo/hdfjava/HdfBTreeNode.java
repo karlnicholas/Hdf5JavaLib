@@ -21,4 +21,7 @@ public interface HdfBTreeNode extends Comparable<HdfBTreeNode> {
     boolean isDataset();
 
     HdfDataObject getDataObject();
+
+    String getObjectPath();
+
 }
