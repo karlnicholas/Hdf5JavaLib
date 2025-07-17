@@ -256,7 +256,7 @@ public class DataLayoutMessage extends HdfMessage {
         HdfFixedPoint leftSiblingAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfOffset, headerBuffer);
         HdfFixedPoint rightSiblingAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfOffset, headerBuffer);
 
-        int entriesDataSize = (5 * 8 * entriesUsed);
+        int entriesDataSize = (4 + 4 + 8*dimensions + offsetSize + offsetSize) * entriesUsed;
         ByteBuffer entriesBuffer = ByteBuffer.allocate(entriesDataSize).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(entriesBuffer);
         entriesBuffer.flip();
@@ -266,6 +266,11 @@ public class DataLayoutMessage extends HdfMessage {
         HdfBTreeV1 currentNode = new HdfBTreeV1(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, null, entries, hdfDataFile,
                 HdfWriteUtils.hdfFixedPointFromValue(nodeAddress, hdfOffset));
         visitedNodes.put(nodeAddress, currentNode);
+
+        // (4 + 4 + 8*dimensions + 1*length + 1*length) * entriesUsed
+        // 4 + 4 + 8*dimensions + 8 + 8
+        // 8 + 24 + 16
+        // 48
 
         for (int i = 0; i < entriesUsed; i++) {
             long sizeOfChunk = Integer.toUnsignedLong(entriesBuffer.getInt());
