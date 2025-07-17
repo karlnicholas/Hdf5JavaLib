@@ -152,13 +152,17 @@ public class DataLayoutMessage extends HdfMessage {
                     datasetElementSize = HdfReadUtils.readHdfFixedPointFromBuffer(fourByteDt, buffer);
                 }
                 try {
-                    FixedPointDatatype eightByteFixedPointType =  new FixedPointDatatype(
-                            FixedPointDatatype.createClassAndVersion(),
-                            FixedPointDatatype.createClassBitField(false, false, false, false),
-                            8, (short) 0, (short) (8 * 8),
-                            hdfDataFile);
+                    if (!chunkedDataAddress.isUndefined()) {
+                        FixedPointDatatype eightByteFixedPointType =  new FixedPointDatatype(
+                                FixedPointDatatype.createClassAndVersion(),
+                                FixedPointDatatype.createClassBitField(false, false, false, false),
+                                8, (short) 0, (short) (8 * 8),
+                                hdfDataFile);
 
-                    bTree = readBTreeFromSeekableByteChannel(hdfDataFile.getSeekableByteChannel(), chunkedDataAddress.getInstance(Long.class), numDimensions, eightByteFixedPointType, hdfDataFile);
+                        bTree = readBTreeFromSeekableByteChannel(hdfDataFile.getSeekableByteChannel(), chunkedDataAddress.getInstance(Long.class), numDimensions, eightByteFixedPointType, hdfDataFile);
+                    } else {
+                        bTree = null;
+                    }
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -417,7 +421,8 @@ public class DataLayoutMessage extends HdfMessage {
 
         @Override
         public boolean hasData() {
-            return HdfFixedPoint.compareToZero(dataSize) > 0;
+            return HdfFixedPoint.compareToZero(dataSize) > 0
+                    &&  !dataAddress.isUndefined();
         }
 
     }
@@ -474,7 +479,10 @@ public class DataLayoutMessage extends HdfMessage {
 
         @Override
         public boolean hasData() {
-            return HdfFixedPoint.compareToZero(datasetElementSize) > 0 && dimensionSizes.length > 0 && HdfFixedPoint.compareToZero(dimensionSizes[0]) > 0;
+            return HdfFixedPoint.compareToZero(datasetElementSize) > 0
+                    && dimensionSizes.length > 0
+                    && HdfFixedPoint.compareToZero(dimensionSizes[0]) > 0
+                    && bTree != null;
         }
 
     }
