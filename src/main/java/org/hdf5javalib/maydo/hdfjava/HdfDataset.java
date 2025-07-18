@@ -14,6 +14,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -275,9 +276,13 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
                 }
                 chunkBuffer.flip();
 
+                Optional<FilterPipelineMessage> fpm = objectHeader.findMessageByType(FilterPipelineMessage.class);
+                if ( fpm.isPresent() ) {
+                    chunkBuffer = fpm.get().getDeflater().deflate(chunkBuffer);
+                }
                 // Handle filters/decompression (stubbed)
-                if (entry.getFilterMask() != 0 || objectHeader.findMessageByType(FilterPipelineMessage.class).isPresent()) {
-                    throw new UnsupportedOperationException("Filters and decompression not supported yet");
+                if (entry.getFilterMask() != 0) {
+                    throw new UnsupportedOperationException("Filters  not supported yet");
                 }
 
                 // Validate chunk size matches expected full size (uncompressed)

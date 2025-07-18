@@ -1,6 +1,8 @@
 package org.hdf5javalib.maydo.hdffile.dataobjects.messages;
 
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
+import org.hdf5javalib.maydo.utils.ByteBufferDeflater;
+import org.hdf5javalib.maydo.utils.ByteBufferDeflaterFactory;
 import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.nio.ByteBuffer;
@@ -78,6 +80,17 @@ public class FilterPipelineMessage extends HdfMessage {
         this.filterDescriptions = filterDescriptions;
     }
 
+    public int getNumberOfFilters() {
+        return numberOfFilters;
+    }
+
+    public List<FilterDescription> getFilterDescriptions() {
+        return filterDescriptions;
+    }
+
+    public ByteBufferDeflater getDeflater() {
+        return ByteBufferDeflaterFactory.newDeflater(this);
+    }
     /**
      * Parses a FillValueMessage from the provided data and file context.
      *
@@ -131,16 +144,16 @@ public class FilterPipelineMessage extends HdfMessage {
         writeMessageData(buffer);
     }
 
-    static class FilterDescription {
-        private final int filterIndentification;
+    public static class FilterDescription {
+        private final int filterIdentification;
         private final int nameLength;
         private final BitSet flags;
         private final int numberOfValuesForClientData;
         private final String name;
         private final int[] clientData;
 
-        FilterDescription(int filterIndentification, int nameLength, BitSet flags, int numberOfValuesForClientData, String name, int[] clientData) {
-            this.filterIndentification = filterIndentification;
+        FilterDescription(int filterIdentification, int nameLength, BitSet flags, int numberOfValuesForClientData, String name, int[] clientData) {
+            this.filterIdentification = filterIdentification;
             this.nameLength = nameLength;
             this.flags = flags;
             this.numberOfValuesForClientData = numberOfValuesForClientData;
@@ -151,7 +164,7 @@ public class FilterPipelineMessage extends HdfMessage {
         @Override
         public String toString() {
             return "FilterDescription{" +
-                    "filterIndentification=" + filterIndentification +
+                    "filterIndentification=" + filterIdentification +
                     ", flags=" + flags +
                     ", name=" + name +
                     ", clientData=" + Arrays.toString(clientData) +
@@ -177,6 +190,30 @@ public class FilterPipelineMessage extends HdfMessage {
                 padding[0] = buffer.getInt();
             }
             return new FilterDescription(filterIndentification, nameLength, flags, numberOfValuesForClientData, name, clientData);
+        }
+
+        public int getFilterIdentification() {
+            return filterIdentification;
+        }
+
+        public int getNameLength() {
+            return nameLength;
+        }
+
+        public BitSet getFlags() {
+            return flags;
+        }
+
+        public int getNumberOfValuesForClientData() {
+            return numberOfValuesForClientData;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int[] getClientData() {
+            return clientData;
         }
     }
 }
