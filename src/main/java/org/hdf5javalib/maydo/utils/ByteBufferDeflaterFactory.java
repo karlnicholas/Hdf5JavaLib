@@ -15,10 +15,7 @@ public class ByteBufferDeflaterFactory {
         FilterPipelineMessage.FilterDescription fd = message.getFilterDescriptions().get(0);
         return switch (fd.getFilterIdentification()) {  // Fixed typo: Indentification -> Identification
             // deflate
-            case 1 -> {
-                int level = fd.getClientData()[0];
-                yield cache.computeIfAbsent(level, ZlibByteBufferDeflater::new);
-            }
+            case 1 -> cache.computeIfAbsent(fd.getFilterIdentification(), k -> new ZlibByteBufferDeflater(fd.getClientData()));
             // shuffle
             case 2 -> throw new IllegalArgumentException("shuffle filter not supported");
             // fletcher32
@@ -26,7 +23,7 @@ public class ByteBufferDeflaterFactory {
             // szip
             case 4 -> throw new IllegalArgumentException("szip filter not supported");
             // nbit
-            case 5 -> throw new IllegalArgumentException("nbit filter not supported");
+            case 5 -> cache.computeIfAbsent(fd.getFilterIdentification(), k -> new NbitByteBufferDeflater(fd.getClientData()));
             // scaleoffset
             case 6 -> throw new IllegalArgumentException("scaleoffset filter not supported");
             default -> throw new IllegalArgumentException("Unknown filter identification");  // Fixed typo: indentification -> identification

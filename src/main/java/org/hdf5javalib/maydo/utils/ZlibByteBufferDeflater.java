@@ -9,7 +9,7 @@ import java.util.zip.Inflater;
 public class ZlibByteBufferDeflater implements ByteBufferDeflater {
     private final Inflater inflater;
 
-    public ZlibByteBufferDeflater(int ignoredLevel) {
+    public ZlibByteBufferDeflater(int[] clientData) {
         this.inflater = new Inflater(false);  // nowrap=false for zlib format
     }
 
