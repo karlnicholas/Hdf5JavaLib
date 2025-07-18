@@ -39,7 +39,7 @@ public class ReferenceRead {
     private void run() {
         try {
 //            Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
-            Path filePath = getResourcePath("HDF5Examples/h5ex_d_nbit.h5");
+            Path filePath = getResourcePath("HDF5Examples/default_file.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
 //                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {

@@ -154,4 +154,7 @@ public class HdfBTreeV1 {
         return entries;
     }
 
+    public int getNodeLevel() {
+        return nodeLevel;
+    }
 }

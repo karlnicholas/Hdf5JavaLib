@@ -42,7 +42,11 @@ public abstract class HdfBTreeEntryBase {
         this.childBTree = childBTree;
     }
 
-//    /**
+    public HdfBTreeV1 getChildBTree() {
+        return childBTree;
+    }
+
+    //    /**
 //     * Constructs an HdfGroupBTreeEntry for an internal node, pointing to a child B-Tree.
 //     *
 //     * @param key              the key for the entry

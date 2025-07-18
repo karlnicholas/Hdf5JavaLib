@@ -147,31 +147,42 @@ public class HdfFileReader implements HdfDataFile {
     }
 
     private void readInfrastructure(HdfGroup parentGroup, HdfLocalHeap localHeap, HdfBTreeV1 groupBTree) throws Exception {
-        for( HdfBTreeEntryBase entry: groupBTree.getEntries()) {
-            HdfGroupSymbolTableNode groupSymbolTableNode = ((HdfGroupBTreeEntry)entry).getGroupSymbolTableNode();
-            for( HdfSymbolTableEntry symbolTableEntry: groupSymbolTableNode.getSymbolTableEntries() ) {
-                String objectName = localHeap.stringAtOffset(symbolTableEntry.getLinkNameOffset());
-                HdfObjectHeaderPrefixV1 objectHeader = readObjectHeader(fileChannel, symbolTableEntry.getObjectHeaderAddress().getInstance(Long.class), this);
-                switch ( symbolTableEntry.getCache().getCacheType()) {
-                case 0:
-                    HdfDataset datasetObject = new HdfDataset(objectName, objectHeader, parentGroup);
-                    parentGroup.addChild(datasetObject);
-                    break;
-                case 1:
-                    long newHeapOffset = ((HdfSymbolTableEntryCacheWithScratch)symbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
-                    long newBTreeAddress = ((HdfSymbolTableEntryCacheWithScratch)symbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
-                    HdfLocalHeap newLocalHeap = readLocalHeapFromSeekableByteChannel(fileChannel, newHeapOffset, this);
-                    HdfBTreeV1 newGroupBTree = readBTreeFromSeekableByteChannel(fileChannel, newBTreeAddress, this);
-                    HdfGroup groupObject = new HdfGroup(objectName, objectHeader, parentGroup);
-                    parentGroup.addChild(groupObject);
-                    readInfrastructure(groupObject, newLocalHeap, newGroupBTree);
-                    break;
+        if (groupBTree.getNodeLevel() > 0) {
+            // Internal node: recurse on child B-Trees
+            for (HdfBTreeEntryBase entry : groupBTree.getEntries()) {
+                HdfBTreeV1 childBTree = entry.getChildBTree();
+                if (childBTree != null) {
+                    readInfrastructure(parentGroup, localHeap, childBTree);
+                }
+            }
+        } else {
+            // Leaf node: process SNODs
+            for (HdfBTreeEntryBase entry : groupBTree.getEntries()) {
+                HdfGroupSymbolTableNode groupSymbolTableNode = ((HdfGroupBTreeEntry) entry).getGroupSymbolTableNode();
+                if (groupSymbolTableNode != null) {
+                    for (HdfSymbolTableEntry symbolTableEntry : groupSymbolTableNode.getSymbolTableEntries()) {
+                        String objectName = localHeap.stringAtOffset(symbolTableEntry.getLinkNameOffset());
+                        HdfObjectHeaderPrefixV1 objectHeader = readObjectHeader(fileChannel, symbolTableEntry.getObjectHeaderAddress().getInstance(Long.class), this);
+                        switch (symbolTableEntry.getCache().getCacheType()) {
+                            case 0:
+                                HdfDataset datasetObject = new HdfDataset(objectName, objectHeader, parentGroup);
+                                parentGroup.addChild(datasetObject);
+                                break;
+                            case 1:
+                                long newHeapOffset = ((HdfSymbolTableEntryCacheWithScratch) symbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
+                                long newBTreeAddress = ((HdfSymbolTableEntryCacheWithScratch) symbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
+                                HdfLocalHeap newLocalHeap = readLocalHeapFromSeekableByteChannel(fileChannel, newHeapOffset, this);
+                                HdfBTreeV1 newGroupBTree = readBTreeFromSeekableByteChannel(fileChannel, newBTreeAddress, this);
+                                HdfGroup groupObject = new HdfGroup(objectName, objectHeader, parentGroup);
+                                parentGroup.addChild(groupObject);
+                                readInfrastructure(groupObject, newLocalHeap, newGroupBTree);
+                                break;
+                        }
+                    }
                 }
             }
         }
-//        HdfObjectHeaderPrefixV1 objectHeader = readObjectHeader(fileChannel, this);
     }
-
     /**
      * Retrieves all datasets in the group.
      *
@@ -375,9 +386,9 @@ public class HdfFileReader implements HdfDataFile {
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
     private static HdfBTreeV1 readFromSeekableByteChannelRecursive(SeekableByteChannel fileChannel,
-                                                                 long nodeAddress,
-                                                                 HdfDataFile hdfDataFile,
-                                                                 Map<Long, HdfBTreeV1> visitedNodes
+                                                                   long nodeAddress,
+                                                                   HdfDataFile hdfDataFile,
+                                                                   Map<Long, HdfBTreeV1> visitedNodes
     ) throws Exception {
         if (visitedNodes.containsKey(nodeAddress)) {
             throw new IllegalStateException("Cycle detected or node re-visited: BTree node address "
@@ -427,56 +438,23 @@ public class HdfFileReader implements HdfDataFile {
             long filePosAfterEntriesBlock = fileChannel.position();
             long childAddress = childPointer.getInstance(Long.class);
             fileChannel.position(childAddress);
-            HdfGroupSymbolTableNode snod = readSnodFromSeekableByteChannel(fileChannel, hdfDataFile);
-            HdfGroupBTreeEntry entry = new HdfGroupBTreeEntry(key, childPointer, null, snod);
 
+            HdfGroupBTreeEntry entry;
+            if (nodeLevel == 1) {
+                // It's a sub B-Tree
+                HdfBTreeV1 child = readFromSeekableByteChannelRecursive(fileChannel, childAddress, hdfDataFile, visitedNodes);
+                entry = new HdfGroupBTreeEntry(key, childPointer, child, null); // Assuming entry constructor accepts Object for last param
+            } else {
+                // It's a SNOD
+                HdfGroupSymbolTableNode child = readSnodFromSeekableByteChannel(fileChannel, hdfDataFile);
+                entry = new HdfGroupBTreeEntry(key, childPointer, null, child); // Assuming entry constructor accepts Object for last param
+            }
             fileChannel.position(filePosAfterEntriesBlock);
             entries.add(entry);
         }
         return currentNode;
     }
 
-    /**
-     * Reads an HdfLocalHeap from a file channel.
-     *
-     * @param fileChannel the file channel to read from
-     * @param hdfDataFile the HDF5 file context
-     * @return the constructed HdfLocalHeap
-     * @throws IOException              if an I/O error occurs
-     * @throws IllegalArgumentException if the heap signature or reserved bytes are invalid
-     */
-    public static HdfLocalHeap readLocalHeapFromSeekableByteChannel(
-            SeekableByteChannel fileChannel,
-            long localHeapOffset,
-            HdfDataFile hdfDataFile
-    ) throws IOException {
-
-        fileChannel.position(localHeapOffset);
-        ByteBuffer buffer = ByteBuffer.allocate(LOCAL_HEAP_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
-
-        fileChannel.read(buffer);
-        buffer.flip();
-
-        byte[] signatureBytes = new byte[LOCAL_HEAP_SIGNATURE.length];
-        buffer.get(signatureBytes);
-//        String signature = new String(signatureBytes);
-        if (Arrays.compare(LOCAL_HEAP_SIGNATURE, signatureBytes) != 0) {
-            throw new IllegalArgumentException("Invalid heap signature: " + signatureBytes);
-        }
-
-        int version = Byte.toUnsignedInt(buffer.get());
-
-        buffer.position(buffer.position() + LOCAL_HEAP_HEADER_RESERVED_SIZE);
-
-        HdfFixedPoint dataSegmentSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), buffer);
-        HdfFixedPoint freeListOffset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
-        HdfFixedPoint dataSegmentAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
-
-        HdfLocalHeapData hdfLocalHeapData = readLocalHeapDataFromSeekableByteChannel(
-                fileChannel, dataSegmentSize, freeListOffset, dataSegmentAddress, hdfDataFile);
-
-        return new HdfLocalHeap(version,hdfDataFile, hdfLocalHeapData, localHeapOffset);
-    }
     /**
      * Reads an HdfGroupSymbolTableNode from a file channel.
      *
@@ -525,6 +503,48 @@ public class HdfFileReader implements HdfDataFile {
                 symbolTableEntries,
                 hdfDataFile,
                 HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()));
+    }
+
+    /**
+     * Reads an HdfLocalHeap from a file channel.
+     *
+     * @param fileChannel the file channel to read from
+     * @param hdfDataFile the HDF5 file context
+     * @return the constructed HdfLocalHeap
+     * @throws IOException              if an I/O error occurs
+     * @throws IllegalArgumentException if the heap signature or reserved bytes are invalid
+     */
+    public static HdfLocalHeap readLocalHeapFromSeekableByteChannel(
+            SeekableByteChannel fileChannel,
+            long localHeapOffset,
+            HdfDataFile hdfDataFile
+    ) throws IOException {
+
+        fileChannel.position(localHeapOffset);
+        ByteBuffer buffer = ByteBuffer.allocate(LOCAL_HEAP_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
+
+        fileChannel.read(buffer);
+        buffer.flip();
+
+        byte[] signatureBytes = new byte[LOCAL_HEAP_SIGNATURE.length];
+        buffer.get(signatureBytes);
+//        String signature = new String(signatureBytes);
+        if (Arrays.compare(LOCAL_HEAP_SIGNATURE, signatureBytes) != 0) {
+            throw new IllegalArgumentException("Invalid heap signature: " + signatureBytes);
+        }
+
+        int version = Byte.toUnsignedInt(buffer.get());
+
+        buffer.position(buffer.position() + LOCAL_HEAP_HEADER_RESERVED_SIZE);
+
+        HdfFixedPoint dataSegmentSize = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), buffer);
+        HdfFixedPoint freeListOffset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+        HdfFixedPoint dataSegmentAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+
+        HdfLocalHeapData hdfLocalHeapData = readLocalHeapDataFromSeekableByteChannel(
+                fileChannel, dataSegmentSize, freeListOffset, dataSegmentAddress, hdfDataFile);
+
+        return new HdfLocalHeap(version,hdfDataFile, hdfLocalHeapData, localHeapOffset);
     }
 
     public static HdfLocalHeapData readLocalHeapDataFromSeekableByteChannel(
