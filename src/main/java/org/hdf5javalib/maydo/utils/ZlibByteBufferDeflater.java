@@ -25,19 +25,10 @@ public class ZlibByteBufferDeflater implements ByteBufferDeflater {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        // Prepare input data reference (zero-copy if possible)
-        byte[] inputArray;
-        int offset;
+        // Assume input has array since read from file and position is 0
+        byte[] inputArray = input.array();
+        int offset = input.arrayOffset();
         int length = input.remaining();
-        if (input.hasArray()) {
-            inputArray = input.array();
-            offset = input.arrayOffset() + input.position();
-        } else {
-            ByteBuffer dup = input.duplicate();
-            inputArray = new byte[length];
-            dup.get(inputArray);
-            offset = 0;
-        }
 
         // Set Inflater input
         inflater.setInput(inputArray, offset, length);
@@ -45,11 +36,14 @@ public class ZlibByteBufferDeflater implements ByteBufferDeflater {
         // Inflate loop
         byte[] buffer = new byte[4096];  // Adjustable buffer size
         while (!inflater.finished()) {
-            int inflatedBytes = 0;
+            int inflatedBytes;
             try {
                 inflatedBytes = inflater.inflate(buffer);
             } catch (DataFormatException e) {
-                throw new RuntimeException(e);
+                throw new IOException("Invalid zlib data format", e);
+            }
+            if (inflatedBytes == 0 && inflater.needsInput()) {
+                throw new IOException("Unexpected end of zlib input");
             }
             baos.write(buffer, 0, inflatedBytes);
         }

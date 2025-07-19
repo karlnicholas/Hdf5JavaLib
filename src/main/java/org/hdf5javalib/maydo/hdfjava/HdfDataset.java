@@ -276,10 +276,10 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
                 }
                 chunkBuffer.flip();
 
-                Optional<FilterPipelineMessage> fpm = objectHeader.findMessageByType(FilterPipelineMessage.class);
-                if ( fpm.isPresent() ) {
-                    chunkBuffer = fpm.get().getDeflater().deflate(chunkBuffer);
-                }
+                    Optional<FilterPipelineMessage> fpm = objectHeader.findMessageByType(FilterPipelineMessage.class);
+                    if ( fpm.isPresent() ) {
+                        chunkBuffer = fpm.get().getDeflater().deflate(chunkBuffer);
+                    }
                 // Handle filters/decompression (stubbed)
                 if (entry.getFilterMask() != 0) {
                     throw new UnsupportedOperationException("Filters  not supported yet");

@@ -31,18 +31,10 @@ public class NbitByteBufferDeflater implements ByteBufferDeflater {
      * @throws IOException If an I/O error occurs or data size is invalid.
      */
     public ByteBuffer deflate(ByteBuffer input) throws IOException {
-        byte[] packedArray;
-        int offset;
         int length = input.remaining();
-        if (input.hasArray()) {
-            packedArray = input.array();
-            offset = input.arrayOffset() + input.position();
-        } else {
-            ByteBuffer dup = input.duplicate();
-            packedArray = new byte[length];
-            dup.get(packedArray);
-            offset = 0;
-        }
+        // Assume input has array since read from file and position is 0
+        byte[] packedArray = input.array();
+        int offset = input.arrayOffset();
 
         // Skip the first byte (header)
         int packedOffset = offset + 1;

@@ -3,6 +3,8 @@ package org.hdf5javalib.maydo.examples.HDF5Examples;
 import org.hdf5javalib.maydo.datasource.TypedDataSource;
 import org.hdf5javalib.maydo.hdfjava.HdfDataset;
 import org.hdf5javalib.maydo.hdfjava.HdfFileReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -22,7 +24,7 @@ import static org.hdf5javalib.maydo.utils.HdfReadUtils.getResourcePath;
  * </p>
  */
 public class ReferenceRead {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ReferenceRead.class);
+    private static final Logger log = LoggerFactory.getLogger(ReferenceRead.class);
 
     /**
      * Entry point for the application.
@@ -39,7 +41,7 @@ public class ReferenceRead {
     private void run() {
         try {
 //            Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
-            Path filePath = getResourcePath("HDF5Examples/default_file.h5");
+            Path filePath = getResourcePath("HDF5Examples/h5ex_d_sofloat.h5");
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
 //                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
@@ -52,7 +54,24 @@ public class ReferenceRead {
                 log.debug("Superblock: {} ", reader.getSuperblock());
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error(e.getMessage(), e);
+        }
+        try {
+//            Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
+            Path filePath = getResourcePath("HDF5Examples/h5ex_d_soint.h5");
+            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+                HdfFileReader reader = new HdfFileReader(channel).readFile();
+//                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
+//                    displayReference(channel, dataSet, reader);
+//                }
+                for (HdfDataset dataSet : reader.getDatasets()) {
+                    log.debug("dataSet: {} ", dataSet);
+                    displayData(channel, dataSet, reader);
+                }
+                log.debug("Superblock: {} ", reader.getSuperblock());
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
     }
 

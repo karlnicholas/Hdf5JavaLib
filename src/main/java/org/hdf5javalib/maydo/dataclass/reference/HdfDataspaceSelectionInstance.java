@@ -156,21 +156,12 @@ public abstract class HdfDataspaceSelectionInstance {
     }
 
     private static long getSizeEncodedValue(int encodingSize, ByteBuffer remaingData) {
-        long value;
-        switch (encodingSize) {
-            case 2:
-                value = remaingData.getShort();
-                break;
-            case 4:
-                value = remaingData.getInt();
-                break;
-            case 8:
-                value = remaingData.getLong();
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid encoding size " + encodingSize);
-        }
-        return value;
+        return switch (encodingSize) {
+            case 2 -> remaingData.getShort();
+            case 4 -> remaingData.getInt();
+            case 8 -> remaingData.getLong();
+            default -> throw new IllegalArgumentException("Invalid encoding size " + encodingSize);
+        };
     }
 
 }

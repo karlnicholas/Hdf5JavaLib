@@ -11,17 +11,13 @@ import org.hdf5javalib.maydo.hdfjava.HdfBTreeNode;
 import org.hdf5javalib.maydo.hdfjava.HdfDataFile;
 import org.hdf5javalib.maydo.hdfjava.HdfDataObject;
 import org.hdf5javalib.maydo.utils.HdfDataHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 public class HdfObjectReference implements HdfReferenceInstance {
-    private static final Logger log = LoggerFactory.getLogger(HdfObjectReference.class);
     private final boolean external;
     private final ReferenceDatatype.ReferenceType referenceType;
     private final HdfDataObject hdfDataObject;
@@ -117,29 +113,29 @@ public class HdfObjectReference implements HdfReferenceInstance {
         }
     }
 
-    /**
-     * Converts a Deque of HdfDataObjects into a string path with '/' as separator,
-     * using getObjectName() for each object, always starting with '/'.
-     *
-     * @param objectPath an Optional containing a Deque of HdfDataObjects
-     * @return a string starting with '/', with object names joined by '/', or "/" if not present or empty
-     * @throws NullPointerException if any object's getObjectName() returns null
-     */
-    public String convertObjectPathToString(Optional<Deque<HdfDataObject>> objectPath) {
-        if (objectPath.isEmpty() || objectPath.get().isEmpty()) {
-            return "/";
-        }
-        String path = objectPath.get().stream()
-                .map(obj -> {
-                    String name = obj.getObjectName();
-                    if (name == null) {
-                        throw new NullPointerException("Object name cannot be null in path");
-                    }
-                    return name;
-                })
-                .collect(Collectors.joining("/"));
-        return "/" + path;
-    }
+//    /**
+//     * Converts a Deque of HdfDataObjects into a string path with '/' as separator,
+//     * using getObjectName() for each object, always starting with '/'.
+//     *
+//     * @param objectPath an Optional containing a Deque of HdfDataObjects
+//     * @return a string starting with '/', with object names joined by '/', or "/" if not present or empty
+//     * @throws NullPointerException if any object's getObjectName() returns null
+//     */
+//    public String convertObjectPathToString(Optional<Deque<HdfDataObject>> objectPath) {
+//        if (objectPath.isEmpty() || objectPath.get().isEmpty()) {
+//            return "/";
+//        }
+//        String path = objectPath.get().stream()
+//                .map(obj -> {
+//                    String name = obj.getObjectName();
+//                    if (name == null) {
+//                        throw new NullPointerException("Object name cannot be null in path");
+//                    }
+//                    return name;
+//                })
+//                .collect(Collectors.joining("/"));
+//        return "/" + path;
+//    }
 
     @Override
     public String toString() {
