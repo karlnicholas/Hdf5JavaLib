@@ -14,7 +14,10 @@ import org.hdf5javalib.utils.HdfDataHolder;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class HdfObjectReference implements HdfReferenceInstance {
