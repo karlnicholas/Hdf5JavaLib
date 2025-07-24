@@ -337,6 +337,7 @@ Matrix dataset:
 
 This example reads fixed-point data from scalar, matrix, and 4D datasets, demonstrating streaming, flattening, slicing, and filtering.
 
+{% raw %}
 ```java
 package org.hdf5javalib.examples.read;
 
