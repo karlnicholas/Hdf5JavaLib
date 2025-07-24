@@ -5,7 +5,6 @@ import org.hdf5javalib.dataclass.HdfFloatPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.datatype.*;
-import org.hdf5javalib.maydo.datatype.*;
 import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.lang.reflect.Field;

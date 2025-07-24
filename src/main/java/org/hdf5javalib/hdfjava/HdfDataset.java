@@ -5,7 +5,6 @@ import org.hdf5javalib.datatype.Datatype;
 import org.hdf5javalib.datatype.ReferenceDatatype;
 import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.hdffile.dataobjects.messages.*;
-import org.hdf5javalib.maydo.hdffile.dataobjects.messages.*;
 import org.hdf5javalib.hdffile.infrastructure.HdfBTreeV1;
 import org.hdf5javalib.hdffile.infrastructure.HdfChunkBTreeEntry;
 

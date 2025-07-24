@@ -8,7 +8,6 @@ import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefixV2;
 import org.hdf5javalib.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.hdffile.dataobjects.messages.ObjectHeaderContinuationMessage;
 import org.hdf5javalib.hdffile.infrastructure.*;
-import org.hdf5javalib.maydo.hdffile.infrastructure.*;
 import org.hdf5javalib.hdffile.metadata.HdfSuperblock;
 import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
