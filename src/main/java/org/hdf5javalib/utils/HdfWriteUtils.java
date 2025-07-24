@@ -113,7 +113,7 @@ public class HdfWriteUtils {
                     if (fieldType != String.class) {
                         throw new IllegalArgumentException("Field " + member.getName() + " must be String for VariableLengthDatatype, got " + fieldType.getName());
                     }
-                    Charset charset = membertyped.getCharacterSet() == VariableLengthDatatype.CharacterSet.ASCII
+                    Charset charset = membertyped.getCharacterSet() == StringDatatype.CharacterSet.ASCII
                             ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8;
                     byte[] bytes = ((String) value).getBytes(charset);
                     HdfGlobalHeap hdfGlobalHeap = membertyped.getGlobalHeap();
