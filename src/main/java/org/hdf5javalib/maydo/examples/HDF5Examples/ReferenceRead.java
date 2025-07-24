@@ -39,26 +39,27 @@ public class ReferenceRead {
      * Executes the main logic of reading and displaying compound data from an HDF5 file.
      */
     private void run() {
-        try {
-//            Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
-            Path filePath = getResourcePath("HDF5Examples/h5ex_d_sofloat.h5");
-            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-//                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
-//                    displayReference(channel, dataSet, reader);
+//        try {
+////            Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
+//            Path filePath = getResourcePath("HDF5Examples/h5ex_d_sofloat.h5");
+//            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+//                HdfFileReader reader = new HdfFileReader(channel).readFile();
+////                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
+////                    displayReference(channel, dataSet, reader);
+////                }
+//                for (HdfDataset dataSet : reader.getDatasets()) {
+//                    log.debug("dataSet: {} ", dataSet);
+//                    displayData(channel, dataSet, reader);
 //                }
-                for (HdfDataset dataSet : reader.getDatasets()) {
-                    log.debug("dataSet: {} ", dataSet);
-                    displayData(channel, dataSet, reader);
-                }
-                log.debug("Superblock: {} ", reader.getSuperblock());
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
+//                log.debug("Superblock: {} ", reader.getSuperblock());
+//            }
+//        } catch (Exception e) {
+//            log.error(e.getMessage(), e);
+//        }
         try {
 //            Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
-            Path filePath = getResourcePath("HDF5Examples/h5ex_d_soint.h5");
+            Path filePath = getResourcePath("HDF5Examples/soft_link.h5");
+            System.out.println(filePath.toFile().getAbsolutePath());
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
 //                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {

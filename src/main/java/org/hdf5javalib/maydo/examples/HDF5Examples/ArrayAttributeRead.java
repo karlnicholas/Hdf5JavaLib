@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 
-import static org.hdf5javalib.maydo.utils.HdfDisplayUtils.displayData;
 import static org.hdf5javalib.maydo.utils.HdfReadUtils.getResourcePath;
 
 /**
@@ -49,7 +48,8 @@ public class ArrayAttributeRead {
 //                    displayData(channel, dataSet, reader);
 //                }
                 for (HdfDataset dataSet : reader.getDatasets()) {
-                    displayData(channel, dataSet, reader);
+//                    displayData(channel, dataSet, reader);
+                    displayAttributes(dataSet);
                 }
             }
         } catch (Exception e) {
@@ -59,20 +59,7 @@ public class ArrayAttributeRead {
 
     private void displayAttributes(HdfDataset dataSet) {
         dataSet.getAttributeMessages().forEach(message -> {
-            // iterator
             HdfDataHolder dataHolder = message.getHdfDataHolder();
-            dataHolder.iterator().forEachRemaining(System.out::println);
-            // individual elements of a matrix
-            int[] dimensions = dataHolder.getDimensions();
-            for (int i = 0; i < dimensions[0]; ++i) {
-                HdfData row = dataHolder.get(i);
-                HdfData[] columns = row.getInstance(HdfData[].class);
-                for (int j = 0; j < columns.length; ++j) {
-                    System.out.print(columns[j] + " ");
-                }
-                System.out.println();
-            }
-            // get all
             HdfData[] data = dataHolder.getAll(HdfData[].class);
             System.out.println("Data = " + Arrays.toString(data));
         });

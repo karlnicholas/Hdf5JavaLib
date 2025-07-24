@@ -198,6 +198,7 @@ public abstract class HdfMessage {
             case DatatypeMessage -> DatatypeMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case FillMessage -> FillMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case FillValueMessage -> FillValueMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case LinkMessage -> LinkMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case DataLayoutMessage -> DataLayoutMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case GroupInfoMessage ->  GroupInfoMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case FilterPipelineMessage ->  FilterPipelineMessage.parseHeaderMessage(flags, data, hdfDataFile);

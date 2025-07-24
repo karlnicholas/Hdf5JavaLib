@@ -57,6 +57,7 @@ public class FilterPipelineMessage extends HdfMessage {
      * The time when the fill value is written (on creation or first write).
      */
     private final List<FilterDescription> filterDescriptions;
+    private final ByteBufferDeflaterFactory  deflaterFactory;
 
     /**
      * Constructs a FillValueMessage with the specified components.
@@ -78,6 +79,7 @@ public class FilterPipelineMessage extends HdfMessage {
         this.version = version;
         this.numberOfFilters = numberOfFilters;
         this.filterDescriptions = filterDescriptions;
+        this.deflaterFactory = new ByteBufferDeflaterFactory();
     }
 
     public int getNumberOfFilters() {
@@ -89,7 +91,7 @@ public class FilterPipelineMessage extends HdfMessage {
     }
 
     public ByteBufferDeflater getDeflater() {
-        return ByteBufferDeflaterFactory.newDeflater(this);
+        return deflaterFactory.newDeflater(this);
     }
     /**
      * Parses a FillValueMessage from the provided data and file context.

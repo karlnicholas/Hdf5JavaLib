@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 public class ByteBufferDeflaterFactory {
-    private static final Map<Integer, ByteBufferDeflater> cache = new HashMap<>();
+    private final Map<Integer, ByteBufferDeflater> cache = new HashMap<>();
 
-    static public ByteBufferDeflater newDeflater(FilterPipelineMessage message) {
+    public ByteBufferDeflater newDeflater(FilterPipelineMessage message) {
         List<FilterPipelineMessage.FilterDescription> fds = message.getFilterDescriptions();
         List<ByteBufferDeflater> deflaters = new ArrayList<>(fds.size());
 
@@ -21,17 +21,18 @@ public class ByteBufferDeflaterFactory {
             FilterPipelineMessage.FilterDescription fd = fds.get(i);
             ByteBufferDeflater deflater = switch (fd.getFilterIdentification()) {
                 // deflate (inflate for decompression)
-                case 1 -> getOrCreate(fd.getFilterIdentification(), () -> new ZlibByteBufferDeflater(fd.getClientData()));
+                case 1 -> cache.computeIfAbsent(fd.getFilterIdentification(), k->new ZlibByteBufferDeflater(fd.getClientData()));
                 // shuffle (unshuffle for decompression)
-                case 2 -> getOrCreate(fd.getFilterIdentification(), () -> new ShuffleByteBufferDeflater(fd.getClientData()));
+                case 2 -> cache.computeIfAbsent(fd.getFilterIdentification(), k -> new ShuffleByteBufferDeflater(fd.getClientData()));
                 // fletcher32
-                case 3 -> getOrCreate(fd.getFilterIdentification(), () -> new Fletcher32ByteBufferDeflater(fd.getClientData()));
+                case 3 -> cache.computeIfAbsent(fd.getFilterIdentification(), k -> new Fletcher32ByteBufferDeflater(fd.getClientData()));
                 // szip
                 case 4 -> throw new IllegalArgumentException("szip filter not supported");
                 // nbit
-                case 5 -> getOrCreate(fd.getFilterIdentification(), () -> new NbitByteBufferDeflater(fd.getClientData()));
+                case 5 -> cache.computeIfAbsent(fd.getFilterIdentification(), k -> new NbitByteBufferDeflater(fd.getClientData()));
                 // scaleoffset
-                case 6 -> getOrCreate(fd.getFilterIdentification(), () -> new ScaleOffsetByteBufferDeflater(fd.getClientData()));
+//                case 6 -> getOrCreate(fd.getFilterIdentification(), () -> new ScaleOffsetByteBufferDeflater(fd.getClientData()));
+                case 6 -> throw new IllegalArgumentException("scaleoffset filter not supported");
                 default -> throw new IllegalArgumentException("Unknown filter identification");
             };
             deflaters.add(deflater);
@@ -42,10 +43,6 @@ public class ByteBufferDeflaterFactory {
         } else {
             return new CompositeByteBufferDeflater(deflaters);
         }
-    }
-
-    private static ByteBufferDeflater getOrCreate(int filterId, java.util.function.Supplier<ByteBufferDeflater> creator) {
-        return cache.computeIfAbsent(filterId, k -> creator.get());
     }
 
     private static class CompositeByteBufferDeflater implements ByteBufferDeflater {
