@@ -443,8 +443,8 @@ public class StringDatatype implements Datatype {
          */
         RESERVED_15(15, "Reserved", "Reserved for future use.");
 
-        private final int value;
-        private final String name;
+        final int value;
+        final String name;
         private final String description;
 
         CharacterSet(int value, String name, String description) {

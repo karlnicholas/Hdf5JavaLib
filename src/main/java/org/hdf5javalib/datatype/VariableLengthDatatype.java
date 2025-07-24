@@ -101,7 +101,7 @@ public class VariableLengthDatatype implements Datatype {
      * @param charSet     the character set for strings (ASCII or UTF-8)
      * @return a BitSet encoding the type, padding, and character set
      */
-    public static BitSet createClassBitField(Type type, PaddingType paddingType, CharacterSet charSet) {
+    public static BitSet createClassBitField(Type type, PaddingType paddingType, StringDatatype.CharacterSet charSet) {
         long bitfield = ((long) charSet.value << 8) | ((long) paddingType.value << 4) | type.value;
         return BitSet.valueOf(new long[]{bitfield});
     }
@@ -176,7 +176,7 @@ public class VariableLengthDatatype implements Datatype {
 
         byte[] workingBytes = globalHeap.getDataBytes(offset, index);
         if (getType() == Type.STRING) {
-            return new String(workingBytes, getCharacterSet() == CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
+            return new String(workingBytes, getCharacterSet() == StringDatatype.CharacterSet.ASCII ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8);
         } else {
             int datatypeSize = datatype.getSize();
             String[] resultArray = new String[count];
@@ -307,8 +307,8 @@ public class VariableLengthDatatype implements Datatype {
      *
      * @return the CharacterSet (ASCII or UTF8)
      */
-    public CharacterSet getCharacterSet() {
-        return CharacterSet.fromBitSet(classBitField);
+    public StringDatatype.CharacterSet getCharacterSet() {
+        return StringDatatype.CharacterSet.fromBitSet(classBitField);
     }
 
     /**
@@ -554,112 +554,6 @@ public class VariableLengthDatatype implements Datatype {
         public static PaddingType fromBitSet(BitSet bits) {
             int value = (bits.get(4) ? 1 : 0) | (bits.get(5) ? 2 : 0) |
                     (bits.get(6) ? 4 : 0) | (bits.get(7) ? 8 : 0);
-            return fromValue(value);
-        }
-    }
-
-    /**
-     * Enum representing character sets for HDF5 variable-length strings.
-     */
-    public enum CharacterSet {
-        /**
-         * ASCII character set.
-         */
-        ASCII(0, "ASCII", "American Standard Code for Information Interchange"),
-        /**
-         * UTF-8 character set.
-         */
-        UTF8(1, "UTF-8", "Unicode Transformation Format, 8-bit"),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_2(2, "Reserved", "Reserved for future use."),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_3(3, "Reserved", "Reserved for future use."),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_4(4, "Reserved", "Reserved for future use."),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_5(5, "Reserved", "Reserved for future use."),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_6(6, "Reserved", "Reserved for future use."),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_7(7, "Reserved", "Reserved for future use."),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_8(8, "Reserved", "Reserved for future use."),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_9(9, "Reserved", "Reserved for future use."),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_10(10, "Reserved", "Reserved for future use."),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_11(11, "Reserved", "Reserved for future use."),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_12(12, "Reserved", "Reserved for future use."),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_13(13, "Reserved", "Reserved for future use."),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_14(14, "Reserved", "Reserved for future use."),
-        /**
-         * Reserved character set for future use.
-         */
-        RESERVED_15(15, "Reserved", "Reserved for future use.");
-
-        private final int value;
-        private final String name;
-        private final String description;
-
-        CharacterSet(int value, String name, String description) {
-            this.value = value;
-            this.name = name;
-            this.description = description;
-        }
-
-        /**
-         * Retrieves the CharacterSet corresponding to the given value.
-         *
-         * @param value the numeric value of the character set
-         * @return the corresponding CharacterSet
-         * @throws IllegalArgumentException if the value does not match any known character set
-         */
-        public static CharacterSet fromValue(int value) {
-            for (CharacterSet set : values()) {
-                if (set.value == value) return set;
-            }
-            throw new IllegalArgumentException("Invalid character set value: " + value);
-        }
-
-        /**
-         * Retrieves the CharacterSet from a BitSet.
-         *
-         * @param bits the BitSet containing character set information
-         * @return the corresponding CharacterSet
-         */
-        public static CharacterSet fromBitSet(BitSet bits) {
-            int value = (bits.get(8) ? 1 : 0) | (bits.get(9) ? 2 : 0) |
-                    (bits.get(10) ? 4 : 0) | (bits.get(11) ? 8 : 0);
             return fromValue(value);
         }
     }
