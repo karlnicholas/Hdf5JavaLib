@@ -1,6 +1,6 @@
 package org.hdf5javalib.dataclass;
 
-import org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype;
+import org.hdf5javalib.datatype.FloatingPointDatatype;
 
 import java.nio.ByteBuffer;
 
@@ -14,13 +14,17 @@ import java.nio.ByteBuffer;
  * Java types.
  * </p>
  *
- * @see org.hdf5javalib.dataclass.HdfData
- * @see org.hdf5javalib.file.dataobject.message.datatype.FloatingPointDatatype
+ * @see HdfData
+ * @see FloatingPointDatatype
  */
 public class HdfFloatPoint implements HdfData {
-    /** The raw byte array containing the floating-point data. */
+    /**
+     * The raw byte array containing the floating-point data.
+     */
     private final byte[] bytes;
-    /** The FloatingPointDatatype defining the floating-point structure, size, and format. */
+    /**
+     * The FloatingPointDatatype defining the floating-point structure, size, and format.
+     */
     private final FloatingPointDatatype datatype;
 
     /**

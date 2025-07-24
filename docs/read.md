@@ -61,7 +61,6 @@ This example reads a compound dataset (`CompoundData`) from an HDF5 file, with f
 ```java
 package org.hdf5javalib.examples.read;
 
-import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.examples.ResourceLoader;
@@ -75,9 +74,9 @@ public class HdfCompoundRead {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             try (HdfDataSet dataSet = reader.getRootGroup().findDataset("CompoundData")) {
                 new TypedDataSource<>(channel, reader, dataSet, HdfCompound.class)
-                    .streamVector()
-                    .limit(2)
-                    .forEach(c -> System.out.println("Row: " + c.getMembers()));
+                        .streamVector()
+                        .limit(2)
+                        .forEach(c -> System.out.println("Row: " + c.getMembers()));
             }
         }
     }
@@ -99,7 +98,6 @@ This example reads scalar datasets from an HDF5 file, displaying values as `Long
 ```java
 package org.hdf5javalib.examples.read;
 
-import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.utils.HdfDisplayUtils;
@@ -134,7 +132,6 @@ This example reads a vector of ASCII strings from an HDF5 file.
 ```java
 package org.hdf5javalib.examples.read;
 
-import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.file.HdfDataSet;
 import org.hdf5javalib.utils.HdfDisplayUtils;

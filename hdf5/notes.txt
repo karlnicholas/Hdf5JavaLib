@@ -1,4 +1,4 @@
-14:41:35.978 [main] DEBUG org.hdf5javalib.maydo.examples.HDF5Examples.ReferenceRead -- dataSet: HdfDataset[name='DS1', value=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
+14:41:35.978 [main] DEBUG HDF5Examples.examples.org.hdf5javalib.ReferenceRead -- dataSet: HdfDataset[name='DS1', value=HdfObjectHeaderPrefixV1 { Version: 1 Total Header Messages: 6 Object Reference Count: 1 Object Header Size: 256
 		DataspaceMessage(48){version=1, dimensionality=2, flags={0}, dimensions=[6, 8], maxDimensions=[6, 8], hasMaxDimensions=true}
 		DatatypeMessage(24){datatype=FixedPointDatatype{classAndVersion=16, littleEndian=true, loPad=false, hiPad=false, signed=true, size=4, bitOffset=0, bitPrecision=32}}
 		FillValueMessage(16){version=2, spaceAllocationTime=3, fillValueWriteTime=2, fillValueDefined=1, size=0, fillValue=0 bytes}

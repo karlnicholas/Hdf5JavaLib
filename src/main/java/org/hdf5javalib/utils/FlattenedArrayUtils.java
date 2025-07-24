@@ -70,7 +70,7 @@ public class FlattenedArrayUtils {
      * @param shape   the shape of the array
      * @param indices the multi-dimensional indices
      * @return the element at the specified indices
-     * @throws IllegalArgumentException if the number of indices doesn’t match the shape
+     * @throws IllegalArgumentException  if the number of indices doesn’t match the shape
      * @throws IndexOutOfBoundsException if an index is out of bounds
      */
     public static <T> T getElement(T[] data, int[] shape, int... indices) {
@@ -101,7 +101,7 @@ public class FlattenedArrayUtils {
      * @param shape   the shape of the array
      * @param value   the value to set
      * @param indices the multi-dimensional indices
-     * @throws IllegalArgumentException if the number of indices doesn’t match the shape
+     * @throws IllegalArgumentException  if the number of indices doesn’t match the shape
      * @throws IndexOutOfBoundsException if an index is out of bounds
      */
     public static <T> void setElement(T[] data, int[] shape, T value, int... indices) {
@@ -131,10 +131,10 @@ public class FlattenedArrayUtils {
      * specified type.
      * </p>
      *
-     * @param <T>     the type of elements in the stream and the resulting array
-     * @param stream  the Stream of elements representing the flattened data
-     * @param shape   an array of integers defining the dimensions [d1, d2, ..., dN]
-     * @param clazz   the Class object representing the type of elements in the array
+     * @param <T>    the type of elements in the stream and the resulting array
+     * @param stream the Stream of elements representing the flattened data
+     * @param shape  an array of integers defining the dimensions [d1, d2, ..., dN]
+     * @param clazz  the Class object representing the type of elements in the array
      * @return an Object representing the N-D array (e.g., int[] for N=1, int[][] for N=2, etc.)
      */
     public static <T> Object streamToNDArray(Stream<T> stream, int[] shape, Class<T> clazz) {
@@ -171,10 +171,10 @@ public class FlattenedArrayUtils {
     /**
      * Sets a value in a multi-dimensional array at the specified coordinates.
      *
-     * @param <T>    the type of the value to set
-     * @param array  the multi-dimensional array
-     * @param coord  the coordinates
-     * @param value  the value to set
+     * @param <T>   the type of the value to set
+     * @param array the multi-dimensional array
+     * @param coord the coordinates
+     * @param value the value to set
      */
     public static <T> void setValue(Object array, int[] coord, T value) {
         Object current = array;
@@ -442,10 +442,10 @@ public class FlattenedArrayUtils {
     /**
      * Scans a flattened stream and collects matching values into a list of coordinate/value/flatIndex records.
      *
-     * @param <T>     the type of elements in the stream
-     * @param stream  the input stream of values
-     * @param shape   the shape of the array (used to compute coordinates)
-     * @param filter  predicate to match values
+     * @param <T>    the type of elements in the stream
+     * @param stream the input stream of values
+     * @param shape  the shape of the array (used to compute coordinates)
+     * @param filter predicate to match values
      * @return a list of MatchingEntry objects with coordinates, flat index, and value
      */
     public static <T> List<MatchingEntry<T>> filterToCoordinateList(
@@ -470,11 +470,17 @@ public class FlattenedArrayUtils {
      * Record to hold the results of coordinate-wise matching.
      */
     public static class MatchingEntry<T> {
-        /** The multi-dimensional coordinates of the matched value. */
+        /**
+         * The multi-dimensional coordinates of the matched value.
+         */
         public final int[] coordinates;
-        /** The flat index in the array. */
+        /**
+         * The flat index in the array.
+         */
         public final int flatIndex;
-        /** The matched value. */
+        /**
+         * The matched value.
+         */
         public final T value;
 
         /**
@@ -490,4 +496,142 @@ public class FlattenedArrayUtils {
             this.value = value;
         }
     }
+
+    /**
+     * Slices an N-dimensional dataset streamed as a flattened {@code Stream<T>} and returns
+     * a new {@code Stream<T>} containing only the elements within the specified slice.
+     * The elements in the output stream maintain their original flattened (row-major) order
+     * relative to each other within the slice.
+     * <p>
+     * This method is useful for processing slices of very large datasets without materializing
+     * the entire slice in memory, enabling further stream-based operations.
+     * </p>
+     *
+     * <p><b>Slicing Descriptor Format:</b></p>
+     * The slicing descriptor is an {@code int[][]} where each inner array corresponds to one axis:
+     * <ul>
+     *     <li>{@code []} → full slice (equivalent to ":" in Python)</li>
+     *     <li>{@code [index]} → fixed index (select a single element along that axis)</li>
+     *     <li>{@code [start, end]} → range slice (inclusive start, exclusive end)</li>
+     * </ul>
+     * Note: When an axis is fixed with {@code [index]}, elements from that axis are still
+     * included in the output stream if they are part of the overall N-D slice. This method
+     * does NOT reduce the dimensionality in the stream itself; the output stream is still 1D.
+     * The "shape" of the resulting slice would need to be tracked separately if N-D interpretation
+     * of the output stream is required later.
+     *
+     * @param <T>               the type of elements in the dataset
+     * @param dataStream        the Stream of flattened array elements
+     * @param originalShape     the shape of the original N-dimensional array from which the stream was derived
+     * @param slicingDescriptor the slicing specifications for each dimension
+     * @return a new {@code Stream<T>} containing only the elements belonging to the slice
+     * @throws IllegalArgumentException if shape and descriptor lengths mismatch or slicing indices are invalid
+     */
+    public static <T> Stream<T> sliceToStream(
+            Stream<T> dataStream,
+            int[] originalShape,
+            int[][] slicingDescriptor
+    ) {
+        int dims = originalShape.length;
+        if (slicingDescriptor.length != dims) {
+            throw new IllegalArgumentException("Slicing descriptor must match shape dimensions");
+        }
+
+        // Validate slicingDescriptor ranges against originalShape (important for safety)
+        for (int i = 0; i < dims; i++) {
+            int[] desc = slicingDescriptor[i];
+            if (desc.length == 1) { // Fixed index
+                if (desc[0] < 0 || desc[0] >= originalShape[i]) {
+                    throw new IllegalArgumentException("Fixed index " + desc[0] + " for dimension " + i +
+                            " is out of bounds for shape " + originalShape[i]);
+                }
+            } else if (desc.length == 2) { // Range [start, end)
+                if (desc[0] < 0 || desc[1] > originalShape[i] || desc[0] >= desc[1]) {
+                    throw new IllegalArgumentException("Invalid range [" + desc[0] + "," + desc[1] +
+                            ") for dimension " + i + " with shape " + originalShape[i]);
+                }
+            } else if (desc.length != 0) { // Empty array means full slice
+                throw new IllegalArgumentException("Invalid slice spec (length " + desc.length +
+                        ") at dimension " + i + ". Must be length 0, 1, or 2.");
+            }
+        }
+
+        // Pre-compute strides for converting flat index to N-D coordinates
+        final int[] strides = computeStrides(originalShape); // Use the existing helper
+
+        // We need to associate each element from the stream with its original flat index.
+        // A simple way is to create an indexed stream first.
+        AtomicInteger flatIndexCounter = new AtomicInteger(0);
+
+        return dataStream
+                .map(value -> new IndexedValue<>(flatIndexCounter.getAndIncrement(), value))
+                .filter(indexedValue -> {
+                    int flatIndex = indexedValue.index;
+                    int[] coords = unflattenIndex(flatIndex, strides, originalShape); // Use existing helper
+
+                    // Check if these coordinates match the slicing descriptor
+                    for (int i = 0; i < dims; i++) {
+                        int[] desc = slicingDescriptor[i];
+                        int coord_i = coords[i];
+
+                        if (desc.length == 1) { // Fixed index
+                            if (coord_i != desc[0]) {
+                                return false; // Does not match fixed index
+                            }
+                        } else if (desc.length == 2) { // Range [start, end)
+                            if (coord_i < desc[0] || coord_i >= desc[1]) {
+                                return false; // Outside specified range
+                            }
+                        }
+                        // If desc.length == 0, it's a full slice for this dimension, so always matches.
+                    }
+                    return true; // All dimension constraints met
+                })
+                .map(indexedValue -> indexedValue.value); // Extract the original value
+    }
+
+    /**
+     * Helper class to pair a value with its original flat index.
+     */
+    private static class IndexedValue<T> {
+        final int index;
+        final T value;
+
+        IndexedValue(int index, T value) {
+            this.index = index;
+            this.value = value;
+        }
+    }
+
+
+    // --- For a "complete" streaming OLAP pipeline, we might need methods
+    // --- that operate on streams and return streams.
+
+    /**
+     * Reduces a stream of elements using a binary operator.
+     * This is a general stream reduction, not axis-specific like reduceAlongAxis.
+     * If the stream is empty, returns null or an appropriate identity if provided.
+     *
+     * @param <T>     the type of elements
+     * @param stream  the input stream
+     * @param reducer the binary operator
+     * @return the reduced value, or null if the stream is empty
+     */
+    public static <T> T reduceStream(Stream<T> stream, BinaryOperator<T> reducer) {
+        return stream.reduce(reducer).orElse(null); // Or orElse(identity)
+    }
+
+    /**
+     * Filters a stream based on a predicate. (Standard stream operation, just for completeness)
+     *
+     * @param <T>    the type of elements
+     * @param stream the input stream
+     * @param filter the predicate
+     * @return a new filtered stream
+     */
+    public static <T> Stream<T> filterStream(Stream<T> stream, Predicate<T> filter) {
+        return stream.filter(filter);
+    }
+
+
 }

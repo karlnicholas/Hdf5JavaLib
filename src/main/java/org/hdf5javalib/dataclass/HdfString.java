@@ -1,6 +1,6 @@
 package org.hdf5javalib.dataclass;
 
-import org.hdf5javalib.file.dataobject.message.datatype.StringDatatype;
+import org.hdf5javalib.datatype.StringDatatype;
 
 import java.nio.ByteBuffer;
 
@@ -20,13 +20,17 @@ import java.nio.ByteBuffer;
  * using utility methods or factories.
  * </p>
  *
- * @see org.hdf5javalib.dataclass.HdfData
- * @see org.hdf5javalib.file.dataobject.message.datatype.StringDatatype
+ * @see HdfData
+ * @see StringDatatype
  */
 public class HdfString implements HdfData {
-    /** The raw byte array containing the string data, without null termination. */
+    /**
+     * The raw byte array containing the string data, without null termination.
+     */
     private final byte[] bytes;
-    /** The StringDatatype defining the string structure, encoding, and format. */
+    /**
+     * The StringDatatype defining the string structure, encoding, and format.
+     */
     private final StringDatatype datatype;
 
     /**

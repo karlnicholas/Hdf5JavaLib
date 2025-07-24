@@ -1,11 +1,13 @@
 package org.hdf5javalib.dataclass;
 
-import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
+import org.hdf5javalib.datatype.FixedPointDatatype;
 import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Represents an HDF5 fixed-point data structure.
@@ -17,13 +19,17 @@ import java.nio.ByteBuffer;
  * converting it to various Java types.
  * </p>
  *
- * @see org.hdf5javalib.dataclass.HdfData
- * @see org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype
+ * @see HdfData
+ * @see FixedPointDatatype
  */
-public class HdfFixedPoint implements HdfData {
-    /** The raw byte array containing the fixed-point data. */
+public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
+    /**
+     * The raw byte array containing the fixed-point data.
+     */
     private final byte[] bytes;
-    /** The FixedPointDatatype defining the fixed-point structure, size, and format. */
+    /**
+     * The FixedPointDatatype defining the fixed-point structure, size, and format.
+     */
     private final FixedPointDatatype datatype;
 
     /**
@@ -86,6 +92,10 @@ public class HdfFixedPoint implements HdfData {
         return result;
     }
 
+    public static int compareToZero(HdfFixedPoint hdfFixedPoint) {
+        return compareToBytes(hdfFixedPoint.bytes, new byte[hdfFixedPoint.datatype.getSize()]);
+    }
+
     /**
      * Returns a copy of the byte array containing the fixed-point data.
      *
@@ -105,7 +115,7 @@ public class HdfFixedPoint implements HdfData {
      * @return true if the value is undefined, false otherwise
      */
     public boolean isUndefined() {
-        for(byte b : bytes) {
+        for (byte b : bytes) {
             if (b != (byte) 0xFF) {
                 return false;
             }
@@ -163,5 +173,191 @@ public class HdfFixedPoint implements HdfData {
 
     public FixedPointDatatype getDatatype() {
         return datatype;
+    }
+
+    @Override
+    public int compareTo(HdfFixedPoint other) {
+        if (other == null) {
+            throw new NullPointerException("Cannot compare to null");
+        }
+        if (Objects.equals(datatype, other.datatype)) {
+            return compareToBytes(bytes, other.getBytes());
+        } else {
+            // Handle undefined values
+            boolean thisUndefined = isUndefined();
+            boolean otherUndefined = other.isUndefined();
+            if (thisUndefined && otherUndefined) {
+                return 0; // Both undefined, considered equal
+            }
+            if (thisUndefined) {
+                return 1; // Undefined is less than defined
+            }
+            if (otherUndefined) {
+                return -1; // Defined is greater than undefined
+            }
+
+            // Convert byte arrays to BigInteger for comparison
+            byte[] thisBytes = bytes.clone();
+            byte[] otherBytes = other.getBytes();
+
+            // Adjust for endianness if necessary
+            if (!datatype.isBigEndian()) {
+                HdfReadUtils.reverseBytesInPlace(thisBytes);
+                HdfReadUtils.reverseBytesInPlace(otherBytes);
+            }
+
+            // Interpret bytes as BigInteger, considering signedness
+            BigInteger thisValue = datatype.isSigned() ? new BigInteger(thisBytes) : new BigInteger(1, thisBytes);
+            BigInteger otherValue = other.getDatatype().isSigned() ? new BigInteger(otherBytes) : new BigInteger(1, otherBytes);
+
+            return thisValue.compareTo(otherValue);
+        }
+    }
+
+    public static int compareToBytes(byte[] first, byte[] second) {
+        // Compare bytes from MSB to LSB, treating as unsigned
+        for (int i = first.length - 1; i >= 0; i--) {
+            int thisByte = first[i] & 0xFF;
+            int otherByte = second[i] & 0xFF;
+            if (thisByte != otherByte) {
+                return Integer.compare(thisByte, otherByte);
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        HdfFixedPoint that = (HdfFixedPoint) o;
+        return Arrays.equals(bytes, that.bytes) && datatype.equals(that.datatype);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Arrays.hashCode(bytes), datatype);
+    }
+
+    public byte[] add(HdfFixedPoint addend) {
+        if (Objects.equals(datatype, addend.datatype)) {
+            return addBytes(bytes, addend.bytes);
+        } else {
+            throw new UnsupportedOperationException("Addition requires identical datatype instances");
+        }
+    }
+
+    public static byte[] addBytes(byte[] bytesFirst, byte[] bytesSecond) {
+        if (bytesFirst.length != bytesSecond.length) {
+            throw new IllegalArgumentException("Byte arrays must be the same length");
+        }
+        byte[] result = new byte[bytesFirst.length]; // Output size matches datatype
+        int carry = 0; // Carry from previous sum (0 or 1)
+
+        // Sum bytes in little-endian order
+        for (int i = 0; i < bytesFirst.length; i++) {
+            int thisByte = bytesFirst[i] & 0xFF; // Unsigned (0-255)
+            int otherByte = bytesSecond[i] & 0xFF; // Unsigned (0-255)
+            int sum = thisByte + otherByte + carry; // Sum of three bytes (0-511)
+            result[i] = (byte) (sum & 0xFF); // Lower 8 bits to result
+            carry = sum >>> 8; // Carry (0 or 1)
+        }
+
+        // Check for overflow (carry means sum exceeds datatype.getSize())
+        if (carry > 0) {
+            throw new ArithmeticException("Unsigned sum overflow");
+        }
+
+        return result;
+    }
+
+    public byte[] minus(HdfFixedPoint subtrahend) {
+        if (Objects.equals(datatype, subtrahend.datatype)) {
+            return minusBytes(bytes, subtrahend.bytes);
+        } else {
+            throw new UnsupportedOperationException("Subtraction requires identical datatype instances");
+        }
+    }
+
+    public static byte[] minusBytes(byte[] firstBytes, byte[] secondBytes) {
+        if (firstBytes.length != secondBytes.length) {
+            throw new IllegalArgumentException("Byte arrays must be the same length");
+        }
+        byte[] result = new byte[firstBytes.length]; // Output size matches datatype
+        int borrow = 0; // Borrow from previous subtraction (0 or 1)
+
+        // Subtract bytes in little-endian order
+        for (int i = 0; i < firstBytes.length; i++) {
+            int thisByte = firstBytes[i] & 0xFF; // Unsigned (0-255)
+            int otherByte = secondBytes[i] & 0xFF; // Unsigned (0-255)
+            int diff = thisByte - otherByte - borrow; // Difference (-256 to 255)
+            if (diff < 0) {
+                diff += 256; // Adjust to 0-255
+                borrow = 1; // Borrow for next position
+            } else {
+                borrow = 0; // No borrow needed
+            }
+            result[i] = (byte) (diff & 0xFF); // Store lower 8 bits
+        }
+
+        // Check for underflow (borrow means result is negative)
+        if (borrow > 0) {
+            throw new ArithmeticException("Unsigned subtraction underflow");
+        }
+
+        return result;
+    }
+
+    public byte[] minusOne() {
+        return minusOneBytes(bytes);
+    }
+
+    public static byte[] minusOneBytes(byte[] bytes) {
+        byte[] result = new byte[bytes.length]; // Output size matches datatype
+        int borrow = 0; // Borrow from previous subtraction (0 or 1)
+
+        // Subtract 1 in little-endian order
+        for (int i = 0; i < bytes.length; i++) {
+            int thisByte = bytes[i] & 0xFF; // Unsigned (0-255)
+            int diff = thisByte - (i == 0 ? 1 : 0) - borrow; // Subtract 1 from LSB only
+            if (diff < 0) {
+                diff += 256; // Adjust to 0-255
+                borrow = 1; // Borrow for next position
+            } else {
+                borrow = 0; // No borrow needed
+            }
+            result[i] = (byte) (diff & 0xFF); // Store lower 8 bits
+        }
+
+        // Check for underflow (borrow means result is negative)
+        if (borrow > 0) {
+            throw new ArithmeticException("Unsigned subtraction underflow");
+        }
+        return result;
+    }
+
+    public void mutate(byte[] bytes) {
+        System.arraycopy(bytes, 0, this.bytes, 0, bytes.length);
+    }
+
+    public static byte[] truncateTo2048Boundary(byte[] bytes) {
+        if (bytes == null || bytes.length == 0 || bytes.length > 8) {
+            throw new IllegalArgumentException("Bytes must be 1-8 bytes");
+        }
+        byte[] result = new byte[bytes.length];
+        System.arraycopy(bytes, 0, result, 0, bytes.length);
+        // Clear lower 11 bits: last 3 bits of byte[1] and all 8 bits of byte[0]
+        if (bytes.length > 0) {
+            result[0] = 0; // Clear byte[0]
+        }
+        if (bytes.length > 1) {
+            result[1] &= (byte) 0xF8; // Clear lower 3 bits of byte[1]
+        }
+        return result;
+    }
+
+    @Override
+    public HdfFixedPoint clone() {
+        return new HdfFixedPoint(bytes.clone(), datatype);
     }
 }

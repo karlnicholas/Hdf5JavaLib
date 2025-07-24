@@ -1,6 +1,6 @@
 package org.hdf5javalib.dataclass;
 
-import org.hdf5javalib.file.dataobject.message.datatype.VariableLengthDatatype;
+import org.hdf5javalib.datatype.VariableLengthDatatype;
 
 import java.nio.ByteBuffer;
 
@@ -14,13 +14,17 @@ import java.nio.ByteBuffer;
  * to various Java types.
  * </p>
  *
- * @see org.hdf5javalib.dataclass.HdfData
- * @see org.hdf5javalib.file.dataobject.message.datatype.VariableLengthDatatype
+ * @see HdfData
+ * @see VariableLengthDatatype
  */
 public class HdfVariableLength implements HdfData {
-    /** The raw byte array containing the variable-length data. */
+    /**
+     * The raw byte array containing the variable-length data.
+     */
     private final byte[] bytes;
-    /** The VariableLengthDatatype defining the data structure and format. */
+    /**
+     * The VariableLengthDatatype defining the data structure and format.
+     */
     private final VariableLengthDatatype datatype;
 
     /**

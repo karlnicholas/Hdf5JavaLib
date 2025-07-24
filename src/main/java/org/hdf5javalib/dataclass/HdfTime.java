@@ -1,6 +1,6 @@
 package org.hdf5javalib.dataclass;
 
-import org.hdf5javalib.file.dataobject.message.datatype.TimeDatatype;
+import org.hdf5javalib.datatype.TimeDatatype;
 
 import java.nio.ByteBuffer;
 
@@ -13,13 +13,17 @@ import java.nio.ByteBuffer;
  * methods for accessing the data and converting it to various Java types.
  * </p>
  *
- * @see org.hdf5javalib.dataclass.HdfData
- * @see org.hdf5javalib.file.dataobject.message.datatype.TimeDatatype
+ * @see HdfData
+ * @see TimeDatatype
  */
 public class HdfTime implements HdfData {
-    /** The raw byte array containing the time data. */
+    /**
+     * The raw byte array containing the time data.
+     */
     private final byte[] bytes;
-    /** The TimeDatatype defining the time structure, size, and format. */
+    /**
+     * The TimeDatatype defining the time structure, size, and format.
+     */
     private final TimeDatatype datatype;
 
     /**

@@ -1,6 +1,6 @@
 package org.hdf5javalib.dataclass;
 
-import org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype;
+import org.hdf5javalib.datatype.CompoundDatatype;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -16,15 +16,21 @@ import java.util.List;
  * methods for accessing the data, its members, and converting it to various Java types.
  * </p>
  *
- * @see org.hdf5javalib.dataclass.HdfData
- * @see org.hdf5javalib.file.dataobject.message.datatype.CompoundDatatype
+ * @see HdfData
+ * @see CompoundDatatype
  */
 public class HdfCompound implements HdfData {
-    /** The CompoundDatatype defining the compound structure and member specifications. */
+    /**
+     * The CompoundDatatype defining the compound structure and member specifications.
+     */
     private final CompoundDatatype datatype;
-    /** The raw byte array containing the compound data. */
+    /**
+     * The raw byte array containing the compound data.
+     */
     private final byte[] bytes;
-    /** The list of compound members, each encapsulating a portion of the byte data. */
+    /**
+     * The list of compound members, each encapsulating a portion of the byte data.
+     */
     private final List<HdfCompoundMember> members;
 
     /**

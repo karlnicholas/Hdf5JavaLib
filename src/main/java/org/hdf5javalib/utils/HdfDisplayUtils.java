@@ -1,8 +1,12 @@
 package org.hdf5javalib.utils;
 
-import org.hdf5javalib.HdfDataFile;
+import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.datasource.TypedDataSource;
-import org.hdf5javalib.file.HdfDataSet;
+import org.hdf5javalib.hdfjava.HdfDataFile;
+import org.hdf5javalib.hdfjava.HdfDataset;
+import org.hdf5javalib.hdfjava.HdfFileReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
@@ -19,7 +23,7 @@ import java.util.stream.Collectors;
  * </p>
  */
 public class HdfDisplayUtils {
-
+    private static Logger log = LoggerFactory.getLogger(HdfDisplayUtils.class);
     /**
      * Creates a version attribute for a dataset.
      * <p>
@@ -30,10 +34,31 @@ public class HdfDisplayUtils {
      * @param hdfDataFile the HDF5 file context
      * @param dataset     the dataset to which the attribute is added
      */
-    public static void writeVersionAttribute(HdfDataFile hdfDataFile, HdfDataSet dataset) {
+    public static void writeVersionAttribute(HdfDataFile hdfDataFile, HdfDataset dataset) {
         String ATTRIBUTE_NAME = "GIT root revision";
         String ATTRIBUTE_VALUE = "Revision: , URL: ";
         dataset.createAttribute(ATTRIBUTE_NAME, ATTRIBUTE_VALUE, hdfDataFile);
+    }
+
+    public static void displayData(SeekableByteChannel channel, HdfDataset ds, HdfFileReader reader) throws Exception {
+        log.debug("Dataset path: {}", ds.getObjectPath());
+        if (ds.hasData()) {
+            switch (ds.getDimensionality()) {
+                case 0:
+                    displayScalarData(channel, ds, HdfData.class, reader);
+                    break;
+                case 1:
+                    displayVectorData(channel, ds, HdfData.class, reader);
+                    break;
+                case 2:
+                    displayMatrixData(channel, ds, HdfData.class, reader);
+                    break;
+                default:
+                    displayNDimData(channel, ds, HdfData.class, reader);
+                    break;
+
+            }
+        }
     }
 
     /**
@@ -50,14 +75,14 @@ public class HdfDisplayUtils {
      * @param <T>         the type of the data
      * @throws IOException if an I/O error occurs
      */
-    public static <T> void displayScalarData(SeekableByteChannel fileChannel, HdfDataSet dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+    public static <T> void displayScalarData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T result = dataSource.readScalar();
-        System.out.println(dataSet.getDatasetName() + ":" + displayType(clazz, result) + " read   = " + displayValue(result));
+        System.out.println(dataSet.getObjectName() + ":" + displayType(clazz, result) + " read   = " + displayValue(result));
 
         result = dataSource.streamScalar().findFirst().orElseThrow();
-        System.out.println(dataSet.getDatasetName() + ":" + displayType(clazz, result) + " stream = " + displayValue(result));
+        System.out.println(dataSet.getObjectName() + ":" + displayType(clazz, result) + " stream = " + displayValue(result));
     }
 
     /**
@@ -75,7 +100,7 @@ public class HdfDisplayUtils {
      * @param <T>         the type of the data elements
      * @throws IOException if an I/O error occurs
      */
-    public static <T> void displayVectorData(SeekableByteChannel fileChannel, HdfDataSet dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+    public static <T> void displayVectorData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T[] resultArray = dataSource.readVector();
@@ -87,6 +112,106 @@ public class HdfDisplayUtils {
                 .collect(Collectors.joining(", "));
         System.out.print(joined);
         System.out.println("]");
+    }
+
+    /**
+     * Displays vector data from a dataset.
+     * <p>
+     * Reads and prints the vector data from the dataset using both direct reading and
+     * streaming methods, formatting the output with type information and a comma-separated
+     * list of values.
+     * </p>
+     *
+     * @param fileChannel the seekable byte channel for reading the HDF5 file
+     * @param dataSet     the dataset to read from
+     * @param clazz       the class type of the data elements
+     * @param hdfDataFile the HDF5 file context
+     * @param <T>         the type of the data elements
+     * @throws IOException if an I/O error occurs
+     */
+    public static <T> void displayMatrixData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+        TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
+
+        T[][] resultArray = dataSource.readMatrix();
+        System.out.println(displayType(clazz, resultArray) + " read   = " + displayValue(resultArray));
+
+        System.out.print(displayType(clazz, resultArray) + " stream = [");
+        String joined = dataSource.streamMatrix()
+                .map(HdfDisplayUtils::displayValue)
+                .collect(Collectors.joining(", "));
+        System.out.print(joined);
+        System.out.println("]");
+    }
+
+    /**
+     * Displays vector data from a dataset.
+     * <p>
+     * Reads and prints the vector data from the dataset using both direct reading and
+     * streaming methods, formatting the output with type information and a comma-separated
+     * list of values.
+     * </p>
+     *
+     * @param fileChannel the seekable byte channel for reading the HDF5 file
+     * @param dataSet     the dataset to read from
+     * @param clazz       the class type of the data elements
+     * @param hdfDataFile the HDF5 file context
+     * @param <T>         the type of the data elements
+     * @throws IOException if an I/O error occurs
+     */
+    private static <T> void displayNDimData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+        TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
+
+        System.out.print("read = " );
+        printFlattenedArray(dataSource.readFlattened(), dataSource.getShape());
+        System.out.println();
+
+        Object resultArray = FlattenedArrayUtils.streamToNDArray(dataSource.streamFlattened(), dataSource.getShape(), clazz);
+        System.out.println(displayType(clazz, resultArray) + " stream   = " + displayValue(resultArray));
+    }
+
+    // Method to print flattened array according to shape
+    public static <T> void printFlattenedArray(T[] resultRead, int[] shape) {
+        if (resultRead == null || shape == null || shape.length == 0) {
+            System.out.print("[]");
+            return;
+        }
+        // Start printing with an index tracker for the flattened array
+        int[] index = {0}; // Mutable index to track position in resultRead
+        printArray(resultRead, shape, 0, index);
+    }
+
+    private static <T> void printArray(T[] resultRead, int[] shape, int dimIndex, int[] index) {
+        // Base case: at the last dimension, print a flat array
+        if (dimIndex == shape.length - 1) {
+            System.out.print("[");
+            int size = shape[dimIndex];
+            for (int i = 0; i < size; i++) {
+                // Check if we have more elements in resultRead
+                if (index[0] < resultRead.length) {
+                    System.out.print(resultRead[index[0]]);
+                    index[0]++;
+                } else {
+                    // Print 0 or null if out of elements
+                    System.out.print("0");
+                }
+                if (i < size - 1) {
+                    System.out.print(",");
+                }
+            }
+            System.out.print("]");
+            return;
+        }
+
+        // Recursive case: print nested arrays
+        System.out.print("[");
+        int currentSize = shape[dimIndex];
+        for (int i = 0; i < currentSize; i++) {
+            printArray(resultRead, shape, dimIndex + 1, index);
+            if (i < currentSize - 1) {
+                System.out.print(",");
+            }
+        }
+        System.out.print("]");
     }
 
     /**

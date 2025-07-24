@@ -1,6 +1,5 @@
 package org.hdf5javalib.examples.read;
 
-import org.hdf5javalib.HdfFileReader;
 import org.hdf5javalib.dataclass.*;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.examples.ResourceLoader;

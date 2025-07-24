@@ -1,6 +1,5 @@
 package org.hdf5javalib.examples.write;
 
-import org.hdf5javalib.HdfDataFile;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.examples.MemorySeekableByteChannel;
 import org.hdf5javalib.examples.ResourceLoader;

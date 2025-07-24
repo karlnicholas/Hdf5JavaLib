@@ -1,6 +1,6 @@
 package org.hdf5javalib.dataclass;
 
-import org.hdf5javalib.file.dataobject.message.datatype.CompoundMemberDatatype;
+import org.hdf5javalib.datatype.CompoundMemberDatatype;
 
 import java.nio.ByteBuffer;
 
@@ -15,14 +15,18 @@ import java.nio.ByteBuffer;
  * applications; instead, use {@link HdfCompound} to handle compound data.
  * </p>
  *
- * @see org.hdf5javalib.dataclass.HdfData
- * @see org.hdf5javalib.dataclass.HdfCompound
- * @see org.hdf5javalib.file.dataobject.message.datatype.CompoundMemberDatatype
+ * @see HdfData
+ * @see HdfCompound
+ * @see CompoundMemberDatatype
  */
 public class HdfCompoundMember implements HdfData {
-    /** The CompoundMemberDatatype defining the member's structure and format. */
+    /**
+     * The CompoundMemberDatatype defining the member's structure and format.
+     */
     private final CompoundMemberDatatype datatype;
-    /** The raw byte array containing the compound member data. */
+    /**
+     * The raw byte array containing the compound member data.
+     */
     private final byte[] bytes;
 
     /**

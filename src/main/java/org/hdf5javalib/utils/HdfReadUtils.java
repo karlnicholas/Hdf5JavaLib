@@ -1,12 +1,14 @@
 package org.hdf5javalib.utils;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.file.dataobject.message.datatype.FixedPointDatatype;
+import org.hdf5javalib.datatype.FixedPointDatatype;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Utility class for reading data from HDF5 files.
@@ -31,6 +33,20 @@ public class HdfReadUtils {
         fileChannel.read(buffer);
         buffer.flip();
         return buffer.getInt();
+    }
+
+    /**
+     * Retrieves the file path for a resource.
+     *
+     * @param fileName the name of the resource file
+     * @return the Path to the resource file
+     */
+    public static Path getResourcePath(String fileName) {
+        String resourcePath = HdfReadUtils.class.getClassLoader().getResource(fileName).getPath();
+        if (System.getProperty("os.name").toLowerCase().contains("windows") && resourcePath.startsWith("/")) {
+            resourcePath = resourcePath.substring(1);
+        }
+        return Paths.get(resourcePath);
     }
 
     /**
@@ -60,19 +76,13 @@ public class HdfReadUtils {
         }
     }
 
-    /**
-     * Reverses the order of bytes in an array in place.
-     *
-     * @param input the byte array to reverse
-     */
-    public static byte[] trimZeroBytes(byte[] input) {
-        int inputLength = input.length;
-        while ( input[inputLength - 1] == 0 ) {
-            inputLength--;
+    public static String readNullTerminatedString(ByteBuffer buffer) {
+        StringBuilder nameBuilder = new StringBuilder();
+        byte b;
+        while ((b = buffer.get()) != 0) {
+            nameBuilder.append((char) b);
         }
-        byte[] returnBytes = new byte[inputLength];
-        System.arraycopy(input, 0, returnBytes, 0, inputLength);
-        return returnBytes;
+        return nameBuilder.toString();
     }
 
     /**
@@ -107,6 +117,21 @@ public class HdfReadUtils {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         return new HdfFixedPoint(bytes, fixedPointDatatype);
+    }
+
+    /**
+     * Reverses the order of bytes in an array in place.
+     *
+     * @param input the byte array to reverse
+     */
+    public static byte[] trimZeroBytes(byte[] input) {
+        int inputLength = input.length;
+        while ( input[inputLength - 1] == 0 ) {
+            inputLength--;
+        }
+        byte[] returnBytes = new byte[inputLength];
+        System.arraycopy(input, 0, returnBytes, 0, inputLength);
+        return returnBytes;
     }
 
     /**

@@ -60,12 +60,12 @@ public class HdfDebugUtils {
     /**
      * Builds hex and ASCII representations for a single byte in the buffer.
      *
-     * @param buffer   the ByteBuffer containing the data
-     * @param limit    the limit of the buffer
-     * @param sb       the StringBuilder for hex output
-     * @param i        the base index in the buffer
-     * @param ascii    the StringBuilder for ASCII output
-     * @param j        the offset within the current line
+     * @param buffer the ByteBuffer containing the data
+     * @param limit  the limit of the buffer
+     * @param sb     the StringBuilder for hex output
+     * @param i      the base index in the buffer
+     * @param ascii  the StringBuilder for ASCII output
+     * @param j      the offset within the current line
      */
     private static void buildHexValues(ByteBuffer buffer, int limit, StringBuilder sb, int i, StringBuilder ascii, int j) {
         if (i + j < limit) {

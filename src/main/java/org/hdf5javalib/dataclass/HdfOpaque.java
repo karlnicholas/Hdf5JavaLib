@@ -1,6 +1,6 @@
 package org.hdf5javalib.dataclass;
 
-import org.hdf5javalib.file.dataobject.message.datatype.OpaqueDatatype;
+import org.hdf5javalib.datatype.OpaqueDatatype;
 
 import java.nio.ByteBuffer;
 
@@ -13,13 +13,17 @@ import java.nio.ByteBuffer;
  * methods for accessing the data and converting it to various Java types.
  * </p>
  *
- * @see org.hdf5javalib.dataclass.HdfData
- * @see org.hdf5javalib.file.dataobject.message.datatype.OpaqueDatatype
+ * @see HdfData
+ * @see OpaqueDatatype
  */
 public class HdfOpaque implements HdfData {
-    /** The raw byte array containing the opaque data. */
+    /**
+     * The raw byte array containing the opaque data.
+     */
     private final byte[] bytes;
-    /** The OpaqueDatatype defining the data size and format. */
+    /**
+     * The OpaqueDatatype defining the data size and format.
+     */
     private final OpaqueDatatype datatype;
 
     /**

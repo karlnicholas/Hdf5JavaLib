@@ -1,17 +1,14 @@
 package org.hdf5javalib.datasource;
 
-import org.hdf5javalib.HdfDataFile;
-import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.file.HdfDataSet;
-import org.hdf5javalib.file.dataobject.message.DataspaceMessage;
-import org.hdf5javalib.file.dataobject.message.DatatypeMessage;
+import org.hdf5javalib.hdffile.dataobjects.messages.DatatypeMessage;
+import org.hdf5javalib.hdfjava.HdfDataFile;
+import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.utils.FlattenedArrayUtils;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -28,41 +25,50 @@ import java.util.stream.StreamSupport;
  * </p>
  *
  * @param <T> the Java type of the data elements (e.g., {@link Integer}, {@link Double})
- * @see org.hdf5javalib.file.HdfDataSet
- * @see org.hdf5javalib.HdfDataFile
+ * @see HdfDataset
+ * @see HdfDataFile
  */
 public class TypedDataSource<T> {
-    /** The HDF5 dataset being accessed. */
-    private final HdfDataSet dataset;
-    /** The channel for reading data from the HDF5 file. */
+    /**
+     * The HDF5 dataset being accessed.
+     */
+    private final HdfDataset dataset;
+    /**
+     * The channel for reading data from the HDF5 file.
+     */
     private final SeekableByteChannel channel;
-    /** The Java class of the data elements. */
+    /**
+     * The Java class of the data elements.
+     */
     private final Class<T> dataClass;
-    /** The dimensions of the dataset. */
+    /**
+     * The dimensions of the dataset.
+     */
     private final int[] dimensions;
-    /** The size of each data element in bytes. */
+    /**
+     * The size of each data element in bytes.
+     */
     private final int elementSize;
 
     /**
      * Constructs a TypedDataSource for the specified dataset and data type.
      *
-     * @param channel    the SeekableByteChannel for reading the HDF5 file
+     * @param channel     the SeekableByteChannel for reading the HDF5 file
      * @param hdfDataFile the HDF5 file context for global heap and other resources
-     * @param dataset    the HDF5 dataset to read from
-     * @param dataClass  the Java class of the data elements
+     * @param dataset     the HDF5 dataset to read from
+     * @param dataClass   the Java class of the data elements
      * @throws NullPointerException if any parameter is null
      */
-    public TypedDataSource(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataSet dataset, Class<T> dataClass) {
+    public TypedDataSource(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataset, Class<T> dataClass) {
         if (channel == null || hdfDataFile == null || dataset == null || dataClass == null) {
             throw new NullPointerException("Parameters must not be null");
         }
         this.dataset = dataset;
         this.channel = channel;
         this.dataClass = dataClass;
-        this.elementSize = dataset.getHdfDatatype().getSize();
-        this.dimensions = extractDimensions(dataset.getDataObjectHeaderPrefix()
-                .findMessageByType(DataspaceMessage.class).orElseThrow());
-        dataset.getDataObjectHeaderPrefix().findMessageByType(DatatypeMessage.class).orElseThrow()
+        this.elementSize = dataset.getElementSize();
+        this.dimensions = dataset.extractDimensions();
+        dataset.getObjectHeader().findMessageByType(DatatypeMessage.class).orElseThrow()
                 .getHdfDatatype().setGlobalHeap(hdfDataFile.getGlobalHeap());
     }
 
@@ -76,43 +82,19 @@ public class TypedDataSource<T> {
     }
 
     /**
-     * Extracts the dimensions from a DataspaceMessage.
-     *
-     * @param dataspace the DataspaceMessage containing dimension information
-     * @return an array of dimension sizes
-     */
-    private int[] extractDimensions(DataspaceMessage dataspace) {
-        HdfFixedPoint[] dims = dataspace.getDimensions();
-        int[] result = new int[dims.length];
-        for (int i = 0; i < dims.length; i++) {
-            result[i] = dims[i].getInstance(Long.class).intValue();
-        }
-        return result;
-    }
-
-    /**
      * Reads a specified number of bytes from the dataset at the given offset.
      *
      * @param offset the starting offset in the dataset
      * @param size   the number of bytes to read
      * @return a ByteBuffer containing the read data
-     * @throws IOException if an I/O error occurs
+     * @throws IOException              if an I/O error occurs
      * @throws IllegalArgumentException if the size exceeds Integer.MAX_VALUE
      */
     private ByteBuffer readBytes(long offset, long size) throws IOException {
         if (size > Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Size too large: " + size);
         }
-        ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
-        synchronized (channel) {
-            channel.position(dataset.getDataAddress().getInstance(Long.class) + offset);
-            int bytesRead = channel.read(buffer);
-            if (bytesRead != size) {
-                throw new IOException("Failed to read the expected number of bytes: read " + bytesRead + ", expected " + size);
-            }
-            buffer.flip();
-            return buffer;
-        }
+        return dataset.getDatasetData(channel, offset, size);
     }
 
     /**
@@ -124,7 +106,7 @@ public class TypedDataSource<T> {
     private T populateElement(ByteBuffer buffer) {
         byte[] bytes = new byte[elementSize];
         buffer.get(bytes);
-        return dataset.getHdfDatatype().getInstance(dataClass, bytes);
+        return dataset.getDatatype().getInstance(dataClass, bytes);
     }
 
     /**
@@ -184,12 +166,15 @@ public class TypedDataSource<T> {
      * Reads a scalar (0D) value from the dataset.
      *
      * @return the scalar value
-     * @throws IOException if an I/O error occurs
+     * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 0D
      */
     public T readScalar() throws IOException {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
+        }
+        if (!dataset.hasData()) {
+            throw new IllegalStateException("Dataset has no data");
         }
         ByteBuffer buffer = readBytes(0, elementSize);
         return populateElement(buffer);
@@ -199,12 +184,15 @@ public class TypedDataSource<T> {
      * Streams a scalar (0D) value from the dataset.
      *
      * @return a Stream containing the scalar value
-     * @throws UncheckedIOException if an I/O error occurs
+     * @throws UncheckedIOException  if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 0D
      */
     public Stream<T> streamScalar() {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
+        }
+        if (!dataset.hasData()) {
+            throw new IllegalStateException("Dataset has no data");
         }
         try {
             return Stream.of(readScalar());
@@ -217,7 +205,7 @@ public class TypedDataSource<T> {
      * Streams a scalar (0D) value from the dataset (non-parallel).
      *
      * @return a Stream containing the scalar value
-     * @throws UncheckedIOException if an I/O error occurs
+     * @throws UncheckedIOException  if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 0D
      */
     public Stream<T> parallelStreamScalar() {
@@ -230,7 +218,7 @@ public class TypedDataSource<T> {
      * Reads a vector (1D) from the dataset.
      *
      * @return the vector as an array
-     * @throws IOException if an I/O error occurs
+     * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 1D
      */
     public T[] readVector() throws IOException {
@@ -274,7 +262,7 @@ public class TypedDataSource<T> {
      * Reads a matrix (2D) from the dataset.
      *
      * @return the matrix as a 2D array
-     * @throws IOException if an I/O error occurs
+     * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 2D
      */
     public T[][] readMatrix() throws IOException {
@@ -321,7 +309,7 @@ public class TypedDataSource<T> {
      * Reads a tensor (3D) from the dataset.
      *
      * @return the tensor as a 3D array
-     * @throws IOException if an I/O error occurs
+     * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 3D
      */
     public T[][][] readTensor() throws IOException {

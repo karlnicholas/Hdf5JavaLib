@@ -1,6 +1,6 @@
 package org.hdf5javalib.dataclass;
 
-import org.hdf5javalib.file.dataobject.message.datatype.EnumDatatype;
+import org.hdf5javalib.datatype.EnumDatatype;
 
 import java.nio.ByteBuffer;
 
@@ -14,13 +14,17 @@ import java.nio.ByteBuffer;
  * Java types.
  * </p>
  *
- * @see org.hdf5javalib.dataclass.HdfData
- * @see org.hdf5javalib.file.dataobject.message.datatype.EnumDatatype
+ * @see HdfData
+ * @see EnumDatatype
  */
 public class HdfEnum implements HdfData {
-    /** The raw byte array containing the enumeration data. */
+    /**
+     * The raw byte array containing the enumeration data.
+     */
     private final byte[] bytes;
-    /** The EnumDatatype defining the enumeration structure, values, and format. */
+    /**
+     * The EnumDatatype defining the enumeration structure, values, and format.
+     */
     private final EnumDatatype datatype;
 
     /**

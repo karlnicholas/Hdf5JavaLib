@@ -1,6 +1,6 @@
 package org.hdf5javalib.dataclass;
 
-import org.hdf5javalib.file.dataobject.message.datatype.BitFieldDatatype;
+import org.hdf5javalib.datatype.BitFieldDatatype;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;
@@ -15,13 +15,17 @@ import java.util.BitSet;
  * Java types.
  * </p>
  *
- * @see org.hdf5javalib.dataclass.HdfData
- * @see org.hdf5javalib.file.dataobject.message.datatype.BitFieldDatatype
+ * @see HdfData
+ * @see BitFieldDatatype
  */
 public class HdfBitField implements HdfData {
-    /** The raw byte array containing the bit field data. */
+    /**
+     * The raw byte array containing the bit field data.
+     */
     private final byte[] bytes;
-    /** The BitFieldDatatype defining the bit precision, offset, padding, and endianness. */
+    /**
+     * The BitFieldDatatype defining the bit precision, offset, padding, and endianness.
+     */
     private final BitFieldDatatype datatype;
 
     /**

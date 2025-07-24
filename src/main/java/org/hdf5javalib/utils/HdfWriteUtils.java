@@ -4,8 +4,9 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfFloatPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.dataclass.HdfVariableLength;
-import org.hdf5javalib.file.dataobject.message.datatype.*;
-import org.hdf5javalib.file.infrastructure.HdfGlobalHeap;
+import org.hdf5javalib.datatype.*;
+import org.hdf5javalib.maydo.datatype.*;
+import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -97,7 +98,7 @@ public class HdfWriteUtils {
                 }
 
                 Class<?> fieldType = field.getType();
-                HdfDatatype memberType = member.getType();
+                Datatype memberType = member.getHdfDatatype();
 
                 if (memberType instanceof StringDatatype membertyped) {
                     if (fieldType != String.class) {
@@ -144,7 +145,7 @@ public class HdfWriteUtils {
     /**
      * Creates an {@link HdfFixedPoint} from a long value using the specified datatype.
      *
-     * @param value             the long value to convert
+     * @param value              the long value to convert
      * @param fixedPointDatatype the fixed-point datatype defining the format
      * @return the created HdfFixedPoint
      * @throws IllegalArgumentException if the datatype size is unsupported
@@ -155,7 +156,8 @@ public class HdfWriteUtils {
             case 2 -> Short.class;
             case 4 -> Integer.class;
             case 8 -> Long.class;
-            default -> throw new IllegalArgumentException("Unsupported size for FixedPointDatatype: " + fixedPointDatatype.getSize());
+            default ->
+                    throw new IllegalArgumentException("Unsupported size for FixedPointDatatype: " + fixedPointDatatype.getSize());
         };
         return new HdfFixedPoint(toFixedPointBytes(value, fixedPointDatatype, fieldType), fixedPointDatatype);
     }
@@ -163,13 +165,13 @@ public class HdfWriteUtils {
     /**
      * Converts a field value to a byte array for a FixedPointDatatype.
      *
-     * @param value      the value to convert
-     * @param datatype   the fixed-point datatype
-     * @param fieldType  the Java type of the field
+     * @param value     the value to convert
+     * @param datatype  the fixed-point datatype
+     * @param fieldType the Java type of the field
      * @return the byte array representing the value
      * @throws IllegalArgumentException if the field type or value is unsupported
      */
-    private static byte[] toFixedPointBytes(Object value, FixedPointDatatype datatype, Class<?> fieldType) {
+    public static byte[] toFixedPointBytes(Object value, FixedPointDatatype datatype, Class<?> fieldType) {
         int size = datatype.getSize();
         ByteBuffer temp = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
 
@@ -195,7 +197,7 @@ public class HdfWriteUtils {
             BigInteger intValue = scaledValue.toBigInteger();
 
             // Apply bitPrecision mask if necessary
-            short bitPrecision = datatype.getBitPrecision();
+            int bitPrecision = datatype.getBitPrecision();
             if (bitPrecision > 0 && bitPrecision < size * 8) {
                 BigInteger mask = BigInteger.ONE.shiftLeft(bitPrecision).subtract(BigInteger.ONE);
                 intValue = intValue.and(mask);
@@ -226,9 +228,9 @@ public class HdfWriteUtils {
     /**
      * Converts a field value to a byte array for a FloatingPointDatatype.
      *
-     * @param value      the value to convert
-     * @param datatype   the floating-point datatype
-     * @param fieldType  the Java type of the field
+     * @param value     the value to convert
+     * @param datatype  the floating-point datatype
+     * @param fieldType the Java type of the field
      * @return the byte array representing the value
      * @throws IllegalArgumentException if the field type or size is unsupported
      */

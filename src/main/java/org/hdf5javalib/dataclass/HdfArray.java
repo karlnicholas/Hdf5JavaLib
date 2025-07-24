@@ -1,6 +1,6 @@
 package org.hdf5javalib.dataclass;
 
-import org.hdf5javalib.file.dataobject.message.datatype.ArrayDatatype;
+import org.hdf5javalib.datatype.ArrayDatatype;
 
 import java.nio.ByteBuffer;
 
@@ -13,13 +13,17 @@ import java.nio.ByteBuffer;
  * to provide methods for accessing the data and converting it to various Java types.
  * </p>
  *
- * @see org.hdf5javalib.dataclass.HdfData
- * @see org.hdf5javalib.file.dataobject.message.datatype.ArrayDatatype
+ * @see HdfData
+ * @see ArrayDatatype
  */
 public class HdfArray implements HdfData {
-    /** The raw byte array containing the array data. */
+    /**
+     * The raw byte array containing the array data.
+     */
     private final byte[] bytes;
-    /** The ArrayDatatype defining the array's structure and format. */
+    /**
+     * The ArrayDatatype defining the array's structure and format.
+     */
     private final ArrayDatatype datatype;
 
     /**
