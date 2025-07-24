@@ -6,13 +6,17 @@ import org.hdf5javalib.utils.HdfDataHolder;
 
 public class HdfAttributeReference implements HdfReferenceInstance {
     private final boolean external;
+    private final byte[] bytes;
+    private final ReferenceDatatype dt;
 
     public HdfAttributeReference(byte[] bytes, ReferenceDatatype dt, boolean external) {
         this.external = external;
+        this.bytes = bytes;
+        this.dt = dt;
     }
 
     @Override
     public HdfDataHolder getData(HdfDataFile dataFile) {
-        return HdfDataHolder.ofScalar(null);
+        throw new UnsupportedOperationException("Attribute Reference not supported yet.");
     }
 }
