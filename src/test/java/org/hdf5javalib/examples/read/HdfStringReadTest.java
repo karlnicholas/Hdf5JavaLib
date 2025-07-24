@@ -4,7 +4,8 @@ import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.examples.ResourceLoader;
-import org.hdf5javalib.file.HdfDataSet;
+import org.hdf5javalib.hdfjava.HdfDataset;
+import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -28,10 +29,10 @@ public class HdfStringReadTest {
     private static final byte[] UTF8_FIRST_ENTRY_BYTES = Arrays.copyOf("ꦠꦤ꧀ 1".getBytes(StandardCharsets.UTF_8), 12);
 
     @Test
-    void testAsciiDataset() throws IOException {
+    void testAsciiDataset() throws Exception {
         try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("ascii_dataset.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.getRootGroup().findDataset("strings");
+            HdfDataset dataSet = reader.getDataset("strings").orElseThrow();
 
             // String
             TypedDataSource<String> stringDataSource = new TypedDataSource<>(channel, reader, dataSet, String.class);
@@ -67,10 +68,10 @@ public class HdfStringReadTest {
     }
 
     @Test
-    void testUtf8Dataset() throws IOException {
+    void testUtf8Dataset() throws Exception {
         try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("utf8_dataset.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.getRootGroup().findDataset("strings");
+            HdfDataset dataSet = reader.getDataset("strings").orElseThrow();
 
             // String
             TypedDataSource<String> stringDataSource = new TypedDataSource<>(channel, reader, dataSet, String.class);

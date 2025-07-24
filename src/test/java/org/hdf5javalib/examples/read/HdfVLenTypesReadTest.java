@@ -4,7 +4,8 @@ import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.examples.ResourceLoader;
-import org.hdf5javalib.file.HdfDataSet;
+import org.hdf5javalib.hdfjava.HdfDataset;
+import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -18,10 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class HdfVLenTypesReadTest {
 
     @Test
-    public void testVlenDouble() throws IOException {
+    public void testVlenDouble() throws Exception {
         try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("vlen_types_example.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet doubleDs = reader.getRootGroup().findDataset("vlen_double");
+            HdfDataset doubleDs = reader.getDataset("vlen_double").orElseThrow();
             double[] expectedDoubles = {1.234, 5.678, 9.101};
             byte[][] expectedDoubleBytes = {
                     ByteBuffer.allocate(8).order(java.nio.ByteOrder.LITTLE_ENDIAN).putDouble(1.234).array(),
@@ -47,10 +48,10 @@ public class HdfVLenTypesReadTest {
     }
 
     @Test
-    public void testVlenFloat() throws IOException {
+    public void testVlenFloat() throws Exception {
         try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("vlen_types_example.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet floatDs = reader.getRootGroup().findDataset("vlen_float");
+            HdfDataset floatDs = reader.getDataset("vlen_float").orElseThrow();
             float[] expectedFloats = {1.1f, 2.2f, 3.3f};
             byte[][] expectedFloatBytes = {
                     ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putFloat(1.1f).array(),
@@ -76,10 +77,10 @@ public class HdfVLenTypesReadTest {
     }
 
     @Test
-    public void testVlenInt() throws IOException {
+    public void testVlenInt() throws Exception {
         try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("vlen_types_example.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet intDs = reader.getRootGroup().findDataset("vlen_int");
+            HdfDataset intDs = reader.getDataset("vlen_int").orElseThrow();
             int[] expectedInts = {1, 2, 3, 4, 5};
             TypedDataSource<HdfVariableLength> intVlenSource = new TypedDataSource<>(channel, reader, intDs, HdfVariableLength.class);
             assertArrayEquals(expectedInts, toIntArray((HdfData[]) intVlenSource.readScalar().getInstance(Object.class)));
@@ -97,10 +98,10 @@ public class HdfVLenTypesReadTest {
     }
 
     @Test
-    public void testVlenShort() throws IOException {
+    public void testVlenShort() throws Exception {
         try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("vlen_types_example.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet shortDs = reader.getRootGroup().findDataset("vlen_short");
+            HdfDataset shortDs = reader.getDataset("vlen_short").orElseThrow();
             short[] expectedShorts = {10, 20, 30};
             TypedDataSource<HdfVariableLength> shortVlenSource = new TypedDataSource<>(channel, reader, shortDs, HdfVariableLength.class);
             assertArrayEquals(expectedShorts, toShortArray((HdfData[]) shortVlenSource.readScalar().getInstance(Object.class)));
@@ -118,10 +119,10 @@ public class HdfVLenTypesReadTest {
     }
 
     @Test
-    public void testVlenString() throws IOException {
+    public void testVlenString() throws Exception {
         try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("vlen_types_example.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet stringDs = reader.getRootGroup().findDataset("vlen_string");
+            HdfDataset stringDs = reader.getDataset("vlen_string").orElseThrow();
             String expectedString = "Hello, Variable Length String!";
             int[] expectedBytes = {72, 101, 108, 108, 111, 44, 32, 86, 97, 114, 105, 97, 98, 108, 101,
                     32, 76, 101, 110, 103, 116, 104, 32, 83, 116, 114, 105, 110, 103, 33};

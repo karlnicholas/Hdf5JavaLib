@@ -4,7 +4,8 @@ import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.examples.ResourceLoader;
-import org.hdf5javalib.file.HdfDataSet;
+import org.hdf5javalib.hdfjava.HdfDataset;
+import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.hdf5javalib.utils.FlattenedArrayUtils;
 import org.junit.jupiter.api.Test;
 
@@ -37,29 +38,29 @@ public class FixedPointReadTest {
     private static final int[] TICTACTOE_LAST_PIECE_COORDS = {1, 1, 0, 4};
 
     @Test
-    void testScalarH5() throws IOException {
+    void testScalarH5() throws Exception {
         try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("scalar.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
 
             // "byte" dataset (1 byte, value 42)
-            HdfDataSet byteDataSet = reader.getRootGroup().findDataset("byte");
+            HdfDataset byteDataSet = reader.getDataset("/byte").orElseThrow();
             testConverters(byteDataSet, channel, reader, (byte) 42, 1);
 
             // "short" dataset (2 bytes, value 42)
-            HdfDataSet shortDataSet = reader.getRootGroup().findDataset("short");
+            HdfDataset shortDataSet = reader.getDataset("/short").orElseThrow();
             testConverters(shortDataSet, channel, reader, (short) 42, 2);
 
             // "integer" dataset (4 bytes, value 42)
-            HdfDataSet intDataSet = reader.getRootGroup().findDataset("integer");
+            HdfDataset intDataSet = reader.getDataset("/integer").orElseThrow();
             testConverters(intDataSet, channel, reader, 42, 4);
 
             // "long" dataset (8 bytes, value 42)
-            HdfDataSet longDataSet = reader.getRootGroup().findDataset("long");
+            HdfDataset longDataSet = reader.getDataset("/long").orElseThrow();
             testConverters(longDataSet, channel, reader, 42L, 8);
         }
     }
 
-    private void testConverters(HdfDataSet dataSet, SeekableByteChannel channel, HdfFileReader reader, Number expected,
+    private void testConverters(HdfDataset dataSet, SeekableByteChannel channel, HdfFileReader reader, Number expected,
                                 int byteSize) throws IOException {
         // BigInteger (always works)
         TypedDataSource<BigInteger> bigIntSource = new TypedDataSource<>(channel, reader, dataSet, BigInteger.class);
@@ -130,10 +131,10 @@ public class FixedPointReadTest {
     }
 
     @Test
-    void testVectorH5() throws IOException {
+    void testVectorH5() throws Exception {
         try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("vector.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.getRootGroup().findDataset("vector");
+            HdfDataset dataSet = reader.getDataset("/vector").orElseThrow();
             TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, reader, dataSet, BigInteger.class);
 
             BigInteger[] vector = dataSource.readVector();
@@ -156,10 +157,10 @@ public class FixedPointReadTest {
     }
 
     @Test
-    void testWeatherdataH5() throws IOException {
+    void testWeatherdataH5() throws Exception {
         try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("weatherdata.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.getRootGroup().findDataset("weatherdata");
+            HdfDataset dataSet = reader.getDataset("/weatherdata").orElseThrow();
             TypedDataSource<BigDecimal> dataSource = new TypedDataSource<>(channel, reader, dataSet, BigDecimal.class);
 
             BigDecimal[][] matrix = dataSource.readMatrix();
@@ -196,10 +197,10 @@ public class FixedPointReadTest {
     }
 
     @Test
-    void testTictactoe4dStateH5() throws IOException {
+    void testTictactoe4dStateH5() throws Exception {
         try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("tictactoe_4d_state.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-            HdfDataSet dataSet = reader.getRootGroup().findDataset("game");
+            HdfDataset dataSet = reader.getDataset("/game").orElseThrow();
             TypedDataSource<Integer> dataSource = new TypedDataSource<>(channel, reader, dataSet, Integer.class);
 
             int[] shape = dataSource.getShape();
