@@ -205,7 +205,7 @@ public class HdfGlobalHeapBlock {
 
         int newObjectDataSize = bytes.length;
         int newObjectPadding = getPadding(newObjectDataSize);
-        long newObjectRequiredSize = GLOBAL_HEAP_OBJECT_SIZE + newObjectDataSize + newObjectPadding;
+        long newObjectRequiredSize = GLOBAL_HEAP_OBJECT_SIZE + (long)(newObjectDataSize + newObjectPadding);
 
 //        HdfFixedPoint blockSize = allocationRecord.getSize();
         // need a new heap
@@ -239,8 +239,8 @@ public class HdfGlobalHeapBlock {
 //        }
 //
         int newObjectDataSize = bytes.length;
-        int newObjectPadding = getPadding(newObjectDataSize);
-        long newObjectRequiredSize = GLOBAL_HEAP_OBJECT_SIZE + newObjectDataSize + newObjectPadding;
+//        int newObjectPadding = getPadding(newObjectDataSize);
+//        long newObjectRequiredSize = GLOBAL_HEAP_OBJECT_SIZE + newObjectDataSize + newObjectPadding;
 //
 //        HdfFixedPoint blockSize = this.getSize();
         // need a new heap
