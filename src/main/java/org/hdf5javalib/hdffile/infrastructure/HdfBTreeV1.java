@@ -18,7 +18,7 @@ import java.util.List;
  *
  * @see HdfDataFile
  * @see HdfFixedPoint
- * @see org.hdf5javalib.redo.hdffile.infrastructure.HdfBTreeEntry
+ * @see org.hdf5javalib.hdffile.infrastructure.HdfBTreeEntryBase
  */
 public class HdfBTreeV1 {
     /**

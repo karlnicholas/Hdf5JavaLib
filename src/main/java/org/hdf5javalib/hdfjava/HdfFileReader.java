@@ -31,7 +31,7 @@ import static org.hdf5javalib.hdffile.metadata.HdfSuperblock.*;
 /**
  * Reads and parses HDF5 file structures.
  * <p>
- * The {@code HdfFileReader} class implements {@link org.hdf5javalib.HdfDataFile} to provide functionality
+ * The {@code HdfFileReader} class implements {@link org.hdf5javalib.hdfjava.HdfDataFile} to provide functionality
  * for reading an HDF5 file from a {@link SeekableByteChannel}. It initializes the superblock,
  * root group, global heap, and file allocation, and constructs a hierarchy of groups and
  * datasets by parsing the file's metadata and data structures.

@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
  * convert it to various Java types.
  * </p>
  *
- * @see org.hdf5javalib.file.dataobject.message.datatype.HdfDatatype
+ * @see org.hdf5javalib.datatype.Datatype
  */
 public interface HdfData {
     /**
