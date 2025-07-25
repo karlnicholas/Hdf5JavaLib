@@ -61,7 +61,7 @@ public class HdfDatasetRegionReference implements HdfReferenceInstance {
     }
 
     @Override
-    public HdfDataHolder getData(HdfDataFile dataFile) {
+    public HdfDataHolder getData() {
         return hdfDataHolder;
     }
 }

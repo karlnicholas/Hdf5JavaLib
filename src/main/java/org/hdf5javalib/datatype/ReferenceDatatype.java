@@ -160,7 +160,7 @@ public class ReferenceDatatype implements Datatype {
 //        for (byte b : bytes) sb.append(String.format("%02X", b));
 //        return "Reference[" + getReferenceType(classBitField).description + "]=" + sb;
         HdfReferenceInstance referenceInstance = getInstance(HdfReferenceInstance.class, bytes);
-        HdfDataHolder data = referenceInstance.getData(dataFile);
+        HdfDataHolder data = referenceInstance.getData();
         if ( data.isScalar()) {
             return data.getScalar().toString();
         } else {

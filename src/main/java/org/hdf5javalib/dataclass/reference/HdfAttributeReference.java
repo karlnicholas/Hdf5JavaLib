@@ -16,7 +16,7 @@ public class HdfAttributeReference implements HdfReferenceInstance {
     }
 
     @Override
-    public HdfDataHolder getData(HdfDataFile dataFile) {
+    public HdfDataHolder getData() {
         throw new UnsupportedOperationException("Attribute Reference not supported yet.");
     }
 }
