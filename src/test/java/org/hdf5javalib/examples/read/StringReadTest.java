@@ -8,7 +8,6 @@ import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -18,7 +17,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HdfStringReadTest {
+public class StringReadTest {
     private static final String[] ASCII_EXPECTED = {"label 1 ", "label 2 ", "label 3 ", "label 4 ", "label 5 ",
             "label 6 ", "label 7 ", "label 8 ", "label 9 ", "label 10"};
     private static final String[] UTF8_EXPECTED = {"ꦠꦤ꧀ 1", "ꦠꦤ꧀ 2", "ꦠꦤ꧀ 3", "ꦠꦤ꧀ 4", "ꦠꦤ꧀ 5",
