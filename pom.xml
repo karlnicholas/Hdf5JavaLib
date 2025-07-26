@@ -48,6 +48,7 @@
     <sonar.projectKey>karlnicholas_Hdf5JavaLib</sonar.projectKey>
     <sonar.organization>karlnicholas</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    <sonar.exclusions>**/hdf5/**</sonar.exclusions>
   </properties>
 
   <dependencies>
