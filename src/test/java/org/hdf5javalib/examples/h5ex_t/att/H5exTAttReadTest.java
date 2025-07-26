@@ -115,112 +115,122 @@ public class H5exTAttReadTest {
         }
     }
 
-//    @Test
-//    void testCpxcmpdAtt() throws Exception {
-//        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("h5ex_t/att/h5ex_t_cpxcmpdatt.h5")) {
-//            HdfFileReader reader = new HdfFileReader(channel).readFile();
-//            HdfDataHolder holder = getAttributeHolder(reader, "/DS1", "A1");
-//            assertEquals(1, holder.getDimensionality());
-//            assertArrayEquals(new int[]{2}, holder.getDimensions());
-//            HdfCompound[] compounds = holder.getAll(HdfCompound[].class);
-//            assertEquals(2, compounds.length);
-//            // First compound
-//            List<HdfCompoundMember> members0 = compounds[0].getMembers();
-//            assertEquals(6, members0.size());
-//            // Sensors (vlen of compound)
-//            HdfData sensorsData0 = members0.get(0).getInstance(HdfData.class);
-//            HdfData[] sensorsArray0 = (HdfData[]) sensorsData0.getInstance(Object.class);
-//            assertEquals(4, sensorsArray0.length);
-//            // Check first sensor
-//            HdfCompound sensor0 = (HdfCompound) sensorsArray0[0];
-//            List<HdfCompoundMember> sensorMembers0 = sensor0.getMembers();
-//            assertEquals(1153L, sensorMembers0.get(0).getInstance(Long.class));
-//            assertEquals("Exterior (static)", sensorMembers0.get(1).getInstance(String.class));
-//            assertEquals(53.23, sensorMembers0.get(2).getInstance(Double.class), 0.001);
-//            assertEquals(24.57, sensorMembers0.get(3).getInstance(Double.class), 0.001);
-//            // Second sensor
-//            HdfCompound sensor1 = (HdfCompound) sensorsArray0[1];
-//            List<HdfCompoundMember> sensorMembers1 = sensor1.getMembers();
-//            assertEquals(1184L, sensorMembers1.get(0).getInstance(Long.class));
-//            assertEquals("Intake", sensorMembers1.get(1).getInstance(String.class));
-//            assertEquals(55.12, sensorMembers1.get(2).getInstance(Double.class), 0.001);
-//            assertEquals(22.95, sensorMembers1.get(3).getInstance(Double.class), 0.001);
-//            // Third sensor
-//            HdfCompound sensor2 = (HdfCompound) sensorsArray0[2];
-//            List<HdfCompoundMember> sensorMembers2 = sensor2.getMembers();
-//            assertEquals(1027L, sensorMembers2.get(0).getInstance(Long.class));
-//            assertEquals("Intake manifold", sensorMembers2.get(1).getInstance(String.class));
-//            assertEquals(103.55, sensorMembers2.get(2).getInstance(Double.class), 0.001);
-//            assertEquals(31.23, sensorMembers2.get(3).getInstance(Double.class), 0.001);
-//            // Fourth sensor
-//            HdfCompound sensor3 = (HdfCompound) sensorsArray0[3];
-//            List<HdfCompoundMember> sensorMembers3 = sensor3.getMembers();
-//            assertEquals(1313L, sensorMembers3.get(0).getInstance(Long.class));
-//            assertEquals("Exhaust manifold", sensorMembers3.get(1).getInstance(String.class));
-//            assertEquals(1252.89, sensorMembers3.get(2).getInstance(Double.class), 0.001);
-//            assertEquals(84.11, sensorMembers3.get(3).getInstance(Double.class), 0.001);
-//            // Name
-//            assertEquals("Airplane", members0.get(1).getInstance(String.class));
-//            // Color
-//            assertEquals("Green", members0.get(2).getInstance(String.class));
-//            // Location
-//            HdfData[] location0 = members0.get(3).getInstance(HdfData[].class);
-//            double[] tValues = new double[]{-103234.21, 422638.78, 5996.43};
-//            for (int i = 0; i < location0.length; i++) {
-//                assertEquals(tValues[i], location0[i].getInstance(Double.class), 0.001);
-//            }
-//            // Group
-//            assertEquals("/Air_Vehicles", members0.get(4).getInstance(String.class));
+    @Test
+    void testCpxcmpdAtt() throws Exception {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("h5ex_t/att/h5ex_t_cpxcmpdatt.h5")) {
+            HdfFileReader reader = new HdfFileReader(channel).readFile();
+            HdfDataHolder holder = getAttributeHolder(reader, "/DS1", "A1");
+            assertEquals(1, holder.getDimensionality());
+            assertArrayEquals(new int[]{2}, holder.getDimensions());
+            HdfCompound[] compounds = holder.getAll(HdfCompound[].class);
+            assertEquals(2, compounds.length);
+            // First compound
+            List<HdfCompoundMember> members0 = compounds[0].getMembers();
+            assertEquals(6, members0.size());
+            // Sensors (vlen of compound)
+            HdfData sensorsData0 = members0.get(0).getInstance(HdfData.class);
+            HdfData[] sensorsArray0 = (HdfData[]) sensorsData0.getInstance(Object.class);
+            assertEquals(4, sensorsArray0.length);
+            // Check first sensor
+            HdfCompound sensor0 = (HdfCompound) sensorsArray0[0];
+            List<HdfCompoundMember> sensorMembers0 = sensor0.getMembers();
+            assertEquals(1153L, sensorMembers0.get(0).getInstance(Long.class));
+            assertEquals("Exterior (static)", sensorMembers0.get(1).getInstance(String.class));
+            assertEquals(53.23, sensorMembers0.get(2).getInstance(Double.class), 0.001);
+            assertEquals(24.57, sensorMembers0.get(3).getInstance(Double.class), 0.001);
+            // Second sensor
+            HdfCompound sensor1 = (HdfCompound) sensorsArray0[1];
+            List<HdfCompoundMember> sensorMembers1 = sensor1.getMembers();
+            assertEquals(1184L, sensorMembers1.get(0).getInstance(Long.class));
+            assertEquals("Intake", sensorMembers1.get(1).getInstance(String.class));
+            assertEquals(55.12, sensorMembers1.get(2).getInstance(Double.class), 0.001);
+            assertEquals(22.95, sensorMembers1.get(3).getInstance(Double.class), 0.001);
+            // Third sensor
+            HdfCompound sensor2 = (HdfCompound) sensorsArray0[2];
+            List<HdfCompoundMember> sensorMembers2 = sensor2.getMembers();
+            assertEquals(1027L, sensorMembers2.get(0).getInstance(Long.class));
+            assertEquals("Intake manifold", sensorMembers2.get(1).getInstance(String.class));
+            assertEquals(103.55, sensorMembers2.get(2).getInstance(Double.class), 0.001);
+            assertEquals(31.23, sensorMembers2.get(3).getInstance(Double.class), 0.001);
+            // Fourth sensor
+            HdfCompound sensor3 = (HdfCompound) sensorsArray0[3];
+            List<HdfCompoundMember> sensorMembers3 = sensor3.getMembers();
+            assertEquals(1313L, sensorMembers3.get(0).getInstance(Long.class));
+            assertEquals("Exhaust manifold", sensorMembers3.get(1).getInstance(String.class));
+            assertEquals(1252.89, sensorMembers3.get(2).getInstance(Double.class), 0.001);
+            assertEquals(84.11, sensorMembers3.get(3).getInstance(Double.class), 0.001);
+            // Name
+            assertEquals("Airplane", members0.get(1).getInstance(String.class));
+            // Color
+            assertEquals("Green", members0.get(2).getInstance(String.class));
+            // Location
+            HdfData[] location0 = members0.get(3).getInstance(HdfData[].class);
+            double[] tValues = new double[]{-103234.21, 422638.78, 5996.43};
+            for (int i = 0; i < location0.length; i++) {
+                assertEquals(tValues[i], location0[i].getInstance(Double.class), 0.001);
+            }
+            // Group
+            assertEquals("/Air_Vehicles", members0.get(4).getInstance(String.class));
+            // Surveyed areas
+            HdfReferenceInstance surveyed0 = members0.get(5).getInstance(HdfReferenceInstance.class);
+            HdfDataHolder dataHolder = surveyed0.getData();
+            tValues = new double[]{67.3, 67.4, 67.6};
+            HdfData[] surveyData = (HdfData[]) dataHolder.getArray();
+            for (int i = 0; i < surveyData.length; i++) {
+                assertEquals(tValues[i], surveyData[i].getInstance(Double.class), 0.001);
+            }
+
 //            // Surveyed areas
 //            HdfData surveyData0 = members0.get(5).getInstance(HdfData.class);
-//            HdfData[] surveyArray0 = (HdfData[]) surveyData0.getInstance(Object.class);
+//            Double[] surveyArray0 = (Double[]) surveyData0.getInstance(Double[].class);
 //            tValues = new double[]{67.3, 67.4, 67.6};
 //            for (int i = 0; i < surveyArray0.length; i++) {
-//                assertEquals(tValues[i], surveyArray0[i].getInstance(Double.class), 0.001);
+////                assertEquals(tValues[i], surveyArray0[i].getInstance(Double.class), 0.001);
+//                assertEquals(tValues[i], surveyArray0[i], 0.001);
 //            }
-//            // Second compound
-//            List<HdfCompoundMember> members1 = compounds[1].getMembers();
-//            assertEquals(6, members1.size());
-//            // Sensors (vlen of compound)
-//            HdfData sensorsData1 = members1.get(0).getInstance(HdfData.class);
-//            HdfData[] sensorsArray1 = (HdfData[]) sensorsData1.getInstance(Object.class);
-//            assertEquals(1, sensorsArray1.length);
-//            // First sensor
-//            HdfCompound sensor4 = (HdfCompound) sensorsArray1[0];
-//            List<HdfCompoundMember> sensorMembers4 = sensor4.getMembers();
-//            assertEquals(3244L, sensorMembers4.get(0).getInstance(Long.class));
-//            assertEquals("Roof", sensorMembers4.get(1).getInstance(String.class));
-//            assertEquals(83.82, sensorMembers4.get(2).getInstance(Double.class), 0.001);
-//            assertEquals(29.92, sensorMembers4.get(3).getInstance(Double.class), 0.001);
-//            // Name
-//            assertEquals("Automobile", members1.get(1).getInstance(String.class));
-//            // Color
-//            assertEquals("Red", members1.get(2).getInstance(String.class));
-//            // Location
-//            HdfData[] location1 = members1.get(3).getInstance(HdfData[].class);
-//            tValues = new double[]{326734.36, 221568.23, 432.36};
-//            for (int i = 0; i < location1.length; i++) {
-//                assertEquals(tValues[i], location1[i].getInstance(Double.class), 0.001);
-//            }
-//            // Group
-//            assertEquals("/Land_Vehicles", members1.get(4).getInstance(String.class));
-//            // Surveyed areas
-//            HdfData surveyData1 = members1.get(5).getInstance(HdfData.class);
-//            HdfData[][] surveyArray1 = (HdfData[][]) surveyData1.getInstance(Object.class);
-//            assertEquals(4, surveyArray1.length);
-//            double[][] tValuesd = {
-//                    {70.2, 70.3, 70.4},
-//                    {70.3, 70.39999999999999, 70.5},
-//                    {70.4, 70.5, 70.60000000000001},
-//                    {70.5, 70.6, 70.7}
-//            };
-//            for (int i = 0; i < surveyArray1.length; i++) {
-//                for (int j = 0; j < surveyArray1[i].length; j++) {
-//                    assertEquals(tValuesd[i][j], surveyArray1[i][j].getInstance(Double.class), 0.001);
-//                }
-//            }
-//        }
-//    }
+            // Second compound
+            List<HdfCompoundMember> members1 = compounds[1].getMembers();
+            assertEquals(6, members1.size());
+            // Sensors (vlen of compound)
+            HdfData sensorsData1 = members1.get(0).getInstance(HdfData.class);
+            HdfData[] sensorsArray1 = (HdfData[]) sensorsData1.getInstance(Object.class);
+            assertEquals(1, sensorsArray1.length);
+            // First sensor
+            HdfCompound sensor4 = (HdfCompound) sensorsArray1[0];
+            List<HdfCompoundMember> sensorMembers4 = sensor4.getMembers();
+            assertEquals(3244L, sensorMembers4.get(0).getInstance(Long.class));
+            assertEquals("Roof", sensorMembers4.get(1).getInstance(String.class));
+            assertEquals(83.82, sensorMembers4.get(2).getInstance(Double.class), 0.001);
+            assertEquals(29.92, sensorMembers4.get(3).getInstance(Double.class), 0.001);
+            // Name
+            assertEquals("Automobile", members1.get(1).getInstance(String.class));
+            // Color
+            assertEquals("Red", members1.get(2).getInstance(String.class));
+            // Location
+            HdfData[] location1 = members1.get(3).getInstance(HdfData[].class);
+            tValues = new double[]{326734.36, 221568.23, 432.36};
+            for (int i = 0; i < location1.length; i++) {
+                assertEquals(tValues[i], location1[i].getInstance(Double.class), 0.001);
+            }
+            // Group
+            assertEquals("/Land_Vehicles", members1.get(4).getInstance(String.class));
+            // Surveyed areas
+            HdfReferenceInstance surveyed1 = members1.get(5).getInstance(HdfReferenceInstance.class);
+            HdfDataHolder dataHolder1 = surveyed1.getData();
+            HdfData[][]  surveyData1 = (HdfData[][]) dataHolder1.getArray();
+            assertEquals(4, surveyData1.length);
+            double[][] tValuesd = new double[4][];
+            tValuesd[0] = new double[]{70.2, 70.3, 70.4};
+            tValuesd[1] = new double[]{70.3, 70.4, 70.5};
+            tValuesd[2] = new double[]{70.4, 70.5, 70.6};
+            tValuesd[3] = new double[]{70.5, 70.6, 70.7};
+            for (int i = 0; i < surveyData1.length; i++) {
+                for (int j = 0; j < surveyData1[i].length; j++) {
+                    assertEquals(tValuesd[i][j], surveyData1[i][j].getInstance(Double.class), 0.001);
+                }
+            }
+        }
+    }
 
     @Test
     void testEnumAtt() throws Exception {
