@@ -222,17 +222,6 @@ public class EnumDatatype implements Datatype {
     }
 
     /**
-     * Indicates whether a global heap is required for this datatype.
-     *
-     * @param required true if the global heap is required, false otherwise
-     * @return false, as EnumDatatype does not require a global heap
-     */
-    @Override
-    public boolean requiresGlobalHeap(boolean required) {
-        return required || datatype.requiresGlobalHeap(required);
-    }
-
-    /**
      * Converts the byte array to the corresponding enumeration name.
      *
      * @param bytes the byte array to convert

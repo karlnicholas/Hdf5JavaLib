@@ -218,17 +218,6 @@ public class FloatingPointDatatype implements Datatype {
     }
 
     /**
-     * Indicates whether a global heap is required for this datatype.
-     *
-     * @param required true if the global heap is required, false otherwise
-     * @return false, as FloatingPointDatatype does not require a global heap
-     */
-    @Override
-    public boolean requiresGlobalHeap(boolean required) {
-        return required || false;
-    }
-
-    /**
      * Converts the byte array to a Float value.
      *
      * @param bytes the byte array to convert

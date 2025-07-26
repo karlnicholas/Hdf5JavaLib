@@ -1,7 +1,6 @@
 package org.hdf5javalib.dataclass.reference;
 
 import org.hdf5javalib.datatype.ReferenceDatatype;
-import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfDataHolder;
 
 public class HdfAttributeReference implements HdfReferenceInstance {

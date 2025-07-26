@@ -152,17 +152,6 @@ public class VariableLengthDatatype implements Datatype {
     }
 
     /**
-     * Indicates whether a global heap is required for this datatype.
-     *
-     * @param required true if the global heap is required, false otherwise
-     * @return true, as VariableLengthDatatype requires a global heap
-     */
-    @Override
-    public boolean requiresGlobalHeap(boolean required) {
-        return required || true;
-    }
-
-    /**
      * Converts the byte array to a string representation, handling strings or sequences.
      *
      * @param bytes the byte array containing the variable-length descriptor

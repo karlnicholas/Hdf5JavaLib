@@ -193,17 +193,6 @@ public class OpaqueDatatype implements Datatype {
     }
 
     /**
-     * Indicates whether a global heap is required for this datatype.
-     *
-     * @param required true if the global heap is required, false otherwise
-     * @return false, as OpaqueDatatype does not require a global heap
-     */
-    @Override
-    public boolean requiresGlobalHeap(boolean required) {
-        return required || false;
-    }
-
-    /**
      * Converts the byte array to a hexadecimal string representation.
      *
      * @param bytes the byte array to convert

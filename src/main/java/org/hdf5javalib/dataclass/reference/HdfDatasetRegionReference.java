@@ -5,7 +5,6 @@ import org.hdf5javalib.datatype.FixedPointDatatype;
 import org.hdf5javalib.datatype.ReferenceDatatype;
 import org.hdf5javalib.hdfjava.HdfBTree;
 import org.hdf5javalib.hdfjava.HdfBTreeNode;
-import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.utils.HdfDataHolder;
 

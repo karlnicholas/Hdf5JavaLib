@@ -8,7 +8,6 @@ import org.hdf5javalib.datatype.StringDatatype;
 import org.hdf5javalib.hdffile.metadata.HdfSuperblock;
 import org.hdf5javalib.hdfjava.HdfBTree;
 import org.hdf5javalib.hdfjava.HdfBTreeNode;
-import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.utils.HdfDataHolder;
 

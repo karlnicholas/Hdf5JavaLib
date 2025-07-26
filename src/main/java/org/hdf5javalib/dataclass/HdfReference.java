@@ -1,7 +1,6 @@
 package org.hdf5javalib.dataclass;
 
 import org.hdf5javalib.datatype.ReferenceDatatype;
-import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -21,14 +20,6 @@ public class HdfReference implements HdfData {
         this.datatype = datatype;
     }
 
-    public HdfReference(byte[] bytes, ReferenceDatatype datatype, HdfGlobalHeap globalHeap) {
-        if (bytes == null || bytes.length == 0) throw new IllegalArgumentException("Bytes cannot be null or empty");
-        if (datatype == null) throw new IllegalArgumentException("Datatype cannot be null");
-        this.bytes = bytes;
-        this.datatype = datatype;
-    }
-
-
     public byte[] getBytes() {
         return bytes.clone();
     }
@@ -40,10 +31,6 @@ public class HdfReference implements HdfData {
     @Override
     public String toString() {
         return datatype.toString(bytes);
-//        StringBuilder sb = new StringBuilder();
-//        for (byte b : bytes) sb.append(String.format("%02X", b));
-//        String base = "Reference[" + ReferenceDatatype.getReferenceType(datatype.getClassBitField()).getDescription() + "]=" + sb;
-//        return base;
     }
 
     @Override

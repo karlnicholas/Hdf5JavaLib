@@ -470,17 +470,6 @@ public class FixedPointDatatype implements Datatype {
     }
 
     /**
-     * Indicates whether a global heap is required for this datatype.
-     *
-     * @param required true if the global heap is required, false otherwise
-     * @return false, as FixedPointDatatype does not require a global heap
-     */
-    @Override
-    public boolean requiresGlobalHeap(boolean required) {
-        return required || false;
-    }
-
-    /**
      * Sets the global heap for this datatype (no-op for FixedPointDatatype).
      *
      * @param grok the HdfGlobalHeap to set

@@ -157,17 +157,6 @@ public class BitFieldDatatype implements Datatype {
     }
 
     /**
-     * Indicates whether a global heap is required for this datatype.
-     *
-     * @param required true if the global heap is required, false otherwise
-     * @return false, as BitFieldDatatype does not require a global heap
-     */
-    @Override
-    public boolean requiresGlobalHeap(boolean required) {
-        return required || false;
-    }
-
-    /**
      * Checks if the bitfield uses big-endian byte order.
      *
      * @return true if big-endian, false if little-endian

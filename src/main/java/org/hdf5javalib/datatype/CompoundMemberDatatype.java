@@ -282,17 +282,6 @@ public class CompoundMemberDatatype implements Datatype {
     }
 
     /**
-     * Indicates whether a global heap is required for the member's base datatype.
-     *
-     * @param required true if the global heap is required, false otherwise
-     * @return true if the base datatype requires a global heap, false otherwise
-     */
-    @Override
-    public boolean requiresGlobalHeap(boolean required) {
-        return datatype.requiresGlobalHeap(required);
-    }
-
-    /**
      * Sets the global heap for the member's base datatype.
      *
      * @param globalHeap the HdfGlobalHeap to set

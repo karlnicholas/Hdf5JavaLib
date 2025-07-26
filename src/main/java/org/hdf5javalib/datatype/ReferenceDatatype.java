@@ -132,12 +132,6 @@ public class ReferenceDatatype implements Datatype {
         throw new UnsupportedOperationException("Unknown type: " + clazz);
     }
 
-    @Override
-    public boolean requiresGlobalHeap(boolean required) {
-        ReferenceType type = getReferenceType(classBitField);
-        return required || type == ReferenceType.DATASET_REGION1 || type == ReferenceType.DATASET_REGION2;
-    }
-
     /**
      * Retrieves the reference type value from the class bit field.
      *

@@ -1,6 +1,9 @@
 package org.hdf5javalib.examples.h5ex_t;
 
-import org.hdf5javalib.dataclass.*;
+import org.hdf5javalib.dataclass.HdfCompound;
+import org.hdf5javalib.dataclass.HdfCompoundMember;
+import org.hdf5javalib.dataclass.HdfData;
+import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.dataclass.reference.HdfReferenceInstance;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.datatype.*;

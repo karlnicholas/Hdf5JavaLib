@@ -3,14 +3,13 @@ package org.hdf5javalib.examples.read;
 import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.datasource.TypedDataSource;
+import org.hdf5javalib.datatype.CompoundDatatype;
 import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.hdfjava.HdfDataset;
-import org.hdf5javalib.datatype.CompoundDatatype;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;

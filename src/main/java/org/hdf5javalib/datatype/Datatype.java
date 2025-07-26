@@ -66,14 +66,6 @@ public interface Datatype {
     <T> T getInstance(Class<T> clazz, byte[] bytes);
 
     /**
-     * Indicates whether the datatype requires a global heap.
-     *
-     * @param required true if the global heap is required, false otherwise
-     * @return true if the datatype requires a global heap, false otherwise
-     */
-    boolean requiresGlobalHeap(boolean required);
-
-    /**
      * Sets the global heap for the datatype.
      *
      * @param globalHeap the HdfGlobalHeap to be set

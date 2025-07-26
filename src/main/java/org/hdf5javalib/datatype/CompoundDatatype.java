@@ -323,20 +323,6 @@ public class CompoundDatatype implements Datatype {
     }
 
     /**
-     * Indicates whether a global heap is required for this datatype.
-     *
-     * @param required true if the global heap is required for any member, false otherwise
-     * @return true if any member requires a global heap, false otherwise
-     */
-    @Override
-    public boolean requiresGlobalHeap(boolean required) {
-        for (CompoundMemberDatatype member : members) {
-            required = member.requiresGlobalHeap(required);
-        }
-        return required;
-    }
-
-    /**
      * Converts byte data to a POJO or record instance of the specified class using reflection.
      *
      * @param <T>   the type of the POJO or record to be created
