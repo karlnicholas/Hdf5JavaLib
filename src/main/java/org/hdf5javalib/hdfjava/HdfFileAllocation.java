@@ -304,7 +304,7 @@ public class HdfFileAllocation {
             }
         }
 
-        HdfFixedPoint offset = metadataNextAvailableOffset.clone();
+        HdfFixedPoint offset = new HdfFixedPoint(metadataNextAvailableOffset);
         AllocationRecord record = new AllocationRecord(AllocationType.SNOD, "SNOD Block " + (snodRecords.size() + 1), offset, HDF_SNOD_STORAGE_SIZE, this);
         snodRecords.add(record);
 //        allocationRecords.add(record);
@@ -332,7 +332,7 @@ public class HdfFileAllocation {
             throw new IllegalStateException("Data block for '" + datasetName + "' already allocated");
         }
 
-        HdfFixedPoint dataOffset = dataNextAvailableOffset.clone();
+        HdfFixedPoint dataOffset = new HdfFixedPoint(dataNextAvailableOffset);
         AllocationRecord record = new AllocationRecord(AllocationType.DATASET_DATA, "Data Block (" + datasetName + ")", dataOffset, dataSize, this);
         datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_DATA, record);
 //        allocationRecords.add(record);
@@ -364,7 +364,7 @@ public class HdfFileAllocation {
             moveDataNextAvailableOffset(new HdfFixedPoint(metadataNextAvailableOffset.add(continuationSize), metadataNextAvailableOffset.getDatatype()));
         }
 
-        HdfFixedPoint continuationOffset = metadataNextAvailableOffset.clone();
+        HdfFixedPoint continuationOffset = new HdfFixedPoint(metadataNextAvailableOffset);
         AllocationRecord record = new AllocationRecord(AllocationType.DATASET_HEADER_CONTINUATION, "Continuation (" + datasetName + ")", continuationOffset, continuationSize, this);
         datasetRecordsByName.computeIfAbsent(datasetName, k -> new HashMap<>()).put(AllocationType.DATASET_HEADER_CONTINUATION, record);
 //        allocationRecords.add(record);
@@ -384,8 +384,8 @@ public class HdfFileAllocation {
             throw new IllegalStateException("First global heap already allocated");
         }
 
-        HdfFixedPoint size = HDF_GLOBAL_HEAP_BLOCK_SIZE.clone();
-        HdfFixedPoint offset = dataNextAvailableOffset.clone();
+        HdfFixedPoint size = new HdfFixedPoint(HDF_GLOBAL_HEAP_BLOCK_SIZE);
+        HdfFixedPoint offset = new HdfFixedPoint(dataNextAvailableOffset);
         AllocationRecord record = new AllocationRecord(AllocationType.GLOBAL_HEAP_1, "Global Heap Block 1", offset, size, this);
         globalHeapBlocks.put(AllocationType.GLOBAL_HEAP_1, record);
 //        allocationRecords.add(record);
@@ -405,8 +405,8 @@ public class HdfFileAllocation {
             throw new IllegalStateException("Only two global heap blocks allowed");
         }
 
-        HdfFixedPoint size = HDF_GLOBAL_HEAP_BLOCK_SIZE.clone();
-        HdfFixedPoint offset = dataNextAvailableOffset.clone();
+        HdfFixedPoint size = new HdfFixedPoint(HDF_GLOBAL_HEAP_BLOCK_SIZE);
+        HdfFixedPoint offset = new HdfFixedPoint(dataNextAvailableOffset);
         AllocationRecord record = new AllocationRecord(AllocationType.GLOBAL_HEAP_2, "Global Heap Block 2", offset, size, this);
         globalHeapBlocks.put(AllocationType.GLOBAL_HEAP_2, record);
 //        allocationRecords.add(record);
@@ -450,7 +450,7 @@ public class HdfFileAllocation {
             moveMetadataNextAvailableOffset(metadataNextAvailableOffset, newSize);
         }
 
-        HdfFixedPoint newOffset = metadataNextAvailableOffset.clone();
+        HdfFixedPoint newOffset = new HdfFixedPoint(metadataNextAvailableOffset);
 
         // Update existing LOCAL_HEAP record to indicate abandonment
         activeRecord.setType(AllocationType.LOCAL_HEAP_ABANDONED);
@@ -527,11 +527,11 @@ public class HdfFileAllocation {
      * @param newOffset the new metadata offset
      */
     private void updateMetadataOffset(HdfFixedPoint newOffset) {
-        metadataNextAvailableOffset = newOffset.clone();
+        metadataNextAvailableOffset = new HdfFixedPoint(newOffset);
         if (metadataNextAvailableOffset.compareTo(dataNextAvailableOffset) >= 0 &&
                 !isDataBlocksAllocated() &&
                 globalHeapBlocks.isEmpty()) {
-            dataNextAvailableOffset = metadataNextAvailableOffset.clone();
+            dataNextAvailableOffset = new HdfFixedPoint(metadataNextAvailableOffset);
             updateDataOffset(dataNextAvailableOffset);
         }
     }
@@ -542,10 +542,10 @@ public class HdfFileAllocation {
      * @param newOffset the new data offset
      */
     private void updateDataOffset(HdfFixedPoint newOffset) {
-        dataNextAvailableOffset = newOffset.clone();
+        dataNextAvailableOffset = new HdfFixedPoint(newOffset);
         if (metadataNextAvailableOffset.compareTo(HDF_MIN_DATA_OFFSET_THRESHOLD) >= 0 &&
                 metadataNextAvailableOffset.compareTo(dataNextAvailableOffset) < 0) {
-            metadataNextAvailableOffset = dataNextAvailableOffset.clone();
+            metadataNextAvailableOffset = new HdfFixedPoint(dataNextAvailableOffset);
         }
     }
 
@@ -576,7 +576,7 @@ public class HdfFileAllocation {
      */
     private void moveMetadataNextAvailableOffset(HdfFixedPoint currentOffset, HdfFixedPoint size) {
 //        long newOffset = Math.max(currentOffset, dataNextAvailableOffset);
-        HdfFixedPoint newOffset = currentOffset.compareTo(dataNextAvailableOffset) > 0 ? currentOffset.clone() : dataNextAvailableOffset.clone();
+        HdfFixedPoint newOffset = currentOffset.compareTo(dataNextAvailableOffset) > 0 ? new HdfFixedPoint(currentOffset) : new HdfFixedPoint(dataNextAvailableOffset);
 //        newOffset.mutate(new); = ((newOffset + ALIGNMENT_BOUNDARY - 1) / ALIGNMENT_BOUNDARY) * ALIGNMENT_BOUNDARY; // Next 2048-byte boundary
         newOffset.mutate(HdfFixedPoint.truncateTo2048Boundary(HdfFixedPoint.minusOneBytes(newOffset.add(HDF_ALIGNMENT_BOUNDARY))));
         //  / ALIGNMENT_BOUNDARY) * ALIGNMENT_BOUNDARY; // Next 2048-byte boundary

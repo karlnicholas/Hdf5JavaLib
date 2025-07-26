@@ -159,7 +159,7 @@ public class VariableLengthDatatype implements Datatype {
      */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
-        return required | true;
+        return required || true;
     }
 
     /**

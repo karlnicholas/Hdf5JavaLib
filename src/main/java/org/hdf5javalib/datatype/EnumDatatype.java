@@ -229,7 +229,7 @@ public class EnumDatatype implements Datatype {
      */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
-        return required | datatype.requiresGlobalHeap(required);
+        return required || datatype.requiresGlobalHeap(required);
     }
 
     /**

@@ -56,6 +56,15 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
     }
 
     /**
+     * Copy constructor
+     * @param hdfFixedPoint hdfFixedPoint to copy
+     */
+    public HdfFixedPoint(HdfFixedPoint hdfFixedPoint) {
+        this.bytes = hdfFixedPoint.getBytes();
+        this.datatype = hdfFixedPoint.getDatatype();
+    }
+
+    /**
      * Constructs an HdfFixedPoint from a BigInteger value and a specified FixedPointDatatype.
      * <p>
      * This constructor converts the provided BigInteger value into a byte array with the
@@ -354,10 +363,5 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
             result[1] &= (byte) 0xF8; // Clear lower 3 bits of byte[1]
         }
         return result;
-    }
-
-    @Override
-    public HdfFixedPoint clone() {
-        return new HdfFixedPoint(bytes.clone(), datatype);
     }
 }

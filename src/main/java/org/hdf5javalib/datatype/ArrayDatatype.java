@@ -105,7 +105,7 @@ public class ArrayDatatype implements Datatype {
             throw new IllegalArgumentException("Dimension sizes and permutation indices must match dimensionality");
         }
         // Validate size matches product of dimensions * base type size
-        long expectedSize = (long) datatype.getSize() * Arrays.stream(dimensionSizes).asLongStream().reduce(1, (a, b) -> a * b);
+        long expectedSize = datatype.getSize() * Arrays.stream(dimensionSizes).asLongStream().reduce(1, (a, b) -> a * b);
         if (expectedSize != size) {
             throw new IllegalArgumentException("Size (" + size + ") does not match base type size * dimensions (" + expectedSize + ")");
         }
@@ -219,7 +219,7 @@ public class ArrayDatatype implements Datatype {
      */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
-        return required | datatype.requiresGlobalHeap(required);
+        return required || datatype.requiresGlobalHeap(required);
     }
 
     /**

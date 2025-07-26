@@ -140,7 +140,7 @@ public class StringDatatype implements Datatype {
      */
     @Override
     public boolean requiresGlobalHeap(boolean required) {
-        return required | false;
+        return required || false;
     }
 
     /**
