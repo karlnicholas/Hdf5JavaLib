@@ -253,4 +253,8 @@ public class AttributeMessage extends HdfMessage {
         return hdfDataHolder;
     }
 
+    public HdfString getName() {
+        return name;
+    }
+
 }

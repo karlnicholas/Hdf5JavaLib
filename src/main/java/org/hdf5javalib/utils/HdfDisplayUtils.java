@@ -10,7 +10,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -23,21 +27,48 @@ import java.util.stream.Collectors;
  * </p>
  */
 public class HdfDisplayUtils {
-    private static Logger log = LoggerFactory.getLogger(HdfDisplayUtils.class);
-    /**
-     * Creates a version attribute for a dataset.
-     * <p>
-     * Adds a "GIT root revision" attribute to the specified dataset with a predefined
-     * value containing revision and URL information.
-     * </p>
-     *
-     * @param hdfDataFile the HDF5 file context
-     * @param dataset     the dataset to which the attribute is added
-     */
-    public static void writeVersionAttribute(HdfDataFile hdfDataFile, HdfDataset dataset) {
-        String ATTRIBUTE_NAME = "GIT root revision";
-        String ATTRIBUTE_VALUE = "Revision: , URL: ";
-        dataset.createAttribute(ATTRIBUTE_NAME, ATTRIBUTE_VALUE, hdfDataFile);
+    private static final Logger log = LoggerFactory.getLogger(HdfDisplayUtils.class);
+
+    // Define a functional interface for actions that may need channel, dataset, and reader
+    @FunctionalInterface
+    interface FileAction {
+        void perform(SeekableByteChannel channel, HdfDataset dataSet, HdfFileReader reader) throws Exception;
+    }
+
+    // Generalized method to process the file and apply a custom action per dataset
+    private static void processFile(Path filePath, FileAction action) {
+        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+            HdfFileReader reader = new HdfFileReader(channel).readFile();
+            for (HdfDataset dataSet : reader.getDatasets()) {
+                log.info("{} ", dataSet);
+                action.perform(channel, dataSet, reader);
+            }
+        } catch (Exception e) {
+            log.error("Exception in processFile: {}", filePath, e);
+        }
+    }
+
+    public static void displayFileAttr(Path filePath) {
+        processFile(filePath, (channel, dataSet, reader) -> displayAttributes(dataSet));
+    }
+
+    public static void displayFile(Path filePath) {
+        processFile(filePath, (channel, dataSet, reader) -> displayData(channel, dataSet, reader));
+    }
+
+    public static void displayAttributes(HdfDataset dataSet) {
+        dataSet.getAttributeMessages().forEach(message -> {
+            HdfDataHolder dataHolder = message.getHdfDataHolder();
+            if (dataHolder.getDimensionality() == 1) {
+                HdfData[] data = dataHolder.getAll(HdfData[].class);
+                System.out.println("Data = " + Arrays.toString(data));
+            } else if (dataHolder.getDimensionality() == 2) {
+                HdfData[][] data = dataHolder.getAll(HdfData[][].class);
+                for ( HdfData[] row : data) {
+                    System.out.println("Row = " + Arrays.toString(row));
+                }
+            }
+        });
     }
 
     public static void displayData(SeekableByteChannel channel, HdfDataset ds, HdfFileReader reader) throws Exception {

@@ -1,19 +1,16 @@
-package org.hdf5javalib.examples.HDF5Examples;
+package org.hdf5javalib.examples.h5ex_t.att;
 
 import org.hdf5javalib.datasource.TypedDataSource;
-import org.hdf5javalib.hdfjava.HdfDataset;
-import org.hdf5javalib.hdfjava.HdfFileReader;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.util.Objects;
+import java.util.stream.Stream;
 
-import static org.hdf5javalib.utils.HdfDisplayUtils.displayData;
-import static org.hdf5javalib.utils.HdfDisplayUtils.displayFile;
+import static org.hdf5javalib.utils.HdfDisplayUtils.displayFileAttr;
 
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.
@@ -24,16 +21,14 @@ import static org.hdf5javalib.utils.HdfDisplayUtils.displayFile;
  * dataset, as well as conversion to a custom Java class.
  * </p>
  */
-public class ExamplesRead {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ExamplesRead.class);
-
+public class h5ex_t_att_read {
     /**
      * Entry point for the application.
      *
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
-        new ExamplesRead().run();
+        new h5ex_t_att_read().run();
     }
 
     /**
@@ -41,15 +36,16 @@ public class ExamplesRead {
      */
     private void run() {
         try {
-
             // List all .h5 files in HDF5Examples resources directory
-            Path dirPath = Paths.get(ExamplesRead.class.getClassLoader().getResource("HDF5Examples").toURI());
-            Files.list(dirPath)
-                    .filter(p -> p.toString().endsWith(".h5"))
-                    .forEach(p -> {
-                        System.out.println("Running " + p.getFileName());
-                        displayFile(p);
-                    });
+            Path dirPath = Paths.get(Objects.requireNonNull(h5ex_t_att_read.class.getClassLoader().getResource("h5ex_t/att")).toURI());
+            try ( Stream<Path> streamList = Files.list(dirPath) ) {
+                streamList.filter(p -> p.toString().endsWith(".h5"))
+                        .forEach(p -> {
+                            System.out.println("Running " + p.getFileName());
+                            displayFileAttr(p);
+                        });
+
+            }
         } catch (URISyntaxException | IOException e) {
             throw new RuntimeException(e);
         }

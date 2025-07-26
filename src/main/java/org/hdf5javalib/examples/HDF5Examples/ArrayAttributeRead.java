@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 
+import static org.hdf5javalib.utils.HdfDisplayUtils.displayAttributes;
 import static org.hdf5javalib.utils.HdfReadUtils.getResourcePath;
 
 /**
@@ -44,24 +45,12 @@ public class ArrayAttributeRead {
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("BTree: {} ", reader.getBTree().getRoot());
-    //                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
-//                    displayData(channel, dataSet, reader);
-//                }
                 for (HdfDataset dataSet : reader.getDatasets()) {
-//                    displayData(channel, dataSet, reader);
                     displayAttributes(dataSet);
                 }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void displayAttributes(HdfDataset dataSet) {
-        dataSet.getAttributeMessages().forEach(message -> {
-            HdfDataHolder dataHolder = message.getHdfDataHolder();
-            HdfData[] data = dataHolder.getAll(HdfData[].class);
-            System.out.println("Data = " + Arrays.toString(data));
-        });
     }
 }

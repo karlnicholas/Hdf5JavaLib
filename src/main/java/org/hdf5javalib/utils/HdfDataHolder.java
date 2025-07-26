@@ -213,30 +213,60 @@ public class HdfDataHolder implements Iterable<HdfData> {
         }
 
         if (isScalar()) {
-            // Check if the requested type is assignable from our scalar's type.
-            if (clazz.isAssignableFrom(singleInstance.getClass())) {
-                return clazz.cast(singleInstance);
-            } else {
-                throw new IllegalArgumentException(String.format(
-                        "Type mismatch: Requested class '%s' is not compatible with the scalar content of type '%s'.",
-                        clazz.getCanonicalName(),
-                        singleInstance.getClass().getCanonicalName()
-                ));
-            }
+            return singleInstance.getInstance(clazz);
         } else { // isArray()
-            // Check if the requested type is assignable from our array's type.
-            if (clazz.isAssignableFrom(array.getClass())) {
-                return clazz.cast(array);
-            } else {
-                throw new IllegalArgumentException(String.format(
-                        "Type mismatch: Requested array type '%s' is not compatible with the actual array type '%s'.",
-                        clazz.getCanonicalName(),
-                        array.getClass().getCanonicalName()
-                ));
-            }
+            return createAndConvertArray(clazz, array, dimensionality, dimensions);
         }
     }
 
+    // Assuming this is inside your HdfDataHolder or similar class
+    private <T> T createAndConvertArray(Class<T> clazz, Object sourceArray, int dimensionality, int[] dimensions) {
+        // Compute the array depth and base type from clazz
+        Class<?> baseType = clazz;
+        int depth = 0;
+        while (baseType.isArray()) {
+            baseType = baseType.getComponentType();
+            depth++;
+        }
+        if (depth != dimensionality) {
+            throw new IllegalArgumentException("Dimensionality mismatch: clazz has depth " + depth + " but expected " + dimensionality);
+        }
+
+        // Create the new multi-dimensional array
+        Object targetArray = Array.newInstance(baseType, dimensions);
+
+        // If no source to convert from, return the empty array
+        if (sourceArray == null) {
+            return clazz.cast(targetArray);
+        }
+
+        // Fill the target array by converting from source (recursive)
+        fillArray(targetArray, sourceArray, baseType, 0, dimensions);
+
+        return clazz.cast(targetArray);
+    }
+
+    // Recursive helper to fill the target array
+    private void fillArray(Object target, Object source, Class<?> baseType, int dimIndex, int[] dimensions) {
+        if (dimIndex == dimensions.length - 1) {
+            // Leaf level: convert and set elements
+            int len = dimensions[dimIndex];
+            Object[] src = (Object[]) source;  // e.g., HdfData[]
+            for (int i = 0; i < len; i++) {
+                HdfData hdfData = (HdfData) src[i];
+                Object value = hdfData.getInstance(baseType);
+                Array.set(target, i, value);
+            }
+        } else {
+            // Intermediate level: recurse into sub-arrays
+            int len = dimensions[dimIndex];
+            Object[] src = (Object[]) source;
+            for (int i = 0; i < len; i++) {
+                Object childTarget = Array.get(target, i);
+                fillArray(childTarget, src[i], baseType, dimIndex + 1, dimensions);
+            }
+        }
+    }
 
     /**
      * Returns an iterator that traverses all HdfData elements in a flattened, sequential order.

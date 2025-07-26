@@ -1,18 +1,16 @@
 package org.hdf5javalib.examples.h5ex_t;
 
 import org.hdf5javalib.datasource.TypedDataSource;
-import org.hdf5javalib.hdfjava.HdfDataset;
-import org.hdf5javalib.hdfjava.HdfFileReader;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.util.Objects;
+import java.util.stream.Stream;
 
-import static org.hdf5javalib.utils.HdfDisplayUtils.displayData;
+import static org.hdf5javalib.utils.HdfDisplayUtils.displayFile;
 
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.
@@ -24,8 +22,6 @@ import static org.hdf5javalib.utils.HdfDisplayUtils.displayData;
  * </p>
  */
 public class h5ex_t_read {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(h5ex_t_read.class);
-
     /**
      * Entry point for the application.
      *
@@ -40,31 +36,19 @@ public class h5ex_t_read {
      */
     private void run() {
         try {
-
             // List all .h5 files in HDF5Examples resources directory
-            Path dirPath = Paths.get(h5ex_t_read.class.getClassLoader().getResource("h5ex_t").toURI());
-            Files.list(dirPath)
-                    .filter(p -> p.toString().endsWith(".h5"))
-                    .forEach(p -> {
-                        System.out.println("Running " + p.getFileName());
-                        displayFile(p);
-                    });
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+            Path dirPath = Paths.get(Objects.requireNonNull(h5ex_t_read.class.getClassLoader().getResource("h5ex_t")).toURI());
+            try ( Stream<Path> streamList = Files.list(dirPath) ) {
+                streamList.filter(p -> p.toString().endsWith(".h5"))
+                        .forEach(p -> {
+                            System.out.println("Running " + p.getFileName());
+                            displayFile(p);
+                        });
+
+            }
+        } catch (URISyntaxException | IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void displayFile(Path filePath) {
-        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-            HdfFileReader reader = new HdfFileReader(channel).readFile();
-            for (HdfDataset dataSet : reader.getDatasets()) {
-                log.info("{} ", dataSet);
-                displayData(channel, dataSet, reader);
-            }
-        } catch (Exception e) {
-            log.error("Exception in displayFile: {}", filePath, e);
-        }
-    }
 }
