@@ -117,28 +117,28 @@ public class H5exDReadTest {
         }
     }
 
-//    @Test
-//    void testExtern() throws Exception {
-//        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("h5ex_d/h5ex_d_extern.h5")) {
-//            HdfFileReader reader = new HdfFileReader(channel).readFile();
-//            HdfDataset dataSet = reader.getDataset("/DS1").orElseThrow();
-//            DataLayoutMessage layout = dataSet.getDataLayoutMessage();
-//            assertInstanceOf(DataLayoutMessage.ContiguousStorage.class, layout.getDataLayoutStorage());
-//            DataLayoutMessage.ContiguousStorage cont = (DataLayoutMessage.ContiguousStorage) layout.getDataLayoutStorage();
-//            assertTrue(cont.getAddress().isUndefined());
-//            ExternalDataFilesMessage external = dataSet.getHeader().getMessages().stream()
-//                    .filter(m -> m instanceof ExternalDataFilesMessage)
-//                    .map(ExternalDataFilesMessage.class::cast)
-//                    .findFirst().orElse(null);
-//            assertNotNull(external);
-//            assertEquals(1, external.getUsedSlots());
-//            List<ExternalDataFilesMessage.SlotDefinition> slots = external.getSlotDefinitions();
-//            assertEquals(1, slots.size());
-//            assertEquals(8, slots.get(0).getNameOffset().getValue());
-//            assertEquals(0, slots.get(0).getFileOffset());
-//            assertTrue(slots.get(0).getDataSize().isUndefined());
-//        }
-//    }
+    @Test
+    void testExtern() throws Exception {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("h5ex_d/h5ex_d_extern.h5")) {
+            HdfFileReader reader = new HdfFileReader(channel).readFile();
+            HdfDataset dataSet = reader.getDataset("/DS1").orElseThrow();
+            DataLayoutMessage layout = dataSet.getObjectHeader().findMessageByType(DataLayoutMessage.class).orElseThrow();
+            assertInstanceOf(DataLayoutMessage.ContiguousStorage.class, layout.getDataLayoutStorage());
+            DataLayoutMessage.ContiguousStorage cont = (DataLayoutMessage.ContiguousStorage) layout.getDataLayoutStorage();
+            assertTrue(cont.getDataAddress().isUndefined());
+            ExternalDataFilesMessage external = dataSet.getObjectHeader().getHeaderMessages().stream()
+                    .filter(m -> m instanceof ExternalDataFilesMessage)
+                    .map(ExternalDataFilesMessage.class::cast)
+                    .findFirst().orElse(null);
+            assertNotNull(external);
+            assertEquals(1, external.getUsedSlots());
+            List<ExternalDataFilesMessage.SlotDefinition> slots = external.getSlotDefinitions();
+            assertEquals(1, slots.size());
+            assertEquals(8, slots.get(0).nameOffset().getInstance(Long.class).intValue());
+            assertEquals(0, slots.get(0).fileOffset().getInstance(Long.class).intValue());
+            assertTrue(slots.get(0).dataSize().isUndefined());
+        }
+    }
 
     @Test
     void testFillval() throws Exception {

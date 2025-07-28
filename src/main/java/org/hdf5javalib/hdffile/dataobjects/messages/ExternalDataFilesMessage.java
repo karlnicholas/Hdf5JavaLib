@@ -71,6 +71,14 @@ public class ExternalDataFilesMessage extends HdfMessage {
         writeMessageData(buffer);
     }
 
+    public int getUsedSlots() {
+        return usedSlots;
+    }
+
+    public List<SlotDefinition> getSlotDefinitions() {
+        return slotDefinitions;
+    }
+
     public record SlotDefinition(HdfFixedPoint nameOffset, HdfFixedPoint fileOffset, HdfFixedPoint dataSize) {
         @Override
         public String toString() {
