@@ -124,6 +124,7 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
      * @return true if the value is undefined, false otherwise
      */
     public boolean isUndefined() {
+        if (datatype.isSigned()) return false;
         for (byte b : bytes) {
             if (b != (byte) 0xFF) {
                 return false;

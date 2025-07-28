@@ -7,6 +7,7 @@ import org.hdf5javalib.hdffile.infrastructure.HdfBTreeEntryBase;
 import org.hdf5javalib.hdffile.infrastructure.HdfBTreeV1;
 import org.hdf5javalib.hdffile.infrastructure.HdfChunkBTreeEntry;
 import org.hdf5javalib.hdfjava.HdfDataFile;
+import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
@@ -414,8 +415,8 @@ public class DataLayoutMessage extends HdfMessage {
         @Override
         public String toString() {
             return "ContiguousStorage{" +
-                    ", address=" + dataAddress +
-                    ", elementSize=" + dataSize +
+                    ", address=" + (dataAddress.isUndefined()? HdfDisplayUtils.UNDEFINED :dataAddress) +
+                    ", dataSize=" + (dataSize.isUndefined()?HdfDisplayUtils.UNDEFINED:dataSize) +
                     '}';
         }
 

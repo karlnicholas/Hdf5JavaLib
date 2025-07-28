@@ -40,3 +40,6 @@ hdf5/*/*.h5
 /bouml/
 /src/main/resources/h5ex_t/*.h5
 /src/main/resources/h5ex_t/att/*.h5
+/src/main/resources/h5ex_tutr/*.h5
+/src/main/resources/h5ex_d/*.h5
+/src/main/resources/h5ex_d/*.data

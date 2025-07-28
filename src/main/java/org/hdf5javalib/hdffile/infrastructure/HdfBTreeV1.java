@@ -2,6 +2,7 @@ package org.hdf5javalib.hdffile.infrastructure;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.hdfjava.HdfDataFile;
+import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.util.ArrayList;
@@ -127,8 +128,8 @@ public class HdfBTreeV1 {
         sb.append(", nodeType=").append(nodeType);
         sb.append(", nodeLevel=").append(nodeLevel);
         sb.append(", entriesUsed=").append(entriesUsed);
-        sb.append(", leftSiblingAddress=").append(leftSiblingAddress.isUndefined() ? "undefined" : leftSiblingAddress);
-        sb.append(", rightSiblingAddress=").append(rightSiblingAddress.isUndefined() ? "undefined" : rightSiblingAddress);
+        sb.append(", leftSiblingAddress=").append(leftSiblingAddress.isUndefined() ?HdfDisplayUtils.UNDEFINED: leftSiblingAddress);
+        sb.append(", rightSiblingAddress=").append(rightSiblingAddress.isUndefined() ?HdfDisplayUtils.UNDEFINED: rightSiblingAddress);
         sb.append(", keyZero=").append(keyZero);
         sb.append(", entries=[");
         if (entries != null && !entries.isEmpty()) {

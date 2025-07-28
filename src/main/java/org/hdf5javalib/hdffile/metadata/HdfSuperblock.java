@@ -3,6 +3,7 @@ package org.hdf5javalib.hdffile.metadata;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datatype.FixedPointDatatype;
 import org.hdf5javalib.hdfjava.HdfDataFile;
+import org.hdf5javalib.utils.HdfDisplayUtils;
 
 import java.io.IOException;
 
@@ -200,9 +201,9 @@ public class HdfSuperblock {
                 ", groupLeafNodeK=" + groupLeafNodeK +
                 ", groupInternalNodeK=" + groupInternalNodeK +
                 ", baseAddress=" + baseAddress +
-                ", freeSpaceAddress=" + (addressFileFreeSpaceInfo.isUndefined() ? "<Undefined>" : addressFileFreeSpaceInfo) +
-                ", endOfFileAddress=" + (endOfFileAddress.isUndefined() ? "<Undefined>" : endOfFileAddress) +
-                ", driverInformationAddress=" + (driverInformationAddress.isUndefined() ? "<Undefined>" : driverInformationAddress) +
+                ", freeSpaceAddress=" + (addressFileFreeSpaceInfo.isUndefined() ? HdfDisplayUtils.UNDEFINED: addressFileFreeSpaceInfo) +
+                ", endOfFileAddress=" + (endOfFileAddress.isUndefined() ?HdfDisplayUtils.UNDEFINED: endOfFileAddress) +
+                ", driverInformationAddress=" + (driverInformationAddress.isUndefined() ?HdfDisplayUtils.UNDEFINED: driverInformationAddress) +
                 '}';
     }
 

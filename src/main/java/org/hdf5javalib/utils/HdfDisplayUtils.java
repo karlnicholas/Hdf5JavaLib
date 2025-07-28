@@ -1,6 +1,7 @@
 package org.hdf5javalib.utils;
 
 import org.hdf5javalib.dataclass.HdfData;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfDataset;
@@ -14,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -28,11 +28,27 @@ import java.util.stream.Collectors;
  */
 public class HdfDisplayUtils {
     private static final Logger log = LoggerFactory.getLogger(HdfDisplayUtils.class);
+    public static final String UNDEFINED = "<Undefined>";
 
     // Define a functional interface for actions that may need channel, dataset, and reader
     @FunctionalInterface
     interface FileAction {
         void perform(SeekableByteChannel channel, HdfDataset dataSet, HdfFileReader reader) throws Exception;
+    }
+
+    public static String undefinedArrayToString(HdfFixedPoint[] values) {
+        if (values == null || values.length == 0) {
+            return "Not Present";
+        }
+        StringBuilder sb = new StringBuilder('[');
+        for (int i = 0; i < values.length; i++) {
+            sb.append(values[i].isUndefined()?UNDEFINED:values[i].toString() );
+            if (i != values.length - 1) {
+                sb.append(", ");
+            }
+        }
+        sb.append(']');
+        return sb.toString();
     }
 
     // Generalized method to process the file and apply a custom action per dataset

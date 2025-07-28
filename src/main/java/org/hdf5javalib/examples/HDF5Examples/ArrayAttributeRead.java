@@ -1,16 +1,13 @@
 package org.hdf5javalib.examples.HDF5Examples;
 
-import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
-import org.hdf5javalib.utils.HdfDataHolder;
 
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 
 import static org.hdf5javalib.utils.HdfDisplayUtils.displayAttributes;
 import static org.hdf5javalib.utils.HdfReadUtils.getResourcePath;

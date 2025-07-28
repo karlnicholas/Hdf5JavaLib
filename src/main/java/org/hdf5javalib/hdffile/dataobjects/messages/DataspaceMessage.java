@@ -2,11 +2,11 @@ package org.hdf5javalib.hdffile.dataobjects.messages;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.hdfjava.HdfDataFile;
+import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 import java.util.BitSet;
 
 import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
@@ -135,8 +135,8 @@ public class DataspaceMessage extends HdfMessage {
                 "version=" + version +
                 ", dimensionality=" + dimensionality +
                 ", flags=" + flags +
-                ", dimensions=" + (dimensions != null ? Arrays.toString(dimensions) : "Not Present") +
-                ", maxDimensions=" + (maxDimensions != null ? Arrays.toString(maxDimensions) : "Not Present") +
+                ", dimensions=" + HdfDisplayUtils.undefinedArrayToString(dimensions) +
+                ", maxDimensions=" + HdfDisplayUtils.undefinedArrayToString(maxDimensions) +
                 ", hasMaxDimensions=" + hasMaxDimensions +
                 '}';
     }
