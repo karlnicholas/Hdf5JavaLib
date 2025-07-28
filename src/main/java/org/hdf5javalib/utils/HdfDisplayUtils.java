@@ -40,7 +40,7 @@ public class HdfDisplayUtils {
         if (values == null || values.length == 0) {
             return "Not Present";
         }
-        StringBuilder sb = new StringBuilder('[');
+        StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < values.length; i++) {
             sb.append(values[i].isUndefined()?UNDEFINED:values[i].toString() );
             if (i != values.length - 1) {
