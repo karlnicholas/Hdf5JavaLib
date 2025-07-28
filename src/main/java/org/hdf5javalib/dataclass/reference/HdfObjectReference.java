@@ -91,6 +91,8 @@ public class HdfObjectReference implements HdfReferenceInstance {
                     break;
                 }
             }
+        } else {
+
         }
         this.dataspaceSelectionInstance = dataspaceSelectionReference.get();
         this.hdfDataObject = localHdfDataObject.get();
@@ -104,7 +106,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
                 currentNode = currentNode.getParent().getDataObject();
             }
             Collections.reverse(parents);
-            String objectPathString = '/' + String.join("/", parents);
+            String objectPathString = '/' + currentNode.getObjectName() + String.join("/", parents);
             this.hdfDataHolder = HdfDataHolder.ofScalar(
                     new HdfString(objectPathString, new StringDatatype(
                     StringDatatype.createClassAndVersion(),

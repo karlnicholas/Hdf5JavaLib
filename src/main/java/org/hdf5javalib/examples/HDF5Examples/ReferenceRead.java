@@ -58,7 +58,7 @@ public class ReferenceRead {
 //        }
         try {
 //            Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
-            Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
+            Path filePath = getResourcePath("h5ex_tutr/refer_deprec.h5");
             System.out.println(filePath.toFile().getAbsolutePath());
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();

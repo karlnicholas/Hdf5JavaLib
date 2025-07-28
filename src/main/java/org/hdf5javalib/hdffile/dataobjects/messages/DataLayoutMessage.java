@@ -471,7 +471,7 @@ public class DataLayoutMessage extends HdfMessage {
         @Override
         public String toString() {
             return "ChunkedStorage{" +
-                    ", chunkedDataAddress=" + chunkedDataAddress +
+                    ", chunkedDataAddress=" + (chunkedDataAddress.isUndefined()? HdfDisplayUtils.UNDEFINED :chunkedDataAddress) +
                     ", dimensionSizes=" + Arrays.toString(dimensionSizes) +
                     ", datasetElementSize=" + datasetElementSize +
                     ", bTree=" + bTree +

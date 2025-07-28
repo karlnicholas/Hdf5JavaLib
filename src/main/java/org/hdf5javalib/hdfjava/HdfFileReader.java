@@ -244,7 +244,7 @@ public class HdfFileReader implements HdfDataFile {
                 return Optional.empty();
             } else if (compIndex == components.length && clazz.isAssignableFrom(child.get().getDataObject().getClass())) {
                 return child.map(clazz::cast);
-            } else if ( compIndex < components.length - 1 && HdfGroup.class.isAssignableFrom(child.get().getDataObject().getClass()) ) {
+            } else if ( compIndex < components.length && HdfGroup.class.isAssignableFrom(child.get().getDataObject().getClass()) ) {
                 currentGroup = (HdfGroup) child.get();
             } else {
                 currentGroup = null;
