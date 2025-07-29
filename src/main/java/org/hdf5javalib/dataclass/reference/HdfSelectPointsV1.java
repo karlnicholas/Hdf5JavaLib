@@ -72,7 +72,7 @@ public class HdfSelectPointsV1 extends HdfDataspaceSelectionInstance {
         // 2. For efficient O(1) lookups, convert the target int[][] coordinates to a Set<List<Integer>>.
         // A List<Integer> has a content-based hashCode/equals, unlike int[].
         Set<List<Integer>> targetPointsSet = Arrays.stream(this.values)
-                .map(pointCoords -> Arrays.stream(pointCoords).boxed().collect(Collectors.toList()))
+                .map(pointCoords -> Arrays.stream(pointCoords).boxed().toList())
                 .collect(Collectors.toSet());
 
         // 3. Get the flattened data source stream.

@@ -268,11 +268,11 @@ public class CompoundDatatype implements Datatype {
      */
     @Override
     public int getSizeMessageData() {
-        short size = 8; // Header size
+        short hdrSize = 8; // Header size
         for (CompoundMemberDatatype member : members) {
-            size += member.getSizeMessageData();
+            hdrSize += member.getSizeMessageData();
         }
-        return size;
+        return hdrSize;
     }
 
     /**
@@ -353,7 +353,7 @@ public class CompoundDatatype implements Datatype {
             }
             return instance;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create instance of " + clazz.getName(), e);
+            throw new IllegalStateException("Failed to create instance of " + clazz.getName(), e);
         }
     }
 
@@ -372,8 +372,7 @@ public class CompoundDatatype implements Datatype {
 
     // Extracted record creation logic with caching
     private <T> T createRecordInstance(Class<T> clazz, byte[] bytes,
-                                       Map<String, CompoundMemberDatatype> nameToMemberMap)
-            throws Exception {
+                                       Map<String, CompoundMemberDatatype> nameToMemberMap) throws InvocationTargetException, InstantiationException, IllegalAccessException {
 
         // Cache record components
         RecordComponent[] components = CLASS_RECORD_COMPONENTS_CACHE.computeIfAbsent(clazz,
@@ -391,7 +390,7 @@ public class CompoundDatatype implements Datatype {
                 ctor.setAccessible(true);
                 return ctor;
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException("No canonical constructor found for record: " + clazz.getName(), e);
+                throw new IllegalStateException("No canonical constructor found for record: " + clazz.getName(), e);
             }
         });
 
@@ -417,8 +416,7 @@ public class CompoundDatatype implements Datatype {
     // Extracted class creation logic with caching
     private <T> T createClassInstance(Class<T> clazz, byte[] bytes,
                                       Map<String, Field> nameToFieldMap,
-                                      Map<String, CompoundMemberDatatype> nameToMemberMap)
-            throws Exception {
+                                      Map<String, CompoundMemberDatatype> nameToMemberMap) throws InvocationTargetException, InstantiationException, IllegalAccessException {
 
         // Cache no-arg constructor
         @SuppressWarnings("unchecked")
@@ -433,7 +431,7 @@ public class CompoundDatatype implements Datatype {
                 Constructor<?> fallback = Arrays.stream(constructors)
                         .filter(ct -> ct.getParameterCount() <= nameToMemberMap.size())
                         .findFirst()
-                        .orElseThrow(() -> new RuntimeException("No suitable constructor for " + clazz.getName()));
+                        .orElseThrow(() -> new IllegalStateException("No suitable constructor for " + clazz.getName()));
                 fallback.setAccessible(true);
                 return fallback;
             }
