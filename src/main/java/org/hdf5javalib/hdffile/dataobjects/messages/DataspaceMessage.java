@@ -80,7 +80,7 @@ public class DataspaceMessage extends HdfMessage {
             int rawFlags,
             int sizeMessageData
     ) {
-        super(MessageType.DataspaceMessage, sizeMessageData, rawFlags);
+        super(MessageType.DATASPACE_MESSAGE, sizeMessageData, rawFlags);
         this.version = version;
         this.dimensionality = dimensionality;
         this.flags = flags;

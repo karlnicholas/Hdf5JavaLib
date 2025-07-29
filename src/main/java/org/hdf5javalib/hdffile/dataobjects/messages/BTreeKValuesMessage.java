@@ -64,7 +64,7 @@ public class BTreeKValuesMessage extends HdfMessage {
      * @param sizeMessageData             the size of the message data in bytes
      */
     public BTreeKValuesMessage(int version, int indexedStorageInternalNodeK, int groupInternalNodeK, int groupLeafNodeK, int flags, int sizeMessageData) {
-        super(MessageType.BtreeKValuesMessage, sizeMessageData, flags);
+        super(MessageType.BTREE_K_VALUES_MESSAGE, sizeMessageData, flags);
         this.version = version;
         this.indexedStorageInternalNodeK = indexedStorageInternalNodeK;
         this.groupInternalNodeK = groupInternalNodeK;

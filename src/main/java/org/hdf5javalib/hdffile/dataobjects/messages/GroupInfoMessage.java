@@ -69,7 +69,7 @@ public class GroupInfoMessage extends HdfMessage {
     public GroupInfoMessage(byte version, byte groupInfoFlags, Short maxCompactValue, Short minDenseValue,
                             Short estimatedNumEntries, Short estimatedLinkNameLength,
                             int messageFlags, int sizeMessageData) {
-        super(MessageType.GroupInfoMessage, sizeMessageData, messageFlags);
+        super(MessageType.GROUP_INFO_MESSAGE, sizeMessageData, messageFlags);
         this.version = version;
         this.groupInfoFlags = groupInfoFlags;
         this.maxCompactValue = maxCompactValue;

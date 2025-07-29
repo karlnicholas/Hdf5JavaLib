@@ -52,7 +52,7 @@ public class SymbolTableMessage extends HdfMessage {
      * @param sizeMessageData  the size of the message data in bytes
      */
     public SymbolTableMessage(HdfFixedPoint bTreeAddress, HdfFixedPoint localHeapAddress, int flags, int sizeMessageData) {
-        super(MessageType.SymbolTableMessage, sizeMessageData, flags);
+        super(MessageType.SYMBOL_TABLE_MESSAGE, sizeMessageData, flags);
         this.bTreeAddress = bTreeAddress;
         this.localHeapAddress = localHeapAddress;
     }

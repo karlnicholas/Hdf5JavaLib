@@ -56,7 +56,7 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
      * @param sizeMessageData    the size of the message data in bytes
      */
     public ObjectHeaderContinuationMessage(final HdfFixedPoint continuationOffset, final HdfFixedPoint continuationSize, int flags, int sizeMessageData) {
-        super(MessageType.ObjectHeaderContinuationMessage, sizeMessageData, flags);
+        super(MessageType.OBJECT_HEADER_CONTINUATION_MESSAGE, sizeMessageData, flags);
         this.continuationOffset = continuationOffset;
         this.continuationSize = continuationSize;
     }

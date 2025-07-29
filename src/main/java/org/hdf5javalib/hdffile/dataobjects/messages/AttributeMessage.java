@@ -75,7 +75,7 @@ public class AttributeMessage extends HdfMessage {
      * @param sizeMessageData  the size of the message data in bytes
      */
     public AttributeMessage(int version, HdfString name, DatatypeMessage datatypeMessage, DataspaceMessage dataspaceMessage, HdfDataHolder hdfDataHolder, int flags, int sizeMessageData) {
-        super(MessageType.AttributeMessage, sizeMessageData, flags);
+        super(MessageType.ATTRIBUTE_MESSAGE, sizeMessageData, flags);
         this.version = version;
         this.datatypeMessage = datatypeMessage;
         this.dataspaceMessage = dataspaceMessage;
@@ -128,9 +128,9 @@ public class AttributeMessage extends HdfMessage {
         paddingBytes = new byte[padding];
         buffer.get(paddingBytes);
 
-        HdfMessage hdfDataObjectHeaderDt = parseHeaderMessage(MessageType.DatatypeMessage, (byte) 0, dtBytes, hdfDataFile);
+        HdfMessage hdfDataObjectHeaderDt = parseHeaderMessage(MessageType.DATATYPE_MESSAGE, (byte) 0, dtBytes, hdfDataFile);
         DatatypeMessage dt = (DatatypeMessage) hdfDataObjectHeaderDt;
-        HdfMessage hdfDataObjectHeaderDs = parseHeaderMessage(MessageType.DataspaceMessage, (byte) 0, dsBytes, hdfDataFile);
+        HdfMessage hdfDataObjectHeaderDs = parseHeaderMessage(MessageType.DATASPACE_MESSAGE, (byte) 0, dsBytes, hdfDataFile);
         DataspaceMessage ds = (DataspaceMessage) hdfDataObjectHeaderDs;
 
         int dtDataSize = dt.getHdfDatatype().getSize();

@@ -192,23 +192,23 @@ public abstract class HdfMessage {
     protected static HdfMessage parseHeaderMessage(MessageType type, int flags, byte[] data, HdfDataFile hdfDataFile) {
         log.trace("type:flags:length {} {} {}", type, flags, data.length);
         return switch (type) {
-            case NilMessage -> NilMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case DataspaceMessage -> DataspaceMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case LinkInfoMessage ->  LinkInfoMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case DatatypeMessage -> DatatypeMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case FillMessage -> FillMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case FillValueMessage -> FillValueMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case LinkMessage -> LinkMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case ExternalDataFilesMessage -> ExternalDataFilesMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case DataLayoutMessage -> DataLayoutMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case GroupInfoMessage ->  GroupInfoMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case FilterPipelineMessage ->  FilterPipelineMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case AttributeMessage -> AttributeMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case ObjectHeaderContinuationMessage -> ObjectHeaderContinuationMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case SymbolTableMessage -> SymbolTableMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case ObjectModificationTimeMessage -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case BtreeKValuesMessage -> BTreeKValuesMessage.parseHeaderMessage(flags, data, hdfDataFile);
-            case AttributeInfoMessage -> AttributeInfoMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case NIL_MESSAGE -> NilMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case DATASPACE_MESSAGE -> DataspaceMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case LINK_INFO_MESSAGE ->  LinkInfoMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case DATATYPE_MESSAGE -> DatatypeMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case FILL_MESSAGE -> FillMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case FILL_VALUE_MESSAGE -> FillValueMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case LINK_MESSAGE -> LinkMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case EXTERNAL_DATA_FILES_MESSAGE -> ExternalDataFilesMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case DATA_LAYOUT_MESSAGE -> DataLayoutMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case GROUP_INFO_MESSAGE ->  GroupInfoMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case FILTER_PIPELINE_MESSAGE ->  FilterPipelineMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case ATTRIBUTE_MESSAGE -> AttributeMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case OBJECT_HEADER_CONTINUATION_MESSAGE -> ObjectHeaderContinuationMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case SYMBOL_TABLE_MESSAGE -> SymbolTableMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case OBJECT_MODIFICATION_TIME_MESSAGE -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case BTREE_K_VALUES_MESSAGE -> BTreeKValuesMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case ATTRIBUTE_INFO_MESSAGE -> AttributeInfoMessage.parseHeaderMessage(flags, data, hdfDataFile);
             default -> throw new IllegalArgumentException("Unknown message type: " + type);
         };
     }
@@ -253,122 +253,122 @@ public abstract class HdfMessage {
         /**
          * NIL Message (0x0000): A placeholder message to be ignored.
          */
-        NilMessage((short) 0, "NIL Message"),
+        NIL_MESSAGE((short) 0, "NIL Message"),
 
         /**
          * Dataspace Message (0x0001): Defines dataset dimensions and size.
          */
-        DataspaceMessage((short) 1, "Dataspace Message"),
+        DATASPACE_MESSAGE((short) 1, "Dataspace Message"),
 
         /**
          * Link Info Message (0x0002): Stores metadata about links.
          */
-        LinkInfoMessage((short) 2, "Link Info Message"),
+        LINK_INFO_MESSAGE((short) 2, "Link Info Message"),
 
         /**
          * Datatype Message (0x0003): Specifies the datatype for dataset elements.
          */
-        DatatypeMessage((short) 3, "Datatype Message"),
+        DATATYPE_MESSAGE((short) 3, "Datatype Message"),
 
         /**
          * Data Storage - Fill Value (Old) Message (0x0004): Defines fill values (deprecated).
          */
-        FillMessage((short) 4, "Data Storage - Fill Value (Old) Message"),
+        FILL_MESSAGE((short) 4, "Data Storage - Fill Value (Old) Message"),
 
         /**
          * Data Storage - Fill Value Message (0x0005): Defines fill values.
          */
-        FillValueMessage((short) 5, "Data Storage - Fill Value Message"),
+        FILL_VALUE_MESSAGE((short) 5, "Data Storage - Fill Value Message"),
 
         /**
          * Link Message (0x0006): Represents a link to another object.
          */
-        LinkMessage((short) 6, "Link Message"),
+        LINK_MESSAGE((short) 6, "Link Message"),
 
         /**
          * Data Storage - External Data Files Message (0x0007): Indicates external file storage.
          */
-        ExternalDataFilesMessage((short) 7, "Data Storage - External Data Files Message"),
+        EXTERNAL_DATA_FILES_MESSAGE((short) 7, "Data Storage - External Data Files Message"),
 
         /**
          * Data Layout Message (0x0008): Describes data storage layout.
          */
-        DataLayoutMessage((short) 8, "Data Layout Message"),
+        DATA_LAYOUT_MESSAGE((short) 8, "Data Layout Message"),
 
         /**
          * Bogus Message (0x0009): Used for internal testing.
          */
-        BogusMessage((short) 9, "Bogus Message"),
+        BOGUS_MESSAGE((short) 9, "Bogus Message"),
 
         /**
          * Group Info Message (0x000A): Provides group metadata.
          */
-        GroupInfoMessage((short) 10, "Group Info Message"),
+        GROUP_INFO_MESSAGE((short) 10, "Group Info Message"),
 
         /**
          * Data Storage - Filter Pipeline Message (0x000B): Defines data filters.
          */
-        FilterPipelineMessage((short) 11, "Data Storage - Filter Pipeline Message"),
+        FILTER_PIPELINE_MESSAGE((short) 11, "Data Storage - Filter Pipeline Message"),
 
         /**
          * Attribute Message (0x000C): Stores user-defined metadata attributes.
          */
-        AttributeMessage((short) 12, "Attribute Message"),
+        ATTRIBUTE_MESSAGE((short) 12, "Attribute Message"),
 
         /**
          * Object Comment Message (0x000D): Stores user-defined comments.
          */
-        ObjectCommentMessage((short) 13, "Object Comment Message"),
+        OBJECT_COMMENT_MESSAGE((short) 13, "Object Comment Message"),
 
         /**
          * Object Modification Time (Old) Message (0x000E): Records modification time (deprecated).
          */
-        ObjectModificationTimeOldMessage((short) 14, "Object Modification Time (Old) Message"),
+        OBJECT_MODIFICATION_TIME_OLD_MESSAGE((short) 14, "Object Modification Time (Old) Message"),
 
         /**
          * Shared Message Table Message (0x000F): Stores shared header messages.
          */
-        SharedMessageTableMessage((short) 15, "Shared Message Table Message"),
+        SHARED_MESSAGE_TABLE_MESSAGE((short) 15, "Shared Message Table Message"),
 
         /**
          * Object Header Continuation Message (0x0010): Links to additional header blocks.
          */
-        ObjectHeaderContinuationMessage((short) 16, "Object Header Continuation Message"),
+        OBJECT_HEADER_CONTINUATION_MESSAGE((short) 16, "Object Header Continuation Message"),
 
         /**
          * Symbol Table Message (0x0011): Stores group symbol table information.
          */
-        SymbolTableMessage((short) 17, "Symbol Table Message"),
+        SYMBOL_TABLE_MESSAGE((short) 17, "Symbol Table Message"),
 
         /**
          * Object Modification Time Message (0x0012): Records modification time.
          */
-        ObjectModificationTimeMessage((short) 18, "Object Modification Time Message"),
+        OBJECT_MODIFICATION_TIME_MESSAGE((short) 18, "Object Modification Time Message"),
 
         /**
          * B-tree ‘K’ Values Message (0x0013): Specifies B-tree splitting ratios.
          */
-        BtreeKValuesMessage((short) 19, "B-tree ‘K’ Values Message"),
+        BTREE_K_VALUES_MESSAGE((short) 19, "B-tree ‘K’ Values Message"),
 
         /**
          * Driver Info Message (0x0014): Contains driver-specific metadata.
          */
-        DriverInfoMessage((short) 20, "Driver Info Message"),
+        DRIVER_INFO_MESSAGE((short) 20, "Driver Info Message"),
 
         /**
          * Attribute Info Message (0x0015): Stores attribute metadata.
          */
-        AttributeInfoMessage((short) 21, "Attribute Info Message"),
+        ATTRIBUTE_INFO_MESSAGE((short) 21, "Attribute Info Message"),
 
         /**
          * Object Reference Count Message (0x0016): Stores object reference count.
          */
-        ObjectReferenceCountMessage((short) 22, "Object Reference Count Message"),
+        OBJECT_REFERENCE_COUNT_MESSAGE((short) 22, "Object Reference Count Message"),
 
         /**
          * File Space Info Message (0x0017): Describes file free space information.
          */
-        FileSpaceInfoMessage((short) 23, "File Space Info Message");
+        FILE_SPACE_INFO_MESSAGE((short) 23, "File Space Info Message");
 
         private final int value;
         private final String name;

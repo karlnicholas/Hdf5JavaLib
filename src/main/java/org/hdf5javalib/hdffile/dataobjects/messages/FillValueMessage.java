@@ -86,7 +86,7 @@ public class FillValueMessage extends HdfMessage {
             int flags,
             int sizeMessageData
     ) {
-        super(MessageType.FillValueMessage, sizeMessageData, flags);
+        super(MessageType.FILL_VALUE_MESSAGE, sizeMessageData, flags);
         this.version = version;
         this.spaceAllocationTime = spaceAllocationTime;
         this.fillValueWriteTime = fillValueWriteTime;

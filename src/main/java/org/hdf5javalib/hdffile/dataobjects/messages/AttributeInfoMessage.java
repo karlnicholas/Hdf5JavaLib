@@ -72,7 +72,7 @@ public class AttributeInfoMessage extends HdfMessage {
                                 HdfFixedPoint fractalHeapAddress, HdfFixedPoint attributeNameV2BtreeAddress,
                                 HdfFixedPoint attributeCreationOrderV2BtreeAddress,
                                 int messageFlags, int sizeMessageData) {
-        super(MessageType.AttributeInfoMessage, sizeMessageData, messageFlags);
+        super(MessageType.ATTRIBUTE_INFO_MESSAGE, sizeMessageData, messageFlags);
         this.version = version;
         this.attributeInfoFlags = attributeInfoFlags;
         this.maximumCreationIndex = maximumCreationIndex;

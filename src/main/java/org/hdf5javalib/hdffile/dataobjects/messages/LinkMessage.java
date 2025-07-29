@@ -58,7 +58,7 @@ public class LinkMessage extends HdfMessage {
             int messageFlags,
             int sizeMessageData
     ) {
-        super(MessageType.LinkMessage, sizeMessageData, flags);
+        super(MessageType.LINK_MESSAGE, sizeMessageData, flags);
         this.version = version;
         this.flags = flags;
         this.linkType = linkType;

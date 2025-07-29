@@ -80,7 +80,7 @@ public class DataLayoutMessage extends HdfMessage {
             int flags,
             int sizeMessageData
     ) {
-        super(MessageType.DataLayoutMessage, sizeMessageData, flags);
+        super(MessageType.DATA_LAYOUT_MESSAGE, sizeMessageData, flags);
         this.version = version;
         this.dataLayoutStorage = dataLayoutStorage;
     }

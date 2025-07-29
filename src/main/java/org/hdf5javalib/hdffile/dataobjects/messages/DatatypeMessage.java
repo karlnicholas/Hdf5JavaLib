@@ -73,7 +73,7 @@ public class DatatypeMessage extends HdfMessage {
      * @param sizeMessageData the size of the message data in bytes
      */
     public DatatypeMessage(Datatype datatype, int flags, short sizeMessageData) {
-        super(MessageType.DatatypeMessage, sizeMessageData, flags);
+        super(MessageType.DATATYPE_MESSAGE, sizeMessageData, flags);
         this.datatype = datatype;
     }
 

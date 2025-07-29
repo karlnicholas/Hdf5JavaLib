@@ -66,7 +66,7 @@ public class LinkInfoMessage extends HdfMessage {
                            HdfFixedPoint fractalHeapAddress, HdfFixedPoint v2BTreeNameIndexAddress,
                            HdfFixedPoint v2BTreeCreationOrderIndexAddress,
                            int messageFlags, int sizeMessageData) {
-        super(MessageType.LinkInfoMessage, sizeMessageData, messageFlags);
+        super(MessageType.LINK_INFO_MESSAGE, sizeMessageData, messageFlags);
         this.version = version;
         this.linkInfoFlags = linkInfoFlags;
         this.maximumCreationIndex = maximumCreationIndex;

@@ -71,7 +71,7 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
 
     public List<AttributeMessage> getAttributeMessages() {
         return objectHeader.getHeaderMessages().stream()
-                .filter(m -> m.getMessageType() == HdfMessage.MessageType.AttributeMessage)
+                .filter(m -> m.getMessageType() == HdfMessage.MessageType.ATTRIBUTE_MESSAGE)
                 .map(m -> (AttributeMessage) m)
                 .toList();
     }

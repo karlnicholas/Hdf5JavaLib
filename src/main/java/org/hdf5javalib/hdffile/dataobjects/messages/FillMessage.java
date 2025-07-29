@@ -52,7 +52,7 @@ public class FillMessage extends HdfMessage {
             int flags,
             int sizeMessageData
     ) {
-        super(MessageType.FillMessage, sizeMessageData, flags);
+        super(MessageType.FILL_MESSAGE, sizeMessageData, flags);
         this.size = size;
         this.fillValue = fillValue;
     }

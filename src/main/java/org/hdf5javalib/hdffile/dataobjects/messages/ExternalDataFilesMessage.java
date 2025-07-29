@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExternalDataFilesMessage extends HdfMessage {
-    private static final int externalDataFilesMessageReserved1 = 3;
+    private static final int EXTERNALDATAFILESMESSAGE_RESERVED_1 = 3;
 
     private final byte version;
     private final int allocatedSlots;
@@ -23,7 +23,7 @@ public class ExternalDataFilesMessage extends HdfMessage {
     public ExternalDataFilesMessage(byte version, int allocatedSlots, int usedSlots,
                 HdfFixedPoint heapAddress, List<SlotDefinition> slotDefinitions,
         int messageFlags, int sizeMessageData) {
-            super(MessageType.LinkInfoMessage, sizeMessageData, messageFlags);
+            super(MessageType.LINK_INFO_MESSAGE, sizeMessageData, messageFlags);
             this.version = version;
             this.allocatedSlots = allocatedSlots;
             this.usedSlots = usedSlots;
@@ -42,7 +42,7 @@ public class ExternalDataFilesMessage extends HdfMessage {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         byte version = buffer.get();
-        buffer.position(buffer.position() + externalDataFilesMessageReserved1);
+        buffer.position(buffer.position() + EXTERNALDATAFILESMESSAGE_RESERVED_1);
         int allocatedSlots = Short.toUnsignedInt(buffer.getShort());
         int usedSlots = Short.toUnsignedInt(buffer.getShort());
         HdfFixedPoint heapAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(),  buffer);
