@@ -184,10 +184,12 @@ public class ReferenceDatatype implements Datatype {
 
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
+        // not yet implemented
     }
 
     @Override
     public void setGlobalHeap(HdfGlobalHeap globalHeap) {
+        // no global heap needed, ignored
     }
 
     @Override

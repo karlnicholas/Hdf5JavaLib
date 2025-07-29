@@ -392,6 +392,7 @@ public class FloatingPointDatatype implements Datatype {
      */
     @Override
     public void setGlobalHeap(HdfGlobalHeap grok) {
+        // no global heap needed, ignored
     }
 
     /**

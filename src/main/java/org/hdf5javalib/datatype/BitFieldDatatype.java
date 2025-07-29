@@ -298,10 +298,11 @@ public class BitFieldDatatype implements Datatype {
     /**
      * Sets the global heap for this datatype (no-op for BitFieldDatatype).
      *
-     * @param grok the HdfGlobalHeap to set
+     * @param ignoreGlobalHeap the HdfGlobalHeap to set
      */
     @Override
-    public void setGlobalHeap(HdfGlobalHeap grok) {
+    public void setGlobalHeap(HdfGlobalHeap ignoreGlobalHeap) {
+        // no global heap needed, ignored
     }
 
     /**
