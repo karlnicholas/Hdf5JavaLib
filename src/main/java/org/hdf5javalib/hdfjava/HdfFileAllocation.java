@@ -17,6 +17,7 @@ import java.util.*;
  * </p>
  */
 public class HdfFileAllocation {
+    private static final String DATASET_NAME_ERROR = "Dataset name cannot be null";
 
 //    public AllocationRecord getSuperblockRecord() {
 //        return superblockRecord;
@@ -262,7 +263,7 @@ public class HdfFileAllocation {
      * @throws IllegalStateException    if the dataset is not found
      */
     public void increaseHeaderAllocation(String datasetName, HdfFixedPoint newTotalHeaderSize) {
-        Objects.requireNonNull(datasetName, "Dataset name cannot be null");
+        Objects.requireNonNull(datasetName, DATASET_NAME_ERROR);
         Map<AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
         if (datasetAllocs == null || !datasetAllocs.containsKey(AllocationType.DATASET_OBJECT_HEADER)) {
             throw new IllegalStateException("Dataset '" + datasetName + "' not found");
@@ -323,7 +324,7 @@ public class HdfFileAllocation {
      * @throws IllegalStateException    if the dataset or data block is already allocated
      */
     public HdfFixedPoint allocateAndSetDataBlock(String datasetName, HdfFixedPoint dataSize) {
-        Objects.requireNonNull(datasetName, "Dataset name cannot be null");
+        Objects.requireNonNull(datasetName, DATASET_NAME_ERROR);
         Map<AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
         if (datasetAllocs == null) {
             throw new IllegalStateException("Dataset '" + datasetName + "' not found");
@@ -351,7 +352,7 @@ public class HdfFileAllocation {
      * @throws IllegalStateException    if the dataset or continuation block is already allocated
      */
     public HdfFixedPoint allocateAndSetContinuationBlock(String datasetName, HdfFixedPoint continuationSize) {
-        Objects.requireNonNull(datasetName, "Dataset name cannot be null");
+        Objects.requireNonNull(datasetName, DATASET_NAME_ERROR);
         Map<AllocationType, AllocationRecord> datasetAllocs = datasetRecordsByName.get(datasetName);
         if (datasetAllocs == null) {
             throw new IllegalStateException("Dataset '" + datasetName + "' not found");
