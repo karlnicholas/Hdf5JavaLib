@@ -1,7 +1,6 @@
 package org.hdf5javalib.hdffile.infrastructure;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.hdfjava.AllocationType;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
@@ -21,8 +20,6 @@ public class HdfGlobalHeapBlock {
     /**
      * Constructs an allocation record.
      *
-     * @param type           the allocation type
-     * @param name           the name of the allocation
      * @param offset         the starting offset
      */
     public HdfGlobalHeapBlock(
@@ -30,8 +27,6 @@ public class HdfGlobalHeapBlock {
             HdfFixedPoint collectionSize,
             Integer nextObjectId,
             HdfDataFile hdfDataFile,
-            AllocationType type,
-            String name,
             HdfFixedPoint offset
     ) {
         this.hdfDataFile = hdfDataFile;

@@ -3,7 +3,6 @@ package org.hdf5javalib.hdffile.dataobjects;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.hdfjava.HdfDataFile;
-import org.hdf5javalib.hdfjava.HdfFileAllocation;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -62,12 +61,11 @@ public class HdfObjectHeaderPrefixV1 extends HdfObjectHeaderPrefix {
      * </p>
      *
      * @param seekableByteChannel the byte channel to write to
-     * @param fileAllocation      the file allocation manager
      * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the buffer overflows
      */
     @Override
-    public void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
+    public void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel) throws IOException {
         int currentSize = 16;
         int i = 0;
         while (i < headerMessages.size()) {

@@ -2,7 +2,6 @@ package org.hdf5javalib.hdffile.dataobjects;
 
 import org.hdf5javalib.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.hdfjava.HdfDataFile;
-import org.hdf5javalib.hdfjava.HdfFileAllocation;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.IOException;
@@ -49,7 +48,7 @@ public class HdfObjectHeaderPrefixV2 extends HdfObjectHeaderPrefix {
         this.minDenseAttributes = minDenseAttributes;
     }
     @Override
-    public void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
+    public void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel) throws IOException {
         // not implemented
     }
 }

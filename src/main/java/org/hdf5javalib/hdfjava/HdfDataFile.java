@@ -22,13 +22,6 @@ public interface HdfDataFile {
      */
     HdfGlobalHeap getGlobalHeap();
 
-//    /**
-//     * Retrieves the file allocation manager of the HDF5 file.
-//     *
-//     * @return the {@link HdfFileAllocation} instance
-//     */
-//    HdfFileAllocation getFileAllocation();
-
     /**
      * Retrieves the seekable byte channel for reading and writing the HDF5 file.
      *
@@ -45,5 +38,4 @@ public interface HdfDataFile {
 
     HdfBTree getBTree();
 
-    void setFileAllocation(HdfFileAllocation hdfFileAllocation);
 }

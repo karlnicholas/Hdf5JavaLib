@@ -3,7 +3,6 @@ package org.hdf5javalib.hdffile.dataobjects;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.hdfjava.HdfDataFile;
-import org.hdf5javalib.hdfjava.HdfFileAllocation;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -58,7 +57,7 @@ public abstract class HdfObjectHeaderPrefix {
         return headerMessages;
     }
 
-    public abstract void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException;
+    public abstract void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel) throws IOException;
 
     public void writeInitialMessageBlockToBuffer(ByteBuffer buffer) {
     }

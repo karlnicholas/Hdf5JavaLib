@@ -3,7 +3,6 @@ package org.hdf5javalib.hdffile.infrastructure;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.hdfjava.HdfDataFile;
-import org.hdf5javalib.hdfjava.HdfFileAllocation;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -24,7 +23,6 @@ import static org.hdf5javalib.utils.HdfWriteUtils.writeFixedPointToBuffer;
  * @see HdfDataFile
  * @see HdfFixedPoint
  * @see HdfString
- * @see HdfFileAllocation
  */
 public class HdfLocalHeap {
     public static final byte[] LOCAL_HEAP_SIGNATURE = new byte[]{'H', 'E', 'A', 'P'};
@@ -113,10 +111,9 @@ public class HdfLocalHeap {
      * Writes the local heap to a file channel.
      *
      * @param seekableByteChannel the file channel to write to
-     * @param fileAllocation      the file allocation manager
      * @throws IOException if an I/O error occurs
      */
-    public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
+    public void writeToByteChannel(SeekableByteChannel seekableByteChannel) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(LOCAL_HEAP_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
 
         buffer.put(LOCAL_HEAP_SIGNATURE);

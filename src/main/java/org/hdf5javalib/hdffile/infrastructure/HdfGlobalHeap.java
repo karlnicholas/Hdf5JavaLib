@@ -1,9 +1,7 @@
 package org.hdf5javalib.hdffile.infrastructure;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
-import org.hdf5javalib.hdfjava.AllocationType;
 import org.hdf5javalib.hdfjava.HdfDataFile;
-import org.hdf5javalib.hdfjava.HdfFileAllocation;
 import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
@@ -30,7 +28,6 @@ import static org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeapBlock.GLOBAL_H
  *
  * @see HdfDataFile
  * @see HdfFixedPoint
- * @see HdfFileAllocation
  */
 public class HdfGlobalHeap {
     private static final byte[] GLOBAL_HEAP_SIGNATURE = {'G', 'C', 'O', 'L'};
@@ -181,8 +178,6 @@ public class HdfGlobalHeap {
                 localCollectionSize,
                 localNextObjectId,
                 hdfDataFile,
-                globalHeaps.size() > 0 ? AllocationType.GLOBAL_HEAP_2 : AllocationType.GLOBAL_HEAP_1,
-                globalHeaps.size() > 0 ? "Global Heap 2" : "Global Heap 1",
                 hdfStartOffset
         );
         globalHeaps.put(hdfStartOffset, heapBlock);

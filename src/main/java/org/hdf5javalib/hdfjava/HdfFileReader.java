@@ -57,7 +57,6 @@ public class HdfFileReader implements HdfDataFile {
     /**
      * The file allocation manager for tracking storage blocks.
      */
-    private HdfFileAllocation fileAllocation;
     private HdfSuperblock superblock;
     private HdfBTree bTree;
 
@@ -859,11 +858,6 @@ public class HdfFileReader implements HdfDataFile {
     @Override
     public HdfBTree getBTree() {
         return bTree;
-    }
-
-    @Override
-    public void setFileAllocation(HdfFileAllocation hdfFileAllocation) {
-        this.fileAllocation = hdfFileAllocation;
     }
 
 }
