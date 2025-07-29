@@ -4,17 +4,16 @@ import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.hdffile.dataobjects.messages.DataLayoutMessage;
+import org.hdf5javalib.hdffile.dataobjects.messages.ExternalDataFilesMessage;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
-import org.hdf5javalib.hdffile.dataobjects.messages.ExternalDataFilesMessage;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.nio.channels.SeekableByteChannel;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.Test;
 
 public class H5exDReadTest {
 

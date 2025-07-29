@@ -2,18 +2,16 @@ package org.hdf5javalib.examples.h5ex_tutr;
 
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.datasource.TypedDataSource;
-import org.hdf5javalib.datatype.FixedPointDatatype;
 import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
+import org.junit.jupiter.api.Test;
 
 import java.nio.channels.SeekableByteChannel;
 import java.util.Arrays;
 import java.util.function.IntBinaryOperator;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-
-import org.junit.jupiter.api.Test;
 
 public class H5exTutrReadTest {
 

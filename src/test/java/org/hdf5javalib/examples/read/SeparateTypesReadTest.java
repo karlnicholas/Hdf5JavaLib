@@ -20,25 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SeparateTypesReadTest {
 
-    public static class Compound {
-        private Short a;
-        private Double b;
-
-        public Short getA() {
-            return a;
-        }
-
-        public void setA(Short a) {
-            this.a = a;
-        }
-
-        public Double getB() {
-            return b;
-        }
-
-        public void setB(Double b) {
-            this.b = b;
-        }
+    public record Compound(Short a, Double b) {
     }
 
     public static class CustomCompound {
@@ -178,8 +160,8 @@ public class SeparateTypesReadTest {
             assertEquals("123, 9.81", compoundStrSource.readScalar());
             TypedDataSource<Compound> compoundJavaSource = new TypedDataSource<>(channel, reader, compoundDs, Compound.class);
             Compound compoundJava = compoundJavaSource.readScalar();
-            assertEquals(Short.valueOf((short)123), compoundJava.getA());
-            assertEquals(9.81, compoundJava.getB(), 0.001);
+            assertEquals(Short.valueOf((short)123), compoundJava.a());
+            assertEquals(9.81, compoundJava.b(), 0.001);
             CompoundDatatype.addConverter(CustomCompound.class, (bytes, compoundDataType) -> {
                 Map<String, HdfCompoundMember> nameToMember = compoundDataType.getInstance(HdfCompound.class, bytes)
                         .getMembers()

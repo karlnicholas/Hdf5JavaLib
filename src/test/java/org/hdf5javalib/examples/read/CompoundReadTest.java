@@ -29,131 +29,79 @@ public class CompoundReadTest {
             new BigDecimal("10.2500000"));
 
     public static class CompoundExample {
-        private Long recordId;
-        private String fixedStr;
-        private String varStr;
-        private Float floatVal;
-        private Double doubleVal;
-        private Byte int8_Val;
-        private Short int16_Val;
-        private Integer int32_Val;
-        private Long int64_Val;
-        private Short uint8_Val;
-        private Integer uint16_Val;
-        private Long uint32_Val;
-        private BigInteger uint64_Val;
-        private BigDecimal scaledUintVal;
+        private final Long recordId;
+        private final String fixedStr;
+        private final String varStr;
+        private final Float floatVal;
+        private final Double doubleVal;
+        private final Byte int8_Val;
+        private final Short int16_Val;
+        private final Integer int32_Val;
+        private final Long int64_Val;
+        private final Short uint8_Val;
+        private final Integer uint16_Val;
+        private final Long uint32_Val;
+        private final BigInteger uint64_Val;
+        private final BigDecimal scaledUintVal;
+
+        public CompoundExample(Long recordId, String fixedStr, String varStr, Float floatVal, Double doubleVal, Byte int8Val, Short int16Val, Integer int32Val, Long int64Val, Short uint8Val, Integer uint16Val, Long uint32Val, BigInteger uint64Val, BigDecimal scaledUintVal) {
+            this.recordId = recordId;
+            this.fixedStr = fixedStr;
+            this.varStr = varStr;
+            this.floatVal = floatVal;
+            this.doubleVal = doubleVal;
+            int8_Val = int8Val;
+            int16_Val = int16Val;
+            int32_Val = int32Val;
+            int64_Val = int64Val;
+            uint8_Val = uint8Val;
+            uint16_Val = uint16Val;
+            uint32_Val = uint32Val;
+            uint64_Val = uint64Val;
+            this.scaledUintVal = scaledUintVal;
+        }
 
         public Long getRecordId() {
             return recordId;
         }
-
-        public void setRecordId(Long recordId) {
-            this.recordId = recordId;
-        }
-
         public String getFixedStr() {
             return fixedStr;
         }
-
-        public void setFixedStr(String fixedStr) {
-            this.fixedStr = fixedStr;
-        }
-
         public String getVarStr() {
             return varStr;
         }
-
-        public void setVarStr(String varStr) {
-            this.varStr = varStr;
-        }
-
         public Float getFloatVal() {
             return floatVal;
         }
-
-        public void setFloatVal(Float floatVal) {
-            this.floatVal = floatVal;
-        }
-
         public Double getDoubleVal() {
             return doubleVal;
         }
-
-        public void setDoubleVal(Double doubleVal) {
-            this.doubleVal = doubleVal;
-        }
-
         public Byte getInt8_Val() {
             return int8_Val;
         }
-
-        public void setInt8_Val(Byte int8_Val) {
-            this.int8_Val = int8_Val;
-        }
-
         public Short getInt16_Val() {
             return int16_Val;
         }
-
-        public void setInt16_Val(Short int16_Val) {
-            this.int16_Val = int16_Val;
-        }
-
         public Integer getInt32_Val() {
             return int32_Val;
         }
-
-        public void setInt32_Val(Integer int32_Val) {
-            this.int32_Val = int32_Val;
-        }
-
         public Long getInt64_Val() {
             return int64_Val;
         }
-
-        public void setInt64_Val(Long int64_Val) {
-            this.int64_Val = int64_Val;
-        }
-
         public Short getUint8_Val() {
             return uint8_Val;
         }
-
-        public void setUint8_Val(Short uint8_Val) {
-            this.uint8_Val = uint8_Val;
-        }
-
         public Integer getUint16_Val() {
             return uint16_Val;
         }
-
-        public void setUint16_Val(Integer uint16_Val) {
-            this.uint16_Val = uint16_Val;
-        }
-
         public Long getUint32_Val() {
             return uint32_Val;
         }
-
-        public void setUint32_Val(Long uint32_Val) {
-            this.uint32_Val = uint32_Val;
-        }
-
         public BigInteger getUint64_Val() {
             return uint64_Val;
         }
-
-        public void setUint64_Val(BigInteger uint64_Val) {
-            this.uint64_Val = uint64_Val;
-        }
-
         public BigDecimal getScaledUintVal() {
             return scaledUintVal;
-        }
-
-        public void setScaledUintVal(BigDecimal scaledUintVal) {
-            this.scaledUintVal = scaledUintVal;
         }
     }
 

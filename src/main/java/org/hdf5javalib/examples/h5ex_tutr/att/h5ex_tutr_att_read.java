@@ -1,4 +1,4 @@
-package org.hdf5javalib.examples.h5ex_tutr.h5ex_d;
+package org.hdf5javalib.examples.h5ex_tutr.att;
 
 import org.hdf5javalib.datasource.TypedDataSource;
 
@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static org.hdf5javalib.utils.HdfDisplayUtils.displayFile;
+import static org.hdf5javalib.utils.HdfDisplayUtils.*;
 
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.
@@ -21,14 +21,14 @@ import static org.hdf5javalib.utils.HdfDisplayUtils.displayFile;
  * dataset, as well as conversion to a custom Java class.
  * </p>
  */
-public class h5ex_tutr_read {
+public class h5ex_tutr_att_read {
     /**
      * Entry point for the application.
      *
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
-        new h5ex_tutr_read().run();
+        new h5ex_tutr_att_read().run();
     }
 
     /**
@@ -37,12 +37,12 @@ public class h5ex_tutr_read {
     private void run() {
         try {
             // List all .h5 files in HDF5Examples resources directory
-            Path dirPath = Paths.get(Objects.requireNonNull(h5ex_tutr_read.class.getClassLoader().getResource("h5ex_tutr")).toURI());
+            Path dirPath = Paths.get(Objects.requireNonNull(h5ex_tutr_att_read.class.getClassLoader().getResource("h5ex_tutr/att")).toURI());
             try ( Stream<Path> streamList = Files.list(dirPath) ) {
                 streamList.filter(p -> p.toString().endsWith(".h5"))
                         .forEach(p -> {
                             System.out.println("Running " + p.getFileName());
-                            displayFile(p);
+                            displayFileAttr(p);
                         });
 
             }
