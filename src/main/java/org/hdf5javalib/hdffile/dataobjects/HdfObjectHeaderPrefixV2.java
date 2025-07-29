@@ -50,6 +50,6 @@ public class HdfObjectHeaderPrefixV2 extends HdfObjectHeaderPrefix {
     }
     @Override
     public void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel, HdfFileAllocation fileAllocation) throws IOException {
-
+        // not implemented
     }
 }

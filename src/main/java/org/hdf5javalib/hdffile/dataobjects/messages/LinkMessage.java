@@ -126,6 +126,6 @@ public class LinkMessage extends HdfMessage {
 
         @Override
     public void writeMessageToByteBuffer(ByteBuffer buffer) {
-
+            writeMessageData(buffer);
     }
 }

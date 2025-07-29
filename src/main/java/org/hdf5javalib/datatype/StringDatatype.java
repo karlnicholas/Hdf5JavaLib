@@ -22,6 +22,8 @@ import java.util.*;
  * @see HdfGlobalHeap
  */
 public class StringDatatype implements Datatype {
+    private static final String RFFU = "Reserved for future use.";
+    private static final String RESERVED = "Reserved";
     /**
      * The class and version information for the datatype (class 3, version 1).
      */
@@ -276,55 +278,55 @@ public class StringDatatype implements Datatype {
         /**
          * Reserved padding type for future use.
          */
-        RESERVED_3(3, "Reserved", "Reserved for future use."),
+        RESERVED_3(3, RESERVED, RFFU),
         /**
          * Reserved padding type for future use.
          */
-        RESERVED_4(4, "Reserved", "Reserved for future use."),
+        RESERVED_4(4, RESERVED, RFFU),
         /**
          * Reserved padding type for future use.
          */
-        RESERVED_5(5, "Reserved", "Reserved for future use."),
+        RESERVED_5(5, RESERVED, RFFU),
         /**
          * Reserved padding type for future use.
          */
-        RESERVED_6(6, "Reserved", "Reserved for future use."),
+        RESERVED_6(6, RESERVED, RFFU),
         /**
          * Reserved padding type for future use.
          */
-        RESERVED_7(7, "Reserved", "Reserved for future use."),
+        RESERVED_7(7, RESERVED, RFFU),
         /**
          * Reserved padding type for future use.
          */
-        RESERVED_8(8, "Reserved", "Reserved for future use."),
+        RESERVED_8(8, RESERVED, RFFU),
         /**
          * Reserved padding type for future use.
          */
-        RESERVED_9(9, "Reserved", "Reserved for future use."),
+        RESERVED_9(9, RESERVED, RFFU),
         /**
          * Reserved padding type for future use.
          */
-        RESERVED_10(10, "Reserved", "Reserved for future use."),
+        RESERVED_10(10, RESERVED, RFFU),
         /**
          * Reserved padding type for future use.
          */
-        RESERVED_11(11, "Reserved", "Reserved for future use."),
+        RESERVED_11(11, RESERVED, RFFU),
         /**
          * Reserved padding type for future use.
          */
-        RESERVED_12(12, "Reserved", "Reserved for future use."),
+        RESERVED_12(12, RESERVED, RFFU),
         /**
          * Reserved padding type for future use.
          */
-        RESERVED_13(13, "Reserved", "Reserved for future use."),
+        RESERVED_13(13, RESERVED, RFFU),
         /**
          * Reserved padding type for future use.
          */
-        RESERVED_14(14, "Reserved", "Reserved for future use."),
+        RESERVED_14(14, RESERVED, RFFU),
         /**
          * Reserved padding type for future use.
          */
-        RESERVED_15(15, "Reserved", "Reserved for future use.");
+        RESERVED_15(15, RESERVED, RFFU);
 
         private final int value;
         private final String name;
@@ -378,59 +380,59 @@ public class StringDatatype implements Datatype {
         /**
          * Reserved character set for future use.
          */
-        RESERVED_2(2, "Reserved", "Reserved for future use."),
+        RESERVED_2(2, RESERVED, RFFU),
         /**
          * Reserved character set for future use.
          */
-        RESERVED_3(3, "Reserved", "Reserved for future use."),
+        RESERVED_3(3, RESERVED, RFFU),
         /**
          * Reserved character set for future use.
          */
-        RESERVED_4(4, "Reserved", "Reserved for future use."),
+        RESERVED_4(4, RESERVED, RFFU),
         /**
          * Reserved character set for future use.
          */
-        RESERVED_5(5, "Reserved", "Reserved for future use."),
+        RESERVED_5(5, RESERVED, RFFU),
         /**
          * Reserved character set for future use.
          */
-        RESERVED_6(6, "Reserved", "Reserved for future use."),
+        RESERVED_6(6, RESERVED, RFFU),
         /**
          * Reserved character set for future use.
          */
-        RESERVED_7(7, "Reserved", "Reserved for future use."),
+        RESERVED_7(7, RESERVED, RFFU),
         /**
          * Reserved character set for future use.
          */
-        RESERVED_8(8, "Reserved", "Reserved for future use."),
+        RESERVED_8(8, RESERVED, RFFU),
         /**
          * Reserved character set for future use.
          */
-        RESERVED_9(9, "Reserved", "Reserved for future use."),
+        RESERVED_9(9, RESERVED, RFFU),
         /**
          * Reserved character set for future use.
          */
-        RESERVED_10(10, "Reserved", "Reserved for future use."),
+        RESERVED_10(10, RESERVED, RFFU),
         /**
          * Reserved character set for future use.
          */
-        RESERVED_11(11, "Reserved", "Reserved for future use."),
+        RESERVED_11(11, RESERVED, RFFU),
         /**
          * Reserved character set for future use.
          */
-        RESERVED_12(12, "Reserved", "Reserved for future use."),
+        RESERVED_12(12, RESERVED, RFFU),
         /**
          * Reserved character set for future use.
          */
-        RESERVED_13(13, "Reserved", "Reserved for future use."),
+        RESERVED_13(13, RESERVED, RFFU),
         /**
          * Reserved character set for future use.
          */
-        RESERVED_14(14, "Reserved", "Reserved for future use."),
+        RESERVED_14(14, RESERVED, RFFU),
         /**
          * Reserved character set for future use.
          */
-        RESERVED_15(15, "Reserved", "Reserved for future use.");
+        RESERVED_15(15, RESERVED, RFFU);
 
         final int value;
         final String name;
