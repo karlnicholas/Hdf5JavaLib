@@ -43,15 +43,12 @@ public class ExampleDebug {
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("Superblock: {} ", reader.getSuperblock());
-//    //                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
-//                    displayData(channel, dataSet, reader);
-//                }
                 for (HdfDataset dataSet : reader.getDatasets()) {
                     displayData(channel, dataSet, reader);
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 }

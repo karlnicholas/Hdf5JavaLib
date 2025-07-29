@@ -166,7 +166,7 @@ public class DataLayoutMessage extends HdfMessage {
                         bTree = null;
                     }
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new IllegalStateException(e);
                 }
                 dataLayoutStorage = new ChunkedStorage(chunkedDataAddress, dimensionSizes, datasetElementSize, bTree, hdfDataFile);
                 break;

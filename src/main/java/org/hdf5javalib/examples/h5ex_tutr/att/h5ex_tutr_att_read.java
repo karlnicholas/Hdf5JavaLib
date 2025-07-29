@@ -47,7 +47,7 @@ public class h5ex_tutr_att_read {
 
             }
         } catch (URISyntaxException | IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 

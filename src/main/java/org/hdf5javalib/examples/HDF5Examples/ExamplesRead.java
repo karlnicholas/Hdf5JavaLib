@@ -46,7 +46,7 @@ public class ExamplesRead {
                         displayFile(p);
                     });
         } catch (URISyntaxException | IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 

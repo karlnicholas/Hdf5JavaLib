@@ -68,14 +68,8 @@ public class HdfCompoundMember implements HdfData {
     public String toString() {
         try {
             return datatype.getInstance(HdfData.class, bytes).toString();
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | IOException e) {
+            throw new IllegalStateException(e);
         }
     }
 

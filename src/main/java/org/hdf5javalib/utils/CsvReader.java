@@ -43,7 +43,7 @@ public class CsvReader {
                 data.add(row);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
 
         return data;

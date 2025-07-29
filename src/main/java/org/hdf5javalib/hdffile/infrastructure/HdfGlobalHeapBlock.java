@@ -48,10 +48,10 @@ public class HdfGlobalHeapBlock {
         GlobalHeapObject obj = getGlobalHeapObject(objectId);
         //.getGlobalHeapObject(objectId);
         if (obj == null) {
-            throw new RuntimeException("No object found for objectId: " + objectId + " in heap at offset: " + heapOffset);
+            throw new IllegalStateException("No object found for objectId: " + objectId + " in heap at offset: " + heapOffset);
         }
         if (obj.getHeapObjectIndex() == 0) {
-            throw new RuntimeException("Internal error: Object ID 0 found unexpectedly during data retrieval for offset: " + heapOffset);
+            throw new IllegalStateException("Internal error: Object ID 0 found unexpectedly during data retrieval for offset: " + heapOffset);
         }
         return obj.getData();
     }
@@ -325,7 +325,7 @@ public class HdfGlobalHeapBlock {
          */
         public static GlobalHeapObject readFromByteBuffer(ByteBuffer buffer) {
             if (buffer.remaining() < GLOBAL_HEAP_OBJECT_SIZE) {
-                throw new RuntimeException("Buffer underflow: insufficient data for Global Heap Object header (needs 16 bytes, found " + buffer.remaining() + ")");
+                throw new IllegalStateException("Buffer underflow: insufficient data for Global Heap Object header (needs 16 bytes, found " + buffer.remaining() + ")");
             }
             int objectId = Short.toUnsignedInt(buffer.getShort());
             int referenceCount = Short.toUnsignedInt(buffer.getShort());
@@ -333,21 +333,21 @@ public class HdfGlobalHeapBlock {
             long sizeOrFreeSpace = buffer.getLong();
             if (objectId == 0) {
                 if (sizeOrFreeSpace < 0) {
-                    throw new RuntimeException("Invalid negative free space (" + sizeOrFreeSpace + ") indicated by null terminator object (ID 0).");
+                    throw new IllegalStateException("Invalid negative free space (" + sizeOrFreeSpace + ") indicated by null terminator object (ID 0).");
                 }
                 return new GlobalHeapObject(objectId, referenceCount, sizeOrFreeSpace, null);
             } else {
                 if (sizeOrFreeSpace <= 0) {
-                    throw new RuntimeException("Invalid non-positive object size (" + sizeOrFreeSpace + ") read for non-null object ID: " + objectId);
+                    throw new IllegalStateException("Invalid non-positive object size (" + sizeOrFreeSpace + ") read for non-null object ID: " + objectId);
                 }
                 if (sizeOrFreeSpace > Integer.MAX_VALUE) {
-                    throw new RuntimeException("Object size (" + sizeOrFreeSpace + ") exceeds maximum Java array size (Integer.MAX_VALUE) for object ID: " + objectId);
+                    throw new IllegalStateException("Object size (" + sizeOrFreeSpace + ") exceeds maximum Java array size (Integer.MAX_VALUE) for object ID: " + objectId);
                 }
                 int actualObjectSize = (int) sizeOrFreeSpace;
                 int padding = getPadding(actualObjectSize);
                 int requiredBytes = actualObjectSize + padding;
                 if (buffer.remaining() < requiredBytes) {
-                    throw new RuntimeException("Buffer underflow: insufficient data for object content and padding (needs " + requiredBytes + " bytes [data:" + actualObjectSize + ", pad:" + padding + "], found " + buffer.remaining() + ") for object ID: " + objectId);
+                    throw new IllegalStateException("Buffer underflow: insufficient data for object content and padding (needs " + requiredBytes + " bytes [data:" + actualObjectSize + ", pad:" + padding + "], found " + buffer.remaining() + ") for object ID: " + objectId);
                 }
                 byte[] objectData = new byte[actualObjectSize];
                 buffer.get(objectData);

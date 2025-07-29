@@ -188,14 +188,8 @@ public class LinkInfoMessage extends HdfMessage {
                     ", v2BTreeNameIndexAddress=" + v2BTreeNameIndexAddress.getInstance(Long.class) +
                     ", v2BTreeCreationOrderIndexAddress=" + (v2BTreeCreationOrderIndexAddress != null ? v2BTreeCreationOrderIndexAddress.getInstance(Long.class) : "N/A") +
                     '}';
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | IOException e) {
+            throw new IllegalStateException(e);
         }
     }
 }

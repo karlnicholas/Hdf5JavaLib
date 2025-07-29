@@ -73,7 +73,7 @@ public class FixedPointRead {
                 tryScalarDataSpliterator(channel, reader, reader.getDatasets().get(0));
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
 
         try {
@@ -83,7 +83,7 @@ public class FixedPointRead {
                 tryMatrixSpliterator(channel, reader, reader.getDataset("/weatherdata").orElseThrow());
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
 
         try {
@@ -93,7 +93,7 @@ public class FixedPointRead {
                 display4DData(channel, reader, reader.getDataset("/game").orElseThrow());
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 

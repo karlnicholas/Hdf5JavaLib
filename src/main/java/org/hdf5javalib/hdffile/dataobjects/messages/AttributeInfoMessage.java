@@ -192,14 +192,8 @@ public class AttributeInfoMessage extends HdfMessage {
                     ", attributeNameV2BtreeAddress=" + attributeNameV2BtreeAddress.getInstance(Long.class) +
                     ", attributeCreationOrderV2BtreeAddress=" + (attributeCreationOrderV2BtreeAddress != null ? attributeCreationOrderV2BtreeAddress.getInstance(Long.class) : "N/A") +
                     '}';
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | IOException e) {
+            throw new IllegalStateException(e);
         }
     }
 }

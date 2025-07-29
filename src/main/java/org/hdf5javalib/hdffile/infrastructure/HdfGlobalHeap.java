@@ -161,10 +161,10 @@ public class HdfGlobalHeap {
                         break;
                     }
                     if (localObjects.containsKey(obj.getHeapObjectIndex())) {
-                        throw new RuntimeException("Duplicate object ID " + obj.getHeapObjectIndex() + " found in heap at offset: " + startOffset);
+                        throw new IllegalStateException("Duplicate object ID " + obj.getHeapObjectIndex() + " found in heap at offset: " + startOffset);
                     }
                     if (obj.getHeapObjectIndex() < 1 || obj.getHeapObjectIndex() > 0xFFFF) {
-                        throw new RuntimeException("Invalid object ID " + obj.getHeapObjectIndex() + " found in heap at offset: " + startOffset);
+                        throw new IllegalStateException("Invalid object ID " + obj.getHeapObjectIndex() + " found in heap at offset: " + startOffset);
                     }
                     localObjects.put(obj.getHeapObjectIndex(), obj);
                     localNextObjectId = Math.max(localNextObjectId, obj.getHeapObjectIndex() + 1);

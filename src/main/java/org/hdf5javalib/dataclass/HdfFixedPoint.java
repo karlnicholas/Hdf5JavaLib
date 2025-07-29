@@ -149,14 +149,8 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
     public String toString() {
         try {
             return datatype.getInstance(String.class, bytes);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | IOException e) {
+            throw new IllegalStateException(e);
         }
     }
 
