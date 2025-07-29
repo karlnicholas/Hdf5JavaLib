@@ -39,7 +39,6 @@ import static org.hdf5javalib.hdffile.metadata.HdfSuperblock.*;
  */
 public class HdfFileReader implements HdfDataFile {
 //    /** The superblock containing metadata about the HDF5 file. */
-//    private HdfSuperblock superblock;
     public static final byte[] BTREE_SIGNATURE = {'T', 'R', 'E', 'E'};
     public static final int BTREE_HEADER_INITIAL_SIZE = 8;
     private static final int MAX_SNOD_ENTRIES = 8;
@@ -177,6 +176,8 @@ public class HdfFileReader implements HdfDataFile {
                                 parentGroup.addChild(groupObject);
                                 readInfrastructure(groupObject, newLocalHeap, newGroupBTree);
                                 break;
+                            default:
+                                throw new UnsupportedOperationException("Unknown type: " + symbolTableEntry.getCache().getCacheType());
                         }
                     }
                 }
@@ -189,12 +190,6 @@ public class HdfFileReader implements HdfDataFile {
      * @return a collection of
      */
     public Iterator<HdfDataset> datasetIterator() {
-//        return bTree.getEntries().stream()
-//                .filter(bte -> bte.getGroupSymbolTableNode().isPresent())
-//                .flatMap(bte -> bte.getGroupSymbolTableNode().get().getSymbolTableEntries().stream())
-//                .filter(ste -> ste.getCache() instanceof HdfSymbolTableEntryCacheNoScratch)
-//                .map(ste -> ((HdfSymbolTableEntryCacheNoScratch) ste.getCache()).getDataSet())
-//                .toList();
         return bTree.datasetIterator();
 
     }
@@ -207,16 +202,6 @@ public class HdfFileReader implements HdfDataFile {
         return resultList;
     }
 
-//    private Optional<HdfDataObject> findTypeInBTree(HdfBTree bTree, String[] components, int index, String currentComponent) {
-//        if (bTree == null || components == null || index >= components.length || currentComponent == null) {
-//            return Optional.empty();
-//        }
-////        Optional<HdfDataObject> result = bTree.findObjectByName(currentComponent, this);
-////        if (result.isPresent()) {
-////            return findTypeByPath(components, index + 1, result.get());
-////        }
-//        return Optional.empty();
-//    }
     public Optional<HdfDataset> getDataset(String path) {
         return getHdfDataObject(path, HdfDataset.class);
     }
@@ -592,15 +577,6 @@ public class HdfFileReader implements HdfDataFile {
         // reading for group.
         HdfFixedPoint bTreeAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
         HdfFixedPoint localHeapAddress = HdfReadUtils.readHdfFixedPointFromFileChannel(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), fileChannel);
-//        long savedPosition = fileChannel.position();
-//
-//        fileChannel.position(localHeapAddress.getInstance(Long.class));
-//        HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, hdfDataFile, objectName);
-//
-//        fileChannel.position(bTreeAddress.getInstance(Long.class));
-//        HdfBTree bTreeV1 = readBTreeFromSeekableByteChannel(fileChannel, hdfDataFile, localHeap, objectName);
-//        fileChannel.position(savedPosition);
-//        return new HdfSymbolTableEntryCacheWithScratch(objectName, objectHeader, bTreeV1, localHeap, hdfDataFile);
         return new HdfSymbolTableEntryCacheWithScratch(bTreeAddress, localHeapAddress);
     }
 
@@ -624,15 +600,6 @@ public class HdfFileReader implements HdfDataFile {
         int cacheType = HdfReadUtils.readIntFromFileChannel(fileChannel);
         HdfReadUtils.skipBytes(fileChannel, RESERVED_FIELD_1_SIZE); // Skip reserved field
 
-//        long savedPosition = fileChannel.position();
-//        fileChannel.position(objectHeaderAddress.getInstance(Long.class));
-//        String objectName = localHeap == null ? "" : localHeap.stringAtOffset(linkNameOffset);
-//        HdfObjectHeaderPrefix objectHeader = readObjectHeaderPrefixFromSeekableByteChannel(
-//                fileChannel,
-//                hdfDataFile,
-//                objectName
-//        );
-//        fileChannel.position(savedPosition);
         HdfSymbolTableEntryCache cache;
         if (cacheType == 0) {
             cache = readCacheNoScratchFromSeekableByteChannel(fileChannel, hdfDataFile);
@@ -866,61 +833,6 @@ public class HdfFileReader implements HdfDataFile {
         }
     }
 
-//    /**
-//     * Collects a map of dataset names to their information from the B-tree and local heap.
-//     *
-//     * @param fileChannel the seekable byte channel for reading the file
-//     * @param bTree       the B-tree containing symbol table entries
-//     * @param localHeap   the local heap storing link names
-//     * @return a map of dataset names to their {@link HdfGroup.DataSetInfo}
-//     * @throws IOException if an I/O error occurs
-//     */
-//    private Map<String, HdfGroup.DataSetInfo> collectDatasetsMap(SeekableByteChannel fileChannel, HdfBTree bTree, HdfLocalHeap localHeap) throws IOException {
-//        Map<String, HdfGroup.DataSetInfo> dataSets = new LinkedHashMap<>();
-//        collectDatasetsRecursive(bTree, dataSets, localHeap, fileChannel);
-//        return dataSets;
-//    }
-//
-//    /**
-//     * Recursively collects dataset information from the B-tree.
-//     * <p>
-//     * Traverses the B-tree, processing leaf nodes to extract dataset metadata and
-//     * recursively handling internal nodes to collect all datasets.
-//     * </p>
-//     *
-//     * @param currentNode the current B-tree node
-//     * @param dataSets    the map to store dataset information
-//     * @param localHeap   the local heap for link names
-//     * @param fileChannel the seekable byte channel for reading
-//     * @throws IOException if an I/O error occurs
-//     */
-//    private void collectDatasetsRecursive(HdfBTree currentNode,
-//                                          Map<String, HdfGroup.DataSetInfo> dataSets,
-//                                          HdfLocalHeap localHeap,
-//                                          SeekableByteChannel fileChannel) throws IOException {
-//        for (HdfGroupBTreeEntry entry : currentNode.getEntries()) {
-//            if (entry.isLeafEntry()) {
-//                HdfGroupSymbolTableNode snod = entry.getSymbolTableNode();
-//                for (HdfSymbolTableEntry ste : snod.getSymbolTableEntries()) {
-//                    HdfString linkName = localHeap.parseStringAtOffset(ste.getLinkNameOffset());
-//                    long dataObjectHeaderAddress = ste.getObjectHeaderOffset().getInstance(Long.class);
-//                    long linkNameOffset = ste.getLinkNameOffset().getInstance(Long.class);
-//                    fileChannel.position(dataObjectHeaderAddress);
-//                    HdfObjectHeaderPrefixV1 header = HdfObjectHeaderPrefixV1.readFromSeekableByteChannel(fileChannel, this);
-//                    DatatypeMessage dataType = header.findMessageByType(DatatypeMessage.class).orElseThrow();
-//                    HdfDataset dataset = new HdfDataset(this, linkName.toString(), dataType.getHdfDatatype(), header);
-//                    HdfGroup.DataSetInfo dataSetInfo = new HdfGroup.DataSetInfo(dataset,
-//                            HdfWriteUtils.hdfFixedPointFromValue(0, superblock.getFixedPointDatatypeForOffset()),
-//                            linkNameOffset);
-//                    dataSets.put(linkName.toString(), dataSetInfo);
-//                }
-//            } else if (entry.isInternalEntry()) {
-//                HdfBTree childBTree = entry.getChildBTree();
-//                collectDatasetsRecursive(childBTree, dataSets, localHeap, fileChannel);
-//            }
-//        }
-//    }
-
     /**
      * Retrieves the global heap of the HDF5 file.
      *
@@ -930,16 +842,6 @@ public class HdfFileReader implements HdfDataFile {
     public HdfGlobalHeap getGlobalHeap() {
         return globalHeap;
     }
-
-    /**
-     * Retrieves the file allocation manager of the HDF5 file.
-     *
-     * @return the {@link HdfFileAllocation} instance
-     */
-//        @Override
-//        public HdfFileAllocation getFileAllocation() {
-//            return fileAllocation;
-//        }
 
     /**
      * Retrieves the seekable byte channel for reading the HDF5 file.

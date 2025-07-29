@@ -215,7 +215,7 @@ public class HdfDisplayUtils {
         System.out.println();
 
         Object resultArray = FlattenedArrayUtils.streamToNDArray(dataSource.streamFlattened(), dataSource.getShape(), clazz);
-        System.out.println(displayType(clazz, resultArray) + " stream   = " + displayValue(resultArray));
+        System.out.println(displayType(clazz, resultArray) + STREAM_EQUALS + displayValue(resultArray));
     }
 
     // Method to print flattened array according to shape
