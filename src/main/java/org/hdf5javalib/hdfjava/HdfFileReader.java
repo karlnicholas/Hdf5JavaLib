@@ -13,6 +13,7 @@ import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
@@ -503,7 +504,7 @@ public class HdfFileReader implements HdfDataFile {
             SeekableByteChannel fileChannel,
             long localHeapOffset,
             HdfDataFile hdfDataFile
-    ) throws IOException {
+    ) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
 
         fileChannel.position(localHeapOffset);
         ByteBuffer buffer = ByteBuffer.allocate(LOCAL_HEAP_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
@@ -538,7 +539,7 @@ public class HdfFileReader implements HdfDataFile {
             HdfFixedPoint freeListOffset,
             HdfFixedPoint dataSegmentAddress,
             HdfDataFile hdfDataFile
-    ) throws IOException {
+    ) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
 
         Map<HdfFixedPoint, HdfLocalHeapDataValue> data = new LinkedHashMap<>();
         fileChannel.position(dataSegmentAddress.getInstance(Long.class));
@@ -638,7 +639,7 @@ public class HdfFileReader implements HdfDataFile {
             SeekableByteChannel fileChannel,
             HdfDataFile hdfDataFile,
             String objectName
-    ) throws IOException {
+    ) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         long offset = fileChannel.position();
         ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
         fileChannel.read(buffer);
@@ -663,7 +664,7 @@ public class HdfFileReader implements HdfDataFile {
             SeekableByteChannel fileChannel,
             long objectHeaderOffset,
             HdfDataFile hdfDataFile
-    ) throws IOException {
+    ) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         fileChannel.position(objectHeaderOffset);
         ByteBuffer buffer = ByteBuffer.allocate(OBJECT_HEADER_PREFIX_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
         fileChannel.read(buffer);
@@ -705,7 +706,7 @@ public class HdfFileReader implements HdfDataFile {
                 HdfWriteUtils.hdfFixedPointFromValue(objectHeaderOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()));
     }
 
-    static HdfObjectHeaderPrefixV2 readV2ObjectHeader(SeekableByteChannel fileChannel, long objectHeaderAddress, HdfDataFile hdfDataFile) throws IOException {
+    static HdfObjectHeaderPrefixV2 readV2ObjectHeader(SeekableByteChannel fileChannel, long objectHeaderAddress, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         fileChannel.position(objectHeaderAddress);
 
         // --- 1. Read Signature, Version, and Flags ---
@@ -824,13 +825,9 @@ public class HdfFileReader implements HdfDataFile {
      *
      * @param offset the file offset where the global heap data begins
      */
-    private void initializeGlobalHeap(HdfFixedPoint offset) {
-        try {
-            fileChannel.position(offset.getInstance(Long.class));
-            globalHeap.initializeFromSeekableByteChannel(fileChannel, this);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private void initializeGlobalHeap(HdfFixedPoint offset) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
+        fileChannel.position(offset.getInstance(Long.class));
+        globalHeap.initializeFromSeekableByteChannel(fileChannel, this);
     }
 
     /**

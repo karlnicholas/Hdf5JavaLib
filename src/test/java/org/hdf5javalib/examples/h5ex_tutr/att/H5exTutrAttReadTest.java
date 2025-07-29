@@ -7,6 +7,8 @@ import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.channels.SeekableByteChannel;
 import java.util.List;
 
@@ -14,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class H5exTutrAttReadTest {
 
-    private double[][] toDoubleMatrix(HdfData[][] data) {
+    private double[][] toDoubleMatrix(HdfData[][] data) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         double[][] res = new double[data.length][data[0].length];
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[i].length; j++) {
@@ -24,7 +26,7 @@ public class H5exTutrAttReadTest {
         return res;
     }
 
-    private int[] toIntArray(HdfData[] data) {
+    private int[] toIntArray(HdfData[] data) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         int[] res = new int[data.length];
         for (int i = 0; i < data.length; i++) {
             res[i] = data[i].getInstance(Long.class).intValue();

@@ -3,6 +3,7 @@ package org.hdf5javalib.utils;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
+import org.hdf5javalib.hdffile.dataobjects.messages.AttributeMessage;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -74,19 +76,19 @@ public class HdfDisplayUtils {
         processFile(filePath, HdfDisplayUtils::displayData);
     }
 
-    public static void displayAttributes(HdfDataset dataSet) {
-        dataSet.getAttributeMessages().forEach(message -> {
+    public static void displayAttributes(HdfDataset dataSet) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
+        for (AttributeMessage message : dataSet.getAttributeMessages()) {
             HdfDataHolder dataHolder = message.getHdfDataHolder();
             if (dataHolder.getDimensionality() == 1) {
                 HdfData[] data = dataHolder.getAll(HdfData[].class);
-                System.out.println("Data = " + Arrays.toString(data));
+                log.info("Data = {}", Arrays.toString(data));
             } else if (dataHolder.getDimensionality() == 2) {
                 HdfData[][] data = dataHolder.getAll(HdfData[][].class);
-                for ( HdfData[] row : data) {
-                    System.out.println("Row = " + Arrays.toString(row));
+                for (HdfData[] row : data) {
+                    log.info("Row = {}", Arrays.toString(row));
                 }
             }
-        });
+        }
     }
 
     public static void displayData(SeekableByteChannel channel, HdfDataset ds, HdfFileReader reader) throws Exception {
@@ -124,14 +126,15 @@ public class HdfDisplayUtils {
      * @param <T>         the type of the data
      * @throws IOException if an I/O error occurs
      */
-    public static <T> void displayScalarData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+    public static <T> void displayScalarData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T result = dataSource.readScalar();
-        System.out.println(dataSet.getObjectName() + ":" + displayType(clazz, result) + READ_EQUALS + displayValue(result));
+        log.info("{}:{} read = {}", dataSet.getObjectName(), displayType(clazz, result), displayValue(result));
+
 
         result = dataSource.streamScalar().findFirst().orElseThrow();
-        System.out.println(dataSet.getObjectName() + ":" + displayType(clazz, result) + STREAM_EQUALS + displayValue(result));
+        log.info("{}:{} stream = {}", dataSet.getObjectName(), displayType(clazz, result), displayValue(result));
     }
 
     /**
@@ -149,18 +152,18 @@ public class HdfDisplayUtils {
      * @param <T>         the type of the data elements
      * @throws IOException if an I/O error occurs
      */
-    public static <T> void displayVectorData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+    public static <T> void displayVectorData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T[] resultArray = dataSource.readVector();
-        System.out.println(displayType(clazz, resultArray) + READ_EQUALS + displayValue(resultArray));
+        log.info("{} read = {}", displayType(clazz, resultArray), displayValue(resultArray));
 
-        System.out.print(displayType(clazz, resultArray) + STREAM_EQUALS);
+        log.info("{} stream = ", displayType(clazz, resultArray));
         String joined = dataSource.streamVector()
                 .map(HdfDisplayUtils::displayValue)
                 .collect(Collectors.joining(", "));
-        System.out.print(joined);
-        System.out.println("]");
+        log.info(joined);
+        log.info("]");
     }
 
     /**
@@ -178,18 +181,18 @@ public class HdfDisplayUtils {
      * @param <T>         the type of the data elements
      * @throws IOException if an I/O error occurs
      */
-    public static <T> void displayMatrixData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+    public static <T> void displayMatrixData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T[][] resultArray = dataSource.readMatrix();
-        System.out.println(displayType(clazz, resultArray) + READ_EQUALS + displayValue(resultArray));
+        log.info("{} read = {}", displayType(clazz, resultArray), displayValue(resultArray));
 
-        System.out.print(displayType(clazz, resultArray) + STREAM_EQUALS);
+        log.info("{} stream = ", displayType(clazz, resultArray));
         String joined = dataSource.streamMatrix()
                 .map(HdfDisplayUtils::displayValue)
                 .collect(Collectors.joining(", "));
-        System.out.print(joined);
-        System.out.println("]");
+        log.info(joined);
+        log.info("]");
     }
 
     /**
@@ -207,7 +210,7 @@ public class HdfDisplayUtils {
      * @param <T>         the type of the data elements
      * @throws IOException if an I/O error occurs
      */
-    private static <T> void displayNDimData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException {
+    private static <T> void displayNDimData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         System.out.print("read = " );

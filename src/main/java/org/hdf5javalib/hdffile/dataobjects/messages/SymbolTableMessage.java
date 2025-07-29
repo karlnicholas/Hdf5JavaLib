@@ -4,6 +4,8 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfReadUtils;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -65,7 +67,7 @@ public class SymbolTableMessage extends HdfMessage {
      * @param hdfDataFile the HDF5 file context for datatype resources
      * @return a new SymbolTableMessage instance
      */
-    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         HdfFixedPoint bTreeAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
         HdfFixedPoint localHeapAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
@@ -93,9 +95,19 @@ public class SymbolTableMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "SymbolTableMessage(" + (getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE) + "){" +
-                "bTreeAddress=" + bTreeAddress.getInstance(Long.class) +
-                ", localHeapAddress=" + localHeapAddress.getInstance(Long.class) +
-                '}';
+        try {
+            return "SymbolTableMessage(" + (getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE) + "){" +
+                    "bTreeAddress=" + bTreeAddress.getInstance(Long.class) +
+                    ", localHeapAddress=" + localHeapAddress.getInstance(Long.class) +
+                    '}';
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

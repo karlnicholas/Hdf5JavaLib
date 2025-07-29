@@ -1,13 +1,16 @@
 package org.hdf5javalib.hdffile.dataobjects.messages;
 
 import org.hdf5javalib.dataclass.HdfData;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datatype.Datatype;
 import org.hdf5javalib.datatype.StringDatatype;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfDataHolder;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -91,7 +94,7 @@ public class AttributeMessage extends HdfMessage {
      * @param hdfDataFile the HDF5 file context for global heap and other resources
      * @return a new AttributeMessage instance parsed from the data
      */
-    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Read the version (1 byte)
         int version = Byte.toUnsignedInt(buffer.get());
@@ -147,7 +150,14 @@ public class AttributeMessage extends HdfMessage {
         }
 
         // Case 2: Array data (dimensionality is 1 or more)
-        int[] dimensions = Arrays.stream(ds.getDimensions()).mapToInt(dim -> dim.getInstance(Long.class).intValue()).toArray();
+        int[] dimensions = new int[10];
+        int count = 0;
+        for (HdfFixedPoint dim : ds.getDimensions()) {
+            int i = dim.getInstance(Long.class).intValue();
+            if (dimensions.length == count) dimensions = Arrays.copyOf(dimensions, count * 2);
+            dimensions[count++] = i;
+        }
+        dimensions = Arrays.copyOfRange(dimensions, 0, count);
 
         // Step 1: Create the n-dimensional array dynamically.
         // Array.newInstance() is the key. It can create an array of any type with any dimensions.
@@ -172,7 +182,7 @@ public class AttributeMessage extends HdfMessage {
      * @param dt           The datatype object.
      * @param dtDataSize   The size of a single element.
      */
-    private static void populateArray(Object currentArray, int[] dimensions, int depth, ByteBuffer buffer, Datatype dt, int dtDataSize) {
+    private static void populateArray(Object currentArray, int[] dimensions, int depth, ByteBuffer buffer, Datatype dt, int dtDataSize) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         // Base Case: We've recursed to the innermost dimension.
         // The 'currentArray' is now a 1D array (HdfData[]) that we can fill directly.
         if (depth == dimensions.length - 1) {

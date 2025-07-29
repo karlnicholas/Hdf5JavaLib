@@ -5,6 +5,8 @@ import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -142,7 +144,7 @@ public class BitFieldDatatype implements Datatype {
      * @throws UnsupportedOperationException if no suitable converter is found for the specified class
      */
     @Override
-    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+    public <T> T getInstance(Class<T> clazz, byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         @SuppressWarnings("unchecked")
         DatatypeConverter<BitFieldDatatype, T> converter = (DatatypeConverter<BitFieldDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {

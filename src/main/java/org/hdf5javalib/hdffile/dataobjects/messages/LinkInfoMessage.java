@@ -4,6 +4,8 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfReadUtils;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Objects;
@@ -83,7 +85,7 @@ public class LinkInfoMessage extends HdfMessage {
      * @param hdfDataFile  The HDF5 file context for datatype resources.
      * @return A new LinkInfoMessage instance.
      */
-    public static HdfMessage parseHeaderMessage(int messageFlags, byte[] data, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(int messageFlags, byte[] data, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         byte version = buffer.get();
@@ -177,13 +179,23 @@ public class LinkInfoMessage extends HdfMessage {
      */
     @Override
     public String toString() {
-        return "LinkInfoMessage(" + (getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE) + "){" +
-                "version=" + version +
-                ", linkInfoFlags=" + String.format("0x%02X", linkInfoFlags) +
-                ", maximumCreationIndex=" + (maximumCreationIndex != null ? maximumCreationIndex : "N/A") +
-                ", fractalHeapAddress=" + fractalHeapAddress.getInstance(Long.class) +
-                ", v2BTreeNameIndexAddress=" + v2BTreeNameIndexAddress.getInstance(Long.class) +
-                ", v2BTreeCreationOrderIndexAddress=" + (v2BTreeCreationOrderIndexAddress != null ? v2BTreeCreationOrderIndexAddress.getInstance(Long.class) : "N/A") +
-                '}';
+        try {
+            return "LinkInfoMessage(" + (getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE) + "){" +
+                    "version=" + version +
+                    ", linkInfoFlags=" + String.format("0x%02X", linkInfoFlags) +
+                    ", maximumCreationIndex=" + (maximumCreationIndex != null ? maximumCreationIndex : "N/A") +
+                    ", fractalHeapAddress=" + fractalHeapAddress.getInstance(Long.class) +
+                    ", v2BTreeNameIndexAddress=" + v2BTreeNameIndexAddress.getInstance(Long.class) +
+                    ", v2BTreeCreationOrderIndexAddress=" + (v2BTreeCreationOrderIndexAddress != null ? v2BTreeCreationOrderIndexAddress.getInstance(Long.class) : "N/A") +
+                    '}';
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

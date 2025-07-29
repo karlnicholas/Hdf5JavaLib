@@ -10,6 +10,7 @@ import org.hdf5javalib.utils.FlattenedArrayUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -61,7 +62,7 @@ public class FixedPointReadTest {
     }
 
     private void testConverters(HdfDataset dataSet, SeekableByteChannel channel, HdfFileReader reader, Number expected,
-                                int byteSize) throws IOException {
+                                int byteSize) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         // BigInteger (always works)
         TypedDataSource<BigInteger> bigIntSource = new TypedDataSource<>(channel, reader, dataSet, BigInteger.class);
         assertEquals(BigInteger.valueOf(expected.longValue()), bigIntSource.readScalar());

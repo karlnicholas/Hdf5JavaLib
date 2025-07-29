@@ -4,6 +4,8 @@ import org.hdf5javalib.hdffile.dataobjects.messages.DatatypeMessage;
 import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
@@ -277,7 +279,7 @@ public class CompoundMemberDatatype implements Datatype {
      * @return an instance of type T created from the byte array
      */
     @Override
-    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+    public <T> T getInstance(Class<T> clazz, byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         return datatype.getInstance(clazz, bytes);
     }
 
@@ -298,7 +300,7 @@ public class CompoundMemberDatatype implements Datatype {
      * @return a string representation of the data
      */
     @Override
-    public String toString(byte[] bytes) {
+    public String toString(byte[] bytes) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         return datatype.toString(bytes);
     }
 

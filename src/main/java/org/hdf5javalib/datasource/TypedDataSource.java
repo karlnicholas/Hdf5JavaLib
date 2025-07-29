@@ -8,6 +8,7 @@ import org.hdf5javalib.utils.FlattenedArrayUtils;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Spliterator;
@@ -59,7 +60,7 @@ public class TypedDataSource<T> {
      * @param dataClass   the Java class of the data elements
      * @throws NullPointerException if any parameter is null
      */
-    public TypedDataSource(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataset, Class<T> dataClass) {
+    public TypedDataSource(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataset, Class<T> dataClass) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (channel == null || hdfDataFile == null || dataset == null || dataClass == null) {
             throw new NullPointerException("Parameters must not be null");
         }
@@ -90,7 +91,7 @@ public class TypedDataSource<T> {
      * @throws IOException              if an I/O error occurs
      * @throws IllegalArgumentException if the size exceeds Integer.MAX_VALUE
      */
-    private ByteBuffer readBytes(long offset, long size) throws IOException {
+    private ByteBuffer readBytes(long offset, long size) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (size > Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Size too large: " + size);
         }
@@ -103,7 +104,7 @@ public class TypedDataSource<T> {
      * @param buffer the ByteBuffer containing the element data
      * @return the element converted to the specified Java type
      */
-    private T populateElement(ByteBuffer buffer) {
+    private T populateElement(ByteBuffer buffer) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         byte[] bytes = new byte[elementSize];
         buffer.get(bytes);
         return dataset.getDatatype().getInstance(dataClass, bytes);
@@ -116,7 +117,7 @@ public class TypedDataSource<T> {
      * @param length the length of the vector
      * @return the populated vector
      */
-    private T[] populateVector(ByteBuffer buffer, int length) {
+    private T[] populateVector(ByteBuffer buffer, int length) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         @SuppressWarnings("unchecked")
         T[] vector = (T[]) Array.newInstance(dataClass, length);
         for (int i = 0; i < length; i++) {
@@ -133,7 +134,7 @@ public class TypedDataSource<T> {
      * @param cols   the number of columns
      * @return the populated matrix
      */
-    private T[][] populateMatrix(ByteBuffer buffer, int rows, int cols) {
+    private T[][] populateMatrix(ByteBuffer buffer, int rows, int cols) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         @SuppressWarnings("unchecked")
         T[][] matrix = (T[][]) Array.newInstance(dataClass, rows, cols);
         for (int i = 0; i < rows; i++) {
@@ -151,7 +152,7 @@ public class TypedDataSource<T> {
      * @param cols   the number of columns per slice
      * @return the populated tensor
      */
-    private T[][][] populateTensor(ByteBuffer buffer, int depth, int rows, int cols) {
+    private T[][][] populateTensor(ByteBuffer buffer, int depth, int rows, int cols) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         @SuppressWarnings("unchecked")
         T[][][] tensor = (T[][][]) Array.newInstance(dataClass, depth, rows, cols);
         for (int d = 0; d < depth; d++) {
@@ -169,7 +170,7 @@ public class TypedDataSource<T> {
      * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 0D
      */
-    public T readScalar() throws IOException {
+    public T readScalar() throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
         }
@@ -187,18 +188,14 @@ public class TypedDataSource<T> {
      * @throws UncheckedIOException  if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 0D
      */
-    public Stream<T> streamScalar() {
+    public Stream<T> streamScalar() throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (dimensions.length != 0) {
             throw new IllegalStateException("Dataset must be 0D(Scalar)");
         }
         if (!dataset.hasData()) {
             throw new IllegalStateException("Dataset has no data");
         }
-        try {
-            return Stream.of(readScalar());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        return Stream.of(readScalar());
     }
 
     /**
@@ -208,7 +205,7 @@ public class TypedDataSource<T> {
      * @throws UncheckedIOException  if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 0D
      */
-    public Stream<T> parallelStreamScalar() {
+    public Stream<T> parallelStreamScalar() throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         return streamScalar(); // Parallelism not applicable for single element
     }
 
@@ -221,7 +218,7 @@ public class TypedDataSource<T> {
      * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 1D
      */
-    public T[] readVector() throws IOException {
+    public T[] readVector() throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (dimensions.length != 1) {
             throw new IllegalStateException("Dataset must be 1D(Vector)");
         }
@@ -265,7 +262,7 @@ public class TypedDataSource<T> {
      * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 2D
      */
-    public T[][] readMatrix() throws IOException {
+    public T[][] readMatrix() throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (dimensions.length != 2) {
             throw new IllegalStateException("Dataset must be 2D(Matrix)");
         }
@@ -312,7 +309,7 @@ public class TypedDataSource<T> {
      * @throws IOException           if an I/O error occurs
      * @throws IllegalStateException if the dataset is not 3D
      */
-    public T[][][] readTensor() throws IOException {
+    public T[][][] readTensor() throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (dimensions.length != 3) {
             throw new IllegalStateException("Dataset must be 3D(Tensor)");
         }
@@ -359,7 +356,7 @@ public class TypedDataSource<T> {
      * @return the flattened array
      * @throws IOException if an I/O error occurs
      */
-    public T[] readFlattened() throws IOException {
+    public T[] readFlattened() throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         int totalElements = FlattenedArrayUtils.totalSize(dimensions);
         ByteBuffer buffer = readBytes(0, (long) elementSize * totalElements);
         return populateVector(buffer, totalElements);
@@ -408,15 +405,22 @@ public class TypedDataSource<T> {
             if (currentIndex >= limit) {
                 return false;
             }
+            long offset = currentIndex * recordSize;
+            ByteBuffer buffer = null;
             try {
-                long offset = currentIndex * recordSize;
-                ByteBuffer buffer = readBytes(offset, recordSize);
+                buffer = readBytes(offset, recordSize);
                 R record = populateRecord(buffer);
                 action.accept(record);
                 currentIndex++;
                 return true;
             } catch (IOException e) {
-                throw new UncheckedIOException(e);
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (InstantiationException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -448,7 +452,7 @@ public class TypedDataSource<T> {
          * @param buffer the ByteBuffer containing the record data
          * @return the populated record
          */
-        protected abstract R populateRecord(ByteBuffer buffer);
+        protected abstract R populateRecord(ByteBuffer buffer) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException;
 
         /**
          * Creates a new spliterator for a split range.
@@ -470,7 +474,7 @@ public class TypedDataSource<T> {
         }
 
         @Override
-        protected T populateRecord(ByteBuffer buffer) {
+        protected T populateRecord(ByteBuffer buffer) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
             return populateElement(buffer);
         }
 
@@ -492,7 +496,7 @@ public class TypedDataSource<T> {
         }
 
         @Override
-        protected T[] populateRecord(ByteBuffer buffer) {
+        protected T[] populateRecord(ByteBuffer buffer) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
             return populateVector(buffer, cols);
         }
 
@@ -516,7 +520,7 @@ public class TypedDataSource<T> {
         }
 
         @Override
-        protected T[][] populateRecord(ByteBuffer buffer) {
+        protected T[][] populateRecord(ByteBuffer buffer) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
             return populateMatrix(buffer, rows, cols);
         }
 
@@ -535,7 +539,7 @@ public class TypedDataSource<T> {
         }
 
         @Override
-        protected T populateRecord(ByteBuffer buffer) {
+        protected T populateRecord(ByteBuffer buffer) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
             return populateElement(buffer);
         }
 

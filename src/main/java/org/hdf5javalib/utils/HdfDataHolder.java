@@ -2,7 +2,9 @@ package org.hdf5javalib.utils;
 
 import org.hdf5javalib.dataclass.HdfData;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -207,7 +209,7 @@ public class HdfDataHolder implements Iterable<HdfData> {
      * @throws IllegalArgumentException if the requested type {@code clazz} is not
      *                                  compatible with the actual type of the data stored in the holder.
      */
-    public <T> T getAll(Class<T> clazz) {
+    public <T> T getAll(Class<T> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         if (clazz == null) {
             throw new IllegalArgumentException("The requested class cannot be null.");
         }
@@ -220,7 +222,7 @@ public class HdfDataHolder implements Iterable<HdfData> {
     }
 
     // Assuming this is inside your HdfDataHolder or similar class
-    private <T> T createAndConvertArray(Class<T> clazz, Object sourceArray, int dimensionality, int[] dimensions) {
+    private <T> T createAndConvertArray(Class<T> clazz, Object sourceArray, int dimensionality, int[] dimensions) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         // Compute the array depth and base type from clazz
         Class<?> baseType = clazz;
         int depth = 0;
@@ -247,7 +249,7 @@ public class HdfDataHolder implements Iterable<HdfData> {
     }
 
     // Recursive helper to fill the target array
-    private void fillArray(Object target, Object source, Class<?> baseType, int dimIndex, int[] dimensions) {
+    private void fillArray(Object target, Object source, Class<?> baseType, int dimIndex, int[] dimensions) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         if (dimIndex == dimensions.length - 1) {
             // Leaf level: convert and set elements
             int len = dimensions[dimIndex];

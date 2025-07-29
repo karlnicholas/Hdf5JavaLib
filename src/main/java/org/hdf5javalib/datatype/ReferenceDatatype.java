@@ -10,6 +10,8 @@ import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfDataHolder;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.*;
 
@@ -63,7 +65,7 @@ public class ReferenceDatatype implements Datatype {
         CONVERTERS.put(byte[].class, (bytes, dt) -> bytes.clone());
     }
 
-    private HdfReferenceInstance toHdfReferenceInstance(byte[] bytes, ReferenceDatatype dt) {
+    private HdfReferenceInstance toHdfReferenceInstance(byte[] bytes, ReferenceDatatype dt) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         return switch (getReferenceType(classBitField)) {
             case OBJECT1 -> new HdfObjectReference(bytes, dt, false);
             case DATASET_REGION1 -> new HdfDatasetRegionReference(bytes, dt, false);
@@ -118,7 +120,7 @@ public class ReferenceDatatype implements Datatype {
      * @throws UnsupportedOperationException if no suitable converter is found for the specified class
      */
     @Override
-    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+    public <T> T getInstance(Class<T> clazz, byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         @SuppressWarnings("unchecked")
         DatatypeConverter<ReferenceDatatype, T> converter = (DatatypeConverter<ReferenceDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
@@ -148,7 +150,7 @@ public class ReferenceDatatype implements Datatype {
         return value;
     }
 
-    public String toString(byte[] bytes) {
+    public String toString(byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
 //        if (bytes.length != size) throw new IllegalArgumentException("Byte array length mismatch");
 //        StringBuilder sb = new StringBuilder();
 //        for (byte b : bytes) sb.append(String.format("%02X", b));

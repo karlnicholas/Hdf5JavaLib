@@ -3,6 +3,7 @@ package org.hdf5javalib.hdffile.dataobjects.messages;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
@@ -159,7 +160,7 @@ public abstract class HdfMessage {
             long objectHeaderSize,
             HdfDataFile hdfDataFile,
             Function<ByteBuffer, OBJECT_HEADER_PREFIX> prefixFunction
-    ) throws IOException {
+    ) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         ByteBuffer buffer = ByteBuffer.allocate((int) objectHeaderSize).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buffer);
         buffer.flip();
@@ -189,7 +190,7 @@ public abstract class HdfMessage {
      * @return a new HdfMessage instance
      * @throws IllegalArgumentException if the message type is unknown
      */
-    protected static HdfMessage parseHeaderMessage(MessageType type, int flags, byte[] data, HdfDataFile hdfDataFile) {
+    protected static HdfMessage parseHeaderMessage(MessageType type, int flags, byte[] data, HdfDataFile hdfDataFile) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         log.trace("type:flags:length {} {} {}", type, flags, data.length);
         return switch (type) {
             case NIL_MESSAGE -> NilMessage.parseHeaderMessage(flags, data, hdfDataFile);
@@ -227,7 +228,7 @@ public abstract class HdfMessage {
             ObjectHeaderContinuationMessage objectHeaderContinuationMessage,
             HdfDataFile hdfDataFile,
             Function<ByteBuffer, OBJECT_HEADER_PREFIX> prefixFunction
-    ) throws IOException {
+    ) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().getInstance(Long.class);
         short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getInstance(Long.class).shortValue();
 

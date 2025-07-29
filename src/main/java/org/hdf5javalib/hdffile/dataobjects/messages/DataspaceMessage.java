@@ -5,6 +5,8 @@ import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.hdf5javalib.utils.HdfReadUtils;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
@@ -97,7 +99,7 @@ public class DataspaceMessage extends HdfMessage {
      * @param hdfDataFile the HDF5 file context for datatype resources
      * @return a new DataspaceMessage instance parsed from the data
      */
-    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         int version = Byte.toUnsignedInt(buffer.get());

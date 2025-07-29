@@ -2,6 +2,8 @@ package org.hdf5javalib.dataclass;
 
 import org.hdf5javalib.datatype.BitFieldDatatype;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 
@@ -168,7 +170,7 @@ public class HdfBitField implements HdfData {
      * @throws UnsupportedOperationException if the datatype cannot convert to the requested type
      */
     @Override
-    public <T> T getInstance(Class<T> clazz) {
+    public <T> T getInstance(Class<T> clazz) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         return datatype.getInstance(clazz, bytes);
     }
 

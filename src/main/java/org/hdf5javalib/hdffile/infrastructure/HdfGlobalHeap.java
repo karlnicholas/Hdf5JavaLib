@@ -8,6 +8,7 @@ import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
@@ -87,7 +88,7 @@ public class HdfGlobalHeap {
      * @throws IllegalArgumentException if the object ID is 0 or invalid
      * @throws IllegalStateException    if the heap or object is not found
      */
-    public byte[] getDataBytes(HdfFixedPoint heapOffset, int objectId) {
+    public byte[] getDataBytes(HdfFixedPoint heapOffset, int objectId) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (objectId == 0) {
             throw new IllegalArgumentException("Cannot request data bytes for Global Heap Object ID 0 (null terminator)");
         }
@@ -114,7 +115,7 @@ public class HdfGlobalHeap {
      * @param hdfDataFile the HDF5 file context
      * @throws IOException if an I/O error occurs or the heap data is invalid
      */
-    public void initializeFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException {
+    public void initializeFromSeekableByteChannel(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         long startOffset = fileChannel.position();
         ByteBuffer headerBuffer = ByteBuffer.allocate(GLOBAL_HEAP_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(headerBuffer);
@@ -264,6 +265,6 @@ public class HdfGlobalHeap {
          *
          * @param heapOffset the offset of the heap collection
          */
-        void initializeCallback(HdfFixedPoint heapOffset);
+        void initializeCallback(HdfFixedPoint heapOffset) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException;
     }
 }

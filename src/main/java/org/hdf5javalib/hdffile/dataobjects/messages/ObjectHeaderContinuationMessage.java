@@ -4,6 +4,8 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfReadUtils;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -69,7 +71,7 @@ public class ObjectHeaderContinuationMessage extends HdfMessage {
      * @param hdfDataFile the HDF5 file context for datatype resources
      * @return a new ObjectHeaderContinuationMessage instance
      */
-    public static ObjectHeaderContinuationMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
+    public static ObjectHeaderContinuationMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Parse the continuation offset and size
         HdfFixedPoint continuationOffset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);

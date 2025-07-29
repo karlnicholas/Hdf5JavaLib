@@ -3,6 +3,8 @@ package org.hdf5javalib.datatype;
 import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 import java.util.List;
@@ -63,7 +65,7 @@ public interface Datatype {
      * @param bytes the byte array containing the data to convert
      * @return an instance of type T created from the byte array
      */
-    <T> T getInstance(Class<T> clazz, byte[] bytes);
+    <T> T getInstance(Class<T> clazz, byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException;
 
     /**
      * Sets the global heap for the datatype.
@@ -78,7 +80,7 @@ public interface Datatype {
      * @param bytes the byte array to convert
      * @return a string representation of the byte array
      */
-    String toString(byte[] bytes);
+    String toString(byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException;
 
     HdfDataFile getDataFile();
 

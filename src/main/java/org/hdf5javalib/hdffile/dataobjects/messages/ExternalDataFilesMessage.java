@@ -6,6 +6,8 @@ import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.hdf5javalib.utils.HdfReadUtils;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -38,7 +40,7 @@ public class ExternalDataFilesMessage extends HdfMessage {
      * @param hdfDataFile  The HDF5 file context for datatype resources.
      * @return A new LinkInfoMessage instance.
      */
-    public static HdfMessage parseHeaderMessage(int messageFlags, byte[] data, HdfDataFile hdfDataFile) {
+    public static HdfMessage parseHeaderMessage(int messageFlags, byte[] data, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         byte version = buffer.get();

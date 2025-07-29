@@ -8,6 +8,8 @@ import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
@@ -147,7 +149,7 @@ public class VLenTypesReadTest {
         }
     }
 
-    private double[] toDoubleArray(HdfData[] data) {
+    private double[] toDoubleArray(HdfData[] data) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         double[] result = new double[data.length];
         for (int i = 0; i < data.length; i++) {
             result[i] = data[i].getInstance(Double.class);
@@ -155,7 +157,7 @@ public class VLenTypesReadTest {
         return result;
     }
 
-    private float[] toFloatArray(HdfData[] data) {
+    private float[] toFloatArray(HdfData[] data) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         float[] result = new float[data.length];
         for (int i = 0; i < data.length; i++) {
             result[i] = data[i].getInstance(Float.class);
@@ -163,7 +165,7 @@ public class VLenTypesReadTest {
         return result;
     }
 
-    private int[] toIntArray(HdfData[] data) {
+    private int[] toIntArray(HdfData[] data) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         int[] result = new int[data.length];
         for (int i = 0; i < data.length; i++) {
             result[i] = data[i].getInstance(Integer.class);
@@ -171,7 +173,7 @@ public class VLenTypesReadTest {
         return result;
     }
 
-    private short[] toShortArray(HdfData[] data) {
+    private short[] toShortArray(HdfData[] data) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         short[] result = new short[data.length];
         for (int i = 0; i < data.length; i++) {
             result[i] = data[i].getInstance(Short.class);

@@ -2,6 +2,8 @@ package org.hdf5javalib.dataclass;
 
 import org.hdf5javalib.datatype.EnumDatatype;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 
 /**
@@ -79,7 +81,17 @@ public class HdfEnum implements HdfData {
      */
     @Override
     public String toString() {
-        return datatype.getInstance(String.class, bytes);
+        try {
+            return datatype.getInstance(String.class, bytes);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -106,7 +118,7 @@ public class HdfEnum implements HdfData {
      * @throws UnsupportedOperationException if the datatype cannot convert to the requested type
      */
     @Override
-    public <T> T getInstance(Class<T> clazz) {
+    public <T> T getInstance(Class<T> clazz) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         return datatype.getInstance(clazz, bytes);
     }
 }

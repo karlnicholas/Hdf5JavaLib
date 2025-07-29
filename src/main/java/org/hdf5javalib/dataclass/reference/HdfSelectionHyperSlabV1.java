@@ -1,6 +1,7 @@
 package org.hdf5javalib.dataclass.reference;
 
 import org.hdf5javalib.dataclass.HdfData;
+import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.hdffile.dataobjects.messages.DataspaceMessage;
 import org.hdf5javalib.hdfjava.HdfDataFile;
@@ -9,6 +10,8 @@ import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.utils.FlattenedArrayUtils;
 import org.hdf5javalib.utils.HdfDataHolder;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
@@ -63,15 +66,21 @@ public class HdfSelectionHyperSlabV1 extends HdfDataspaceSelectionInstance {
     }
 
     @Override
-    public HdfDataHolder getData(HdfDataObject hdfDataObject, HdfDataFile hdfDataFile) {
+    public HdfDataHolder getData(HdfDataObject hdfDataObject, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         // Cast the data object to a dataset to access its properties
         HdfDataset hdfDataSet = (HdfDataset) hdfDataObject;
 
         // 1. Get the shape and strides of the full source dataset.
         DataspaceMessage dataspaceMessage = hdfDataSet.getObjectHeader().findMessageByType(DataspaceMessage.class).get();
-        int[] sourceShape = Arrays.stream(dataspaceMessage.getDimensions())
-                .mapToInt(dim -> dim.getInstance(Long.class).intValue())
-                .toArray();
+        int[] arr = new int[10];
+        int count = 0;
+        for (HdfFixedPoint dim : dataspaceMessage.getDimensions()) {
+            int intValue = dim.getInstance(Long.class).intValue();
+            if (arr.length == count) arr = Arrays.copyOf(arr, count * 2);
+            arr[count++] = intValue;
+        }
+        arr = Arrays.copyOfRange(arr, 0, count);
+        int[] sourceShape = arr;
         int[] sourceStrides = FlattenedArrayUtils.computeStrides(sourceShape);
 
         // 2. Write the predicate to check if an element is inside any hyperslab block.

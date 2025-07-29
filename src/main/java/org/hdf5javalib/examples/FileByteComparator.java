@@ -1,5 +1,8 @@
 package org.hdf5javalib.examples;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -15,6 +18,7 @@ import java.nio.file.Paths;
  * </p>
  */
 public class FileByteComparator {
+    private static final Logger log = LoggerFactory.getLogger(FileByteComparator.class);
     /**
      * Compares two files byte-by-byte and prints differences.
      * <p>
@@ -82,11 +86,11 @@ public class FileByteComparator {
             }
 
             if (!differencesFound) {
-                System.out.println("No differences found between the files.");
+                log.info("No differences found between the files.");
             }
 
         } catch (IOException e) {
-            System.err.println("Error reading files: " + e.getMessage());
+            log.error("Error reading files: " + e.getMessage());
             System.exit(1);
         }
     }

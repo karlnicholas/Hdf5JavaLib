@@ -8,6 +8,8 @@ import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfReadUtils;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -58,7 +60,9 @@ public class VariableLengthDatatype implements Datatype {
     private static final Map<Class<?>, DatatypeConverter<VariableLengthDatatype, ?>> CONVERTERS = new HashMap<>();
 
     static {
-        CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
+        CONVERTERS.put(String.class, (bytes, dt) -> {
+            return dt.toString(bytes);
+        });
         CONVERTERS.put(HdfVariableLength.class, HdfVariableLength::new);
         CONVERTERS.put(HdfData.class, HdfVariableLength::new);
         CONVERTERS.put(Object.class, (bytes, dt) -> dt.toObjectArray(bytes));
@@ -139,7 +143,7 @@ public class VariableLengthDatatype implements Datatype {
      * @throws UnsupportedOperationException if no suitable converter is found
      */
     @Override
-    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+    public <T> T getInstance(Class<T> clazz, byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         @SuppressWarnings("unchecked")
         DatatypeConverter<VariableLengthDatatype, T> converter = (DatatypeConverter<VariableLengthDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
@@ -159,7 +163,7 @@ public class VariableLengthDatatype implements Datatype {
      * @param bytes the byte array containing the variable-length descriptor
      * @return a string representation of the data, either a single string or an array of values
      */
-    public String toString(byte[] bytes) {
+    public String toString(byte[] bytes) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         int count = buffer.getInt();
         HdfFixedPoint offset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
@@ -183,7 +187,7 @@ public class VariableLengthDatatype implements Datatype {
         return hdfDataFile;
     }
 
-    private byte[][] toByteArrayArray(byte[] bytes) {
+    private byte[][] toByteArrayArray(byte[] bytes) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         int count = buffer.getInt();
         HdfFixedPoint offset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
@@ -198,7 +202,7 @@ public class VariableLengthDatatype implements Datatype {
         return resultArray;
     }
 
-    private Object toObjectArray(byte[] bytes) {
+    private Object toObjectArray(byte[] bytes) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         int count = buffer.getInt();
         HdfFixedPoint offset = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);

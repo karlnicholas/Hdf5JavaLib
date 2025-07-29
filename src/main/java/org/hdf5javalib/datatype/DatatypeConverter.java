@@ -1,5 +1,8 @@
 package org.hdf5javalib.datatype;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * A functional interface for converting byte data to a specific Java type using an HDF5 datatype.
  * <p>
@@ -20,5 +23,5 @@ public interface DatatypeConverter<D extends Datatype, T> {
      * @param datatype the HDF5 datatype used for conversion
      * @return an instance of the target type T
      */
-    T convert(byte[] bytes, D datatype);
+    T convert(byte[] bytes, D datatype) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException;
 }

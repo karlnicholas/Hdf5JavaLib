@@ -6,6 +6,8 @@ import org.hdf5javalib.hdffile.dataobjects.messages.DatatypeMessage;
 import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.*;
 
@@ -69,7 +71,9 @@ public class ArrayDatatype implements Datatype {
     private static final Map<Class<?>, DatatypeConverter<ArrayDatatype, ?>> CONVERTERS = new HashMap<>();
 
     static {
-        CONVERTERS.put(String.class, (bytes, dt) -> dt.toString(bytes));
+        CONVERTERS.put(String.class, (bytes, dt) -> {
+            return dt.toString(bytes);
+        });
         CONVERTERS.put(HdfArray.class, HdfArray::new);
         CONVERTERS.put(HdfData.class, HdfArray::new);
         CONVERTERS.put(HdfData[].class, (bytes, dt) -> dt.toHdfDataArray(bytes));
@@ -197,7 +201,7 @@ public class ArrayDatatype implements Datatype {
      * @throws UnsupportedOperationException if no suitable converter is found for the specified class
      */
     @Override
-    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+    public <T> T getInstance(Class<T> clazz, byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         @SuppressWarnings("unchecked")
         DatatypeConverter<ArrayDatatype, T> converter = (DatatypeConverter<ArrayDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {
@@ -218,7 +222,7 @@ public class ArrayDatatype implements Datatype {
      * @return a string representation of the array elements
      * @throws IllegalArgumentException if the byte array length does not match the datatype size
      */
-    public String toString(byte[] bytes) {
+    public String toString(byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         if (bytes.length != size) {
             throw new IllegalArgumentException("Byte array length (" + bytes.length +
                     ") does not match datatype size (" + size + ")");
@@ -247,7 +251,7 @@ public class ArrayDatatype implements Datatype {
      * @return an array of HdfData objects representing the array elements
      * @throws IllegalArgumentException if the byte array length does not match the datatype size
      */
-    public HdfData[] toHdfDataArray(byte[] bytes) {
+    public HdfData[] toHdfDataArray(byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         if (bytes.length != size) {
             throw new IllegalArgumentException("Byte array length (" + bytes.length +
                     ") does not match datatype size (" + size + ")");

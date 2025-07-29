@@ -4,12 +4,15 @@ import org.hdf5javalib.dataclass.HdfCompound;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.datatype.CompoundDatatype;
+import org.hdf5javalib.datatype.CompoundMemberDatatype;
 import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -28,82 +31,22 @@ public class CompoundReadTest {
             new BigDecimal("7.5000000"), new BigDecimal("8.7500000"), new BigDecimal("9.0000000"),
             new BigDecimal("10.2500000"));
 
-    public static class CompoundExample {
-        private final Long recordId;
-        private final String fixedStr;
-        private final String varStr;
-        private final Float floatVal;
-        private final Double doubleVal;
-        private final Byte int8_Val;
-        private final Short int16_Val;
-        private final Integer int32_Val;
-        private final Long int64_Val;
-        private final Short uint8_Val;
-        private final Integer uint16_Val;
-        private final Long uint32_Val;
-        private final BigInteger uint64_Val;
-        private final BigDecimal scaledUintVal;
-
-        public CompoundExample(Long recordId, String fixedStr, String varStr, Float floatVal, Double doubleVal, Byte int8Val, Short int16Val, Integer int32Val, Long int64Val, Short uint8Val, Integer uint16Val, Long uint32Val, BigInteger uint64Val, BigDecimal scaledUintVal) {
-            this.recordId = recordId;
-            this.fixedStr = fixedStr;
-            this.varStr = varStr;
-            this.floatVal = floatVal;
-            this.doubleVal = doubleVal;
-            int8_Val = int8Val;
-            int16_Val = int16Val;
-            int32_Val = int32Val;
-            int64_Val = int64Val;
-            uint8_Val = uint8Val;
-            uint16_Val = uint16Val;
-            uint32_Val = uint32Val;
-            uint64_Val = uint64Val;
-            this.scaledUintVal = scaledUintVal;
-        }
-
-        public Long getRecordId() {
-            return recordId;
-        }
-        public String getFixedStr() {
-            return fixedStr;
-        }
-        public String getVarStr() {
-            return varStr;
-        }
-        public Float getFloatVal() {
-            return floatVal;
-        }
-        public Double getDoubleVal() {
-            return doubleVal;
-        }
-        public Byte getInt8_Val() {
-            return int8_Val;
-        }
-        public Short getInt16_Val() {
-            return int16_Val;
-        }
-        public Integer getInt32_Val() {
-            return int32_Val;
-        }
-        public Long getInt64_Val() {
-            return int64_Val;
-        }
-        public Short getUint8_Val() {
-            return uint8_Val;
-        }
-        public Integer getUint16_Val() {
-            return uint16_Val;
-        }
-        public Long getUint32_Val() {
-            return uint32_Val;
-        }
-        public BigInteger getUint64_Val() {
-            return uint64_Val;
-        }
-        public BigDecimal getScaledUintVal() {
-            return scaledUintVal;
-        }
-    }
+    public record CompoundExample(
+            Long recordId,
+            String fixedStr,
+            String varStr,
+            Float floatVal,
+            Double doubleVal,
+            Byte int8_Val,
+            Short int16_Val,
+            Integer int32_Val,
+            Long int64_Val,
+            Short uint8_Val,
+            Integer uint16_Val,
+            Long uint32_Val,
+            BigInteger uint64_Val,
+            BigDecimal scaledUintVal
+    ) {}
 
     public static class MonitoringData {
         private String siteName;
@@ -148,7 +91,7 @@ public class CompoundReadTest {
     static void registerCustomConverter() {
         CompoundDatatype.addConverter(MonitoringData.class, (bytes, datatype) -> {
             MonitoringData monitoringData = new MonitoringData();
-            datatype.getMembers().forEach(member -> {
+            for (CompoundMemberDatatype member : datatype.getMembers()) {
                 byte[] memberBytes = Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset() + member.getSize());
                 switch (member.getName()) {
                     case "recordId" -> {
@@ -158,9 +101,10 @@ public class CompoundReadTest {
                     case "fixedStr" -> monitoringData.setSiteName(member.getInstance(String.class, memberBytes));
                     case "floatVal" -> monitoringData.setAirQualityIndex(member.getInstance(Float.class, memberBytes));
                     case "doubleVal" -> monitoringData.setTemperature(member.getInstance(Double.class, memberBytes));
-                    default -> {} // Ignore other fields
+                    default -> {
+                    } // Ignore other fields
                 }
-            });
+            }
             return monitoringData;
         });
     }
@@ -177,20 +121,20 @@ public class CompoundReadTest {
             assertEquals(1000, compoundRecords.length);
 
             CompoundExample first = compoundRecords[0];
-            assertEquals(1000L, first.getRecordId());
-            assertEquals("FixedData", first.getFixedStr());
-            assertEquals("varStr:1", first.getVarStr());
-            assertEquals(0.0, first.getFloatVal(), 0.0);
-            assertEquals(0.0, first.getDoubleVal(), 0.0);
-            assertEquals(-128, first.getInt8_Val().byteValue());
-            assertEquals(0, first.getUint8_Val().shortValue());
-            assertEquals(-32768, first.getInt16_Val().shortValue());
-            assertEquals(0, first.getUint16_Val().intValue());
-            assertEquals(-2147483648, first.getInt32_Val().intValue());
-            assertEquals(0L, first.getUint32_Val().longValue());
-            assertEquals(-9223372036854775808L, first.getInt64_Val().longValue());
-            assertEquals(BigInteger.ZERO, first.getUint64_Val());
-            assertEquals(new BigDecimal("1.0000000"), first.getScaledUintVal());
+            assertEquals(1000L, first.recordId());
+            assertEquals("FixedData", first.fixedStr());
+            assertEquals("varStr:1", first.varStr());
+            assertEquals(0.0, first.floatVal(), 0.0);
+            assertEquals(0.0, first.doubleVal(), 0.0);
+            assertEquals(-128, first.int8_Val().byteValue());
+            assertEquals(0, first.uint8_Val().shortValue());
+            assertEquals(-32768, first.int16_Val().shortValue());
+            assertEquals(0, first.uint16_Val().intValue());
+            assertEquals(-2147483648, first.int32_Val().intValue());
+            assertEquals(0L, first.uint32_Val().longValue());
+            assertEquals(-9223372036854775808L, first.int64_Val().longValue());
+            assertEquals(BigInteger.ZERO, first.uint64_Val());
+            assertEquals(new BigDecimal("1.0000000"), first.scaledUintVal());
 
             // Test with HdfCompound
             TypedDataSource<HdfCompound> hdfCompoundSource = new TypedDataSource<>(channel, reader, dataSet, HdfCompound.class);
@@ -211,8 +155,22 @@ public class CompoundReadTest {
 
             // Test BigDecimal extraction from HdfCompound
             List<BigDecimal> firstTenBigDecimals = hdfCompoundSource.streamVector()
-                    .filter(c -> c.getMembers().get(0).getInstance(Long.class) < 1010)
-                    .map(c -> c.getMembers().get(13).getInstance(BigDecimal.class))
+                    .filter(c -> {
+                        try {
+                            return c.getMembers().get(0).getInstance(Long.class) < 1010;
+                        } catch (IOException | InvocationTargetException | InstantiationException |
+                                 IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .map(c -> {
+                        try {
+                            return c.getMembers().get(13).getInstance(BigDecimal.class);
+                        } catch (IOException | InvocationTargetException | InstantiationException |
+                                 IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
                     .toList();
             assertEquals(10, firstTenBigDecimals.size());
             assertEquals(TEN_BIG_DECIMALS, firstTenBigDecimals);

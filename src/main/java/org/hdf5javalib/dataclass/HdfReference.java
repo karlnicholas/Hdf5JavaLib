@@ -2,6 +2,8 @@ package org.hdf5javalib.dataclass;
 
 import org.hdf5javalib.datatype.ReferenceDatatype;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
@@ -30,7 +32,17 @@ public class HdfReference implements HdfData {
 
     @Override
     public String toString() {
-        return datatype.toString(bytes);
+        try {
+            return datatype.toString(bytes);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -39,7 +51,7 @@ public class HdfReference implements HdfData {
     }
 
     @Override
-    public <T> T getInstance(Class<T> clazz) {
+    public <T> T getInstance(Class<T> clazz) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         return datatype.getInstance(clazz, bytes);
     }
 

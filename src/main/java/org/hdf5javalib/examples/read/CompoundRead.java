@@ -7,6 +7,7 @@ import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -134,7 +135,7 @@ public class CompoundRead {
      * @param hdfDataFile         the HDF5 file context
      * @throws IOException if an I/O error occurs
      */
-    public void displayData(SeekableByteChannel seekableByteChannel, HdfDataset dataSet, HdfDataFile hdfDataFile) throws IOException {
+    public void displayData(SeekableByteChannel seekableByteChannel, HdfDataset dataSet, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         System.out.println("Ten Rows:");
         new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class)
                 .streamVector()

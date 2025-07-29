@@ -4,6 +4,7 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datatype.FixedPointDatatype;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
@@ -95,7 +96,7 @@ public class HdfReadUtils {
     public static HdfFixedPoint readHdfFixedPointFromBuffer(
             FixedPointDatatype fixedPointDatatype,
             ByteBuffer buffer
-    ) {
+    ) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         byte[] bytes = new byte[fixedPointDatatype.getSize()];
         buffer.get(bytes);
         return fixedPointDatatype.getInstance(HdfFixedPoint.class, bytes);

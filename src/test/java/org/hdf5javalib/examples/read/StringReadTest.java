@@ -8,6 +8,8 @@ import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -46,7 +48,19 @@ public class StringReadTest {
             TypedDataSource<HdfString> hdfStringDataSource = new TypedDataSource<>(channel, reader, dataSet, HdfString.class);
             HdfString[] hdfStringReadData = hdfStringDataSource.readVector();
             String[] hdfStringReadDataAsStrings = Arrays.stream(hdfStringReadData)
-                    .map(hdfString -> hdfString.getInstance(String.class))
+                    .map(hdfString -> {
+                        try {
+                            return hdfString.getInstance(String.class);
+                        } catch (InvocationTargetException e) {
+                            throw new RuntimeException(e);
+                        } catch (InstantiationException e) {
+                            throw new RuntimeException(e);
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
                     .toArray(String[]::new);
             assertArrayEquals(ASCII_EXPECTED, hdfStringReadDataAsStrings);
 
@@ -54,7 +68,19 @@ public class StringReadTest {
             TypedDataSource<HdfData> hdfDataSource = new TypedDataSource<>(channel, reader, dataSet, HdfData.class);
             HdfData[] hdfDataReadData = hdfDataSource.readVector();
             String[] hdfDataReadDataAsStrings = Arrays.stream(hdfDataReadData)
-                    .map(hdfData -> hdfData.getInstance(String.class))
+                    .map(hdfData -> {
+                        try {
+                            return hdfData.getInstance(String.class);
+                        } catch (InvocationTargetException e) {
+                            throw new RuntimeException(e);
+                        } catch (InstantiationException e) {
+                            throw new RuntimeException(e);
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
                     .toArray(String[]::new);
             assertArrayEquals(ASCII_EXPECTED, hdfDataReadDataAsStrings);
 
@@ -85,7 +111,19 @@ public class StringReadTest {
             TypedDataSource<HdfString> hdfStringDataSource = new TypedDataSource<>(channel, reader, dataSet, HdfString.class);
             HdfString[] hdfStringReadData = hdfStringDataSource.readVector();
             String[] hdfStringReadDataAsStrings = Arrays.stream(hdfStringReadData)
-                    .map(hdfString -> hdfString.getInstance(String.class))
+                    .map(hdfString -> {
+                        try {
+                            return hdfString.getInstance(String.class);
+                        } catch (InvocationTargetException e) {
+                            throw new RuntimeException(e);
+                        } catch (InstantiationException e) {
+                            throw new RuntimeException(e);
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
                     .toArray(String[]::new);
             assertArrayEquals(UTF8_EXPECTED, hdfStringReadDataAsStrings);
 
@@ -93,7 +131,19 @@ public class StringReadTest {
             TypedDataSource<HdfData> hdfDataSource = new TypedDataSource<>(channel, reader, dataSet, HdfData.class);
             HdfData[] hdfDataReadData = hdfDataSource.readVector();
             String[] hdfDataReadDataAsStrings = Arrays.stream(hdfDataReadData)
-                    .map(hdfData -> hdfData.getInstance(String.class))
+                    .map(hdfData -> {
+                        try {
+                            return hdfData.getInstance(String.class);
+                        } catch (InvocationTargetException e) {
+                            throw new RuntimeException(e);
+                        } catch (InstantiationException e) {
+                            throw new RuntimeException(e);
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
                     .toArray(String[]::new);
             assertArrayEquals(UTF8_EXPECTED, hdfDataReadDataAsStrings);
 

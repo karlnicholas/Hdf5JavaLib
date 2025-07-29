@@ -4,12 +4,14 @@ import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.utils.HdfDataHolder;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 
 import static org.hdf5javalib.dataclass.reference.HdfDataspaceSelectionInstance.HdfSelectionType.*;
 
 public abstract class HdfDataspaceSelectionInstance {
-    public abstract HdfDataHolder getData(HdfDataObject hdfDataObject, HdfDataFile hdfDataFile);
+    public abstract HdfDataHolder getData(HdfDataObject hdfDataObject, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException;
 
     public enum HdfSelectionType {
         H5S_SEL_NONE(0, "Nothing selected"),

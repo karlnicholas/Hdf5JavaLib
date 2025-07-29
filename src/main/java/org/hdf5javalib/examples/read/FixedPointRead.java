@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -104,7 +105,7 @@ public class FixedPointRead {
      * @param dataSet     the scalar dataset to process
      * @throws IOException if an I/O error occurs
      */
-    void tryDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
+    void tryDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, hdfDataFile, dataSet, BigInteger.class);
         BigInteger allData = dataSource.readScalar();
         System.out.println("Scalar dataset name = " + dataSet.getObjectName());
@@ -126,7 +127,7 @@ public class FixedPointRead {
      * @param dataSet     the scalar dataset to process
      * @throws IOException if an I/O error occurs
      */
-    void tryScalarDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
+    void tryScalarDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, hdfDataFile, dataSet, BigInteger.class);
         BigInteger allData = dataSource.readScalar();
         System.out.println("Scalar dataset name = " + dataSet.getObjectName());
@@ -148,7 +149,7 @@ public class FixedPointRead {
      * @param dataSet     the vector dataset to process
      * @throws IOException if an I/O error occurs
      */
-    void tryVectorSpliterator(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
+    void tryVectorSpliterator(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, BigInteger.class);
         BigInteger[] allData = dataSource.readVector();
         System.out.println("Vector readAll stats  = " + Arrays.stream(allData).collect(Collectors.summarizingInt(BigInteger::intValue)));
@@ -174,7 +175,7 @@ public class FixedPointRead {
      * @param dataSet     the matrix dataset to process
      * @throws IOException if an I/O error occurs
      */
-    void tryMatrixSpliterator(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
+    void tryMatrixSpliterator(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<BigDecimal> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, BigDecimal.class);
         BigDecimal[][] allData = dataSource.readMatrix();
         // Print the matrix values
@@ -240,7 +241,7 @@ public class FixedPointRead {
      * @param dataSet     the 4D dataset to process
      * @throws IOException if an I/O error occurs
      */
-    void display4DData(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
+    void display4DData(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<Integer> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, Integer.class);
         // Print all values in order
         final Integer[] flattenedData = dataSource.readFlattened();
@@ -289,7 +290,7 @@ public class FixedPointRead {
      * @param dataSet     the 4D dataset to process
      * @throws IOException if an I/O error occurs
      */
-    void displaySalesCube(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException {
+    void displaySalesCube(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<Double> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, Double.class);
         int[] shape = dataSource.getShape(); // Should be [60, 100, 50]
         Double[][] sales2024Jan = (Double[][]) FlattenedArrayUtils.sliceStream(

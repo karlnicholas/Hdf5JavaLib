@@ -7,6 +7,7 @@ import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfReadUtils;
 
+import java.io.IOException;
 import java.lang.reflect.*;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -207,7 +208,7 @@ public class CompoundDatatype implements Datatype {
     }
 
     // Updated private method for HdfData[] conversion
-    private HdfData[] toHdfDataArray(byte[] bytes) {
+    private HdfData[] toHdfDataArray(byte[] bytes) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         HdfData[] result = new HdfData[members.size()];
         for (int i = 0; i < members.size(); i++) {
             CompoundMemberDatatype member = members.get(i);
@@ -297,7 +298,7 @@ public class CompoundDatatype implements Datatype {
      * @throws IllegalArgumentException      if POJO conversion fails
      */
     @Override
-    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+    public <T> T getInstance(Class<T> clazz, byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         // Check CONVERTERS first
         @SuppressWarnings("unchecked")
         DatatypeConverter<CompoundDatatype, T> converter = (DatatypeConverter<CompoundDatatype, T>) CONVERTERS.get(clazz);
@@ -312,11 +313,11 @@ public class CompoundDatatype implements Datatype {
 
         // Fall back to toPOJO for non-primitive, unregistered types
         if (!clazz.isPrimitive()) {
-            try {
+//            try {
                 return toPOJO(clazz, bytes);
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Failed to convert to POJO: " + clazz, e);
-            }
+//            } catch (Exception e) {
+//                throw new IllegalArgumentException("Failed to convert to POJO: " + clazz, e);
+//            }
         }
 
         throw new UnsupportedOperationException("Unknown type: " + clazz);
@@ -331,7 +332,7 @@ public class CompoundDatatype implements Datatype {
      * @return an instance of type T populated with data from the byte array
      * @throws RuntimeException if reflection fails or a field/constructor is not found
      */
-    public <T> T toPOJO(Class<T> clazz, byte[] bytes) {
+    public <T> T toPOJO(Class<T> clazz, byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         if (bytes == null || bytes.length == 0) {
             throw new IllegalArgumentException("Byte array cannot be null or empty");
         }
@@ -344,7 +345,7 @@ public class CompoundDatatype implements Datatype {
         // Get cached member map (instance-level cache since members are per-instance)
         Map<String, CompoundMemberDatatype> nameToMemberMap = getCachedMemberMap();
 
-        try {
+//        try {
             T instance;
             if (clazz.isRecord()) {
                 instance = createRecordInstance(clazz, bytes, nameToMemberMap);
@@ -352,9 +353,9 @@ public class CompoundDatatype implements Datatype {
                 instance = createClassInstance(clazz, bytes, nameToFieldMap, nameToMemberMap);
             }
             return instance;
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to create instance of " + clazz.getName(), e);
-        }
+//        } catch (Exception e) {
+//            throw new IllegalStateException("Failed to create instance of " + clazz.getName(), e);
+//        }
     }
 
     // Helper method to get cached member map
@@ -372,7 +373,7 @@ public class CompoundDatatype implements Datatype {
 
     // Extracted record creation logic with caching
     private <T> T createRecordInstance(Class<T> clazz, byte[] bytes,
-                                       Map<String, CompoundMemberDatatype> nameToMemberMap) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+                                       Map<String, CompoundMemberDatatype> nameToMemberMap) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
 
         // Cache record components
         RecordComponent[] components = CLASS_RECORD_COMPONENTS_CACHE.computeIfAbsent(clazz,
@@ -416,15 +417,13 @@ public class CompoundDatatype implements Datatype {
     // Extracted class creation logic with caching
     private <T> T createClassInstance(Class<T> clazz, byte[] bytes,
                                       Map<String, Field> nameToFieldMap,
-                                      Map<String, CompoundMemberDatatype> nameToMemberMap) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+                                      Map<String, CompoundMemberDatatype> nameToMemberMap) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
 
         // Cache no-arg constructor
         @SuppressWarnings("unchecked")
         Constructor<T> constructor = (Constructor<T>) CLASS_CONSTRUCTOR_CACHE.computeIfAbsent(clazz, c -> {
             try {
-                Constructor<T> ctor = clazz.getDeclaredConstructor();
-                ctor.setAccessible(true);
-                return ctor;
+                return clazz.getDeclaredConstructor();
             } catch (NoSuchMethodException e) {
                 // Fallback to parameterized constructor
                 Constructor<?>[] constructors = clazz.getDeclaredConstructors();
@@ -432,7 +431,6 @@ public class CompoundDatatype implements Datatype {
                         .filter(ct -> ct.getParameterCount() <= nameToMemberMap.size())
                         .findFirst()
                         .orElseThrow(() -> new IllegalStateException("No suitable constructor for " + clazz.getName()));
-                fallback.setAccessible(true);
                 return fallback;
             }
         });
@@ -454,10 +452,10 @@ public class CompoundDatatype implements Datatype {
         for (CompoundMemberDatatype member : nameToMemberMap.values()) {
             Field field = nameToFieldMap.get(member.getName());
             if (field != null) {
-                field.setAccessible(true);
                 Object value = member.getInstance(field.getType(), Arrays.copyOfRange(
                         bytes, member.getOffset(), member.getOffset() + member.getSize()));
                 if (field.getType().isAssignableFrom(value.getClass())) {
+                    field.setAccessible(true);
                     field.set(instance, value);
                 }
             }
@@ -491,10 +489,13 @@ public class CompoundDatatype implements Datatype {
      * @return a string representation of the members' values
      */
     @Override
-    public String toString(byte[] bytes) {
-        return members.stream().map(m ->
-                m.toString(Arrays.copyOfRange(bytes, m.getOffset(), m.getOffset() + m.getSize()))
-        ).collect(Collectors.joining(", "));
+    public String toString(byte[] bytes) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        StringJoiner joiner = new StringJoiner(", ");
+        for (CompoundMemberDatatype m : members) {
+            String string = m.toString(Arrays.copyOfRange(bytes, m.getOffset(), m.getOffset() + m.getSize()));
+            joiner.add(string);
+        }
+        return joiner.toString();
     }
 
     @Override
@@ -567,7 +568,6 @@ public class CompoundDatatype implements Datatype {
                         .map(RecordComponent::getType)
                         .toArray(Class<?>[]::new);
                 Constructor<?> constructor = type.getDeclaredConstructor(paramTypes);
-                constructor.setAccessible(true);
                 Object[] args = new Object[paramTypes.length];
                 for (int i = 0; i < paramTypes.length; i++) {
                     args[i] = getDefaultValue(paramTypes[i]); // Recursive call for nested types
@@ -585,6 +585,6 @@ public class CompoundDatatype implements Datatype {
 
     @Override
     public List<ReferenceDatatype> getReferenceInstances() {
-        return members.stream().flatMap(m -> m.getReferenceInstances().stream()).collect(Collectors.toList());
+        return members.stream().flatMap(m -> m.getReferenceInstances().stream()).toList();
     }
 }

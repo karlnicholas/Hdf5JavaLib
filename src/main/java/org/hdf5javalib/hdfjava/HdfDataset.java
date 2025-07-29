@@ -9,6 +9,7 @@ import org.hdf5javalib.hdffile.infrastructure.HdfBTreeV1;
 import org.hdf5javalib.hdffile.infrastructure.HdfChunkBTreeEntry;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
@@ -86,15 +87,17 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
      *
      * @return an array of dimension sizes
      */
-    public int[] extractDimensions() {
-        return objectHeader.findMessageByType(DataspaceMessage.class).map(dataspace -> {
-            HdfFixedPoint[] dims = dataspace.getDimensions();
-            int[] result = new int[dims.length];
-            for (int i = 0; i < dims.length; i++) {
-                result[i] = dims[i].getInstance(Long.class).intValue();
-            }
-            return result;
-        }).orElse(new int[0]);
+    public int[] extractDimensions() throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
+        Optional<DataspaceMessage> optDSM = objectHeader.findMessageByType(DataspaceMessage.class);
+        if ( optDSM.isEmpty() ) {
+            return new int[0];
+        }
+        HdfFixedPoint[] dims = optDSM.get().getDimensions();
+        int[] result = new int[dims.length];
+        for (int i = 0; i < dims.length; i++) {
+            result[i] = dims[i].getInstance(Long.class).intValue();
+        }
+        return result;
     }
 
     public int getElementSize() {
@@ -148,7 +151,7 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
     }
 
     // In the method:
-    public synchronized ByteBuffer getDatasetData(SeekableByteChannel channel, long offset, long size) throws IOException {
+    public synchronized ByteBuffer getDatasetData(SeekableByteChannel channel, long offset, long size) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         DataLayoutMessage.DataLayoutStorage dataLayoutStorage = objectHeader.findMessageByType(DataLayoutMessage.class).orElseThrow().getDataLayoutStorage();
 
         if (dataLayoutStorage instanceof DataLayoutMessage.CompactStorage compact) {

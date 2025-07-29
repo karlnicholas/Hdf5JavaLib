@@ -4,6 +4,8 @@ import org.hdf5javalib.datatype.FixedPointDatatype;
 import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -145,7 +147,17 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
      */
     @Override
     public String toString() {
-        return datatype.getInstance(String.class, bytes);
+        try {
+            return datatype.getInstance(String.class, bytes);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -177,7 +189,7 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
      * @throws UnsupportedOperationException if the datatype cannot convert to the requested type
      */
     @Override
-    public <T> T getInstance(Class<T> clazz) {
+    public <T> T getInstance(Class<T> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         return datatype.getInstance(clazz, bytes);
     }
 

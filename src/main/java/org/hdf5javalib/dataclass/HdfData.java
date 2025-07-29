@@ -1,5 +1,7 @@
 package org.hdf5javalib.dataclass;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 
 /**
@@ -38,5 +40,5 @@ public interface HdfData {
      * @return an instance of type T created from the data
      * @throws UnsupportedOperationException if the datatype cannot convert to the requested type
      */
-    <T> T getInstance(Class<T> clazz);
+    <T> T getInstance(Class<T> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException;
 }

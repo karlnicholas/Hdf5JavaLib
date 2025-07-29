@@ -5,6 +5,8 @@ import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -120,7 +122,7 @@ public class StringDatatype implements Datatype {
      * @throws UnsupportedOperationException if no suitable converter is found
      */
     @Override
-    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+    public <T> T getInstance(Class<T> clazz, byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         @SuppressWarnings("unchecked")
         DatatypeConverter<StringDatatype, T> converter = (DatatypeConverter<StringDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {

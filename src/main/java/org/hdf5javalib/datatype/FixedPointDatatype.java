@@ -6,6 +6,8 @@ import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfReadUtils;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -455,7 +457,7 @@ public class FixedPointDatatype implements Datatype {
      * @throws UnsupportedOperationException if no suitable converter is found
      */
     @Override
-    public <T> T getInstance(Class<T> clazz, byte[] bytes) {
+    public <T> T getInstance(Class<T> clazz, byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         @SuppressWarnings("unchecked")
         DatatypeConverter<FixedPointDatatype, T> converter = (DatatypeConverter<FixedPointDatatype, T>) CONVERTERS.get(clazz);
         if (converter != null) {

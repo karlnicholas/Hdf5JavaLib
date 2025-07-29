@@ -14,24 +14,24 @@ public class AllocationRecord {
     private HdfFixedPoint offset;
     private HdfFixedPoint size;
 
-    /**
-     * Constructs an allocation record.
-     *
-     * @param type   the allocation type
-     * @param name   the name of the allocation
-     * @param offset the starting offset
-     * @param size   the size of the allocation
-     */
-    public AllocationRecord(AllocationType type, String name, HdfFixedPoint offset, HdfFixedPoint size, HdfFileAllocation fileAllocation) {
-        this.type = type;
-        this.name = name;
-        this.offset = offset;
-        this.size = size;
-        // superblock problem
-        if (fileAllocation != null) {
-            fileAllocation.addAllocationBlock(this);
-        }
-    }
+//    /**
+//     * Constructs an allocation record.
+//     *
+//     * @param type   the allocation type
+//     * @param name   the name of the allocation
+//     * @param offset the starting offset
+//     * @param size   the size of the allocation
+//     */
+//    public AllocationRecord(AllocationType type, String name, HdfFixedPoint offset, HdfFixedPoint size, HdfFileAllocation fileAllocation) {
+//        this.type = type;
+//        this.name = name;
+//        this.offset = offset;
+//        this.size = size;
+//        // superblock problem
+//        if (fileAllocation != null) {
+//            fileAllocation.addAllocationBlock(this);
+//        }
+//    }
 
     /**
      * Gets the allocation type.

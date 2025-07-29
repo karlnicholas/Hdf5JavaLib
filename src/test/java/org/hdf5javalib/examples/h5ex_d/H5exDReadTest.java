@@ -9,6 +9,8 @@ import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.nio.channels.SeekableByteChannel;
 import java.util.List;
@@ -17,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class H5exDReadTest {
 
-    private int[][] toIntMatrix(HdfData[][] data) {
+    private int[][] toIntMatrix(HdfData[][] data) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         int[][] res = new int[data.length][data[0].length];
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[i].length; j++) {
@@ -27,7 +29,7 @@ public class H5exDReadTest {
         return res;
     }
 
-    private BigDecimal[][] toBigDecimalMatrix(HdfData[][] data) {
+    private BigDecimal[][] toBigDecimalMatrix(HdfData[][] data) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         BigDecimal[][] res = new BigDecimal[data.length][data[0].length];
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[i].length; j++) {

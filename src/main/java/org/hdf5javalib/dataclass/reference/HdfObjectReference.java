@@ -11,6 +11,8 @@ import org.hdf5javalib.hdfjava.HdfBTreeNode;
 import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.utils.HdfDataHolder;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -26,7 +28,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
     private final HdfDataHolder hdfDataHolder;
     private final HdfDataspaceSelectionInstance dataspaceSelectionInstance;
 
-    public HdfObjectReference(byte[] bytes, ReferenceDatatype dt, boolean external) {
+    public HdfObjectReference(byte[] bytes, ReferenceDatatype dt, boolean external) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         this.external = external;
         AtomicReference<HdfDataObject> localHdfDataObject = new AtomicReference<>();
         AtomicReference<HdfDataspaceSelectionInstance> dataspaceSelectionReference = new AtomicReference<>();
@@ -92,7 +94,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
                 }
             }
         } else {
-
+            throw new IllegalArgumentException("Unsupported reference type: " + dt.getClassBitField());
         }
         this.dataspaceSelectionInstance = dataspaceSelectionReference.get();
         this.hdfDataObject = localHdfDataObject.get();
@@ -116,30 +118,6 @@ public class HdfObjectReference implements HdfReferenceInstance {
             ));
         }
     }
-
-//    /**
-//     * Converts a Deque of HdfDataObjects into a string path with '/' as separator,
-//     * using getObjectName() for each object, always starting with '/'.
-//     *
-//     * @param objectPath an Optional containing a Deque of HdfDataObjects
-//     * @return a string starting with '/', with object names joined by '/', or "/" if not present or empty
-//     * @throws NullPointerException if any object's getObjectName() returns null
-//     */
-//    public String convertObjectPathToString(Optional<Deque<HdfDataObject>> objectPath) {
-//        if (objectPath.isEmpty() || objectPath.get().isEmpty()) {
-//            return "/";
-//        }
-//        String path = objectPath.get().stream()
-//                .map(obj -> {
-//                    String name = obj.getObjectName();
-//                    if (name == null) {
-//                        throw new NullPointerException("Object name cannot be null in path");
-//                    }
-//                    return name;
-//                })
-//                .collect(Collectors.joining("/"));
-//        return "/" + path;
-//    }
 
     @Override
     public String toString() {

@@ -8,6 +8,8 @@ import org.hdf5javalib.hdfjava.HdfBTreeNode;
 import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.utils.HdfDataHolder;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -20,7 +22,7 @@ public class HdfDatasetRegionReference implements HdfReferenceInstance {
     private final HdfDataspaceSelectionInstance dataspaceSelectionInstance;
     private final HdfDataHolder hdfDataHolder;
 
-    public HdfDatasetRegionReference(byte[] bytes, ReferenceDatatype dt, boolean external) {
+    public HdfDatasetRegionReference(byte[] bytes, ReferenceDatatype dt, boolean external) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         this.external = external;
         this.referenceType = ReferenceDatatype.ReferenceType.DATASET_REGION1;
         FixedPointDatatype offsetSpec = dt.getDataFile().getSuperblock().getFixedPointDatatypeForOffset();
@@ -28,7 +30,6 @@ public class HdfDatasetRegionReference implements HdfReferenceInstance {
         HdfFixedPoint heapOffset = new HdfFixedPoint(Arrays.copyOfRange(bytes, 0, offsetSize), offsetSpec);
         ByteBuffer bb = ByteBuffer.wrap(bytes, offsetSize, bytes.length - offsetSize).order(ByteOrder.LITTLE_ENDIAN);
         byte[] dataBytes = dt.getDataFile().getGlobalHeap().getDataBytes(heapOffset, bb.getInt());
-//        HdfFixedPoint datasetReferenced = new HdfFixedPoint(Arrays.copyOfRange(dataBytes, 1, offsetSize+1) , offsetSpec);
         HdfFixedPoint localHdfFixedPoint = new HdfFixedPoint(Arrays.copyOfRange(dataBytes, 0, offsetSize), offsetSpec);
 
 
