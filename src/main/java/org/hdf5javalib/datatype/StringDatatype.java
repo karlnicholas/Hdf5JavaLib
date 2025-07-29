@@ -248,6 +248,7 @@ public class StringDatatype implements Datatype {
      */
     @Override
     public void writeDefinitionToByteBuffer(ByteBuffer buffer) {
+        // not implemented
     }
 
     /**

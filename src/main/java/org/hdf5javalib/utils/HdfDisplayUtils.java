@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 public class HdfDisplayUtils {
     private static final Logger log = LoggerFactory.getLogger(HdfDisplayUtils.class);
     public static final String UNDEFINED = "<Undefined>";
+    private static final String READ_EQUALS = " read = ";
+    private static final String STREAM_EQUALS = " stream = ";
 
     // Define a functional interface for actions that may need channel, dataset, and reader
     @FunctionalInterface
@@ -69,7 +71,7 @@ public class HdfDisplayUtils {
     }
 
     public static void displayFile(Path filePath) {
-        processFile(filePath, (channel, dataSet, reader) -> displayData(channel, dataSet, reader));
+        processFile(filePath, HdfDisplayUtils::displayData);
     }
 
     public static void displayAttributes(HdfDataset dataSet) {
@@ -126,10 +128,10 @@ public class HdfDisplayUtils {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T result = dataSource.readScalar();
-        System.out.println(dataSet.getObjectName() + ":" + displayType(clazz, result) + " read   = " + displayValue(result));
+        System.out.println(dataSet.getObjectName() + ":" + displayType(clazz, result) + READ_EQUALS + displayValue(result));
 
         result = dataSource.streamScalar().findFirst().orElseThrow();
-        System.out.println(dataSet.getObjectName() + ":" + displayType(clazz, result) + " stream = " + displayValue(result));
+        System.out.println(dataSet.getObjectName() + ":" + displayType(clazz, result) + STREAM_EQUALS + displayValue(result));
     }
 
     /**
@@ -151,9 +153,9 @@ public class HdfDisplayUtils {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T[] resultArray = dataSource.readVector();
-        System.out.println(displayType(clazz, resultArray) + " read   = " + displayValue(resultArray));
+        System.out.println(displayType(clazz, resultArray) + READ_EQUALS + displayValue(resultArray));
 
-        System.out.print(displayType(clazz, resultArray) + " stream = [");
+        System.out.print(displayType(clazz, resultArray) + STREAM_EQUALS);
         String joined = dataSource.streamVector()
                 .map(HdfDisplayUtils::displayValue)
                 .collect(Collectors.joining(", "));
@@ -180,9 +182,9 @@ public class HdfDisplayUtils {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
         T[][] resultArray = dataSource.readMatrix();
-        System.out.println(displayType(clazz, resultArray) + " read   = " + displayValue(resultArray));
+        System.out.println(displayType(clazz, resultArray) + READ_EQUALS + displayValue(resultArray));
 
-        System.out.print(displayType(clazz, resultArray) + " stream = [");
+        System.out.print(displayType(clazz, resultArray) + STREAM_EQUALS);
         String joined = dataSource.streamMatrix()
                 .map(HdfDisplayUtils::displayValue)
                 .collect(Collectors.joining(", "));

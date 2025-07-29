@@ -105,7 +105,7 @@ public abstract class HdfMessage {
      */
     public abstract void writeMessageToByteBuffer(ByteBuffer buffer);
 
-    static class OBJECT_HEADER_PREFIX {
+    public static class OBJECT_HEADER_PREFIX {
         final MessageType type;
         final int size;
         final int flags;

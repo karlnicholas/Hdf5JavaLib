@@ -37,10 +37,11 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-
+        // not implemented
     }
 
     public void createAttribute(String attributeName, String attributeValue, HdfDataFile hdfDataFile) {
+        // not implemented
     }
 
     public Datatype getDatatype() {
