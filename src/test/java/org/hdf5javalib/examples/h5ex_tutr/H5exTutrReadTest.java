@@ -27,16 +27,6 @@ public class H5exTutrReadTest {
         return res;
     }
 
-    private double[][] toDoubleMatrix(HdfData[][] data) {
-        double[][] res = new double[data.length][data[0].length];
-        for (int i = 0; i < data.length; i++) {
-            for (int j = 0; j < data[i].length; j++) {
-                res[i][j] = data[i][j].getInstance(Double.class);
-            }
-        }
-        return res;
-    }
-
     private int[] toIntArray(HdfData[] data) {
         int[] res = new int[data.length];
         for (int i = 0; i < data.length; i++) {
@@ -44,19 +34,6 @@ public class H5exTutrReadTest {
         }
         return res;
     }
-
-//    private double[] toMixedArray(HdfData[] data) {
-//        double[] res = new double[data.length];
-//        for (int i = 0; i < data.length; i++) {
-//            HdfData d = data[i];
-//            if (d instanceof FixedPointDatatype) {
-//                res[i] = d.getInstance(Long.class).doubleValue();
-//            } else if (d.getDatatype() instanceof org.hdf5javalib.hdfjava.datatype.FloatingPointDatatype) {
-//                res[i] = d.getInstance(Double.class);
-//            }
-//        }
-//        return res;
-//    }
 
     private String[] toStringArray(HdfData[] data) {
         String[] res = new String[data.length];
@@ -155,15 +132,6 @@ public class H5exTutrReadTest {
         try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("h5ex_tutr/refere.h5")) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             HdfDataset dataSet = reader.getDataset("/B").orElseThrow();
-//            TypedDataSource<HdfData> dataSource = new TypedDataSource<>(channel, reader, dataSet, HdfData.class);
-//            HdfData[][] data = dataSource.readMatrix();
-//            int[][] intData = toIntMatrix(data);
-//            int[][] expected = {
-//                    {1, 1, 2, 3, 3, 4, 5, 5, 6},
-//                    {1, 2, 2, 3, 4, 4, 5, 6, 6}
-//            };
-//            assertArrayEquals(expected, intData);
-
             dataSet = reader.getDataset("/R").orElseThrow();
             TypedDataSource<HdfData> dataSource = new TypedDataSource<>(channel, reader, dataSet, HdfData.class);
             HdfData[] data1 = dataSource.readVector();
@@ -233,17 +201,27 @@ public class H5exTutrReadTest {
         }
     }
 
-//    @Test
-//    void testSDScompound() throws Exception {
-//        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("h5ex_tutr/SDScompound.h5")) {
-//            HdfFileReader reader = new HdfFileReader(channel).readFile();
-//            HdfDataset dataSet = reader.getDataset("/ArrayOfStructures").orElseThrow();
-//            TypedDataSource<HdfData> dataSource = new TypedDataSource<>(channel, reader, dataSet, HdfData.class);
-//            HdfData[] data = dataSource.readVector();
-//            double[] expected = {0, 1.0, 0.0, 1, 0.5, 1.0, 2, 1.0/3, 4.0, 3, 1.0/4, 9.0, 4, 1.0/5, 16.0, 5, 1.0/6, 25.0, 6, 1.0/7, 36.0, 7, 1.0/8, 49.0, 8, 1.0/9, 64.0, 9, 1.0/10, 81.0};
-//            assertArrayEquals(expected, toMixedArray(data), 1e-5);
-//        }
-//    }
+    private record DSCompound (Integer a_name, Double c_name, Float b_name) {}
+    @Test
+    void testSDScompound() throws Exception {
+        try (SeekableByteChannel channel = ResourceLoader.loadResourceAsChannel("h5ex_tutr/SDScompound.h5")) {
+            HdfFileReader reader = new HdfFileReader(channel).readFile();
+            HdfDataset dataSet = reader.getDataset("/ArrayOfStructures").orElseThrow();
+            TypedDataSource<DSCompound> dataSource = new TypedDataSource<>(channel, reader, dataSet, DSCompound.class);
+            DSCompound[] data = dataSource.readVector();
+            DSCompound[] expected = { new DSCompound(0, 1.0, 0.0F),
+                    new DSCompound(1, 0.5, 1.0F),
+                    new DSCompound(2, 1.0/3, 4.0F),
+                    new DSCompound(3, 1.0/4, 9.0F),
+                    new DSCompound(4, 1.0/5, 16.0F),
+                    new DSCompound(5, 1.0/6, 25.0F),
+                    new DSCompound(6, 1.0/7, 36.0F),
+                    new DSCompound(7, 1.0/8, 49.0F),
+                    new DSCompound(8, 1.0/9, 64.0F),
+                    new DSCompound(9, 1.0/10, 81.0F)};
+            assertArrayEquals(expected, data);
+        }
+    }
 
     @Test
     void testSDSextendible() throws Exception {
