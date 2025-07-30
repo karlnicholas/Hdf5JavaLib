@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 public class HdfDisplayUtils {
     private static final Logger log = LoggerFactory.getLogger(HdfDisplayUtils.class);
     public static final String UNDEFINED = "<Undefined>";
-    private static final String READ_EQUALS = " read = ";
     private static final String STREAM_EQUALS = " stream = ";
 
     // Define a functional interface for actions that may need channel, dataset, and reader
@@ -158,12 +157,10 @@ public class HdfDisplayUtils {
         T[] resultArray = dataSource.readVector();
         log.info("{} read = {}", displayType(clazz, resultArray), displayValue(resultArray));
 
-        log.info("{} stream = ", displayType(clazz, resultArray));
         String joined = dataSource.streamVector()
                 .map(HdfDisplayUtils::displayValue)
                 .collect(Collectors.joining(", "));
-        log.info(joined);
-        log.info("]");
+        log.info("{} stream = [{}]", displayType(clazz, resultArray), joined);
     }
 
     /**
@@ -187,12 +184,10 @@ public class HdfDisplayUtils {
         T[][] resultArray = dataSource.readMatrix();
         log.info("{} read = {}", displayType(clazz, resultArray), displayValue(resultArray));
 
-        log.info("{} stream = ", displayType(clazz, resultArray));
         String joined = dataSource.streamMatrix()
                 .map(HdfDisplayUtils::displayValue)
                 .collect(Collectors.joining(", "));
-        log.info(joined);
-        log.info("]");
+        log.info("{} stream = [{}]", displayType(clazz, resultArray), joined);
     }
 
     /**
@@ -213,57 +208,57 @@ public class HdfDisplayUtils {
     private static <T> void displayNDimData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
-        System.out.print("read = " );
-        printFlattenedArray(dataSource.readFlattened(), dataSource.getShape());
-        System.out.println();
+        String readResult = flattenedArrayToString(dataSource.readFlattened(), dataSource.getShape());
+        log.info("read = {}", readResult);
 
         Object resultArray = FlattenedArrayUtils.streamToNDArray(dataSource.streamFlattened(), dataSource.getShape(), clazz);
-        System.out.println(displayType(clazz, resultArray) + STREAM_EQUALS + displayValue(resultArray));
+        log.info("{}{} {}", displayType(clazz, resultArray), STREAM_EQUALS, displayValue(resultArray));
     }
 
-    // Method to print flattened array according to shape
-    public static <T> void printFlattenedArray(T[] resultRead, int[] shape) {
-        if (resultRead == null || shape == null || shape.length == 0) {
-            System.out.print("[]");
-            return;
+    // Method to convert flattened array to a string according to shape
+    public static <T> String flattenedArrayToString(T[] flatArray, int[] shape) {
+        if (flatArray == null || shape == null || shape.length == 0) {
+            return "[]";
         }
+        StringBuilder sb = new StringBuilder();
         // Start printing with an index tracker for the flattened array
-        int[] index = {0}; // Mutable index to track position in resultRead
-        printArray(resultRead, shape, 0, index);
+        int[] index = {0}; // Mutable index to track position in flatArray
+        arrayToString(sb, flatArray, shape, 0, index);
+        return sb.toString();
     }
 
-    private static <T> void printArray(T[] resultRead, int[] shape, int dimIndex, int[] index) {
+    private static <T> void arrayToString(StringBuilder sb, T[] flatArray, int[] shape, int dimIndex, int[] index) {
         // Base case: at the last dimension, print a flat array
         if (dimIndex == shape.length - 1) {
-            System.out.print("[");
+            sb.append("[");
             int size = shape[dimIndex];
             for (int i = 0; i < size; i++) {
                 // Check if we have more elements in resultRead
-                if (index[0] < resultRead.length) {
-                    System.out.print(resultRead[index[0]]);
+                if (index[0] < flatArray.length) {
+                    sb.append(flatArray[index[0]]);
                     index[0]++;
                 } else {
-                    // Print 0 or null if out of elements
-                    System.out.print("0");
+                    // Print null if out of elements
+                    sb.append("null");
                 }
                 if (i < size - 1) {
-                    System.out.print(",");
+                    sb.append(",");
                 }
             }
-            System.out.print("]");
+            sb.append("]");
             return;
         }
 
         // Recursive case: print nested arrays
-        System.out.print("[");
+        sb.append("[");
         int currentSize = shape[dimIndex];
         for (int i = 0; i < currentSize; i++) {
-            printArray(resultRead, shape, dimIndex + 1, index);
+            arrayToString(sb, flatArray, shape, dimIndex + 1, index);
             if (i < currentSize - 1) {
-                System.out.print(",");
+                sb.append(",");
             }
         }
-        System.out.print("]");
+        sb.append("]");
     }
 
     /**

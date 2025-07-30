@@ -42,7 +42,7 @@ public class ExamplesRead {
             Files.list(dirPath)
                     .filter(p -> p.toString().endsWith(".h5"))
                     .forEach(p -> {
-                        System.out.println("Running " + p.getFileName());
+                        log.info("Running {}", p.getFileName());
                         displayFile(p);
                     });
         } catch (URISyntaxException | IOException e) {

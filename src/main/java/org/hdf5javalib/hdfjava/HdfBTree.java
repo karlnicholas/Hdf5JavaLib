@@ -1,13 +1,14 @@
 package org.hdf5javalib.hdfjava;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Represents the B-Tree itself. It is iterable and provides specialized
  * iterators for all nodes or just for datasets.
  */
 public class HdfBTree implements Iterable<HdfBTreeNode> {
-
+    private static final Logger log = Logger.getLogger(HdfBTree.class.getName());
     private final HdfGroup root;
 
     public HdfBTree(HdfGroup root) {
@@ -58,11 +59,10 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
         for (String name : names) {
             if (name.isEmpty()) continue;
 
-            if (!(currentNode instanceof HdfGroup)) {
+            if (!(currentNode instanceof HdfGroup currentGroup)) {
                 return Optional.empty();
             }
 
-            HdfGroup currentGroup = (HdfGroup) currentNode;
             currentNode = currentGroup.findChildByName(name).orElse(null);
 
             if (currentNode == null) {
@@ -78,9 +78,8 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
     }
 
     private void printNode(HdfBTreeNode node, String prefix, boolean isTail) {
-        System.out.println(prefix + (isTail ? "└── " : "├── ") + node + " (Level: " + node.getLevel() + ")");
-        if (node instanceof HdfGroup) {
-            HdfGroup group = (HdfGroup) node;
+        log.info(prefix + (isTail ? "└── " : "├── ") + node + " (Level: " + node.getLevel() + ")");
+        if (node instanceof HdfGroup group) {
             List<HdfBTreeNode> children = group.getChildren();
             for (int i = 0; i < children.size() - 1; i++) {
                 printNode(children.get(i), prefix + (isTail ? "    " : "│   "), false);
@@ -121,8 +120,7 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
 
             // If the current node is a group, push its children onto the stack
             // in reverse order to maintain the correct pre-order traversal (left to right).
-            if (currentNode instanceof HdfGroup) {
-                HdfGroup group = (HdfGroup) currentNode;
+            if (currentNode instanceof HdfGroup group) {
                 List<HdfBTreeNode> children = group.getChildren();
                 for (int i = children.size() - 1; i >= 0; i--) {
                     stack.push(children.get(i));
@@ -172,8 +170,7 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
                 HdfBTreeNode currentNode = stack.pop();
 
                 // If it's a group, push its children for future traversal
-                if (currentNode instanceof HdfGroup) {
-                    HdfGroup group = (HdfGroup) currentNode;
+                if (currentNode instanceof HdfGroup group) {
                     List<HdfBTreeNode> children = group.getChildren();
                     for (int i = children.size() - 1; i >= 0; i--) {
                         stack.push(children.get(i));

@@ -22,7 +22,7 @@ public class HdfDebugUtils {
      * @param buffer     the ByteBuffer containing the data to dump
      * @param fileOffset the starting file offset for display purposes
      */
-    public static void dumpByteBuffer(ByteBuffer buffer, long fileOffset) {
+    public static String dumpByteBuffer(ByteBuffer buffer, long fileOffset) {
         int bytesPerLine = 16; // 16 bytes per row
         int limit = buffer.limit();
         buffer.rewind(); // Reset position to 0 before reading
@@ -54,7 +54,7 @@ public class HdfDebugUtils {
             sb.append("\n");
         }
 
-        System.out.print(sb);
+        return sb.toString();
     }
 
     /**

@@ -59,7 +59,7 @@ public class ReferenceRead {
         try {
 //            Path filePath = getResourcePath("HDF5Examples/h5ex_t_cpxcmpd.h5");
             Path filePath = getResourcePath("h5ex_tutr/SDScompound.h5");
-            System.out.println(filePath.toFile().getAbsolutePath());
+            log.info("{}", filePath.toFile().getAbsolutePath());
             try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
 //                try (HdfDataset dataSet = reader.getRootGroup().getDataset("/DS1").orElseThrow()) {
@@ -78,7 +78,7 @@ public class ReferenceRead {
 
     private void displayReference(SeekableByteChannel channel, HdfDataset dataSet, HdfFileReader reader) {
         dataSet.getReferenceInstances().forEach(referenceInstance -> {
-            System.out.println("referenceInstance=" + referenceInstance);
+            log.info("referenceInstance={}", referenceInstance);
         });
     }
 

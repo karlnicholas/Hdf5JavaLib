@@ -1,6 +1,8 @@
 package org.hdf5javalib.examples.h5ex_tutr;
 
 import org.hdf5javalib.datasource.TypedDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -22,6 +24,7 @@ import static org.hdf5javalib.utils.HdfDisplayUtils.displayFile;
  * </p>
  */
 public class h5ex_tutr_read {
+    private static final Logger log =  LoggerFactory.getLogger(h5ex_tutr_read.class);
     /**
      * Entry point for the application.
      *
@@ -41,7 +44,7 @@ public class h5ex_tutr_read {
             try ( Stream<Path> streamList = Files.list(dirPath) ) {
                 streamList.filter(p -> p.toString().endsWith(".h5"))
                         .forEach(p -> {
-                            System.out.println("Running " + p.getFileName());
+                            log.info("Running {}", p.getFileName());
                             displayFile(p);
                         });
 

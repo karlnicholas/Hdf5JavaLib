@@ -34,7 +34,7 @@ public class FileByteComparator {
     public static void main(String[] args) {
         // Check if two file paths are provided as command-line arguments
         if (args.length != 2) {
-            System.out.println("Usage: java FileByteComparator <file1> <file2>");
+            log.info("Usage: java FileByteComparator <file1> <file2>");
             System.exit(1);
         }
 
@@ -51,36 +51,36 @@ public class FileByteComparator {
 
             // Compare bytes and track differences
             boolean differencesFound = false;
-            System.out.println("Offset    File1 Value    File2 Value");
-            System.out.println("------------------------------------");
+            log.info("Offset    File1 Value    File2 Value");
+            log.info("------------------------------------");
 
             for (int i = 0; i < minLength; i++) {
                 if (file1Bytes[i] != file2Bytes[i]) {
                     differencesFound = true;
                     // Print offset and byte values in hex
-                    System.out.printf("0x%-8X  0x%02X          0x%02X%n",
+                    log.info(String.format("0x%-8X  0x%02X          0x%02X",
                             i,
                             file1Bytes[i] & 0xFF,
-                            file2Bytes[i] & 0xFF);
+                            file2Bytes[i] & 0xFF));
                 }
             }
 
             // Check for length differences
             if (file1Bytes.length != file2Bytes.length) {
                 differencesFound = true;
-                System.out.printf("Files differ in length: File1 = %d bytes, File2 = %d bytes%n",
-                        file1Bytes.length, file2Bytes.length);
+                log.info(String.format("Files differ in length: File1 = %d bytes, File2 = %d bytes",
+                        file1Bytes.length, file2Bytes.length));
                 if (file1Bytes.length > file2Bytes.length) {
-                    System.out.println("Extra bytes in File1 after offset 0x" +
+                    log.info("Extra bytes in File1 after offset 0x" +
                             Integer.toHexString(minLength - 1).toUpperCase() + ":");
                     for (int i = minLength; i < file1Bytes.length; i++) {
-                        System.out.printf("0x%-8X  0x%02X%n", i, file1Bytes[i] & 0xFF);
+                        log.info(String.format("0x%-8X  0x%02X", i, file1Bytes[i] & 0xFF));
                     }
                 } else {
-                    System.out.println("Extra bytes in File2 after offset 0x" +
+                    log.info("Extra bytes in File2 after offset 0x" +
                             Integer.toHexString(minLength - 1).toUpperCase() + ":");
                     for (int i = minLength; i < file2Bytes.length; i++) {
-                        System.out.printf("0x%-8X  0x%02X%n", i, file2Bytes[i] & 0xFF);
+                        log.info(String.format("0x%-8X  0x%02X", i, file2Bytes[i] & 0xFF));
                     }
                 }
             }

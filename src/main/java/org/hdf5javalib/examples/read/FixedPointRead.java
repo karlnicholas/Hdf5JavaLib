@@ -108,15 +108,15 @@ public class FixedPointRead {
     void tryDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, hdfDataFile, dataSet, BigInteger.class);
         BigInteger allData = dataSource.readScalar();
-        System.out.println("Scalar dataset name = " + dataSet.getObjectName());
-        System.out.println("Scalar readAll stats = " + Stream.of(allData)
+        log.info("Scalar dataset name = {}", dataSet.getObjectName());
+        log.info("Scalar readAll stats = {}", Stream.of(allData)
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
-        System.out.println("Scalar streaming list = " + dataSource.streamScalar().toList());
-        System.out.println("Scalar parallelStreaming list = " + dataSource.parallelStreamScalar().toList());
+        log.info("Scalar streaming list = {}", dataSource.streamScalar().toList());
+        log.info("Scalar parallelStreaming list = {}", dataSource.parallelStreamScalar().toList());
 
-        new TypedDataSource<>(channel, hdfDataFile, dataSet, HdfFixedPoint.class).streamScalar().forEach(System.out::println);
-        new TypedDataSource<>(channel, hdfDataFile, dataSet, String.class).streamScalar().forEach(System.out::println);
-        new TypedDataSource<>(channel, hdfDataFile, dataSet, BigDecimal.class).streamScalar().forEach(System.out::println);
+        new TypedDataSource<>(channel, hdfDataFile, dataSet, HdfFixedPoint.class).streamScalar().forEach(item -> log.info("{}", item));
+        new TypedDataSource<>(channel, hdfDataFile, dataSet, String.class).streamScalar().forEach(item -> log.info("{}", item));
+        new TypedDataSource<>(channel, hdfDataFile, dataSet, BigDecimal.class).streamScalar().forEach(item -> log.info("{}", item));
     }
 
     /**
@@ -130,15 +130,15 @@ public class FixedPointRead {
     void tryScalarDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, hdfDataFile, dataSet, BigInteger.class);
         BigInteger allData = dataSource.readScalar();
-        System.out.println("Scalar dataset name = " + dataSet.getObjectName());
-        System.out.println("Scalar readAll stats = " + Stream.of(allData)
+        log.info("Scalar dataset name = {}", dataSet.getObjectName());
+        log.info("Scalar readAll stats = {}", Stream.of(allData)
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
-        System.out.println("Scalar streaming list = " + dataSource.streamScalar().toList());
-        System.out.println("Scalar parallelStreaming list = " + dataSource.parallelStreamScalar().toList());
+        log.info("Scalar streaming list = {}", dataSource.streamScalar().toList());
+        log.info("Scalar parallelStreaming list = {}", dataSource.parallelStreamScalar().toList());
 
-        new TypedDataSource<>(channel, hdfDataFile, dataSet, HdfFixedPoint.class).streamScalar().forEach(System.out::println);
-        new TypedDataSource<>(channel, hdfDataFile, dataSet, String.class).streamScalar().forEach(System.out::println);
-        new TypedDataSource<>(channel, hdfDataFile, dataSet, BigDecimal.class).streamScalar().forEach(System.out::println);
+        new TypedDataSource<>(channel, hdfDataFile, dataSet, HdfFixedPoint.class).streamScalar().forEach(item -> log.info("{}", item));
+        new TypedDataSource<>(channel, hdfDataFile, dataSet, String.class).streamScalar().forEach(item -> log.info("{}", item));
+        new TypedDataSource<>(channel, hdfDataFile, dataSet, BigDecimal.class).streamScalar().forEach(item -> log.info("{}", item));
     }
 
     /**
@@ -152,19 +152,18 @@ public class FixedPointRead {
     void tryVectorSpliterator(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, BigInteger.class);
         BigInteger[] allData = dataSource.readVector();
-        System.out.println("Vector readAll stats  = " + Arrays.stream(allData).collect(Collectors.summarizingInt(BigInteger::intValue)));
-        System.out.println("Vector streaming stats = " + dataSource.streamVector()
+        log.info("Vector readAll stats  = {}", Arrays.stream(allData).collect(Collectors.summarizingInt(BigInteger::intValue)));
+        log.info("Vector streaming stats = {}", dataSource.streamVector()
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
-        System.out.println("Vector parallel streaming stats = " + dataSource.parallelStreamVector()
+        log.info("Vector parallel streaming stats = {}", dataSource.parallelStreamVector()
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
         final BigInteger[] flattenedData = dataSource.readFlattened();
         int[] shape = dataSource.getShape();
-        System.out.println("Vector flattenedData stats = " + IntStream.rangeClosed(0, FlattenedArrayUtils.totalSize(shape) - 1)
+        log.info("Vector flattenedData stats = {}", IntStream.rangeClosed(0, FlattenedArrayUtils.totalSize(shape) - 1)
                 .mapToObj(i -> FlattenedArrayUtils.getElement(flattenedData, shape, i))
                 .collect(Collectors.summarizingInt(BigInteger::intValue)));
-        System.out.print("FlattenedData Streamed Reduced = ");
         BigInteger bdReduced = (BigInteger) FlattenedArrayUtils.reduceAlongAxis(dataSource.streamFlattened(), shape, 0, BigInteger::max, BigInteger.class);
-        System.out.println(bdReduced + " ");
+        log.info("FlattenedData Streamed Reduced = {}", bdReduced);
     }
 
     /**
@@ -179,58 +178,60 @@ public class FixedPointRead {
         TypedDataSource<BigDecimal> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, BigDecimal.class);
         BigDecimal[][] allData = dataSource.readMatrix();
         // Print the matrix values
-        System.out.println("Matrix readAll() = ");
+        log.info("Matrix readAll() = ");
         for (BigDecimal[] allDatum : allData) {
-            for (BigDecimal bigDecimal : allDatum) {
-                System.out.print(bigDecimal.setScale(2, RoundingMode.HALF_UP) + " ");
-            }
-            System.out.println(); // New line after each row
+            String row = Arrays.stream(allDatum)
+                    .map(bd -> bd.setScale(2, RoundingMode.HALF_UP).toString())
+                    .collect(Collectors.joining(" "));
+            log.info(row);
         }
 
         Stream<BigDecimal[]> stream = dataSource.streamMatrix();
         // Print all values
-        System.out.println("Matrix stream() = ");
+        log.info("Matrix stream() = ");
         stream.forEach(array -> {
-            for (BigDecimal value : array) {
-                System.out.print(value.setScale(2, RoundingMode.HALF_UP) + " ");
-            }
-            System.out.println(); // Newline after each array
+            String row = Arrays.stream(array)
+                    .map(value -> value.setScale(2, RoundingMode.HALF_UP).toString())
+                    .collect(Collectors.joining(" "));
+            log.info(row);
         });
 
         Stream<BigDecimal[]> parallelStream = dataSource.parallelStreamMatrix();
         // Print all values in order
-        System.out.println("Matrix parallelStream() = ");
+        log.info("Matrix parallelStream() = ");
         parallelStream.forEachOrdered(array -> {
-            for (BigDecimal value : array) {
-                System.out.print(value.setScale(2, RoundingMode.HALF_UP) + " ");
-            }
-            System.out.println();
+            String row = Arrays.stream(array)
+                    .map(value -> value.setScale(2, RoundingMode.HALF_UP).toString())
+                    .collect(Collectors.joining(" "));
+            log.info(row);
         });
 
         final BigDecimal[] flattenedData = dataSource.readFlattened();
         int[] shape = dataSource.getShape();
-        System.out.println("FlattenedData = ");
+        log.info("FlattenedData = ");
         for (int r = 0; r < shape[0]; r++) {
+            StringBuilder row = new StringBuilder();
             for (int c = 0; c < shape[1]; c++) {
-                System.out.print(FlattenedArrayUtils.getElement(flattenedData, shape, r, c).setScale(2, RoundingMode.HALF_UP) + " ");
+                row.append(FlattenedArrayUtils.getElement(flattenedData, shape, r, c).setScale(2, RoundingMode.HALF_UP)).append(" ");
             }
-            System.out.println();
+            log.info(row.toString().trim());
         }
 
-        System.out.println("FlattenedData Streamed = ");
+        log.info("FlattenedData Streamed = ");
         BigDecimal[][] bdMatrix = (BigDecimal[][]) FlattenedArrayUtils.streamToNDArray(dataSource.streamFlattened(), shape, BigDecimal.class);
         for (int r = 0; r < shape[0]; r++) {
+            StringBuilder row = new StringBuilder();
             for (int c = 0; c < shape[1]; c++) {
-                System.out.print(bdMatrix[r][c].setScale(2, RoundingMode.HALF_UP) + " ");
+                row.append(bdMatrix[r][c].setScale(2, RoundingMode.HALF_UP)).append(" ");
             }
-            System.out.println();
+            log.info(row.toString().trim());
         }
 
-        System.out.println("FlattenedData Streamed Reduced = ");
         BigDecimal[] bdReduced = (BigDecimal[]) FlattenedArrayUtils.reduceAlongAxis(dataSource.streamFlattened(), shape, 0, BigDecimal::max, BigDecimal.class);
-        for (int c = 0; c < shape[1]; c++) {
-            System.out.print(bdReduced[c].setScale(2, RoundingMode.HALF_UP) + " ");
-        }
+        String reducedRow = Arrays.stream(bdReduced)
+                .map(bd -> bd.setScale(2, RoundingMode.HALF_UP).toString())
+                .collect(Collectors.joining(" "));
+        log.info("FlattenedData Streamed Reduced = {}", reducedRow);
     }
 
     /**
@@ -246,13 +247,12 @@ public class FixedPointRead {
         // Print all values in order
         final Integer[] flattenedData = dataSource.readFlattened();
         int[] shape = dataSource.getShape();
-        System.out.println("FlattenedData = ");
+        log.info("FlattenedData = ");
         for (int s = 0; s < shape[3]; s++) {
             for (int x = 0; x < shape[0]; x++) {
                 for (int y = 0; y < shape[1]; y++) {
                     for (int z = 0; z < shape[2]; z++) {
-                        System.out.print(x + " " + y + " " + z + " " + s + " " + FlattenedArrayUtils.getElement(flattenedData, shape, x, y, z, s) + " ");
-                        System.out.println();
+                        log.info("{} {} {} {} {}", x, y, z, s, FlattenedArrayUtils.getElement(flattenedData, shape, x, y, z, s));
                     }
                 }
             }
@@ -266,20 +266,20 @@ public class FixedPointRead {
                 {0}    // step 0
         };
         Integer[][][] step0 = (Integer[][][]) FlattenedArrayUtils.sliceStream(dataSource.streamFlattened(), dataSource.getShape(), sliceStep0, Integer.class);
-        System.out.println("Step 0:");
+        log.info("Step 0:");
         for (int x = 0; x < shape[0]; x++) {
             for (int y = 0; y < shape[1]; y++) {
                 for (int z = 0; z < shape[2]; z++) {
                     Integer value = step0[x][y][z];
-                    System.out.printf("(%d %d %d) %s%n", x, y, z, value);
+                    log.info("({} {} {}) {}", x, y, z, value);
                 }
             }
         }
 
-        System.out.println("Pieces = ");
+        log.info("Pieces = ");
         List<FlattenedArrayUtils.MatchingEntry<Integer>> pieces = FlattenedArrayUtils.filterToCoordinateList(dataSource.streamFlattened(), shape, i -> i != 0);
         pieces.sort(Comparator.comparingInt(a -> a.coordinates[3]));
-        pieces.forEach(entry -> System.out.printf("Coords %s → Value: %s%n", Arrays.toString(entry.coordinates), entry.value));
+        pieces.forEach(entry -> log.info("Coords {} → Value: {}", Arrays.toString(entry.coordinates), entry.value));
     }
 
     /**
@@ -299,18 +299,11 @@ public class FixedPointRead {
                 new int[][]{{0}, {}, {}}, // Slice Time=2024-01 (index 0)
                 Double.class
         );
-        System.out.println("Sales for January 2024:");
+        log.info("Sales for January 2024:");
         for (int z = 0; z < shape[1]; z++) {
             for (int p = 0; p < shape[2]; p++) {
-                System.out.printf("Zip %d, Product %d: %.2f\n", z, p, sales2024Jan[z][p]);
+                log.info(String.format("Zip %d, Product %d: %.2f", z, p, sales2024Jan[z][p]));
             }
         }
-//        TypedDataSource<Double> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, Double.class);
-//        // Print all values in order
-//        final Double[] flattenedData = dataSource.readFlattened();
-//        int[] shape = dataSource.getShape();
-//        System.out.println("FlattenedData = ");
-//        System.out.println(Arrays.toString(flattenedData));
-//        System.out.println(Arrays.toString(shape));
     }
 }

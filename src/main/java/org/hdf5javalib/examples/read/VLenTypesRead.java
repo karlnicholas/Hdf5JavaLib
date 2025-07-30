@@ -4,6 +4,8 @@ import org.hdf5javalib.dataclass.HdfVariableLength;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.hdf5javalib.utils.HdfDisplayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.nio.channels.FileChannel;
@@ -19,7 +21,7 @@ import java.util.Objects;
  * </p>
  */
 public class VLenTypesRead {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(VLenTypesRead.class);
+    private static final Logger log = LoggerFactory.getLogger(VLenTypesRead.class);
     /**
      * Entry point for the application.
      *
@@ -39,8 +41,7 @@ public class VLenTypesRead {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             for (HdfDataset dataSet : reader.getDatasets()) {
                 try (HdfDataset ds = dataSet) {
-                    System.out.println();
-                    System.out.println("Dataset name: " + ds.getObjectName());
+                    log.info("Dataset name: {}", ds.getObjectName());
                     HdfDisplayUtils.displayScalarData(channel, ds, HdfVariableLength.class, reader);
                     HdfDisplayUtils.displayScalarData(channel, ds, String.class, reader);
                     HdfDisplayUtils.displayScalarData(channel, ds, Object.class, reader);

@@ -5,6 +5,8 @@ import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -26,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </p>
  */
 public class CompoundRead {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CompoundRead.class);
+    private static final Logger log = LoggerFactory.getLogger(CompoundRead.class);
 
     /**
      * Entry point for the application.
@@ -49,7 +51,7 @@ public class CompoundRead {
                     displayData(channel, dataSet, reader);
                 }
                 log.debug("File BTree: {} ", reader.getBTree());
-                }
+            }
 
         } catch (Exception e) {
             throw new IllegalStateException(e);
@@ -136,21 +138,12 @@ public class CompoundRead {
      * @throws IOException if an I/O error occurs
      */
     public void displayData(SeekableByteChannel seekableByteChannel, HdfDataset dataSet, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        System.out.println("Ten Rows:");
+        log.info("Ten Rows:");
         new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class)
                 .streamVector()
                 .limit(10)
-                .forEach(c -> System.out.println("Row: " + c.getMembers()));
+                .forEach(c -> log.info("Row: {}", c.getMembers()));
 
-//        System.out.println("Ten BigDecimals = " + new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class).streamVector()
-//                .filter(c -> c.getMembers().get(0).getInstance(Long.class) < 1010)
-//                .map(c -> c.getMembers().get(13).getInstance(BigDecimal.class)).toList());
-//
-//        System.out.println("Custom record class:");
-//        new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, Record.class)
-//                .streamVector()
-//                .forEach(c -> System.out.println("Row: " + c));
-//        System.out.println("DONE");
         AtomicInteger atomicInteger = new AtomicInteger(0);
         new TypedDataSource<>(seekableByteChannel, hdfDataFile, dataSet, HdfCompound.class)
                 .streamVector()
@@ -158,6 +151,6 @@ public class CompoundRead {
                     c.getMembers().toString();
                     atomicInteger.incrementAndGet();
                 });
-        System.out.println("DONE: " + atomicInteger.get());
+        log.info("DONE: {}", atomicInteger.get());
     }
 }
