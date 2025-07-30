@@ -85,7 +85,6 @@ public class CompoundMemberDatatype implements Datatype {
             case VLEN -> computeVariableLengthMessageDataSize(name);
             case ARRAY -> computeArrayMessageDataSize(name);
         };
-//        log.debug("CompoundMemberDatatype {}", this);
     }
 
     private short computeFixedMessageDataSize(String name) {

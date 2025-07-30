@@ -15,10 +15,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class HdfObjectReference implements HdfReferenceInstance {
@@ -125,7 +122,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
                 + "\r\n\treferenceType=" + referenceType.getDescription()
                 + "\r\n\thdfDataObject=" + (hdfDataObject == null ? "ObjectId not decoded" : "ObjectName: " + hdfDataObject.getObjectName())
                 + (referenceType.getValue() > ReferenceDatatype.ReferenceType.DATASET_REGION1.getValue() ?
-                "\r\n\tdataspaceSelectionInstance=" + (dataspaceSelectionInstance == null ? "no Dataspace Selection" : dataspaceSelectionInstance)
+                "\r\n\tdataspaceSelectionInstance=" + (Objects.requireNonNullElse(dataspaceSelectionInstance, "no Dataspace Selection"))
                 : "")
                 + "\r\n]";
 

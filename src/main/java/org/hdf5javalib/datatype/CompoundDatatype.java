@@ -313,11 +313,7 @@ public class CompoundDatatype implements Datatype {
 
         // Fall back to toPOJO for non-primitive, unregistered types
         if (!clazz.isPrimitive()) {
-//            try {
-                return toPOJO(clazz, bytes);
-//            } catch (Exception e) {
-//                throw new IllegalArgumentException("Failed to convert to POJO: " + clazz, e);
-//            }
+            return toPOJO(clazz, bytes);
         }
 
         throw new UnsupportedOperationException("Unknown type: " + clazz);
@@ -345,17 +341,13 @@ public class CompoundDatatype implements Datatype {
         // Get cached member map (instance-level cache since members are per-instance)
         Map<String, CompoundMemberDatatype> nameToMemberMap = getCachedMemberMap();
 
-//        try {
-            T instance;
-            if (clazz.isRecord()) {
-                instance = createRecordInstance(clazz, bytes, nameToMemberMap);
-            } else {
-                instance = createClassInstance(clazz, bytes, nameToFieldMap, nameToMemberMap);
-            }
-            return instance;
-//        } catch (Exception e) {
-//            throw new IllegalStateException("Failed to create instance of " + clazz.getName(), e);
-//        }
+        T instance;
+        if (clazz.isRecord()) {
+            instance = createRecordInstance(clazz, bytes, nameToMemberMap);
+        } else {
+            instance = createClassInstance(clazz, bytes, nameToFieldMap, nameToMemberMap);
+        }
+        return instance;
     }
 
     // Helper method to get cached member map

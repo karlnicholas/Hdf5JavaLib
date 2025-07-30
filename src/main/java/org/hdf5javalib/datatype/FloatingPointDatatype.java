@@ -335,23 +335,13 @@ public class FloatingPointDatatype implements Datatype {
     public ByteOrder getByteOrder() {
         boolean bit0 = classBitField.get(0);
         boolean bit6 = classBitField.get(6);
-        if (!bit6 && !bit0) return ByteOrder.LITTLE_ENDIAN;
-        if (!bit6 && bit0) return ByteOrder.BIG_ENDIAN;
-        if (bit6 && !bit0) throw new IllegalArgumentException("Reserved byte order");
-        if (bit6 && bit0) throw new UnsupportedOperationException("VAX-endian not supported");
-        return ByteOrder.LITTLE_ENDIAN; // Default, should never reach here
-    }
 
-    private int getSignLocation() {
-        int signLoc = 0;
-        for (int i = 8; i <= 15; i++) {
-            if (classBitField.get(i)) {
-                signLoc |= (1 << (i - 8));
-            }
+        if (bit6) {
+            throw bit0 ? new UnsupportedOperationException("VAX-endian not supported")
+                    : new IllegalArgumentException("Reserved byte order");
         }
-        return signLoc;
+        return bit0 ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
     }
-
     /**
      * Returns a string representation of this FloatingPointDatatype.
      *

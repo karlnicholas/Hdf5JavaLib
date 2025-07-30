@@ -6,14 +6,6 @@
  * <p>This package enables Java developers to access and manipulate HDF5 data without requiring external native libraries,
  * making it suitable for scientific computing, data analysis, and applications dealing with large hierarchical datasets.</p>
  *
- * <p>Key features include:
- * <ul>
- *   <li>Reading of root-group datasets with robust datatype support.</li>
- *   <li>No external dependencies beyond Java 17 or higher.</li>
- *   <li>Maven integration for easy inclusion in projects.</li>
- * </ul>
- * </p>
- *
  * <p>For detailed usage examples and reading capabilities, refer to the project documentation.</p>
  *
  * @since 0.1.3
