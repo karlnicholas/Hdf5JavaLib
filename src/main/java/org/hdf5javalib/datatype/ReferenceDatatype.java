@@ -100,12 +100,6 @@ public class ReferenceDatatype implements Datatype {
         return (byte) (7 << 4);
     }
 
-    //    public static int getTypeValue(BitSet classBitField) {
-//        int value = 0;
-//        for (int i = 0; i < 4; i++) if (classBitField.get(i)) value |= 1 << i;
-//        return value;
-//    }
-//
     public static ReferenceType getReferenceType(BitSet classBitField) {
         return ReferenceType.fromValue(getTypeValue(classBitField));
     }
@@ -151,10 +145,6 @@ public class ReferenceDatatype implements Datatype {
     }
 
     public String toString(byte[] bytes) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
-//        if (bytes.length != size) throw new IllegalArgumentException("Byte array length mismatch");
-//        StringBuilder sb = new StringBuilder();
-//        for (byte b : bytes) sb.append(String.format("%02X", b));
-//        return "Reference[" + getReferenceType(classBitField).description + "]=" + sb;
         HdfReferenceInstance referenceInstance = getInstance(HdfReferenceInstance.class, bytes);
         HdfDataHolder data = referenceInstance.getData();
         if ( data.isScalar()) {

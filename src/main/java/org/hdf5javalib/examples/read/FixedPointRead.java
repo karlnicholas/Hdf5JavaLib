@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.hdf5javalib.utils.HdfReadUtils.getResourcePath;
@@ -105,28 +104,6 @@ public class FixedPointRead {
      * @param dataSet     the scalar dataset to process
      * @throws IOException if an I/O error occurs
      */
-    void tryDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, hdfDataFile, dataSet, BigInteger.class);
-        BigInteger allData = dataSource.readScalar();
-        log.info("Scalar dataset name = {}", dataSet.getObjectName());
-        log.info("Scalar readAll stats = {}", Stream.of(allData)
-                .collect(Collectors.summarizingInt(BigInteger::intValue)));
-        log.info("Scalar streaming list = {}", dataSource.streamScalar().toList());
-        log.info("Scalar parallelStreaming list = {}", dataSource.parallelStreamScalar().toList());
-
-        new TypedDataSource<>(channel, hdfDataFile, dataSet, HdfFixedPoint.class).streamScalar().forEach(item -> log.info("{}", item));
-        new TypedDataSource<>(channel, hdfDataFile, dataSet, String.class).streamScalar().forEach(item -> log.info("{}", item));
-        new TypedDataSource<>(channel, hdfDataFile, dataSet, BigDecimal.class).streamScalar().forEach(item -> log.info("{}", item));
-    }
-
-    /**
-     * Processes a scalar dataset using a TypedDataSource.
-     *
-     * @param channel     the file channel for reading the HDF5 file
-     * @param hdfDataFile the HDF5 file context
-     * @param dataSet     the scalar dataset to process
-     * @throws IOException if an I/O error occurs
-     */
     void tryScalarDataSpliterator(SeekableByteChannel channel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(channel, hdfDataFile, dataSet, BigInteger.class);
         BigInteger allData = dataSource.readScalar();
@@ -139,31 +116,6 @@ public class FixedPointRead {
         new TypedDataSource<>(channel, hdfDataFile, dataSet, HdfFixedPoint.class).streamScalar().forEach(item -> log.info("{}", item));
         new TypedDataSource<>(channel, hdfDataFile, dataSet, String.class).streamScalar().forEach(item -> log.info("{}", item));
         new TypedDataSource<>(channel, hdfDataFile, dataSet, BigDecimal.class).streamScalar().forEach(item -> log.info("{}", item));
-    }
-
-    /**
-     * Processes a vector dataset using a TypedDataSource.
-     *
-     * @param fileChannel the file channel for reading the HDF5 file
-     * @param hdfDataFile the HDF5 file context
-     * @param dataSet     the vector dataset to process
-     * @throws IOException if an I/O error occurs
-     */
-    void tryVectorSpliterator(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        TypedDataSource<BigInteger> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, BigInteger.class);
-        BigInteger[] allData = dataSource.readVector();
-        log.info("Vector readAll stats  = {}", Arrays.stream(allData).collect(Collectors.summarizingInt(BigInteger::intValue)));
-        log.info("Vector streaming stats = {}", dataSource.streamVector()
-                .collect(Collectors.summarizingInt(BigInteger::intValue)));
-        log.info("Vector parallel streaming stats = {}", dataSource.parallelStreamVector()
-                .collect(Collectors.summarizingInt(BigInteger::intValue)));
-        final BigInteger[] flattenedData = dataSource.readFlattened();
-        int[] shape = dataSource.getShape();
-        log.info("Vector flattenedData stats = {}", IntStream.rangeClosed(0, FlattenedArrayUtils.totalSize(shape) - 1)
-                .mapToObj(i -> FlattenedArrayUtils.getElement(flattenedData, shape, i))
-                .collect(Collectors.summarizingInt(BigInteger::intValue)));
-        BigInteger bdReduced = (BigInteger) FlattenedArrayUtils.reduceAlongAxis(dataSource.streamFlattened(), shape, 0, BigInteger::max, BigInteger.class);
-        log.info("FlattenedData Streamed Reduced = {}", bdReduced);
     }
 
     /**
@@ -282,28 +234,4 @@ public class FixedPointRead {
         pieces.forEach(entry -> log.info("Coords {} → Value: {}", Arrays.toString(entry.coordinates), entry.value));
     }
 
-    /**
-     * Processes a 4D dataset using a TypedDataSource, demonstrating slicing and filtering.
-     *
-     * @param fileChannel the file channel for reading the HDF5 file
-     * @param hdfDataFile the HDF5 file context
-     * @param dataSet     the 4D dataset to process
-     * @throws IOException if an I/O error occurs
-     */
-    void displaySalesCube(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        TypedDataSource<Double> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, Double.class);
-        int[] shape = dataSource.getShape(); // Should be [60, 100, 50]
-        Double[][] sales2024Jan = (Double[][]) FlattenedArrayUtils.sliceStream(
-                dataSource.streamFlattened(),
-                shape,
-                new int[][]{{0}, {}, {}}, // Slice Time=2024-01 (index 0)
-                Double.class
-        );
-        log.info("Sales for January 2024:");
-        for (int z = 0; z < shape[1]; z++) {
-            for (int p = 0; p < shape[2]; p++) {
-                log.info(String.format("Zip %d, Product %d: %.2f", z, p, sales2024Jan[z][p]));
-            }
-        }
-    }
 }

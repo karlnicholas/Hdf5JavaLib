@@ -105,24 +105,6 @@ public class CompoundRead {
                 return value;
             }
         }
-
-//        // Canonical constructor for validation
-//        public Record {
-//            if (string == null || string.length() > 16) {
-//                throw new IllegalArgumentException("string must be non-null and at most 16 characters");
-//            }
-//            // Pad string to 16 chars with NULs for HDF5
-//            string = string.length() < 16 ? string + "\0".repeat(16 - string.length()) : string;
-//            if (opaque == null || opaque.length != 4) {
-//                throw new IllegalArgumentException("opaque must be a 4-byte array");
-//            }
-//            if (array == null || array.length != 3) {
-//                throw new IllegalArgumentException("array must be a 3-element int array");
-//            }
-//            if (variableLength == null) {
-//                throw new IllegalArgumentException("variableLength must be non-null");
-//            }
-//        }
     }
 
     /**

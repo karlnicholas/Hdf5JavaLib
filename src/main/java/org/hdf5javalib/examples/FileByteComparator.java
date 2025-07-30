@@ -58,29 +58,25 @@ public class FileByteComparator {
                 if (file1Bytes[i] != file2Bytes[i]) {
                     differencesFound = true;
                     // Print offset and byte values in hex
-                    log.info(String.format("0x%-8X  0x%02X          0x%02X",
-                            i,
-                            file1Bytes[i] & 0xFF,
-                            file2Bytes[i] & 0xFF));
+                    log.info("0x{:08X}  0x{:02X}  0x{:02X}", i, file1Bytes[i] & 0xFF, file2Bytes[i] & 0xFF);
                 }
             }
 
-            // Check for length differences
+// Check for length differences
             if (file1Bytes.length != file2Bytes.length) {
                 differencesFound = true;
-                log.info(String.format("Files differ in length: File1 = %d bytes, File2 = %d bytes",
-                        file1Bytes.length, file2Bytes.length));
+                log.info("Files differ in length: File1 = {} bytes, File2 = {}", file1Bytes.length, file2Bytes.length);
+                String offset = Integer.toHexString(minLength - 1).toUpperCase();
+
                 if (file1Bytes.length > file2Bytes.length) {
-                    log.info("Extra bytes in File1 after offset 0x" +
-                            Integer.toHexString(minLength - 1).toUpperCase() + ":");
+                    log.info("Extra bytes in File1 after offset 0x{}:", offset);
                     for (int i = minLength; i < file1Bytes.length; i++) {
-                        log.info(String.format("0x%-8X  0x%02X", i, file1Bytes[i] & 0xFF));
+                        log.info("0x{:08X}  0x{:02X}", i, file1Bytes[i] & 0xFF);
                     }
                 } else {
-                    log.info("Extra bytes in File2 after offset 0x" +
-                            Integer.toHexString(minLength - 1).toUpperCase() + ":");
+                    log.info("Extra bytes in File2 after offset 0x{}:", offset);
                     for (int i = minLength; i < file2Bytes.length; i++) {
-                        log.info(String.format("0x%-8X  0x%02X", i, file2Bytes[i] & 0xFF));
+                        log.info("0x{:08X}  0x{:02X}", i, file2Bytes[i] & 0xFF);
                     }
                 }
             }

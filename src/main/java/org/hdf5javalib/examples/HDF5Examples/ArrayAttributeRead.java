@@ -4,6 +4,8 @@ import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,17 +39,15 @@ public class ArrayAttributeRead {
      * Executes the main logic of reading and displaying compound data from an HDF5 file.
      */
     private void run() {
-        try {
-            Path filePath = getResourcePath("HDF5Examples/h5ex_t_arrayatt.h5");
-            try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
-                HdfFileReader reader = new HdfFileReader(channel).readFile();
-                log.debug("BTree: {} ", reader.getBTree().getRoot());
-                for (HdfDataset dataSet : reader.getDatasets()) {
-                    displayAttributes(dataSet);
-                }
+        Path filePath = getResourcePath("HDF5Examples/h5ex_t_arrayatt.h5");
+        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+            HdfFileReader reader = new HdfFileReader(channel).readFile();
+            log.debug("BTree: {} ", reader.getBTree().getRoot());
+            for (HdfDataset dataSet : reader.getDatasets()) {
+                displayAttributes(dataSet);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
     }
 }
