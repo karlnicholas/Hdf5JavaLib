@@ -45,9 +45,6 @@ public class TwentyScalarRead {
                 }
             }
             log.debug("Superblock: {} ", reader.getSuperblock());
-//                try (HdfDataset ds = reader.getRootGroup().findDataset("dataset_14")) {
-//                    HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
-//                }
         }
     }
 }

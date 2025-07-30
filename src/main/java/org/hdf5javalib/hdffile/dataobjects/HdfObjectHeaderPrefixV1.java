@@ -125,6 +125,7 @@ public class HdfObjectHeaderPrefixV1 extends HdfObjectHeaderPrefix {
      *
      * @param buffer the ByteBuffer to write to
      */
+    @Override
     public void writeInitialMessageBlockToBuffer(ByteBuffer buffer) {
         // Write version (1 byte)
         buffer.put((byte) version);

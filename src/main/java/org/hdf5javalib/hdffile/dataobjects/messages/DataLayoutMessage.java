@@ -214,7 +214,7 @@ public class DataLayoutMessage extends HdfMessage {
             int dimensions,
             FixedPointDatatype eightByteFixedPointType,
             HdfDataFile hdfDataFile
-    ) throws Exception {
+    ) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         return readFromSeekableByteChannelRecursive(fileChannel, btreeAddress, dimensions, eightByteFixedPointType, hdfDataFile, new LinkedHashMap<>());
     }
 
@@ -234,7 +234,7 @@ public class DataLayoutMessage extends HdfMessage {
                                                                    FixedPointDatatype eightByteFixedPointType,
                                                                    HdfDataFile hdfDataFile,
                                                                    Map<Long, HdfBTreeV1> visitedNodes
-    ) throws Exception {
+    ) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (visitedNodes.containsKey(nodeAddress)) {
             throw new IllegalStateException("Cycle detected or node re-visited: BTree node address "
                     + nodeAddress + " encountered again during recursive read.");

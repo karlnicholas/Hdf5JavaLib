@@ -166,7 +166,7 @@ public class FixedPointRead {
             for (int c = 0; c < shape[1]; c++) {
                 row.append(FlattenedArrayUtils.getElement(flattenedData, shape, r, c).setScale(2, RoundingMode.HALF_UP)).append(" ");
             }
-            log.info(row.toString().trim());
+            log.info("{}", row.toString().trim());
         }
 
         log.info("FlattenedData Streamed = ");
@@ -176,7 +176,7 @@ public class FixedPointRead {
             for (int c = 0; c < shape[1]; c++) {
                 row.append(bdMatrix[r][c].setScale(2, RoundingMode.HALF_UP)).append(" ");
             }
-            log.info(row.toString().trim());
+            log.info("{}", row.toString().trim());
         }
 
         BigDecimal[] bdReduced = (BigDecimal[]) FlattenedArrayUtils.reduceAlongAxis(dataSource.streamFlattened(), shape, 0, BigDecimal::max, BigDecimal.class);
