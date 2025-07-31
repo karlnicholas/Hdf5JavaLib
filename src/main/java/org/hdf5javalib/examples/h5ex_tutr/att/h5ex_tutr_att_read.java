@@ -12,7 +12,7 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static org.hdf5javalib.utils.HdfDisplayUtils.*;
+import static org.hdf5javalib.utils.HdfDisplayUtils.displayFileAttr;
 
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.
