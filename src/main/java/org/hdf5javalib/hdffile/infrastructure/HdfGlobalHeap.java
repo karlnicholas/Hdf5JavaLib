@@ -101,7 +101,6 @@ public class HdfGlobalHeap {
                 throw new IllegalStateException("Heap not loaded for offset: " + heapOffset + " and no initializer provided.");
             }
         }
-//        LinkedHashMap<Integer, GlobalHeapObject> specificHeapObjects = heapCollections.get(heapOffset);
         return block.getDataBytes(heapOffset, objectId);
     }
 
@@ -175,22 +174,11 @@ public class HdfGlobalHeap {
 
         HdfGlobalHeapBlock heapBlock = new HdfGlobalHeapBlock(
                 localObjects,
-                localCollectionSize,
                 localNextObjectId,
                 hdfDataFile,
                 hdfStartOffset
         );
         globalHeaps.put(hdfStartOffset, heapBlock);
-//        this.heapCollections.put(hdfStartOffset, localObjects);
-//        this.collectionSizes.put(hdfStartOffset, localCollectionSize);
-//        this.nextObjectIds.put(hdfStartOffset, localNextObjectId);
-
-//        this.setType(heapCollections.size() > 1 ? AllocationType.GLOBAL_HEAP_2 : AllocationType.GLOBAL_HEAP_1);
-//        this.setName(heapCollections.size() > 1 ? "Global Heap 1" : "Global Heap 2");
-//        this.setOffset(hdfStartOffset);
-//        this.setSize(localCollectionSize);
-//        this.hdfDataFile.getFileAllocation().addAllocationBlock(this);
-
     }
 
     /**
@@ -202,52 +190,6 @@ public class HdfGlobalHeap {
      * @throws IllegalStateException    if the heap block is not allocated or full
      */
     public byte[] addToHeap(byte[] bytes) {
-//        if (bytes == null) {
-//            throw new IllegalArgumentException("Input byte array cannot be null.");
-//        }
-//
-//        HdfFileAllocation fileAllocation = hdfDataFile.getFileAllocation();
-//
-//        if (currentWriteHeapOffset == null) {
-//            this.currentWriteHeapOffset = fileAllocation.getGlobalHeapOffset();
-//        }
-//        final HdfFixedPoint currentHeapOffset = this.currentWriteHeapOffset;
-//
-//        HdfGlobalHeapBlock heapBlock = globalHeaps.computeIfAbsent(currentHeapOffset, k -> {
-//            return new HdfGlobalHeapBlock(
-//                    new LinkedHashMap<>(),
-//                    HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()),
-//                    1,
-//                    hdfDataFile,
-//                    globalHeaps.size() > 1 ? AllocationType.GLOBAL_HEAP_2 : AllocationType.GLOBAL_HEAP_1,
-//                    globalHeaps.size() > 1 ? "Global Heap 2" : "Global Heap 2",
-//                    currentHeapOffset);
-////            globalHeaps.put(currentHeapOffset, heapBlock);
-////            return heapBlock;
-//
-//        });
-//        boolean attempt = heapBlock.attemptAddBytes(bytes);
-//        if (!attempt) {
-////            currentUsedSize + newObjectRequiredSize + GLOBAL_HEAP_OBJECT_SIZE > blockSize.getInstance(Long.class);
-//            HdfFixedPoint newHeapOffset;
-//            if (currentHeapOffset == fileAllocation.getGlobalHeapOffset()) {
-//                newHeapOffset = fileAllocation.allocateNextGlobalHeapBlock();
-//            } else {
-//                newHeapOffset = fileAllocation.expandGlobalHeapBlock();
-//            }
-//            HdfGlobalHeapBlock globalHeapBlock = new HdfGlobalHeapBlock(
-//                    new LinkedHashMap<>(),
-//                    HdfWriteUtils.hdfFixedPointFromValue(0, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()),
-//                    1,
-//                    hdfDataFile,
-//                    globalHeaps.size() > 1 ? AllocationType.GLOBAL_HEAP_2 : AllocationType.GLOBAL_HEAP_1,
-//                    globalHeaps.size() > 1 ? "Global Heap 1" : "Global Heap 1",
-//                    currentHeapOffset);
-//            globalHeaps.put(newHeapOffset, globalHeapBlock);
-//            currentWriteHeapOffset = newHeapOffset;
-//        }
-//
-//        return heapBlock.addToHeap(bytes);
         return null;
     }
 

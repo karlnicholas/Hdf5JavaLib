@@ -115,7 +115,6 @@ public class HdfSuperblock {
             HdfFixedPoint endOfFileAddress,
             HdfFixedPoint driverInformationAddress,
             HdfDataFile hdfDataFile,
-            String name, HdfFixedPoint offset,
             FixedPointDatatype fixedPointDatatypeForOffset,
             FixedPointDatatype fixedPointDatatypeForLength
     ) {

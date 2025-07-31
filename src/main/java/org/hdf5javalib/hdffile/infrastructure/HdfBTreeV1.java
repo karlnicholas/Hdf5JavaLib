@@ -75,8 +75,7 @@ public class HdfBTreeV1 {
             HdfFixedPoint rightSiblingAddress,
             HdfFixedPoint keyZero,
             List<HdfBTreeEntryBase> entries,
-            HdfDataFile hdfDataFile,
-            HdfFixedPoint offset
+            HdfDataFile hdfDataFile
     ) {
         this.nodeType = nodeType;
         this.nodeLevel = nodeLevel;
@@ -124,7 +123,7 @@ public class HdfBTreeV1 {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("HdfBTree{");
-        sb.append("signature='").append(new String("TREE")).append('\'');
+        sb.append("signature='").append("TREE").append('\'');
         sb.append(", nodeType=").append(nodeType);
         sb.append(", nodeLevel=").append(nodeLevel);
         sb.append(", entriesUsed=").append(entriesUsed);

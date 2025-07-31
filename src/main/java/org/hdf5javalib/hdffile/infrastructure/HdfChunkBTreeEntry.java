@@ -69,11 +69,4 @@ public class HdfChunkBTreeEntry extends HdfBTreeEntryBase {
     public long getFilterMask() {
         return filterMask;
     }
-//    public HdfGroupSymbolTableNode getSymbolTableNode() {
-//        return symbolTableNode;
-//    }
-//
-//    public HdfBTree getChildBTree() {
-//        return childBTree;
-//    }
 }

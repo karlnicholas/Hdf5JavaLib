@@ -86,7 +86,7 @@ public class FileByteComparator {
             }
 
         } catch (IOException e) {
-            log.error("Error reading files: " + e.getMessage());
+            log.error("Error reading files: ", e);
             System.exit(1);
         }
     }

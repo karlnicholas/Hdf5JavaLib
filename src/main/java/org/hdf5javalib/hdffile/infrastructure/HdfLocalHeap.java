@@ -53,10 +53,8 @@ public class HdfLocalHeap {
      * @param version            the version of the local heap format
      * @param hdfDataFile        the HDF5 data file containing the local heap
      * @param heapData           the raw byte array containing the heap's data
-     * @param heapOffset
      */
-    public HdfLocalHeap(int version, HdfDataFile hdfDataFile, HdfLocalHeapData heapData,
-                        long heapOffset) {
+    public HdfLocalHeap(int version, HdfDataFile hdfDataFile, HdfLocalHeapData heapData) {
         this.version = version;
         this.hdfDataFile = hdfDataFile;
         this.heapData = heapData;

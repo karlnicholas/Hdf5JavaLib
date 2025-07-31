@@ -336,8 +336,6 @@ public class HdfFileReader implements HdfDataFile {
                 endOfFileAddress,
                 driverInformationAddress,
                 hdfDataFile,
-                "Superblock",
-                hdfOffset,
                 fixedPointDatatypeForOffset,
                 fixedPointDatatypeForLength
         );
@@ -413,8 +411,7 @@ public class HdfFileReader implements HdfDataFile {
 
         List<HdfBTreeEntryBase> entries = new ArrayList<>(entriesUsed);
 
-        HdfBTreeV1 currentNode = new HdfBTreeV1(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries, hdfDataFile,
-                HdfWriteUtils.hdfFixedPointFromValue(nodeAddress, hdfOffset));
+        HdfBTreeV1 currentNode = new HdfBTreeV1(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries, hdfDataFile);
         visitedNodes.put(nodeAddress, currentNode);
 
         for (int i = 0; i < entriesUsed; i++) {
@@ -529,7 +526,7 @@ public class HdfFileReader implements HdfDataFile {
         HdfLocalHeapData hdfLocalHeapData = readLocalHeapDataFromSeekableByteChannel(
                 fileChannel, dataSegmentSize, freeListOffset, dataSegmentAddress, hdfDataFile);
 
-        return new HdfLocalHeap(version,hdfDataFile, hdfLocalHeapData, localHeapOffset);
+        return new HdfLocalHeap(version,hdfDataFile, hdfLocalHeapData);
     }
 
     public static HdfLocalHeapData readLocalHeapDataFromSeekableByteChannel(

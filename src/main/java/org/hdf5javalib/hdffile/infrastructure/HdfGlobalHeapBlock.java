@@ -24,7 +24,6 @@ public class HdfGlobalHeapBlock {
      */
     public HdfGlobalHeapBlock(
             LinkedHashMap<Integer, GlobalHeapObject> globalHeapObjects,
-            HdfFixedPoint collectionSize,
             Integer nextObjectId,
             HdfDataFile hdfDataFile,
             HdfFixedPoint offset

@@ -41,8 +41,6 @@ public class HdfSymbolTableEntry {
     public HdfSymbolTableEntry(HdfFixedPoint linkNameOffset, HdfFixedPoint objectHeaderAddress, HdfSymbolTableEntryCache cache) {
         this.linkNameOffset = linkNameOffset;
         this.objectHeaderAddress = objectHeaderAddress;
-//        this.objectHeader = objectHeader;
-//        this.objectHeader = cache.getObjectHeader();
         this.cache = cache;
     }
 
@@ -55,11 +53,6 @@ public class HdfSymbolTableEntry {
         // Write Link Name Offset (sizeOfOffsets bytes, little-endian)
         writeFixedPointToBuffer(buffer, linkNameOffset);
 
-//        // Write Object Header Address (sizeOfOffsets bytes, little-endian)
-//        writeFixedPointToBuffer(buffer, objectHeader.getDataObjectAllocationRecord().getOffset());
-
-        // Write Cache Type (4 bytes, little-endian)
-//        cache.writeToBuffer(buffer);
     }
 
     /**

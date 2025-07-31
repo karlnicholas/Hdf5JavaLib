@@ -9,7 +9,6 @@ import org.hdf5javalib.hdffile.infrastructure.HdfChunkBTreeEntry;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.hdf5javalib.utils.HdfReadUtils;
-import org.hdf5javalib.utils.HdfWriteUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -269,8 +268,7 @@ public class DataLayoutMessage extends HdfMessage {
 
         List<HdfBTreeEntryBase> entries = new ArrayList<>(entriesUsed);
 
-        HdfBTreeV1 currentNode = new HdfBTreeV1(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, null, entries, hdfDataFile,
-                HdfWriteUtils.hdfFixedPointFromValue(nodeAddress, hdfOffset));
+        HdfBTreeV1 currentNode = new HdfBTreeV1(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, null, entries, hdfDataFile);
         visitedNodes.put(nodeAddress, currentNode);
 
         // (4 + 4 + 8*dimensions + 1*length + 1*length) * entriesUsed
@@ -314,18 +312,6 @@ public class DataLayoutMessage extends HdfMessage {
     public DataLayoutStorage getDataLayoutStorage() throws IOException {
         return dataLayoutStorage;
     }
-
-//    public void setDataAddress(HdfFixedPoint dataAddress) {
-//        this.dataAddress = dataAddress;
-//    }
-//
-//    public HdfFixedPoint getDataAddress() {
-//        return dataLayoutStorage.getDataAddress();
-//    }
-//
-//    public HdfFixedPoint[] getDimensionSizes() {
-//        return d;
-//    }
 
     public static abstract class DataLayoutStorage {
         protected final HdfDataFile hdfDataFile;

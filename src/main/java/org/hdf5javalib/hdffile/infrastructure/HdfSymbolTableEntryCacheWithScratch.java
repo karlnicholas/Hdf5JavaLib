@@ -28,18 +28,6 @@ public class HdfSymbolTableEntryCacheWithScratch implements HdfSymbolTableEntryC
      * The offset of the B-Tree for cache type 1 entries (null for cache type 0).
      */
 
-//    @Override
-//    public void writeToBuffer(ByteBuffer buffer) {
-//        buffer.putInt(cacheType);
-//
-//        // Write Reserved Field (4 bytes, must be 0)
-//        buffer.putInt(0);
-//
-////        writeFixedPointToBuffer(buffer, group.getBTree().getAllocationRecord().getOffset());
-////        writeFixedPointToBuffer(buffer, group.getLocalHeap().getAllocationRecord().getOffset());
-//
-//    }
-
     @Override
     public String toString() {
         return "HdfSymbolTableEntryCacheWithScratch{" + "cacheType=" + cacheType +

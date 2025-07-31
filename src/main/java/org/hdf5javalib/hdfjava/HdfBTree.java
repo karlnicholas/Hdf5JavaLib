@@ -90,14 +90,9 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
         }
     }
 
-    // --- Inner Iterator Classes ---
-
-    /**
-     * An iterator that performs a pre-order, depth-first traversal of all nodes.
-     * It uses a stack to manage the traversal state without recursion.
-     */
+    // BTreeIterator with Deque
     private static class BTreeIterator implements Iterator<HdfBTreeNode> {
-        private final Stack<HdfBTreeNode> stack = new Stack<>();
+        private final Deque<HdfBTreeNode> stack = new ArrayDeque<>();
 
         public BTreeIterator(HdfBTreeNode root) {
             if (root != null) {
@@ -118,8 +113,6 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
 
             HdfBTreeNode currentNode = stack.pop();
 
-            // If the current node is a group, push its children onto the stack
-            // in reverse order to maintain the correct pre-order traversal (left to right).
             if (currentNode instanceof HdfGroup group) {
                 List<HdfBTreeNode> children = group.getChildren();
                 for (int i = children.size() - 1; i >= 0; i--) {
@@ -130,19 +123,15 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
         }
     }
 
-    /**
-     * An iterator that traverses all nodes but only returns HdfDataset instances.
-     * It uses a "look-ahead" approach to find the next dataset.
-     */
+    // BTreeDatasetIterator with Deque
     private static class BTreeDatasetIterator implements Iterator<HdfDataset> {
-        private final Stack<HdfBTreeNode> stack = new Stack<>();
+        private final Deque<HdfBTreeNode> stack = new ArrayDeque<>();
         private HdfDataset nextHdfDataset;
 
         public BTreeDatasetIterator(HdfBTreeNode root) {
             if (root != null) {
                 stack.push(root);
             }
-            // Find the first dataset to prime the iterator
             findNext();
         }
 
@@ -157,32 +146,24 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
                 throw new NoSuchElementException("No more datasets in the tree.");
             }
             HdfDataset hdfDatasetToReturn = nextHdfDataset;
-            // Look for the next dataset for the *next* call to next()
             findNext();
             return hdfDatasetToReturn;
         }
 
-        /**
-         * A helper method to find the next HdfDataset and store it in the nextHdfDataset field.
-         */
         private void findNext() {
             while (!stack.isEmpty()) {
                 HdfBTreeNode currentNode = stack.pop();
 
-                // If it's a group, push its children for future traversal
                 if (currentNode instanceof HdfGroup group) {
                     List<HdfBTreeNode> children = group.getChildren();
                     for (int i = children.size() - 1; i >= 0; i--) {
                         stack.push(children.get(i));
                     }
-                }
-                // If it's a dataset, we've found our next item. Store it and break.
-                else if (currentNode instanceof HdfDataset) {
+                } else if (currentNode instanceof HdfDataset) {
                     this.nextHdfDataset = (HdfDataset) currentNode;
                     return;
                 }
             }
-            // If the loop finishes, there are no more datasets
             this.nextHdfDataset = null;
         }
     }
