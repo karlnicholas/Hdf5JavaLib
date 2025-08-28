@@ -16,7 +16,7 @@ public class HdfGroup extends HdfDataObject {
 
     public void visitAllNodes(Function<HdfBTreeNode, Boolean> visitor) {
         Queue<HdfBTreeNode> queue = new LinkedList<>();
-        queue.offer(this);
+        queue.add(this);
 
         while (!queue.isEmpty()) {
             HdfBTreeNode current = queue.poll();
@@ -26,7 +26,7 @@ public class HdfGroup extends HdfDataObject {
 
             if (current instanceof HdfGroup group) {
                 for (HdfBTreeNode child : group.children) {
-                    queue.offer(child);
+                    queue.add(child);
                 }
             }
         }
