@@ -10,6 +10,8 @@ public interface HdfBTreeNode extends Comparable<HdfBTreeNode> {
 
     String getObjectName();
 
+    String getHardLink();
+
     HdfObjectHeaderPrefix getObjectHeader();
 
     int getLevel();

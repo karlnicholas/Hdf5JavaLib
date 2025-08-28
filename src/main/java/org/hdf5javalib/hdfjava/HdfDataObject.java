@@ -13,14 +13,16 @@ public abstract class HdfDataObject implements HdfBTreeNode {
     protected final String objectName;
     protected final HdfObjectHeaderPrefix objectHeader;
     protected HdfBTreeNode parent;
+    protected final String hardLink;
 
-    public HdfDataObject(String objectName, HdfObjectHeaderPrefix objectHeader, HdfBTreeNode parent) {
+    public HdfDataObject(String objectName, HdfObjectHeaderPrefix objectHeader, HdfBTreeNode parent, String hardLink) {
         this.objectName = Objects.requireNonNull(objectName, "Node name cannot be null.");
         if (objectName.contains("/")) {
             throw new IllegalArgumentException("Node name cannot contain '/' character.");
         }
         this.objectHeader = objectHeader;
         this.parent = parent;
+        this.hardLink = hardLink;
     }
 
     // other getters and setters remain the same...
@@ -43,6 +45,7 @@ public abstract class HdfDataObject implements HdfBTreeNode {
         return path.toString();
     }
 
+    public String getHardLink() { return hardLink; }
     /**
      * Compares this node to another node based on their names.
      * This is essential for sorting and binary searching.

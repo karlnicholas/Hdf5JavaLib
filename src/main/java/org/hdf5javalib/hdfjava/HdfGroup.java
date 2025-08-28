@@ -2,18 +2,42 @@ package org.hdf5javalib.hdfjava;
 
 import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefix;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 
 public class HdfGroup extends HdfDataObject {
 
     private final List<HdfBTreeNode> children;
 
-    public HdfGroup(String name, HdfObjectHeaderPrefix objectHeader, HdfBTreeNode parent) {
-        super(name, objectHeader, parent);
+    public HdfGroup(String name, HdfObjectHeaderPrefix objectHeader, HdfBTreeNode parent, String hardLink) {
+        super(name, objectHeader, parent, hardLink);
         this.children = new ArrayList<>();
+    }
+
+    public void visitAllNodes(Function<HdfBTreeNode, Boolean> visitor) {
+        Queue<HdfBTreeNode> queue = new LinkedList<>();
+        queue.offer(this);
+
+        while (!queue.isEmpty()) {
+            HdfBTreeNode current = queue.poll();
+            if ( visitor.apply(current) ) {
+                return;
+            };
+
+            if (current instanceof HdfGroup group) {
+                for (HdfBTreeNode child : group.children) {
+                    queue.offer(child);
+                }
+            }
+        }
+    }
+
+    public HdfBTreeNode getRoot() {
+        HdfBTreeNode current = this;
+        while (current.getParent() != null) {
+            current = current.getParent();
+        }
+        return current;
     }
 
     /**
@@ -54,7 +78,7 @@ public class HdfGroup extends HdfDataObject {
         // To use binarySearch, we need a "key" object of the same type.
         // We can create a temporary, lightweight HdfDataset object for this purpose.
         // The value doesn't matter, as the comparison is only on the name.
-        HdfBTreeNode searchKey = new HdfDataset(name, null, null);
+        HdfBTreeNode searchKey = new HdfDataset(name, null, null, null);
 
         int index = Collections.binarySearch(children, searchKey);
 

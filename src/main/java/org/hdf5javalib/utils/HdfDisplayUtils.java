@@ -108,6 +108,8 @@ public class HdfDisplayUtils {
                     break;
 
             }
+        } else if (ds.isDataset() && ds.getHardLink() != null) {
+            log.info("{}: HARDLINK = {} ", ds.getObjectName(), ds.getHardLink());
         }
     }
 

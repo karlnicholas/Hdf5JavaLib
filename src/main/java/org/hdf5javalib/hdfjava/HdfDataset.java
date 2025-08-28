@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
  */
 public class HdfDataset extends HdfDataObject implements AutoCloseable {
 
-    public HdfDataset(String objectName, HdfObjectHeaderPrefix objectHeader, HdfBTreeNode parent) {
-        super(objectName, objectHeader, parent);
+    public HdfDataset(String objectName, HdfObjectHeaderPrefix objectHeader, HdfBTreeNode parent, String hardLink) {
+        super(objectName, objectHeader, parent, hardLink);
     }
 
     @Override
@@ -350,8 +350,9 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
     }
 
     public boolean hasData() {
-        return hasDataspaceMessage()
-                && objectHeader.findMessageByType(DataLayoutMessage.class).orElseThrow().hasData();
+        return hardLink == null
+            && hasDataspaceMessage()
+            && objectHeader.findMessageByType(DataLayoutMessage.class).orElseThrow().hasData();
     }
 
     /**

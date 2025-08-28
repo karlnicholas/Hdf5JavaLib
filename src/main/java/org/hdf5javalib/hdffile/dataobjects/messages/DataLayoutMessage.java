@@ -171,23 +171,22 @@ public class DataLayoutMessage extends HdfMessage {
                 break;
 
             case 3: // Virtual Storage
-                if (version != 4) {
-                    throw new IllegalArgumentException("Layout class 3 is only supported in version 4");
+                if (version == 4) {
+                    dataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+                    long index = Integer.toUnsignedLong(buffer.getInt());
+                    byte[] dataBytes = hdfDataFile.getGlobalHeap().getDataBytes(dataAddress, (int) index);
+                    ByteBuffer dataBuffer = ByteBuffer.wrap(dataBytes).order(ByteOrder.LITTLE_ENDIAN);
+                    int vVersion = Byte.toUnsignedInt(dataBuffer.get());
+                    HdfFixedPoint numEntries = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), dataBuffer);
+                    int iNumEntries = numEntries.getInstance(Long.class).intValue();
+                    for (int i = 0; i < iNumEntries; i++) {
+                        String sourceFilename = HdfReadUtils.readNullTerminatedString(dataBuffer);
+                        String sourceDataset = HdfReadUtils.readNullTerminatedString(dataBuffer);
+                        HdfDataspaceSelectionInstance sourceSelection = HdfDataspaceSelectionInstance.parseSelectionInfo(dataBuffer);
+                        HdfDataspaceSelectionInstance virtualSelection = HdfDataspaceSelectionInstance.parseSelectionInfo(dataBuffer);
+                    }
+                    long checkSum = Integer.toUnsignedLong(dataBuffer.getInt());
                 }
-                dataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
-                long index = Integer.toUnsignedLong(buffer.getInt());
-                byte[] dataBytes = hdfDataFile.getGlobalHeap().getDataBytes(dataAddress, (int) index);
-                ByteBuffer dataBuffer = ByteBuffer.wrap(dataBytes).order(ByteOrder.LITTLE_ENDIAN);
-                int vVersion = Byte.toUnsignedInt(dataBuffer.get());
-                HdfFixedPoint numEntries = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), dataBuffer);
-                int iNumEntries = numEntries.getInstance(Long.class).intValue();
-                for (int i = 0; i < iNumEntries; i++) {
-                    String sourceFilename = HdfReadUtils.readNullTerminatedString(dataBuffer);
-                    String sourceDataset = HdfReadUtils.readNullTerminatedString(dataBuffer);
-                    HdfDataspaceSelectionInstance sourceSelection = HdfDataspaceSelectionInstance.parseSelectionInfo(dataBuffer);
-                    HdfDataspaceSelectionInstance virtualSelection = HdfDataspaceSelectionInstance.parseSelectionInfo(dataBuffer);
-                }
-                long checkSum = Integer.toUnsignedLong(dataBuffer.getInt());
                 dataLayoutStorage = null;
                 break;
 
@@ -306,7 +305,7 @@ public class DataLayoutMessage extends HdfMessage {
     }
 
     public boolean hasData() {
-        return dataLayoutStorage.hasData();
+        return dataLayoutStorage != null && dataLayoutStorage.hasData();
     }
 
     public DataLayoutStorage getDataLayoutStorage() throws IOException {
