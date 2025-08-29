@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Represents an HDF5 B-Tree (version 1) as defined in the HDF5 specification.
  * <p>
- * The {@code HdfBTree} class models a B-Tree used for indexing group entries in HDF5 files.
+ * The {@code HdfTree} class models a B-Tree used for indexing group entries in HDF5 files.
  * It supports both leaf nodes (containing symbol table nodes) and internal nodes (containing
  * child B-Trees). This class provides methods for reading from a file channel, adding datasets,
  * splitting symbol table nodes, and writing the B-Tree structure back to a file.
@@ -56,7 +56,7 @@ public class HdfBTreeV1 {
     private final HdfDataFile hdfDataFile;
 
     /**
-     * Constructs an HdfBTree with all fields specified.
+     * Constructs an HdfTree with all fields specified.
      *
      * @param nodeType            the type of the node (0 for group B-Tree)
      * @param nodeLevel           the level of the node (0 for leaf, >0 for internal)
@@ -88,7 +88,7 @@ public class HdfBTreeV1 {
     }
 
     /**
-     * Constructs an HdfBTree with minimal fields for a new node.
+     * Constructs an HdfTree with minimal fields for a new node.
      *
      * @param nodeType            the type of the node (0 for group B-Tree)
      * @param nodeLevel           the level of the node (0 for leaf, >0 for internal)
@@ -115,14 +115,14 @@ public class HdfBTreeV1 {
     }
 
     /**
-     * Returns a string representation of the HdfBTree.
+     * Returns a string representation of the HdfTree.
      *
      * @return a string describing the node's signature, type, level, entries, and structure
      */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("HdfBTree{");
+        sb.append("HdfTree{");
         sb.append("signature='").append("TREE").append('\'');
         sb.append(", nodeType=").append(nodeType);
         sb.append(", nodeLevel=").append(nodeLevel);

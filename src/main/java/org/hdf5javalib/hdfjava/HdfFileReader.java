@@ -59,7 +59,7 @@ public class HdfFileReader implements HdfDataFile {
      * The file allocation manager for tracking storage blocks.
      */
     private HdfSuperblock superblock;
-    private HdfBTree bTree;
+    private HdfTree bTree;
 
     /**
      * Constructs an HdfFileReader for reading an HDF5 file.
@@ -109,7 +109,7 @@ public class HdfFileReader implements HdfDataFile {
         String groupName = localHeap.stringAtOffset(rootGroupSymbolTableEntry.getLinkNameOffset());
         // set BTree
         HdfGroup groupObject = new HdfGroup(groupName, objectHeader, null, null);
-        bTree = new HdfBTree(groupObject);
+        bTree = new HdfTree(groupObject);
         // recurse through infrastructure
         readInfrastructure(groupObject, localHeap, groupBTree);
 
@@ -262,7 +262,7 @@ public class HdfFileReader implements HdfDataFile {
         HdfGroup currentGroup = bTree.getRoot();
         int compIndex = 0;
         while (currentGroup != null) {
-            Optional<HdfBTreeNode> child = currentGroup.findChildByName(components[compIndex++]);
+            Optional<HdfTreeNode> child = currentGroup.findChildByName(components[compIndex++]);
             if ( child.isEmpty() ) {
                 return Optional.empty();
             } else if (compIndex == components.length && clazz.isAssignableFrom(child.get().getDataObject().getClass())) {
@@ -381,11 +381,11 @@ public class HdfFileReader implements HdfDataFile {
     }
 
     /**
-     * Reads an HdfBTree from a file channel.
+     * Reads an HdfTree from a file channel.
      *
      * @param fileChannel the file channel to read from
      * @param hdfDataFile the HDF5 file context
-     * @return the constructed HdfBTree instance
+     * @return the constructed HdfTree instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
     public static HdfBTreeV1 readBTreeFromSeekableByteChannel(
@@ -397,13 +397,13 @@ public class HdfFileReader implements HdfDataFile {
     }
 
     /**
-     * Recursively reads an HdfBTree from a file channel, handling cycles.
+     * Recursively reads an HdfTree from a file channel, handling cycles.
      *
      * @param fileChannel  the file channel to read from
      * @param nodeAddress  the address of the current node
      * @param visitedNodes a map of visited node addresses to detect cycles
      * @param hdfDataFile  the HDF5 file context
-     * @return the constructed HdfBTree instance
+     * @return the constructed HdfTree instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
     private static HdfBTreeV1 readFromSeekableByteChannelRecursive(SeekableByteChannel fileChannel,
@@ -891,7 +891,7 @@ public class HdfFileReader implements HdfDataFile {
     }
 
     @Override
-    public HdfBTree getBTree() {
+    public HdfTree getBTree() {
         return bTree;
     }
 

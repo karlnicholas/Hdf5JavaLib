@@ -53,7 +53,7 @@ public abstract class HdfBTreeEntryBase {
 //     * @param childBTreeAddress the address of the child B-Tree
 //     * @param childBTree       the child B-Tree payload
 //     */
-//    public HdfGroupBTreeEntry(HdfFixedPoint key, HdfFixedPoint childBTreeAddress, HdfBTree childBTree) {
+//    public HdfGroupBTreeEntry(HdfFixedPoint key, HdfFixedPoint childBTreeAddress, HdfTree childBTree) {
 //        this.key = key;
 //        this.childPointer = childBTreeAddress;
 //        this.symbolTableNode = null;

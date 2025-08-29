@@ -7,11 +7,11 @@ import java.util.logging.Logger;
  * Represents the B-Tree itself. It is iterable and provides specialized
  * iterators for all nodes or just for datasets.
  */
-public class HdfBTree implements Iterable<HdfBTreeNode> {
-    private static final Logger log = Logger.getLogger(HdfBTree.class.getName());
+public class HdfTree implements Iterable<HdfTreeNode> {
+    private static final Logger log = Logger.getLogger(HdfTree.class.getName());
     private final HdfGroup root;
 
-    public HdfBTree(HdfGroup root) {
+    public HdfTree(HdfGroup root) {
         if (!root.getObjectName().isEmpty()) {
             throw new IllegalArgumentException("Root node name must be an empty string \"\".");
         }
@@ -29,7 +29,7 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
      * @return An iterator for all BTreeNodes.
      */
     @Override
-    public Iterator<HdfBTreeNode> iterator() {
+    public Iterator<HdfTreeNode> iterator() {
         return new BTreeIterator(root);
     }
 
@@ -43,7 +43,7 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
         return new BTreeDatasetIterator(root);
     }
 
-    public Optional<HdfBTreeNode> findByPath(String path) {
+    public Optional<HdfTreeNode> findByPath(String path) {
         // ... (findByPath method remains the same as before) ...
         if (path == null || !path.startsWith("/")) {
             throw new IllegalArgumentException("Path must be non-null and start with '/'");
@@ -54,7 +54,7 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
         }
 
         String[] names = path.substring(1).split("/");
-        HdfBTreeNode currentNode = this.root;
+        HdfTreeNode currentNode = this.root;
 
         for (String name : names) {
             if (name.isEmpty()) continue;
@@ -77,10 +77,10 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
         printNode(root, "", true);
     }
 
-    private void printNode(HdfBTreeNode node, String prefix, boolean isTail) {
+    private void printNode(HdfTreeNode node, String prefix, boolean isTail) {
         log.info(prefix + (isTail ? "└── " : "├── ") + node + " (Level: " + node.getLevel() + ")");
         if (node instanceof HdfGroup group) {
-            List<HdfBTreeNode> children = group.getChildren();
+            List<HdfTreeNode> children = group.getChildren();
             for (int i = 0; i < children.size() - 1; i++) {
                 printNode(children.get(i), prefix + (isTail ? "    " : "│   "), false);
             }
@@ -91,10 +91,10 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
     }
 
     // BTreeIterator with Deque
-    private static class BTreeIterator implements Iterator<HdfBTreeNode> {
-        private final Deque<HdfBTreeNode> stack = new ArrayDeque<>();
+    private static class BTreeIterator implements Iterator<HdfTreeNode> {
+        private final Deque<HdfTreeNode> stack = new ArrayDeque<>();
 
-        public BTreeIterator(HdfBTreeNode root) {
+        public BTreeIterator(HdfTreeNode root) {
             if (root != null) {
                 stack.push(root);
             }
@@ -106,15 +106,15 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
         }
 
         @Override
-        public HdfBTreeNode next() {
+        public HdfTreeNode next() {
             if (!hasNext()) {
                 throw new NoSuchElementException("No more nodes in the tree.");
             }
 
-            HdfBTreeNode currentNode = stack.pop();
+            HdfTreeNode currentNode = stack.pop();
 
             if (currentNode instanceof HdfGroup group) {
-                List<HdfBTreeNode> children = group.getChildren();
+                List<HdfTreeNode> children = group.getChildren();
                 for (int i = children.size() - 1; i >= 0; i--) {
                     stack.push(children.get(i));
                 }
@@ -125,10 +125,10 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
 
     // BTreeDatasetIterator with Deque
     private static class BTreeDatasetIterator implements Iterator<HdfDataset> {
-        private final Deque<HdfBTreeNode> stack = new ArrayDeque<>();
+        private final Deque<HdfTreeNode> stack = new ArrayDeque<>();
         private HdfDataset nextHdfDataset;
 
-        public BTreeDatasetIterator(HdfBTreeNode root) {
+        public BTreeDatasetIterator(HdfTreeNode root) {
             if (root != null) {
                 stack.push(root);
             }
@@ -152,10 +152,10 @@ public class HdfBTree implements Iterable<HdfBTreeNode> {
 
         private void findNext() {
             while (!stack.isEmpty()) {
-                HdfBTreeNode currentNode = stack.pop();
+                HdfTreeNode currentNode = stack.pop();
 
                 if (currentNode instanceof HdfGroup group) {
-                    List<HdfBTreeNode> children = group.getChildren();
+                    List<HdfTreeNode> children = group.getChildren();
                     for (int i = children.size() - 1; i >= 0; i--) {
                         stack.push(children.get(i));
                     }

@@ -55,7 +55,7 @@ public class HdfGroupBTreeEntry extends HdfBTreeEntryBase {
 //        return symbolTableNode;
 //    }
 //
-//    public HdfBTree getChildBTree() {
+//    public HdfTree getChildBTree() {
 //        return childBTree;
 //    }
 }

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public class HdfDataset extends HdfDataObject implements AutoCloseable {
 
-    public HdfDataset(String objectName, HdfObjectHeaderPrefix objectHeader, HdfBTreeNode parent, String hardLink) {
+    public HdfDataset(String objectName, HdfObjectHeaderPrefix objectHeader, HdfTreeNode parent, String hardLink) {
         super(objectName, objectHeader, parent, hardLink);
     }
 

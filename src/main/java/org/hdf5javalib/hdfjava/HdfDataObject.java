@@ -5,17 +5,17 @@ import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import java.util.Objects;
 
 /**
- * An abstract base class for HdfBTreeNode implementations, providing common
+ * An abstract base class for HdfTreeNode implementations, providing common
  * properties and the comparison logic based on the node's name.
  */
-public abstract class HdfDataObject implements HdfBTreeNode {
+public abstract class HdfDataObject implements HdfTreeNode {
 
     protected final String objectName;
     protected final HdfObjectHeaderPrefix objectHeader;
-    protected HdfBTreeNode parent;
+    protected HdfTreeNode parent;
     protected final String hardLink;
 
-    public HdfDataObject(String objectName, HdfObjectHeaderPrefix objectHeader, HdfBTreeNode parent, String hardLink) {
+    public HdfDataObject(String objectName, HdfObjectHeaderPrefix objectHeader, HdfTreeNode parent, String hardLink) {
         this.objectName = Objects.requireNonNull(objectName, "Node name cannot be null.");
         if (objectName.contains("/")) {
             throw new IllegalArgumentException("Node name cannot contain '/' character.");
@@ -31,9 +31,9 @@ public abstract class HdfDataObject implements HdfBTreeNode {
     @Override
     public HdfObjectHeaderPrefix getObjectHeader() { return objectHeader; }
     @Override
-    public HdfBTreeNode getParent() { return parent; }
+    public HdfTreeNode getParent() { return parent; }
     @Override
-    public void setParent(HdfBTreeNode parent) { this.parent = parent; }
+    public void setParent(HdfTreeNode parent) { this.parent = parent; }
     @Override
     public String getObjectPath() {
         StringBuilder path = new StringBuilder(Objects.requireNonNull(objectName, "Node name cannot be null."));
@@ -55,7 +55,7 @@ public abstract class HdfDataObject implements HdfBTreeNode {
      *         is less than, equal to, or greater than the specified node's name.
      */
     @Override
-    public final int compareTo(HdfBTreeNode other) {
+    public final int compareTo(HdfTreeNode other) {
         return this.objectName.compareTo(other.getObjectName());
     }
 

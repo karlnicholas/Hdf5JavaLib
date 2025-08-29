@@ -36,6 +36,6 @@ public interface HdfDataFile {
      */
     HdfSuperblock getSuperblock();
 
-    HdfBTree getBTree();
+    HdfTree getBTree();
 
 }

@@ -6,7 +6,7 @@ import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefix;
  * Defines the contract for any node in the B-Tree.
  * Nodes are comparable based on their name.
  */
-public interface HdfBTreeNode extends Comparable<HdfBTreeNode> {
+public interface HdfTreeNode extends Comparable<HdfTreeNode> {
 
     String getObjectName();
 
@@ -16,9 +16,9 @@ public interface HdfBTreeNode extends Comparable<HdfBTreeNode> {
 
     int getLevel();
 
-    HdfBTreeNode getParent();
+    HdfTreeNode getParent();
 
-    void setParent(HdfBTreeNode parent);
+    void setParent(HdfTreeNode parent);
 
     boolean isDataset();
 

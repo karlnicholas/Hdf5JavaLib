@@ -199,11 +199,11 @@ public class DataLayoutMessage extends HdfMessage {
     }
 
     /**
-     * Reads an HdfBTree from a file channel.
+     * Reads an HdfTree from a file channel.
      *
      * @param fileChannel the file channel to read from
      * @param hdfDataFile the HDF5 file context
-     * @return the constructed HdfBTree instance
+     * @return the constructed HdfTree instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
     public static HdfBTreeV1 readBTreeFromSeekableByteChannel(
@@ -217,13 +217,13 @@ public class DataLayoutMessage extends HdfMessage {
     }
 
     /**
-     * Recursively reads an HdfBTree from a file channel, handling cycles.
+     * Recursively reads an HdfTree from a file channel, handling cycles.
      *
      * @param fileChannel  the file channel to read from
      * @param nodeAddress  the address of the current node
      * @param visitedNodes a map of visited node addresses to detect cycles
      * @param hdfDataFile  the HDF5 file context
-     * @return the constructed HdfBTree instance
+     * @return the constructed HdfTree instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
     private static HdfBTreeV1 readFromSeekableByteChannelRecursive(SeekableByteChannel fileChannel,

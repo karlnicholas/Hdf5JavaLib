@@ -3,8 +3,8 @@ package org.hdf5javalib.dataclass.reference;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datatype.FixedPointDatatype;
 import org.hdf5javalib.datatype.ReferenceDatatype;
-import org.hdf5javalib.hdfjava.HdfBTree;
-import org.hdf5javalib.hdfjava.HdfBTreeNode;
+import org.hdf5javalib.hdfjava.HdfTree;
+import org.hdf5javalib.hdfjava.HdfTreeNode;
 import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.utils.HdfDataHolder;
 
@@ -37,8 +37,8 @@ public class HdfDatasetRegionReference implements HdfReferenceInstance {
         dataspaceSelectionInstance = HdfDataspaceSelectionInstance.parseSelectionInfo(remaingData);
 
         AtomicReference<HdfDataObject> localHdfDataObject = new AtomicReference<>();
-        HdfBTree bTree = dt.getDataFile().getBTree();
-        for (HdfBTreeNode node : bTree) {
+        HdfTree bTree = dt.getDataFile().getBTree();
+        for (HdfTreeNode node : bTree) {
             HdfFixedPoint objectOffset = node.getDataObject().getObjectHeader().getOffset();
             if (objectOffset.compareTo(localHdfFixedPoint) == 0) {
                 localHdfDataObject.set(node.getDataObject());

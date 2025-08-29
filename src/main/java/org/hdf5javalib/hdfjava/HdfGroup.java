@@ -7,33 +7,33 @@ import java.util.function.Function;
 
 public class HdfGroup extends HdfDataObject {
 
-    private final List<HdfBTreeNode> children;
+    private final List<HdfTreeNode> children;
 
-    public HdfGroup(String name, HdfObjectHeaderPrefix objectHeader, HdfBTreeNode parent, String hardLink) {
+    public HdfGroup(String name, HdfObjectHeaderPrefix objectHeader, HdfTreeNode parent, String hardLink) {
         super(name, objectHeader, parent, hardLink);
         this.children = new ArrayList<>();
     }
 
-    public void visitAllNodes(Function<HdfBTreeNode, Boolean> visitor) {
-        Queue<HdfBTreeNode> queue = new LinkedList<>();
+    public void visitAllNodes(Function<HdfTreeNode, Boolean> visitor) {
+        Queue<HdfTreeNode> queue = new LinkedList<>();
         queue.add(this);
 
         while (!queue.isEmpty()) {
-            HdfBTreeNode current = queue.poll();
+            HdfTreeNode current = queue.poll();
             if ( visitor.apply(current) ) {
                 return;
             };
 
             if (current instanceof HdfGroup group) {
-                for (HdfBTreeNode child : group.children) {
+                for (HdfTreeNode child : group.children) {
                     queue.add(child);
                 }
             }
         }
     }
 
-    public HdfBTreeNode getRoot() {
-        HdfBTreeNode current = this;
+    public HdfTreeNode getRoot() {
+        HdfTreeNode current = this;
         while (current.getParent() != null) {
             current = current.getParent();
         }
@@ -44,10 +44,10 @@ public class HdfGroup extends HdfDataObject {
      * Adds a child node, maintaining the sorted order of the children list.
      * Prevents adding children with duplicate names.
      *
-     * @param child The HdfBTreeNode to add as a child.
+     * @param child The HdfTreeNode to add as a child.
      * @throws IllegalArgumentException if a child with the same name already exists.
      */
-    public void addChild(HdfBTreeNode child) {
+    public void addChild(HdfTreeNode child) {
         if (child == null) {
             return;
         }
@@ -74,11 +74,11 @@ public class HdfGroup extends HdfDataObject {
      * @param name The name of the child to find.
      * @return An Optional containing the found node, or an empty Optional.
      */
-    public Optional<HdfBTreeNode> findChildByName(String name) {
+    public Optional<HdfTreeNode> findChildByName(String name) {
         // To use binarySearch, we need a "key" object of the same type.
         // We can create a temporary, lightweight HdfDataset object for this purpose.
         // The value doesn't matter, as the comparison is only on the name.
-        HdfBTreeNode searchKey = new HdfDataset(name, null, null, null);
+        HdfTreeNode searchKey = new HdfDataset(name, null, null, null);
 
         int index = Collections.binarySearch(children, searchKey);
 
@@ -89,7 +89,7 @@ public class HdfGroup extends HdfDataObject {
         }
     }
 
-    public List<HdfBTreeNode> getChildren() {
+    public List<HdfTreeNode> getChildren() {
         return Collections.unmodifiableList(children);
     }
 
@@ -100,7 +100,7 @@ public class HdfGroup extends HdfDataObject {
             return 0;
         }
         int maxChildLevel = children.stream()
-                .mapToInt(HdfBTreeNode::getLevel)
+                .mapToInt(HdfTreeNode::getLevel)
                 .max()
                 .orElse(-1);
         return 1 + maxChildLevel;
