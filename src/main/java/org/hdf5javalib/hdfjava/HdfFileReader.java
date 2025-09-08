@@ -6,8 +6,16 @@ import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefixV2;
 import org.hdf5javalib.hdffile.dataobjects.messages.HdfMessage;
+import org.hdf5javalib.hdffile.dataobjects.messages.LinkInfoMessage;
 import org.hdf5javalib.hdffile.dataobjects.messages.ObjectHeaderContinuationMessage;
 import org.hdf5javalib.hdffile.infrastructure.*;
+import org.hdf5javalib.hdffile.infrastructure.fractalheap.gemini.FractalHeap;
+import org.hdf5javalib.hdffile.infrastructure.fractalheap.gemini.FractalHeapReader;
+import org.hdf5javalib.hdffile.infrastructure.v2btree.gemini.BTreeV2Header;
+import org.hdf5javalib.hdffile.infrastructure.v2btree.gemini.BTreeV2Reader;
+import org.hdf5javalib.hdffile.infrastructure.v2btree.gemini.BTreeV2Record;
+import org.hdf5javalib.hdffile.infrastructure.v2btree.gemini.Type5Record;
+import org.hdf5javalib.hdffile.infrastructure.v2btree.grok.V2BTreeReader;
 import org.hdf5javalib.hdffile.metadata.HdfSuperblock;
 import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
@@ -21,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import static org.hdf5javalib.datatype.FixedPointDatatype.BIT_MULTIPLIER;
 import static org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefixV1.*;
@@ -86,9 +95,15 @@ public class HdfFileReader implements HdfDataFile {
     public HdfFileReader readFile() throws Exception {
         long superblockOffset = findSuperblockOffset(fileChannel);
         superblock = readSuperblockFromSeekableByteChannel(fileChannel, superblockOffset, this);
-        HdfSymbolTableEntry rootGroupSymbolTableEntry = readSteFromSeekableByteChannel(fileChannel, this);
-        // determine version of data object headers
-        long objectHeaderAddress = rootGroupSymbolTableEntry.getObjectHeaderAddress().getInstance(Long.class);
+        long objectHeaderAddress;
+        if ( superblock.getVersion() < 2 ) {
+            HdfSymbolTableEntry rootGroupSymbolTableEntry = readSteFromSeekableByteChannel(fileChannel, this);
+            // determine version of data object headers
+            objectHeaderAddress = rootGroupSymbolTableEntry.getObjectHeaderAddress().getInstance(Long.class);
+
+        } else {
+            objectHeaderAddress = superblock.getRootGroupObjectHeaderAddresss().getInstance(Long.class);
+        }
         if ( fileChannel.size() <= objectHeaderAddress ) {
             throw new UnsupportedOperationException("File only contains a superblock.");
         }
@@ -97,26 +112,113 @@ public class HdfFileReader implements HdfDataFile {
         fileChannel.position(objectHeaderAddress);
         fileChannel.read(headerStartBuffer);
         headerStartBuffer.flip();
-        int version = Byte.toUnsignedInt(headerStartBuffer.get());
-        if( version > 1 ) {
-            throw new UnsupportedOperationException("V2 architecture not supported. Header Object version: " + version);
+        HdfObjectHeaderPrefix objectHeader;
+        if (Arrays.equals(headerStartBuffer.array(), HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE)) {
+            objectHeader = readV2ObjectHeader(fileChannel, objectHeaderAddress, this);
+            readV2Arch(fileChannel, this, objectHeader);
+        } else {
+            int version = Byte.toUnsignedInt(headerStartBuffer.get());
+            if( version > 1 ) {
+                throw new UnsupportedOperationException("V2 architecture not supported. Header Object version: " + version);
+            }
+            objectHeader = readObjectHeader(fileChannel, objectHeaderAddress, this);
         }
-        HdfObjectHeaderPrefix objectHeader = readObjectHeader(fileChannel, objectHeaderAddress, this);
-        long heapOffset = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
-        long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
-        HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, heapOffset, this);
-        HdfBTreeV1 groupBTree = readBTreeFromSeekableByteChannel(fileChannel, bTreeAddress, this);
-        String groupName = localHeap.stringAtOffset(rootGroupSymbolTableEntry.getLinkNameOffset());
-        // set BTree
-        HdfGroup groupObject = new HdfGroup(groupName, objectHeader, null, null);
-        bTree = new HdfTree(groupObject);
-        // recurse through infrastructure
-        readInfrastructure(groupObject, localHeap, groupBTree);
+//        long heapOffset = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
+//        long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
+//        HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, heapOffset, this);
+//        HdfBTreeV1 groupBTree = readBTreeFromSeekableByteChannel(fileChannel, bTreeAddress, this);
+//        String groupName = localHeap.stringAtOffset(rootGroupSymbolTableEntry.getLinkNameOffset());
+//        // set BTree
+//        HdfGroup groupObject = new HdfGroup(groupName, objectHeader, null, null);
+//        bTree = new HdfTree(groupObject);
+//        // recurse through infrastructure
+//        readInfrastructure(groupObject, localHeap, groupBTree);
 
         return this;
     }
 
     private static void readHeapHeader(SeekableByteChannel fileChannel, HdfFileReader hdfFileReader) {
+
+    }
+
+    private static void readV2Arch(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfObjectHeaderPrefix objectHeader) throws Exception {
+//        HdfFixedPoint fractalHeapAddress = objectHeader.findMessageByType(LinkInfoMessage.class).orElseThrow().getFractalHeapAddress();
+//        long fractalHeapOffset = fractalHeapAddress.getInstance(Long.class);
+//        fileChannel.position(fractalHeapOffset);
+
+        HdfFixedPoint v2BTreeNameIndexAddress = objectHeader.findMessageByType(LinkInfoMessage.class).orElseThrow().getV2BTreeNameIndexAddress();
+        long v2BTreeNameIndexOffset = v2BTreeNameIndexAddress.getInstance(Long.class);
+        fileChannel.position(v2BTreeNameIndexOffset);
+
+        System.out.println("Starting B-tree v2 Read...");
+        BTreeV2Reader bTreeV2Reader = new BTreeV2Reader(fileChannel, 8, 8);
+        BTreeV2Header bTreeV2Header = bTreeV2Reader.getHeader();
+
+        System.out.println("Header parsed successfully:");
+        System.out.println("  Type: " + bTreeV2Header.type);
+        System.out.println("  Depth: " + bTreeV2Header.depth);
+        System.out.println("  Total Records: " + bTreeV2Header.totalNumberOfRecordsInBTree);
+        System.out.println("  Root Node Address: " + bTreeV2Header.rootNodeAddress);
+
+        List<BTreeV2Record> allRecords = bTreeV2Reader.getAllRecords();
+
+        System.out.println("\nTraversal complete. Found " + allRecords.size() + " records:");
+
+        HdfFixedPoint fractalHeapAddress = objectHeader.findMessageByType(LinkInfoMessage.class).orElseThrow().getFractalHeapAddress();
+        long fractalHeapOffset = fractalHeapAddress.getInstance(Long.class);
+        fileChannel.position(fractalHeapOffset);
+
+        // 6. --- EXECUTE THE READER ---
+        FractalHeapReader reader = new FractalHeapReader(fileChannel, 8, 8);
+        FractalHeap heap = reader.read();
+
+        // 7. --- RETRIEVE THE OBJECT AND VERIFY ---
+        for (int i = 0; i < allRecords.size(); i++) {
+            BTreeV2Record x = allRecords.get(i);
+
+            byte[] heapId = ((Type5Record)x).heapId;
+
+//            byte[] retrievedData = heap.getObject(heapId);
+//            System.out.println("Row: " + Arrays.toString(Arrays.copyOfRange(retrievedData, 0, 10))
+//            + " : " + retrievedData[10]
+//            + " : " + new String(Arrays.copyOfRange(retrievedData, 11, 11+retrievedData[10]))
+//            + " : " + Arrays.toString(Arrays.copyOfRange(retrievedData, 10+1+retrievedData[10], retrievedData.length))
+//            );
+            ByteBuffer retrievedData = ByteBuffer.wrap(heap.getObject(heapId)).order(ByteOrder.LITTLE_ENDIAN);
+            byte[] rowHeader = new byte[10];
+            retrievedData.get(rowHeader);
+            int sLength = Byte.toUnsignedInt(retrievedData.get());
+            byte[] stringBuffer = new byte[sLength];
+            retrievedData.get(stringBuffer);
+            String groupName = new String(stringBuffer);
+            long objectHeaderOffset = retrievedData.getLong();
+            System.out.println("Row: " + Arrays.toString(rowHeader)
+            + " : " + sLength
+            + " : " + groupName
+            + " : " + objectHeaderOffset
+            );
+
+            //            System.out.println("Heap ID: " + Arrays.toString(heapId));
+//            System.out.println("Retrieved Data: '" + new String(retrievedData, StandardCharsets.UTF_8) + "'");
+            HdfObjectHeaderPrefix objectHeaderG1 = readObjectHeaderPrefixFromSeekableByteChannel(fileChannel, objectHeaderOffset, hdfDataFile, groupName);
+            System.out.println(groupName + ":" + objectHeaderG1.getHeaderMessages());
+        }
+//        FractalHeapReader fractalHeapReader = new FractalHeapReader(fileChannel, 8, 8);
+//        FractalHeap fractalHeap = fractalHeapReader.read();
+//        System.out.println("fractalHeap: " + fractalHeap);
+//        Object rb = fractalHeap.rootBlock;
+//        System.out.println("fractalHeap: " + rb);
+
+//        FractalHeapReader reader = new FractalHeapReader(fileChannel, 8, 8);
+//        FractalHeapReader.FractalHeapHeader header = reader.readHeader();
+//        System.out.println("Table Width: " + header.tableWidth);
+//        System.out.println("Root Block Address: " + header.addressOfRootBlock);
+//        BTreeV2Record x = allRecords.get(0);
+//        // Example: Retrieve object data with a heap ID
+////        byte[] heapId = {/* heap ID bytes */};
+//        byte[] heapId = ((Type5Record)x).heapId;
+//        byte[] objectData = reader.getObjectData(heapId);
+//        System.out.println("Object Data Length: " + objectData.length);
 
     }
 
@@ -136,16 +238,16 @@ public class HdfFileReader implements HdfDataFile {
             // Verify file signature
             byte[] signature = new byte[FILE_SIGNATURE.length];
             buffer.get(signature);
-            if (!java.util.Arrays.equals(signature, FILE_SIGNATURE)) {
+            if (!Arrays.equals(signature, FILE_SIGNATURE)) {
                 offset += 500;
                 continue;
             }
 
             // Read version
-            int version = Byte.toUnsignedInt(buffer.get());
-            if ( version > 1) {
-                throw new UnsupportedOperationException("V2 architecture not supported. Superblock version: " + version);
-            }
+//            int version = Byte.toUnsignedInt(buffer.get());
+//            if ( version > 1) {
+//                throw new UnsupportedOperationException("V2 architecture not supported. Superblock version: " + version);
+//            }
             return offset;
         }
         throw new IllegalArgumentException("HDF file signature not found");
@@ -316,6 +418,10 @@ public class HdfFileReader implements HdfDataFile {
             superblockSize = SUPERBLOCK_SIZE_V1; // Version 0 superblock size
         } else if (version == 1) {
             superblockSize = SUPERBLOCK_SIZE_V2; // Version 1 superblock size (example value, adjust per spec)
+        } else if (version == 2) {
+            superblockSize = SUPERBLOCK_SIZE_V2; // Version 1 superblock size (example value, adjust per spec)
+        } else if (version == 3) {
+            superblockSize = SUPERBLOCK_SIZE_V3; // Version 1 superblock size (example value, adjust per spec)
         } else {
             throw new IllegalArgumentException("Unsupported HDF5 superblock version: " + version);
         }
@@ -331,34 +437,83 @@ public class HdfFileReader implements HdfDataFile {
         buffer.flip();
 
         // Step 4: Parse the remaining superblock fields
-        buffer.position(SIGNATURE_SIZE + VERSION_SIZE); // Skip the file signature
-        int freeSpaceVersion = Byte.toUnsignedInt(buffer.get());
-        int rootGroupVersion = Byte.toUnsignedInt(buffer.get());
-        buffer.get(); // Skip reserved
-        int sharedHeaderVersion = Byte.toUnsignedInt(buffer.get());
-        int offsetSize = Byte.toUnsignedInt(buffer.get());
-        int lengthSize = Byte.toUnsignedInt(buffer.get());
-        buffer.get(); // Skip reserved
+        int freeSpaceVersion = -1;
+        int rootGroupVersion = -1;
+        int sharedHeaderVersion = -1;
+        int offsetSize;
+        int lengthSize;
 
-        FixedPointDatatype fixedPointDatatypeForOffset = new FixedPointDatatype(
-                FixedPointDatatype.createClassAndVersion(),
-                FixedPointDatatype.createClassBitField(false, false, false, false),
-                offsetSize, (short) 0, (short) (BIT_MULTIPLIER * offsetSize), hdfDataFile);
-        FixedPointDatatype fixedPointDatatypeForLength = new FixedPointDatatype(
-                FixedPointDatatype.createClassAndVersion(),
-                FixedPointDatatype.createClassBitField(false, false, false, false),
-                lengthSize, (short) 0, (short) (BIT_MULTIPLIER * lengthSize), hdfDataFile);
+        int groupLeafNodeK = -1;
+        int groupInternalNodeK = -1;
 
-        int groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
-        int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
-        buffer.getInt(); // Skip consistency flags
+        FixedPointDatatype fixedPointDatatypeForOffset;
+        FixedPointDatatype fixedPointDatatypeForLength;
 
         // Parse addresses using HdfFixedPoint
-        HdfFixedPoint baseAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
-        HdfFixedPoint freeSpaceAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
-        HdfFixedPoint endOfFileAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
-        HdfFixedPoint driverInformationAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
-        HdfFixedPoint hdfOffset = HdfWriteUtils.hdfFixedPointFromValue(superblockOffset, fixedPointDatatypeForOffset);
+        HdfFixedPoint baseAddress = null;
+        HdfFixedPoint freeSpaceAddress = null;
+        HdfFixedPoint extensionAddress = null;
+        HdfFixedPoint endOfFileAddress = null;
+        HdfFixedPoint driverInformationAddress = null;
+        HdfFixedPoint rootObjectHeaderAddress = null;
+        if ( version < 2) {
+            // Step 4: Parse the remaining superblock fields
+            buffer.position(SIGNATURE_SIZE + VERSION_SIZE); // Skip the file signature
+            freeSpaceVersion = Byte.toUnsignedInt(buffer.get());
+            rootGroupVersion = Byte.toUnsignedInt(buffer.get());
+            buffer.get(); // Skip reserved
+            sharedHeaderVersion = Byte.toUnsignedInt(buffer.get());
+            offsetSize = Byte.toUnsignedInt(buffer.get());
+            lengthSize = Byte.toUnsignedInt(buffer.get());
+            buffer.get(); // Skip reserved
+
+            fixedPointDatatypeForOffset = new FixedPointDatatype(
+                    FixedPointDatatype.createClassAndVersion(),
+                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                    offsetSize, (short) 0, (short) (BIT_MULTIPLIER * offsetSize), hdfDataFile);
+            fixedPointDatatypeForLength = new FixedPointDatatype(
+                    FixedPointDatatype.createClassAndVersion(),
+                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                    lengthSize, (short) 0, (short) (BIT_MULTIPLIER * lengthSize), hdfDataFile);
+
+            groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
+            groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
+            buffer.getInt(); // Skip consistency flags
+
+            // Parse addresses using HdfFixedPoint
+            baseAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+            freeSpaceAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+            endOfFileAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+            driverInformationAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+        } else {
+            // Step 4: Parse the remaining superblock fields
+            buffer.position(SIGNATURE_SIZE + VERSION_SIZE); // Skip the file signature
+            offsetSize = Byte.toUnsignedInt(buffer.get());
+            lengthSize = Byte.toUnsignedInt(buffer.get());
+            int fileConsistencyFlags = Byte.toUnsignedInt(buffer.get()); // Skip reserved
+
+            fixedPointDatatypeForOffset = new FixedPointDatatype(
+                    FixedPointDatatype.createClassAndVersion(),
+                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                    offsetSize, (short) 0, (short) (BIT_MULTIPLIER * offsetSize), hdfDataFile);
+            fixedPointDatatypeForLength = new FixedPointDatatype(
+                    FixedPointDatatype.createClassAndVersion(),
+                    FixedPointDatatype.createClassBitField(false, false, false, false),
+                    lengthSize, (short) 0, (short) (BIT_MULTIPLIER * lengthSize), hdfDataFile);
+
+//            groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
+//            groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
+//            buffer.getInt(); // Skip consistency flags
+
+            // Parse addresses using HdfFixedPoint
+            baseAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+            extensionAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+            endOfFileAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+            rootObjectHeaderAddress = HdfReadUtils.readHdfFixedPointFromBuffer(fixedPointDatatypeForOffset, buffer);
+            Long checkSum = Integer.toUnsignedLong(buffer.getInt());
+
+
+        }
 
         HdfSuperblock superblock = new HdfSuperblock(
                 version,
@@ -371,8 +526,10 @@ public class HdfFileReader implements HdfDataFile {
                 groupInternalNodeK,
                 baseAddress,
                 freeSpaceAddress,
+                extensionAddress,
                 endOfFileAddress,
                 driverInformationAddress,
+                rootObjectHeaderAddress,
                 hdfDataFile,
                 fixedPointDatatypeForOffset,
                 fixedPointDatatypeForLength
@@ -671,27 +828,46 @@ public class HdfFileReader implements HdfDataFile {
 
     public static HdfObjectHeaderPrefix readObjectHeaderPrefixFromSeekableByteChannel(
             SeekableByteChannel fileChannel,
+            long objectHeaderAddress,
             HdfDataFile hdfDataFile,
             String objectName
-    ) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        long offset = fileChannel.position();
-        ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
-        fileChannel.read(buffer);
-        buffer.flip();
+    ) throws Exception {
+//        long offset = fileChannel.position();
+//        ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN); // Buffer for the fixed-size header
+//        fileChannel.read(buffer);
+//        buffer.flip();
 
-        // Parse Version (1 byte)
-        int version = Byte.toUnsignedInt(buffer.get());
-        if ( version == 1 ) {
-            return readObjectHeader(fileChannel, offset, hdfDataFile);
+        // The first part of the header is 6 bytes: Signature (4) + Version (1) + Flags (1)
+        ByteBuffer headerStartBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
+        fileChannel.position(objectHeaderAddress);
+        fileChannel.read(headerStartBuffer);
+        headerStartBuffer.flip();
+        HdfObjectHeaderPrefix objectHeader;
+        if (Arrays.equals(headerStartBuffer.array(), HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE)) {
+            objectHeader = readV2ObjectHeader(fileChannel, objectHeaderAddress, hdfDataFile);
+//            readV2Arch(fileChannel, hdfDataFile, objectHeader);
         } else {
-            buffer.rewind();
-            byte[] signature = new byte[HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE.length];
-            buffer.get(signature);
-            if (Arrays.compare(signature, HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE) != 0) {
-                throw new IllegalStateException("Object header signature mismatch");
+            int version = Byte.toUnsignedInt(headerStartBuffer.get());
+            if( version > 1 ) {
+                throw new UnsupportedOperationException("V2 architecture not supported. Header Object version: " + version);
             }
-            return readObjectHeader(fileChannel, offset, hdfDataFile);
+            objectHeader = readObjectHeader(fileChannel, objectHeaderAddress, hdfDataFile);
         }
+
+//        // Parse Version (1 byte)
+//        int version = Byte.toUnsignedInt(buffer.get());
+//        if ( version == 1 ) {
+//            return readObjectHeader(fileChannel, offset, hdfDataFile);
+//        } else {
+//            buffer.rewind();
+//            byte[] signature = new byte[HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE.length];
+//            buffer.get(signature);
+//            if (Arrays.compare(signature, HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE) != 0) {
+//                throw new IllegalStateException("Object header signature mismatch");
+//            }
+//            return readObjectHeader(fileChannel, offset, hdfDataFile);
+//        }
+        return objectHeader;
     }
 
     protected static HdfObjectHeaderPrefixV1 readObjectHeader(
@@ -735,9 +911,14 @@ public class HdfFileReader implements HdfDataFile {
         }
 
         // Create the instance
-        return new HdfObjectHeaderPrefixV1(version, objectReferenceCount, objectHeaderSize, dataObjectHeaderMessages,
+        return new HdfObjectHeaderPrefixV1(
+                version,
+                objectReferenceCount,
+                objectHeaderSize,
+                dataObjectHeaderMessages,
                 hdfDataFile,
-                HdfWriteUtils.hdfFixedPointFromValue(objectHeaderOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset()));
+                HdfWriteUtils.hdfFixedPointFromValue(objectHeaderOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset())
+        );
     }
 
     static HdfObjectHeaderPrefixV2 readV2ObjectHeader(SeekableByteChannel fileChannel, long objectHeaderAddress, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -828,19 +1009,7 @@ public class HdfFileReader implements HdfDataFile {
         // Here you would typically verify the checksum against the header chunk data.
 
         // --- 6. Handle Continuation Messages ---
-        // This logic is similar to V1, but you need to check the newly read messages.
-        for (HdfMessage hdfMessage : dataObjectHeaderMessages) {
-            if (hdfMessage instanceof ObjectHeaderContinuationMessage objectHeaderContinuationMessage) {
-                // The continuation message points to the next chunk. You need a method to parse these.
-                // A continuation chunk is NOT a full V2 header, it's just more messages.
-                dataObjectHeaderMessages.addAll(HdfMessage.parseContinuationMessage(fileChannel, objectHeaderContinuationMessage, hdfDataFile,
-                                (flags & 0b00000100) == 1 ? HdfMessage.V2OBJECT_HEADER_READ_PREFIX_WITHORDER : HdfMessage.V2_OBJECT_HEADER_READ_PREFIX
-                        )
-                );
-                break; // Typically only one continuation message per chunk
-            }
-        }
-
+        parseContinuationMessages(fileChannel, flags, dataObjectHeaderMessages, hdfDataFile);
         // --- 7. Create the V2 Header Prefix Instance ---
         return new HdfObjectHeaderPrefixV2(flags, sizeOfChunk0, checksum,
                 accessTime, modificationTime, changeTime, birthTime,
@@ -848,7 +1017,20 @@ public class HdfFileReader implements HdfDataFile {
                 dataObjectHeaderMessages, hdfDataFile, objectHeaderAddress, prefixSize);
     }
 
-
+    private static void parseContinuationMessages(SeekableByteChannel fileChannel, int flags, List<HdfMessage> currentMessages, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        // This logic is similar to V1, but you need to check the newly read messages.
+        for (HdfMessage hdfMessage : currentMessages) {
+            if (hdfMessage instanceof ObjectHeaderContinuationMessage objectHeaderContinuationMessage) {
+                // The continuation message points to the next chunk. You need a method to parse these.
+                // A continuation chunk is NOT a full V2 header, it's just more messages.
+                List<HdfMessage> newContinuationMessages = HdfMessage.parseContinuationMessage(fileChannel, objectHeaderContinuationMessage, hdfDataFile,
+                        (flags & 0b00000100) > 0 ? HdfMessage.V2OBJECT_HEADER_READ_PREFIX_WITHORDER : HdfMessage.V2_OBJECT_HEADER_READ_PREFIX);
+                parseContinuationMessages(fileChannel, flags, newContinuationMessages, hdfDataFile);
+                currentMessages.addAll(newContinuationMessages);
+                break; // Typically only one continuation message per chunk
+            }
+        }
+    }
 
     /**
      * Initializes the global heap at the specified offset.

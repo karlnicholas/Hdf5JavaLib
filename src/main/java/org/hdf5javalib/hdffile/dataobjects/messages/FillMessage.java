@@ -87,7 +87,7 @@ public class FillMessage extends HdfMessage {
         buffer.get(fillValue);
 
         // Return a constructed instance of FillValueMessage
-        return new FillMessage(size, fillValue, flags, (short) data.length);
+        return new FillMessage(size, fillValue, flags, data.length);
     }
 
     /**

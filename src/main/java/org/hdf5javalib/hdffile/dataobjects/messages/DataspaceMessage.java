@@ -123,7 +123,7 @@ public class DataspaceMessage extends HdfMessage {
             }
         }
 
-        return new DataspaceMessage(version, dimensionality, flagSet, dimensions, maxDimensions, hasMaxDimensions, flags, (short) data.length);
+        return new DataspaceMessage(version, dimensionality, flagSet, dimensions, maxDimensions, hasMaxDimensions, flags, data.length);
     }
 
     /**

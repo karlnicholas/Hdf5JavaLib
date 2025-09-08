@@ -72,7 +72,7 @@ public class DatatypeMessage extends HdfMessage {
      * @param flags           message flags
      * @param sizeMessageData the size of the message data in bytes
      */
-    public DatatypeMessage(Datatype datatype, int flags, short sizeMessageData) {
+    public DatatypeMessage(Datatype datatype, int flags, int sizeMessageData) {
         super(MessageType.DATATYPE_MESSAGE, sizeMessageData, flags);
         this.datatype = datatype;
     }
@@ -88,7 +88,7 @@ public class DatatypeMessage extends HdfMessage {
     public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         Datatype datatype = getHdfDatatype(buffer, hdfDataFile);
-        return new DatatypeMessage(datatype, flags, (short) data.length);
+        return new DatatypeMessage(datatype, flags, data.length);
     }
 
     /**

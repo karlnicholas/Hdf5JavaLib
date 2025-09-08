@@ -139,7 +139,7 @@ public class FillValueMessage extends HdfMessage {
         }
 
         // Return a constructed instance of FillValueMessage
-        return new FillValueMessage(version, spaceAllocationTime, fillValueWriteTime, fillValueDefined, size, fillValue, flags, (short) data.length);
+        return new FillValueMessage(version, spaceAllocationTime, fillValueWriteTime, fillValueDefined, size, fillValue, flags, data.length);
     }
 
     /**

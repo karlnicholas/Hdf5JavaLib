@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -146,6 +147,18 @@ public abstract class HdfMessage {
         return new OBJECT_HEADER_PREFIX(type, size, flags, order);
     };
 
+//    public static Function<ByteBuffer, OBJECT_HEADER_PREFIX> V2_OBJECT_HEADER_READ_PREFIX_V2 = buffer-> {
+//        // Header Message Type (2 bytes, little-endian)
+//        MessageType type = MessageType.fromValue(buffer.get());
+//        int size = Short.toUnsignedInt(buffer.getShort());
+//        int flags = Byte.toUnsignedInt(buffer.get());
+//        int order = 0;
+//        if ( (flags & (1 << 2)) != 0 ) {
+//            order = Short.toUnsignedInt(buffer.getShort());
+//        }
+//        return new OBJECT_HEADER_PREFIX(type, size, flags, order);
+//    };
+
     /**
      * Reads and parses a list of HdfMessages from the provided file channel.
      *
@@ -166,16 +179,37 @@ public abstract class HdfMessage {
         buffer.flip();
         List<HdfMessage> messages = new ArrayList<>();
 
-        while (buffer.hasRemaining()) {
+        byte[] OCHKSignature = new  byte[4];
+        buffer.get(OCHKSignature);
+        if (Arrays.compare(OCHKSignature, "OCHK".getBytes()) != 0 ) {
+            buffer.rewind();
+        }
+
+        boolean readContinue = true;
+        while (buffer.hasRemaining() && readContinue) {
             OBJECT_HEADER_PREFIX prefix = prefixFunction.apply(buffer);
             // Header Message Data
             byte[] messageData = new byte[prefix.size];
             buffer.get(messageData);
 
+
             HdfMessage hdfMessage = parseHeaderMessage(prefix.type, prefix.flags, messageData, hdfDataFile);
             log.trace("Read: hdfMessage.sizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE = {} {}", hdfMessage.messageType, hdfMessage.getSizeMessageData() + HDF_MESSAGE_PREAMBLE_SIZE);
             // Add the message to the list
             messages.add(hdfMessage);
+            //TODO: no good.
+            if ( buffer.hasRemaining() ) {
+                if ( buffer.remaining() <= 4 ) {
+                    readContinue = false;
+                } else {
+                    buffer.mark();
+                    MessageType type = MessageType.fromValue(buffer.get());
+                    buffer.reset();
+                    if ( buffer.remaining() < 10 ) {
+                        readContinue = false;
+                    }
+                }
+            }
         }
         return messages;
     }
@@ -230,7 +264,7 @@ public abstract class HdfMessage {
             Function<ByteBuffer, OBJECT_HEADER_PREFIX> prefixFunction
     ) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         long continuationOffset = objectHeaderContinuationMessage.getContinuationOffset().getInstance(Long.class);
-        short continuationSize = objectHeaderContinuationMessage.getContinuationSize().getInstance(Long.class).shortValue();
+        long continuationSize = objectHeaderContinuationMessage.getContinuationSize().getInstance(Long.class);
 
         // Move to the continuation block offset
         fileChannel.position(continuationOffset);

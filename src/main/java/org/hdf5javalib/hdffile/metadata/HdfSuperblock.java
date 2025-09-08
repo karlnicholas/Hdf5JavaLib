@@ -3,6 +3,7 @@ package org.hdf5javalib.hdffile.metadata;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datatype.FixedPointDatatype;
 import org.hdf5javalib.hdfjava.HdfDataFile;
+import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.hdf5javalib.utils.HdfDisplayUtils;
 
 import java.io.IOException;
@@ -64,6 +65,7 @@ public class HdfSuperblock {
     public static final int VERSION_SIZE = 1;
     public static final int SUPERBLOCK_SIZE_V1 = 56;
     public static final int SUPERBLOCK_SIZE_V2 = 96;
+    public static final int SUPERBLOCK_SIZE_V3 = 48;
 
     private final int version;
     private final int freeSpaceVersion;
@@ -76,7 +78,9 @@ public class HdfSuperblock {
 
     private final HdfFixedPoint baseAddress;
     private final HdfFixedPoint addressFileFreeSpaceInfo;
+    private final HdfFixedPoint superblockExtensionAddress;
     private HdfFixedPoint endOfFileAddress;
+    private final HdfFixedPoint rootGroupObjectHeaderAddress;
     private final HdfFixedPoint driverInformationAddress;
 
     // Working properties
@@ -112,8 +116,10 @@ public class HdfSuperblock {
             int groupInternalNodeK,
             HdfFixedPoint baseAddress,
             HdfFixedPoint addressFileFreeSpaceInfo,
+            HdfFixedPoint superblockExtensionAddress,
             HdfFixedPoint endOfFileAddress,
             HdfFixedPoint driverInformationAddress,
+            HdfFixedPoint rootGroupObjectHeaderAddress,
             HdfDataFile hdfDataFile,
             FixedPointDatatype fixedPointDatatypeForOffset,
             FixedPointDatatype fixedPointDatatypeForLength
@@ -129,7 +135,9 @@ public class HdfSuperblock {
         this.groupInternalNodeK = groupInternalNodeK;
         this.baseAddress = baseAddress;
         this.addressFileFreeSpaceInfo = addressFileFreeSpaceInfo;
+        this.superblockExtensionAddress = superblockExtensionAddress;
         this.endOfFileAddress = endOfFileAddress;
+        this.rootGroupObjectHeaderAddress = rootGroupObjectHeaderAddress;
         this.driverInformationAddress = driverInformationAddress;
         this.hdfDataFile = hdfDataFile;
         this.fixedPointDatatypeForOffset = fixedPointDatatypeForOffset;
@@ -220,5 +228,13 @@ public class HdfSuperblock {
 
     public int getGroupInternalNodeK() {
         return groupInternalNodeK;
+    }
+
+    public HdfFixedPoint getRootGroupObjectHeaderAddresss() {
+        return rootGroupObjectHeaderAddress;
+    }
+
+    public int getVersion() {
+        return version;
     }
 }

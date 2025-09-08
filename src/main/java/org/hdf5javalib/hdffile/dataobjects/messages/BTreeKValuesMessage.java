@@ -90,7 +90,7 @@ public class BTreeKValuesMessage extends HdfMessage {
         int indexedStorageInternalNodeK = Short.toUnsignedInt(buffer.getShort());
         int groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
         int groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
-        return new BTreeKValuesMessage(version, indexedStorageInternalNodeK, groupInternalNodeK, groupLeafNodeK, flags, (short) data.length);
+        return new BTreeKValuesMessage(version, indexedStorageInternalNodeK, groupInternalNodeK, groupLeafNodeK, flags, data.length);
     }
 
     /**

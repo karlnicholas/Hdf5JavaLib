@@ -37,9 +37,11 @@ public class HDF5Debug {
     private void run() {
         try {
             // List all .h5 files in HDF5Examples resources directory
-            Path dirPath = Paths.get(Objects.requireNonNull(HDF5Debug.class.getClassLoader().getResource("HDF5Examples/h5ex_g_traverse.h5")).toURI());
+            // ATL03_20250302235544_11742607_006_01
+//            Path dirPath = Paths.get(Objects.requireNonNull(HDF5Debug.class.getClassLoader().getResource("HDF5Examples/h5ex_g_compact2.h5")).toURI());
+            Path dirPath = Paths.get("c:/users/karln/Downloads/ATL03_20250302235544_11742607_006_01.h5");
             displayFile(dirPath);
-        } catch (URISyntaxException e) {
+        } catch (Exception e) {
             throw new IllegalStateException(e);
         }
     }

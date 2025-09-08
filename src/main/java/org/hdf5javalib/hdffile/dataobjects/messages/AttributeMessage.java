@@ -146,7 +146,7 @@ public class AttributeMessage extends HdfMessage {
             byte[] dataBytes = new byte[dtDataSize];
             buffer.get(dataBytes);
             HdfData scalarValue = dt.getHdfDatatype().getInstance(HdfData.class, dataBytes);
-            return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofScalar(scalarValue), flags, (short) data.length);
+            return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofScalar(scalarValue), flags, data.length);
         }
 
         // Case 2: Array data (dimensionality is 1 or more)
@@ -167,7 +167,7 @@ public class AttributeMessage extends HdfMessage {
         // Step 2: Populate the array recursively from the flat buffer.
         populateArray(multiDimArray, dimensions, 0, buffer, dt.getHdfDatatype(), dtDataSize);
 
-        return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofArray(multiDimArray, dimensions), flags, (short) data.length);
+        return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofArray(multiDimArray, dimensions), flags, data.length);
 
     }
 
