@@ -11,6 +11,8 @@ public interface BTreeV2Record {
                 return Type5Record.read(bb);
             case GROUP_LINK_CREATION_ORDER:
                 return Type6Record.read(bb);
+            case ATTRIBUTE_NAME:
+                return Type8Record.read(bb);
             // Add other types as needed
             default:
                 // For unsupported types, we can skip the bytes

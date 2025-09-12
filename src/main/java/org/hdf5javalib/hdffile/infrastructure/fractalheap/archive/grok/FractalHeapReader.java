@@ -1,4 +1,4 @@
-package org.hdf5javalib.hdffile.infrastructure.fractalheap.grok;
+package org.hdf5javalib.hdffile.infrastructure.fractalheap.archive.grok;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

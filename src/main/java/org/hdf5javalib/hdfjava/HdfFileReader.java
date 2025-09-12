@@ -5,17 +5,13 @@ import org.hdf5javalib.datatype.FixedPointDatatype;
 import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefixV1;
 import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefixV2;
+import org.hdf5javalib.hdffile.dataobjects.messages.AttributeInfoMessage;
 import org.hdf5javalib.hdffile.dataobjects.messages.HdfMessage;
-import org.hdf5javalib.hdffile.dataobjects.messages.LinkInfoMessage;
 import org.hdf5javalib.hdffile.dataobjects.messages.ObjectHeaderContinuationMessage;
 import org.hdf5javalib.hdffile.infrastructure.*;
-import org.hdf5javalib.hdffile.infrastructure.fractalheap.gemini.FractalHeap;
-import org.hdf5javalib.hdffile.infrastructure.fractalheap.gemini.FractalHeapReader;
-import org.hdf5javalib.hdffile.infrastructure.v2btree.gemini.BTreeV2Header;
-import org.hdf5javalib.hdffile.infrastructure.v2btree.gemini.BTreeV2Reader;
-import org.hdf5javalib.hdffile.infrastructure.v2btree.gemini.BTreeV2Record;
-import org.hdf5javalib.hdffile.infrastructure.v2btree.gemini.Type5Record;
-import org.hdf5javalib.hdffile.infrastructure.v2btree.grok.V2BTreeReader;
+import org.hdf5javalib.hdffile.infrastructure.fractalheap.grok.ParsedHeapId;
+import org.hdf5javalib.hdffile.infrastructure.fractalheap.grok.FractalHeap;
+import org.hdf5javalib.hdffile.infrastructure.v2btree.gemini.*;
 import org.hdf5javalib.hdffile.metadata.HdfSuperblock;
 import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
@@ -29,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 
 import static org.hdf5javalib.datatype.FixedPointDatatype.BIT_MULTIPLIER;
 import static org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefixV1.*;
@@ -96,8 +91,9 @@ public class HdfFileReader implements HdfDataFile {
         long superblockOffset = findSuperblockOffset(fileChannel);
         superblock = readSuperblockFromSeekableByteChannel(fileChannel, superblockOffset, this);
         long objectHeaderAddress;
+        HdfSymbolTableEntry rootGroupSymbolTableEntry = null;
         if ( superblock.getVersion() < 2 ) {
-            HdfSymbolTableEntry rootGroupSymbolTableEntry = readSteFromSeekableByteChannel(fileChannel, this);
+            rootGroupSymbolTableEntry = readSteFromSeekableByteChannel(fileChannel, this);
             // determine version of data object headers
             objectHeaderAddress = rootGroupSymbolTableEntry.getObjectHeaderAddress().getInstance(Long.class);
 
@@ -115,113 +111,190 @@ public class HdfFileReader implements HdfDataFile {
         HdfObjectHeaderPrefix objectHeader;
         if (Arrays.equals(headerStartBuffer.array(), HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE)) {
             objectHeader = readV2ObjectHeader(fileChannel, objectHeaderAddress, this);
-            readV2Arch(fileChannel, this, objectHeader);
+            // set BTree
+            HdfGroup rootGroup = new HdfGroup("", objectHeader, null, null);
+            bTree = new HdfTree(rootGroup);
+            readV2Arch(fileChannel, rootGroup);
         } else {
             int version = Byte.toUnsignedInt(headerStartBuffer.get());
             if( version > 1 ) {
                 throw new UnsupportedOperationException("V2 architecture not supported. Header Object version: " + version);
             }
             objectHeader = readObjectHeader(fileChannel, objectHeaderAddress, this);
+            readV1Arch(fileChannel, rootGroupSymbolTableEntry, objectHeader);
         }
-//        long heapOffset = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
-//        long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
-//        HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, heapOffset, this);
-//        HdfBTreeV1 groupBTree = readBTreeFromSeekableByteChannel(fileChannel, bTreeAddress, this);
-//        String groupName = localHeap.stringAtOffset(rootGroupSymbolTableEntry.getLinkNameOffset());
-//        // set BTree
-//        HdfGroup groupObject = new HdfGroup(groupName, objectHeader, null, null);
-//        bTree = new HdfTree(groupObject);
-//        // recurse through infrastructure
-//        readInfrastructure(groupObject, localHeap, groupBTree);
 
         return this;
     }
 
-    private static void readHeapHeader(SeekableByteChannel fileChannel, HdfFileReader hdfFileReader) {
-
+    private void readV1Arch(SeekableByteChannel fileChannel, HdfSymbolTableEntry rootGroupSymbolTableEntry, HdfObjectHeaderPrefix objectHeader) throws Exception {
+        long heapOffset = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
+        long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
+        HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, heapOffset, this);
+        HdfBTreeV1 groupBTree = readBTreeFromSeekableByteChannel(fileChannel, bTreeAddress, this);
+        String groupName = localHeap.stringAtOffset(rootGroupSymbolTableEntry.getLinkNameOffset());
+        // set BTree
+        HdfGroup groupObject = new HdfGroup(groupName, objectHeader, null, null);
+        bTree = new HdfTree(groupObject);
+        // recurse through infrastructure
+        readInfrastructure(groupObject, localHeap, groupBTree);
     }
 
-    private static void readV2Arch(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfObjectHeaderPrefix objectHeader) throws Exception {
-//        HdfFixedPoint fractalHeapAddress = objectHeader.findMessageByType(LinkInfoMessage.class).orElseThrow().getFractalHeapAddress();
+    private void readV2Arch(SeekableByteChannel fileChannel, HdfGroup rootGroup) throws Exception {
+////        HdfFixedPoint fractalHeapAddress = objectHeader.findMessageByType(LinkInfoMessage.class).orElseThrow().getFractalHeapAddress();
+////        long fractalHeapOffset = fractalHeapAddress.getInstance(Long.class);
+////        fileChannel.position(fractalHeapOffset);
+//
+//        HdfFixedPoint v2BTreeNameIndexAddress = rootGroup.getObjectHeader().findMessageByType(LinkInfoMessage.class).orElseThrow().getV2BTreeNameIndexAddress();
+//        long v2BTreeNameIndexOffset = v2BTreeNameIndexAddress.getInstance(Long.class);
+//        fileChannel.position(v2BTreeNameIndexOffset);
+//
+//        System.out.println("Starting B-tree v2 Read...");
+//        BTreeV2Reader bTreeV2Reader = new BTreeV2Reader(fileChannel, 8, 8);
+//        BTreeV2Header bTreeV2Header = bTreeV2Reader.getHeader();
+//
+//        System.out.println("Header parsed successfully:");
+//        System.out.println("  Type: " + bTreeV2Header.type);
+//        System.out.println("  Depth: " + bTreeV2Header.depth);
+//        System.out.println("  Total Records: " + bTreeV2Header.totalNumberOfRecordsInBTree);
+//        System.out.println("  Root Node Address: " + bTreeV2Header.rootNodeAddress);
+//
+//        List<BTreeV2Record> allRecords = bTreeV2Reader.getAllRecords();
+//
+//        System.out.println("\nTraversal complete. Found " + allRecords.size() + " records:");
+//
+//        HdfFixedPoint fractalHeapAddress = rootGroup.getObjectHeader().findMessageByType(LinkInfoMessage.class).orElseThrow().getFractalHeapAddress();
 //        long fractalHeapOffset = fractalHeapAddress.getInstance(Long.class);
 //        fileChannel.position(fractalHeapOffset);
+//
+//        // 6. --- EXECUTE THE READER ---
+//        FractalHeapReader reader = new FractalHeapReader(fileChannel, 8, 8);
+//        FractalHeap heap = reader.read();
+//
+//        // 7. --- RETRIEVE THE OBJECT AND VERIFY ---
+//        for (BTreeV2Record bTreeV2Record: allRecords) {
+//
+//            byte[] heapId = ((Type5Record)bTreeV2Record).heapId;
+//
+////            byte[] retrievedData = heap.getObject(heapId);
+////            System.out.println("Row: " + Arrays.toString(Arrays.copyOfRange(retrievedData, 0, 10))
+////            + " : " + retrievedData[10]
+////            + " : " + new String(Arrays.copyOfRange(retrievedData, 11, 11+retrievedData[10]))
+////            + " : " + Arrays.toString(Arrays.copyOfRange(retrievedData, 10+1+retrievedData[10], retrievedData.length))
+////            );
+//            ByteBuffer retrievedData = ByteBuffer.wrap(heap.getObject(heapId)).order(ByteOrder.LITTLE_ENDIAN);
+//            byte[] rowHeader = new byte[10];
+//            retrievedData.get(rowHeader);
+//            int sLength = Byte.toUnsignedInt(retrievedData.get());
+//            byte[] stringBuffer = new byte[sLength];
+//            retrievedData.get(stringBuffer);
+//            String groupName = new String(stringBuffer);
+//            long objectHeaderOffset = retrievedData.getLong();
+//            System.out.println("Row: " + Arrays.toString(rowHeader)
+//            + " : " + sLength
+//            + " : " + groupName
+//            + " : " + objectHeaderOffset
+//            );
+//
+//            //            System.out.println("Heap ID: " + Arrays.toString(heapId));
+////            System.out.println("Retrieved Data: '" + new String(retrievedData, StandardCharsets.UTF_8) + "'");
+//            HdfObjectHeaderPrefix objectHeaderG1 = readObjectHeaderPrefixFromSeekableByteChannel(fileChannel, objectHeaderOffset, this, groupName);
+////            System.out.println(groupName + ":" + objectHeaderG1.getHeaderMessages());
+//        }
 
-        HdfFixedPoint v2BTreeNameIndexAddress = objectHeader.findMessageByType(LinkInfoMessage.class).orElseThrow().getV2BTreeNameIndexAddress();
-        long v2BTreeNameIndexOffset = v2BTreeNameIndexAddress.getInstance(Long.class);
-        fileChannel.position(v2BTreeNameIndexOffset);
+        HdfFixedPoint attributeInfoV2BTreeNameIndexAddress = rootGroup.getObjectHeader().findMessageByType(AttributeInfoMessage.class).orElseThrow().getAttributeNameV2BtreeAddress();
+        long attributeInfoV2BTreeNameIndexOffset = attributeInfoV2BTreeNameIndexAddress.getInstance(Long.class);
+        fileChannel.position(attributeInfoV2BTreeNameIndexOffset);
 
         System.out.println("Starting B-tree v2 Read...");
-        BTreeV2Reader bTreeV2Reader = new BTreeV2Reader(fileChannel, 8, 8);
-        BTreeV2Header bTreeV2Header = bTreeV2Reader.getHeader();
+        BTreeV2Reader attributeInfoBTreeV2Reader = new BTreeV2Reader(fileChannel, 8, 8);
+        BTreeV2Header attributeInfoBTreeV2Header = attributeInfoBTreeV2Reader.getHeader();
 
         System.out.println("Header parsed successfully:");
-        System.out.println("  Type: " + bTreeV2Header.type);
-        System.out.println("  Depth: " + bTreeV2Header.depth);
-        System.out.println("  Total Records: " + bTreeV2Header.totalNumberOfRecordsInBTree);
-        System.out.println("  Root Node Address: " + bTreeV2Header.rootNodeAddress);
+        System.out.println("  Type: " + attributeInfoBTreeV2Header.type);
+        System.out.println("  Depth: " + attributeInfoBTreeV2Header.depth);
+        System.out.println("  Total Records: " + attributeInfoBTreeV2Header.totalNumberOfRecordsInBTree);
+        System.out.println("  Root Node Address: " + attributeInfoBTreeV2Header.rootNodeAddress);
 
-        List<BTreeV2Record> allRecords = bTreeV2Reader.getAllRecords();
+        List<BTreeV2Record> attributeInfoAllRecords = attributeInfoBTreeV2Reader.getAllRecords();
 
-        System.out.println("\nTraversal complete. Found " + allRecords.size() + " records:");
+        System.out.println("\nTraversal complete. Found " + attributeInfoAllRecords.size() + " records:");
 
-        HdfFixedPoint fractalHeapAddress = objectHeader.findMessageByType(LinkInfoMessage.class).orElseThrow().getFractalHeapAddress();
-        long fractalHeapOffset = fractalHeapAddress.getInstance(Long.class);
-        fileChannel.position(fractalHeapOffset);
 
-        // 6. --- EXECUTE THE READER ---
-        FractalHeapReader reader = new FractalHeapReader(fileChannel, 8, 8);
-        FractalHeap heap = reader.read();
+        HdfFixedPoint attributeInfoFractalHeapAddress = rootGroup.getObjectHeader().findMessageByType(AttributeInfoMessage.class).orElseThrow().getFractalHeapAddress();
+        long attributeInfoFractalHeapOffset = attributeInfoFractalHeapAddress.getInstance(Long.class);
+        fileChannel.position(attributeInfoFractalHeapOffset);
 
+        FractalHeap fractalHeap = FractalHeap.read(fileChannel, attributeInfoFractalHeapOffset, 8, 8);
+//
+//        // 6. --- EXECUTE THE READER ---
+//        FractalHeapReader attributeInfoReader = new FractalHeapReader(fileChannel, 8, 8);
+//        FractalHeap attributeInfoRHeap = attributeInfoReader.read();
+//
         // 7. --- RETRIEVE THE OBJECT AND VERIFY ---
-        for (int i = 0; i < allRecords.size(); i++) {
-            BTreeV2Record x = allRecords.get(i);
+        for (BTreeV2Record bTreeV2Record: attributeInfoAllRecords) {
 
-            byte[] heapId = ((Type5Record)x).heapId;
+            byte[] heapId = ((Type8Record)bTreeV2Record).heapId;
+//            System.out.println("Row: " + Arrays.toString(heapId));
+            ParsedHeapId parsedHeapId = new ParsedHeapId(heapId, fractalHeap);
 
-//            byte[] retrievedData = heap.getObject(heapId);
+            byte[] retrievedData = fractalHeap.getObject(parsedHeapId);
+            System.out.println("Row: " + Arrays.toString(retrievedData));
+            printRows(retrievedData);
+            System.out.println();
 //            System.out.println("Row: " + Arrays.toString(Arrays.copyOfRange(retrievedData, 0, 10))
 //            + " : " + retrievedData[10]
 //            + " : " + new String(Arrays.copyOfRange(retrievedData, 11, 11+retrievedData[10]))
 //            + " : " + Arrays.toString(Arrays.copyOfRange(retrievedData, 10+1+retrievedData[10], retrievedData.length))
 //            );
-            ByteBuffer retrievedData = ByteBuffer.wrap(heap.getObject(heapId)).order(ByteOrder.LITTLE_ENDIAN);
-            byte[] rowHeader = new byte[10];
-            retrievedData.get(rowHeader);
-            int sLength = Byte.toUnsignedInt(retrievedData.get());
-            byte[] stringBuffer = new byte[sLength];
-            retrievedData.get(stringBuffer);
-            String groupName = new String(stringBuffer);
-            long objectHeaderOffset = retrievedData.getLong();
-            System.out.println("Row: " + Arrays.toString(rowHeader)
-            + " : " + sLength
-            + " : " + groupName
-            + " : " + objectHeaderOffset
-            );
+//            ByteBuffer retrievedData = ByteBuffer.wrap(attributeInfoRHeap.getObject(heapId)).order(ByteOrder.LITTLE_ENDIAN);
+//            byte[] rowHeader = new byte[10];
+//            retrievedData.get(rowHeader);
+//            int sLength = Byte.toUnsignedInt(retrievedData.get());
+//            byte[] stringBuffer = new byte[sLength];
+//            retrievedData.get(stringBuffer);
+//            String groupName = new String(stringBuffer);
+//            long objectHeaderOffset = retrievedData.getLong();
+//            System.out.println("Row: " + Arrays.toString(retrievedData.array()));
 
             //            System.out.println("Heap ID: " + Arrays.toString(heapId));
 //            System.out.println("Retrieved Data: '" + new String(retrievedData, StandardCharsets.UTF_8) + "'");
-            HdfObjectHeaderPrefix objectHeaderG1 = readObjectHeaderPrefixFromSeekableByteChannel(fileChannel, objectHeaderOffset, hdfDataFile, groupName);
-            System.out.println(groupName + ":" + objectHeaderG1.getHeaderMessages());
+//            HdfObjectHeaderPrefix objectHeaderG1 = readObjectHeaderPrefixFromSeekableByteChannel(fileChannel, objectHeaderOffset, this, groupName);
+//            System.out.println(groupName + ":" + objectHeaderG1.getHeaderMessages());
         }
-//        FractalHeapReader fractalHeapReader = new FractalHeapReader(fileChannel, 8, 8);
-//        FractalHeap fractalHeap = fractalHeapReader.read();
-//        System.out.println("fractalHeap: " + fractalHeap);
-//        Object rb = fractalHeap.rootBlock;
-//        System.out.println("fractalHeap: " + rb);
 
-//        FractalHeapReader reader = new FractalHeapReader(fileChannel, 8, 8);
-//        FractalHeapReader.FractalHeapHeader header = reader.readHeader();
-//        System.out.println("Table Width: " + header.tableWidth);
-//        System.out.println("Root Block Address: " + header.addressOfRootBlock);
-//        BTreeV2Record x = allRecords.get(0);
-//        // Example: Retrieve object data with a heap ID
-////        byte[] heapId = {/* heap ID bytes */};
-//        byte[] heapId = ((Type5Record)x).heapId;
-//        byte[] objectData = reader.getObjectData(heapId);
-//        System.out.println("Object Data Length: " + objectData.length);
 
     }
+    public static void printRows(byte[] input) {
+        // First row: 8 bytes, print as Arrays.toString
+        byte[] firstRow = Arrays.copyOfRange(input, 0, 8);
+        System.out.println(Arrays.toString(firstRow));
 
+        // Second row: null-terminated string, length from firstRow[2], padded to 8-byte boundary
+        int stringLength = firstRow[2] & 0xFF; // Convert byte to unsigned int
+        int stringStart = 8;
+        int paddedLength = ((stringLength + 7) / 8) * 8; // Round up to next multiple of 8
+        byte[] secondRow = Arrays.copyOfRange(input, stringStart, stringStart + stringLength);
+        StringBuilder secondString = new StringBuilder();
+        for (byte b : secondRow) {
+            if (b == 0) break; // Stop at null terminator
+            secondString.append((char) (b & 0xFF));
+        }
+        System.out.println(secondString.toString());
+
+        // Third row: 16 bytes, print as Arrays.toString
+        int thirdRowStart = stringStart + paddedLength;
+        byte[] thirdRow = Arrays.copyOfRange(input, thirdRowStart, thirdRowStart + 16);
+        System.out.println(Arrays.toString(thirdRow));
+
+        // Fourth row: null-terminated string
+        int fourthRowStart = thirdRowStart + 16;
+        StringBuilder fourthString = new StringBuilder();
+        for (int i = fourthRowStart; i < input.length && input[i] != 0; i++) {
+            fourthString.append((char) (input[i] & 0xFF));
+        }
+        System.out.println(fourthString.toString());
+    }
     private static long findSuperblockOffset(SeekableByteChannel fileChannel) throws IOException {
         long size = fileChannel.size();
         long offset = 0;

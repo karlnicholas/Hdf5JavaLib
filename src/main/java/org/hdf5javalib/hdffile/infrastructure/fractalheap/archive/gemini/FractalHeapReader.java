@@ -1,4 +1,4 @@
-package org.hdf5javalib.hdffile.infrastructure.fractalheap.gemini;
+package org.hdf5javalib.hdffile.infrastructure.fractalheap.archive.gemini;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
