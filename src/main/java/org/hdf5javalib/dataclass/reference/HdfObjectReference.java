@@ -107,7 +107,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
 //            }
 //            Collections.reverse(parents);
 //            String objectPathString = '/' + currentNode.getObjectName() + String.join("/", parents);
-            String objectPathString = HdfDisplayUtils.getDataObjectFullName(hdfDataObject);
+            String objectPathString = hdfDataObject.getObjectPath();
 
             this.hdfDataHolder = HdfDataHolder.ofScalar(
                     new HdfString(objectPathString, new StringDatatype(

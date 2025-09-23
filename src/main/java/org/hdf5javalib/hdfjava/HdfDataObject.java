@@ -42,6 +42,7 @@ public abstract class HdfDataObject implements HdfTreeNode {
             path.insert(0, parent.getObjectName());
             parent=parent.getParent();
         }
+        path.insert(0, '/');
         return path.toString();
     }
 

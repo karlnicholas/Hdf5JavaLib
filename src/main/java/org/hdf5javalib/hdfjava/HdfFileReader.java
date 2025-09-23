@@ -210,7 +210,7 @@ public class HdfFileReader implements HdfDataFile {
             if ( objectHeader != null && objectHeader.findMessageByType(DataLayoutMessage.class).isEmpty() ) {
                 HdfGroup groupObject = new HdfGroup(groupName, objectHeader, rootGroup, hardLink);
                 rootGroup.addChild(groupObject);
-    System.out.println("ADDED GROUP: " +  HdfDisplayUtils.getDataObjectFullName(groupObject));
+    System.out.println("ADDED GROUP: " +  groupObject.getObjectPath());
 
                 if ( hardLink == null ) {
                     LinkInfoMessage linkInfoMessage = objectHeader.findMessageByType(LinkInfoMessage.class).orElseThrow();
@@ -222,7 +222,7 @@ public class HdfFileReader implements HdfDataFile {
             } else {
                 HdfDataset datasetObject = new HdfDataset(groupName, objectHeader, rootGroup, hardLink);
                 rootGroup.addChild(datasetObject);
-System.out.println("ADDED DATASET: " + HdfDisplayUtils.getDataObjectFullName(datasetObject));
+System.out.println("ADDED DATASET: " + datasetObject.getObjectPath());
             }
 
 

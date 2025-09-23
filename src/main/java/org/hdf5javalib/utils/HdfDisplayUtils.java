@@ -94,17 +94,17 @@ public class HdfDisplayUtils {
         }
     }
 
-    public static String getDataObjectFullName(HdfDataObject hdfDataObject) {
-        List<String> parents = new ArrayList<>();
-        HdfDataObject currentNode = hdfDataObject;
-        while(currentNode.getParent() != null) {
-            parents.add(currentNode.getObjectName());
-            currentNode = currentNode.getParent().getDataObject();
-        }
-        Collections.reverse(parents);
-        String objectPathString = '/' + currentNode.getObjectName() + String.join("/", parents);
-        return objectPathString;
-    }
+//    public static String getDataObjectFullName(HdfDataObject hdfDataObject) {
+//        List<String> parents = new ArrayList<>();
+//        HdfDataObject currentNode = hdfDataObject;
+//        while(currentNode.getParent() != null) {
+//            parents.add(currentNode.getObjectName());
+//            currentNode = currentNode.getParent().getDataObject();
+//        }
+//        Collections.reverse(parents);
+//        String objectPathString = '/' + currentNode.getObjectName() + String.join("/", parents);
+//        return objectPathString;
+//    }
 
     public static void displayData(SeekableByteChannel channel, HdfDataset ds, HdfFileReader reader) throws Exception {
         log.debug("Dataset path: {}", ds.getObjectPath());
