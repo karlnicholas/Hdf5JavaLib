@@ -40,10 +40,10 @@ public class FractalHeapHeader {
     public byte[] ioFilterPipeline;
     public int checksum;
 
-    // --- Derived/Helper fields ---
+    // --- Passed-in fields ---
     public final int sizeOfOffsets;
     public final int sizeOfLengths;
-    public int maxRows;
+    // The maxRows field has been removed as it is not used by the read-only logic.
 
     private FractalHeapHeader(int sizeOfOffsets, int sizeOfLengths) {
         this.sizeOfOffsets = sizeOfOffsets;
@@ -109,12 +109,7 @@ public class FractalHeapHeader {
         }
         header.checksum = reader.readInt();
 
-        if (header.startingBlockSize > 0) {
-            int startingBlockSizePowerOf2 = (int) Math.round(Math.log(header.startingBlockSize) / Math.log(2));
-            header.maxRows = header.maximumHeapSize - startingBlockSizePowerOf2;
-        } else {
-            header.maxRows = 0;
-        }
+        // The unused maxRows calculation is now removed.
 
         return header;
     }
@@ -156,7 +151,7 @@ public class FractalHeapHeader {
                 .add("sizeOfOffsets=" + sizeOfOffsets).add("sizeOfLengths=" + sizeOfLengths)
                 .add("tableWidth=" + tableWidth).add("startingBlockSize=" + startingBlockSize)
                 .add("maximumDirectBlockSize=" + maximumDirectBlockSize).add("maximumHeapSize(log2)=" + maximumHeapSize)
-                .add("maxRows=" + maxRows).add("numberOfManagedObjects=" + numberOfManagedObjects)
+                .add("numberOfManagedObjects=" + numberOfManagedObjects)
                 .add("startingRowsInRoot=" + startingRowsInRoot).add("currentRowsInRoot=" + currentRowsInRoot)
                 .add("rootBlockAddress=" + rootBlockAddress)
                 .toString();

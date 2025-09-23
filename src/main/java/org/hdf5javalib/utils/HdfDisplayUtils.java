@@ -5,6 +5,7 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.hdffile.dataobjects.messages.AttributeMessage;
 import org.hdf5javalib.hdfjava.HdfDataFile;
+import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.slf4j.Logger;
@@ -16,7 +17,10 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -88,6 +92,18 @@ public class HdfDisplayUtils {
                 }
             }
         }
+    }
+
+    public static String getDataObjectFullName(HdfDataObject hdfDataObject) {
+        List<String> parents = new ArrayList<>();
+        HdfDataObject currentNode = hdfDataObject;
+        while(currentNode.getParent() != null) {
+            parents.add(currentNode.getObjectName());
+            currentNode = currentNode.getParent().getDataObject();
+        }
+        Collections.reverse(parents);
+        String objectPathString = '/' + currentNode.getObjectName() + String.join("/", parents);
+        return objectPathString;
     }
 
     public static void displayData(SeekableByteChannel channel, HdfDataset ds, HdfFileReader reader) throws Exception {

@@ -198,6 +198,7 @@ public class FractalHeap {
         db.data = data;
         db.filterMask = filterMask;
         db.checksum = checksum;
+        db.headerSize = headerSize;
         return db;
     }
 
@@ -291,11 +292,21 @@ public class FractalHeap {
             for(Block db: ((IndirectBlock) rootBlock).children) {
                 DirectBlock dBlock = (DirectBlock) db;
                 if ( heapId.offset >= dBlock.blockOffset && heapId.offset < (dBlock.blockOffset + dBlock.blockSize) ) {
-                    int from = Math.toIntExact(heapId.offset - dBlock.blockOffset - 22);
+                    int from = Math.toIntExact(heapId.offset - dBlock.blockOffset - dBlock.headerSize);
                     int to = from + heapId.length;
                     return Arrays.copyOfRange(dBlock.data, from, to);
                 }
             }
+        } else {
+            DirectBlock dBlock = (DirectBlock) rootBlock;
+            if ( heapId.offset >= dBlock.blockOffset && heapId.offset < (dBlock.blockOffset + dBlock.blockSize) ) {
+                int from = Math.toIntExact(heapId.offset - dBlock.blockOffset - dBlock.headerSize);
+                int to = from + heapId.length;
+                return Arrays.copyOfRange(dBlock.data, from, to);
+            } else {
+                throw  new IllegalArgumentException("Unknown heap id " + heapId);
+            }
+
         }
         throw  new IllegalArgumentException("Unknown heap id " + heapId);
     }
@@ -355,6 +366,7 @@ public class FractalHeap {
     }
 
     public static class DirectBlock extends Block {
+        public int headerSize;
         long blockSize;
         byte[] data;
         int filterMask;

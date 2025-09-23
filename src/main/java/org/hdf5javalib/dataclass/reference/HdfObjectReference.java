@@ -10,6 +10,7 @@ import org.hdf5javalib.hdfjava.HdfTree;
 import org.hdf5javalib.hdfjava.HdfTreeNode;
 import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.utils.HdfDataHolder;
+import org.hdf5javalib.utils.HdfDisplayUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -98,14 +99,16 @@ public class HdfObjectReference implements HdfReferenceInstance {
         if ( dataspaceSelectionInstance != null ) {
             this.hdfDataHolder = dataspaceSelectionInstance.getData(hdfDataObject, dt.getDataFile());
         } else {
-            List<String> parents = new ArrayList<>();
-            HdfDataObject currentNode = hdfDataObject;
-            while(currentNode.getParent() != null) {
-                parents.add(currentNode.getObjectName());
-                currentNode = currentNode.getParent().getDataObject();
-            }
-            Collections.reverse(parents);
-            String objectPathString = '/' + currentNode.getObjectName() + String.join("/", parents);
+//            List<String> parents = new ArrayList<>();
+//            HdfDataObject currentNode = hdfDataObject;
+//            while(currentNode.getParent() != null) {
+//                parents.add(currentNode.getObjectName());
+//                currentNode = currentNode.getParent().getDataObject();
+//            }
+//            Collections.reverse(parents);
+//            String objectPathString = '/' + currentNode.getObjectName() + String.join("/", parents);
+            String objectPathString = HdfDisplayUtils.getDataObjectFullName(hdfDataObject);
+
             this.hdfDataHolder = HdfDataHolder.ofScalar(
                     new HdfString(objectPathString, new StringDatatype(
                     StringDatatype.createClassAndVersion(),
