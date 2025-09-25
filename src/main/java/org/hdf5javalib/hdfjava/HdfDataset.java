@@ -352,6 +352,7 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
     public boolean hasData() {
         return hardLink == null
             && hasDataspaceMessage()
+            && objectHeader.findMessageByType(DatatypeMessage.class).isPresent()
             && objectHeader.findMessageByType(DataLayoutMessage.class).orElseThrow().hasData();
     }
 
