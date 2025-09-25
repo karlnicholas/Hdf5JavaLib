@@ -5,13 +5,11 @@ import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datatype.FixedPointDatatype;
 import org.hdf5javalib.datatype.ReferenceDatatype;
 import org.hdf5javalib.datatype.StringDatatype;
-import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.hdffile.metadata.HdfSuperblock;
 import org.hdf5javalib.hdfjava.HdfTree;
 import org.hdf5javalib.hdfjava.HdfTreeNode;
 import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.utils.HdfDataHolder;
-import org.hdf5javalib.utils.HdfDisplayUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -108,12 +106,13 @@ public class HdfObjectReference implements HdfReferenceInstance {
 //            }
 //            Collections.reverse(parents);
 //            String objectPathString = '/' + currentNode.getObjectName() + String.join("/", parents);
-            String objectPathString;
-            if ( hdfDataObject == null ) {
-                objectPathString = "NULL:" + localHdfFixedPoint.toString();
-            } else {
-                objectPathString = hdfDataObject.getObjectPath();
-            }
+//            String objectPathString;
+//            if ( hdfDataObject == null ) {
+//                objectPathString = "NULL:" + localHdfFixedPoint.toString();
+//            } else {
+//                objectPathString = hdfDataObject.getObjectPath();
+//            }
+            String objectPathString = hdfDataObject.getObjectPath();
 
             this.hdfDataHolder = HdfDataHolder.ofScalar(
                     new HdfString(objectPathString, new StringDatatype(

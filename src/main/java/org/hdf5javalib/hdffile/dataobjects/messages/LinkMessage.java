@@ -161,4 +161,12 @@ public class LinkMessage extends HdfMessage {
 
         return sb.toString();
     }
+
+    public String getLinkName() {
+        return linkName;
+    }
+
+    public HdfFixedPoint getLinkInformation() {
+        return (HdfFixedPoint)linkInformation;
+    }
 }

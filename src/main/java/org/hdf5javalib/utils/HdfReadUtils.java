@@ -2,6 +2,10 @@ package org.hdf5javalib.utils;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datatype.FixedPointDatatype;
+import org.hdf5javalib.hdffile.dataobjects.messages.HdfMessage;
+import org.hdf5javalib.hdffile.dataobjects.messages.LinkMessage;
+import org.hdf5javalib.hdfjava.HdfFileReader;
+import org.hdf5javalib.hdfjava.HdfGroup;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -169,4 +173,5 @@ public class HdfReadUtils {
             throw new IllegalArgumentException("Size must be between 1 and 8 bytes");
         }
     }
+
 }

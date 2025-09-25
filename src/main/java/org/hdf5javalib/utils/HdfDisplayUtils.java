@@ -76,8 +76,9 @@ public class HdfDisplayUtils {
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             for (HdfDataset dataSet : reader.getDatasets()) {
-                log.info("{} ", dataSet);
-                action.perform(channel, dataSet, reader);
+                System.out.println("{} " + dataSet);
+//                log.info("{} ", dataSet);
+//                action.perform(channel, dataSet, reader);
             }
         } catch (Exception e) {
             log.error("Exception in processFile: {}", filePath, e);

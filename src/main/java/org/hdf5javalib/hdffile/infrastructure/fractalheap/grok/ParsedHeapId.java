@@ -61,7 +61,7 @@ public class ParsedHeapId {
 //        this.length = reader.read(spec.lengthBits);
 //        this.row = (int) reader.read(spec.rowBits);
 //        this.col = (int) reader.read(spec.colBits);
-        System.out.println(this);
+//        System.out.println(this);
 
     }
 
