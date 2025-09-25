@@ -3,7 +3,10 @@ package org.hdf5javalib.utils;
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
+import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.hdffile.dataobjects.messages.AttributeMessage;
+import org.hdf5javalib.hdffile.dataobjects.messages.HdfMessage;
+import org.hdf5javalib.hdffile.dataobjects.messages.LinkMessage;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.hdfjava.HdfDataset;
@@ -36,6 +39,16 @@ public class HdfDisplayUtils {
     private static final Logger log = LoggerFactory.getLogger(HdfDisplayUtils.class);
     public static final String UNDEFINED = "<Undefined>";
     private static final String STREAM_EQUALS = " stream = ";
+
+    public static void displayLinkMessages(HdfObjectHeaderPrefix objectHeader) {
+        for( HdfMessage hdfMessage: objectHeader.getHeaderMessages()) {
+            if ( hdfMessage instanceof LinkMessage ) {
+                LinkMessage linkMessage = (LinkMessage) hdfMessage;
+                System.out.println("\tLinkMessage: " + linkMessage.toString());
+            }
+
+        }
+    }
 
     // Define a functional interface for actions that may need channel, dataset, and reader
     @FunctionalInterface

@@ -281,6 +281,10 @@ public abstract class HdfMessage {
         return messageType;
     }
 
+    public int getMessageFlags() {
+        return messageFlags;
+    }
+
     /**
      * Enum representing various HDF5 message types.
      */

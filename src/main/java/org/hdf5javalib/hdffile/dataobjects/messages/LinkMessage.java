@@ -76,7 +76,7 @@ public class LinkMessage extends HdfMessage {
 
         int version = Byte.toUnsignedInt(buffer.get());
         int flags = Byte.toUnsignedInt(buffer.get());
-        int linkType = -1;
+        int linkType = 0;
         if ( (flags & 1<<3) != 0 ) {
             linkType = Byte.toUnsignedInt(buffer.get());
         }
@@ -126,8 +126,39 @@ public class LinkMessage extends HdfMessage {
                 messageFlags, data.length);
     }
 
-        @Override
+    @Override
     public void writeMessageToByteBuffer(ByteBuffer buffer) {
             writeMessageData(buffer);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("LinkMessage{")
+                .append("version=").append(version)
+                .append(", flags=0x").append(Integer.toHexString(flags))
+                .append(", linkType=").append(linkType)
+                .append(", creationOrder=").append(creationOrder != null ? creationOrder : "undefined")
+                .append(", linkNameCharacterSet=").append(linkNameCharacterSet == 0 ? "ASCII" : "UTF-8")
+                .append(", lengthOfLinkName=").append(lengthOfLinkName)
+                .append(", linkName='").append(linkName != null ? linkName : "null").append("'")
+                .append(", linkInformation=");
+
+        if (linkInformation == null) {
+            sb.append("null");
+        } else if (linkInformation instanceof HdfFixedPoint) {
+            sb.append("HdfFixedPoint=").append(linkInformation);
+        } else if (linkInformation instanceof String) {
+            sb.append("SoftLink='").append(linkInformation).append("'");
+        } else {
+            sb.append("UnknownType=").append(linkInformation.getClass().getSimpleName());
+        }
+
+        sb.append(", messageType=").append(getMessageType())
+                .append(", messageSize=").append(getSizeMessageData())
+                .append(", messageFlags=0x").append(Integer.toHexString(getMessageFlags()))
+                .append("}");
+
+        return sb.toString();
     }
 }

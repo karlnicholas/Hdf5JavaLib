@@ -36,13 +36,13 @@ public abstract class HdfDataObject implements HdfTreeNode {
     public void setParent(HdfTreeNode parent) { this.parent = parent; }
     @Override
     public String getObjectPath() {
+        HdfTreeNode tParnent = parent;
         StringBuilder path = new StringBuilder(Objects.requireNonNull(objectName, "Node name cannot be null."));
-        while(parent!=null) {
+        while(tParnent!=null) {
             path.insert(0, '/');
-            path.insert(0, parent.getObjectName());
-            parent=parent.getParent();
+            path.insert(0, tParnent.getObjectName());
+            tParnent=tParnent.getParent();
         }
-        path.insert(0, '/');
         return path.toString();
     }
 

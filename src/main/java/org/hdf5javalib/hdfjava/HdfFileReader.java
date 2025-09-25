@@ -211,6 +211,7 @@ public class HdfFileReader implements HdfDataFile {
                 HdfGroup groupObject = new HdfGroup(groupName, objectHeader, rootGroup, hardLink);
                 rootGroup.addChild(groupObject);
     System.out.println("ADDED GROUP: " +  groupObject.getObjectPath());
+                HdfDisplayUtils.displayLinkMessages(objectHeader);
 
                 if ( hardLink == null ) {
                     LinkInfoMessage linkInfoMessage = objectHeader.findMessageByType(LinkInfoMessage.class).orElseThrow();
@@ -1094,19 +1095,42 @@ System.out.println("ADDED DATASET: " + datasetObject.getObjectPath());
     }
 
     private static void parseContinuationMessages(SeekableByteChannel fileChannel, int flags, List<HdfMessage> currentMessages, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        // This logic is similar to V1, but you need to check the newly read messages.
-        for (HdfMessage hdfMessage : currentMessages) {
+        // Use a queue to process messages iteratively instead of recursively
+        Queue<HdfMessage> messageQueue = new LinkedList<>(currentMessages);
+
+        while (!messageQueue.isEmpty()) {
+            HdfMessage hdfMessage = messageQueue.poll();
             if (hdfMessage instanceof ObjectHeaderContinuationMessage objectHeaderContinuationMessage) {
-                // The continuation message points to the next chunk. You need a method to parse these.
-                // A continuation chunk is NOT a full V2 header, it's just more messages.
-                List<HdfMessage> newContinuationMessages = HdfMessage.parseContinuationMessage(fileChannel, objectHeaderContinuationMessage, hdfDataFile,
-                        (flags & 0b00000100) > 0 ? HdfMessage.V2OBJECT_HEADER_READ_PREFIX_WITHORDER : HdfMessage.V2_OBJECT_HEADER_READ_PREFIX);
-                parseContinuationMessages(fileChannel, flags, newContinuationMessages, hdfDataFile);
+                // Parse the continuation chunk
+                List<HdfMessage> newContinuationMessages = HdfMessage.parseContinuationMessage(
+                        fileChannel,
+                        objectHeaderContinuationMessage,
+                        hdfDataFile,
+                        (flags & 0b00000100) > 0 ? HdfMessage.V2OBJECT_HEADER_READ_PREFIX_WITHORDER : HdfMessage.V2_OBJECT_HEADER_READ_PREFIX
+                );
+                // Add new messages to the queue for further processing
+                messageQueue.addAll(newContinuationMessages);
+                // Also add them to currentMessages to retain all messages
                 currentMessages.addAll(newContinuationMessages);
-                break; // Typically only one continuation message per chunk
             }
         }
     }
+
+//    private static void parseContinuationMessages(SeekableByteChannel fileChannel, int flags, List<HdfMessage> currentMessages, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+//        ArrayList<HdfMessage> messages = new ArrayList<>();
+//        // This logic is similar to V1, but you need to check the newly read messages.
+//        for (HdfMessage hdfMessage : currentMessages) {
+//            if (hdfMessage instanceof ObjectHeaderContinuationMessage objectHeaderContinuationMessage) {
+//                // The continuation message points to the next chunk. You need a method to parse these.
+//                // A continuation chunk is NOT a full V2 header, it's just more messages.
+//                List<HdfMessage> newContinuationMessages = HdfMessage.parseContinuationMessage(fileChannel, objectHeaderContinuationMessage, hdfDataFile,
+//                        (flags & 0b00000100) > 0 ? HdfMessage.V2OBJECT_HEADER_READ_PREFIX_WITHORDER : HdfMessage.V2_OBJECT_HEADER_READ_PREFIX);
+//                messages.addAll(newContinuationMessages);
+//                parseContinuationMessages(fileChannel, flags, newContinuationMessages, hdfDataFile);
+//            }
+//        }
+//        currentMessages.addAll(messages);
+//    }
 
     /**
      * Initializes the global heap at the specified offset.
