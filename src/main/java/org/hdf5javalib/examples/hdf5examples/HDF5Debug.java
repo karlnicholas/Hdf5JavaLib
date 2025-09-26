@@ -69,11 +69,12 @@ public class HDF5Debug {
 ////                log.info("{} ", dataSet);
 //                displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
 //            }
-            HdfDataset dataSet = reader.getDataset("/gt1l/geolocation/altitude_sc").get();
+            HdfDataset dataSet = reader.getDataset("/ancillary_data/calibrations/low_link_impulse_response/hist_x").get();
             System.out.println("{} " + dataSet);
 //                System.out.println("{} " + dataSet.getObjectPath());
 //                log.info("{} ", dataSet);
-                displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
+                HdfDisplayUtils.displayData(channel, dataSet, reader);
+//                displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
         } catch (Exception e) {
             log.error("Exception in processFile: {}", filePath, e);
         }
