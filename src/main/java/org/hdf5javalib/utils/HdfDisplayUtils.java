@@ -316,7 +316,7 @@ public class HdfDisplayUtils {
      * @param value the value to format
      * @return a string representation of the value, handling arrays appropriately
      */
-    private static String displayValue(Object value) {
+    public static String displayValue(Object value) {
         if (value == null) return "null";
         Class<?> clazz = value.getClass();
         if (!clazz.isArray()) return value.toString();

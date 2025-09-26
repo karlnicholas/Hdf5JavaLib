@@ -172,7 +172,7 @@ public class TypedDataSource<T> {
      */
     public T readScalar() throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (dimensions.length != 0) {
-            throw new IllegalStateException("Dataset must be 0D(Scalar)");
+            throw new IllegalStateException("Dataset is not 0D(Scalar)");
         }
         if (!dataset.hasData()) {
             throw new IllegalStateException("Dataset has no data");
@@ -190,7 +190,7 @@ public class TypedDataSource<T> {
      */
     public Stream<T> streamScalar() throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (dimensions.length != 0) {
-            throw new IllegalStateException("Dataset must be 0D(Scalar)");
+            throw new IllegalStateException("Dataset is not 0D(Scalar)");
         }
         if (!dataset.hasData()) {
             throw new IllegalStateException("Dataset has no data");
@@ -220,7 +220,7 @@ public class TypedDataSource<T> {
      */
     public T[] readVector() throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (dimensions.length != 1) {
-            throw new IllegalStateException("Dataset must be 1D(Vector)");
+            throw new IllegalStateException("Dataset is not 1D(Vector)");
         }
         int size = dimensions[0];
         ByteBuffer buffer = readBytes(0, (long) elementSize * size);
@@ -235,7 +235,7 @@ public class TypedDataSource<T> {
      */
     public Stream<T> streamVector() {
         if (dimensions.length != 1) {
-            throw new IllegalStateException("Dataset must be 1D(Vector)");
+            throw new IllegalStateException("Dataset is not 1D(Vector)");
         }
         return StreamSupport.stream(new VectorSpliterator(0, dimensions[0], elementSize), false);
     }
@@ -248,7 +248,7 @@ public class TypedDataSource<T> {
      */
     public Stream<T> parallelStreamVector() {
         if (dimensions.length != 1) {
-            throw new IllegalStateException("Dataset must be 1D(Vector)");
+            throw new IllegalStateException("Dataset is not 1D(Vector)");
         }
         return StreamSupport.stream(new VectorSpliterator(0, dimensions[0], elementSize), true);
     }
@@ -264,7 +264,7 @@ public class TypedDataSource<T> {
      */
     public T[][] readMatrix() throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (dimensions.length != 2) {
-            throw new IllegalStateException("Dataset must be 2D(Matrix)");
+            throw new IllegalStateException("Dataset is not 2D(Matrix)");
         }
         int rows = dimensions[0];
         int cols = dimensions[1];
@@ -280,7 +280,7 @@ public class TypedDataSource<T> {
      */
     public Stream<T[]> streamMatrix() {
         if (dimensions.length != 2) {
-            throw new IllegalStateException("Dataset must be 2D(Matrix)");
+            throw new IllegalStateException("Dataset is not 2D(Matrix)");
         }
         long rowSize = (long) elementSize * dimensions[1];
         return StreamSupport.stream(new MatrixSpliterator(0, dimensions[0], rowSize, dimensions[1]), false);
@@ -294,7 +294,7 @@ public class TypedDataSource<T> {
      */
     public Stream<T[]> parallelStreamMatrix() {
         if (dimensions.length != 2) {
-            throw new IllegalStateException("Dataset must be 2D(Matrix)");
+            throw new IllegalStateException("Dataset is not 2D(Matrix)");
         }
         long rowSize = (long) elementSize * dimensions[1];
         return StreamSupport.stream(new MatrixSpliterator(0, dimensions[0], rowSize, dimensions[1]), true);
@@ -311,7 +311,7 @@ public class TypedDataSource<T> {
      */
     public T[][][] readTensor() throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (dimensions.length != 3) {
-            throw new IllegalStateException("Dataset must be 3D(Tensor)");
+            throw new IllegalStateException("Dataset is not 3D(Tensor)");
         }
         int depth = dimensions[0];
         int rows = dimensions[1];
@@ -328,7 +328,7 @@ public class TypedDataSource<T> {
      */
     public Stream<T[][]> streamTensor() {
         if (dimensions.length != 3) {
-            throw new IllegalStateException("Dataset must be 3D(Tensor)");
+            throw new IllegalStateException("Dataset is not 3D(Tensor)");
         }
         long sliceSize = (long) elementSize * dimensions[1] * dimensions[2];
         return StreamSupport.stream(new TensorSpliterator(0, dimensions[0], sliceSize, dimensions[1], dimensions[2]), false);
@@ -342,7 +342,7 @@ public class TypedDataSource<T> {
      */
     public Stream<T[][]> parallelStreamTensor() {
         if (dimensions.length != 3) {
-            throw new IllegalStateException("Dataset must be 3D(Tensor)");
+            throw new IllegalStateException("Dataset is not 3D(Tensor)");
         }
         long sliceSize = (long) elementSize * dimensions[1] * dimensions[2];
         return StreamSupport.stream(new TensorSpliterator(0, dimensions[0], sliceSize, dimensions[1], dimensions[2]), true);

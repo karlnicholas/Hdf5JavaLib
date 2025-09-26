@@ -1,15 +1,30 @@
 package org.hdf5javalib.examples.hdf5examples;
 
+import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.dataclass.HdfFloatPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
+import org.hdf5javalib.hdfjava.HdfDataFile;
+import org.hdf5javalib.hdfjava.HdfDataset;
+import org.hdf5javalib.hdfjava.HdfFileReader;
+import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.DoubleSummaryStatistics;
 import java.util.Objects;
+import java.util.OptionalDouble;
 
 import static org.hdf5javalib.utils.HdfDisplayUtils.displayFile;
+import static org.hdf5javalib.utils.HdfDisplayUtils.displayValue;
 
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.
@@ -39,11 +54,58 @@ public class HDF5Debug {
             // List all .h5 files in HDF5Examples resources directory
             // ATL03_20250302235544_11742607_006_01
 //            Path dirPath = Paths.get(Objects.requireNonNull(HDF5Debug.class.getClassLoader().getResource("HDF5Examples/h5ex_g_compact2.h5")).toURI());
-            Path dirPath = Paths.get("c:/users/karln/Downloads/ATL03_20250302235544_11742607_006_01.h5");
-            displayFile(dirPath);
+            Path dirPath = Paths.get("c:/users/karnicho/Downloads/ATL03_20250302235544_11742607_006_01.h5");
+            processFile(dirPath);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
+    }
+    // Generalized method to process the file and apply a custom action per dataset
+    private static void processFile(Path filePath) {
+        try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+            HdfFileReader reader = new HdfFileReader(channel).readFile();
+//            for (HdfDataset dataSet : reader.getDatasets()) {
+//                System.out.println("{} " + dataSet);
+////                log.info("{} ", dataSet);
+//                displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
+//            }
+            HdfDataset dataSet = reader.getDataset("/gt1l/geolocation/altitude_sc").get();
+            System.out.println("{} " + dataSet);
+//                System.out.println("{} " + dataSet.getObjectPath());
+//                log.info("{} ", dataSet);
+                displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
+        } catch (Exception e) {
+            log.error("Exception in processFile: {}", filePath, e);
+        }
+    }
+
+    public static <T> void displayScalarData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
+
+        T[] resultR = dataSource.readFlattened();
+        System.out.println(resultR.length);
+        OptionalDouble max = Arrays.stream(resultR).mapToDouble(h -> {
+                    try {
+                        return ((HdfFloatPoint)h).getInstance(Double.class);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .max();
+        System.out.println("max = " + max.orElseThrow());
+
+//        T result = dataSource.streamFlattened().findFirst().orElseThrow();
+//        log.info("{} stream = {}", dataSet.getObjectName(), displayValue(result));
+//        dataSource.streamFlattened().limit(10).forEach(result->System.out.println(result));
+//        OptionalDouble max = dataSource.streamFlattened().mapToDouble(h -> {
+//                    try {
+//                        return ((HdfFloatPoint)h).getInstance(Double.class);
+//                    } catch (Exception e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                })
+//                .max();
+//        System.out.println("max = " + max.orElseThrow());
     }
 
 }
