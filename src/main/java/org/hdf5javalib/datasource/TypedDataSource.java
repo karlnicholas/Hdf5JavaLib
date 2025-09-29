@@ -393,7 +393,7 @@ public class TypedDataSource<T> {
         private long currentIndex;
         private final long limit;
         private final long recordSize;
-        private final int cacheSize = 100_000; // Max records to cache
+        private int cacheSize; // Max records to cache
         private ByteBuffer cacheBuffer; // Cache for raw bytes
         private int cachePosition = 0; // Current position in cache (record index)
         private int cacheLimit = 0; // Number of records in cache
@@ -402,7 +402,25 @@ public class TypedDataSource<T> {
             this.currentIndex = start;
             this.limit = limit;
             this.recordSize = recordSize;
-            this.cacheBuffer = ByteBuffer.allocate((int) Math.min(cacheSize * recordSize, Integer.MAX_VALUE));
+
+            // Default cacheSize and maximum buffer size (e.g., 100 MB)
+            long defaultCacheSize = 100_000; // Default: 100,000 records
+            long maxBufferSize = 100 * 1024 * 1024; // 100 MB
+
+            // Adjust cacheSize to keep buffer size within maxBufferSize
+            this.cacheSize = (int) Math.min(defaultCacheSize, maxBufferSize / recordSize);
+            if (this.cacheSize <= 0) {
+                throw new IllegalArgumentException("Record size too large: " + recordSize);
+            }
+
+            // Calculate buffer size
+            long intendedSize = (long) this.cacheSize * recordSize;
+            int bSize = (int) Math.min(intendedSize, Integer.MAX_VALUE - 8); // Slightly below max
+            if (bSize <= 0 || intendedSize < 0) {
+                throw new IllegalArgumentException("Invalid buffer size: " + intendedSize);
+            }
+
+            this.cacheBuffer = ByteBuffer.allocate(bSize);
         }
 
         @Override
@@ -487,17 +505,26 @@ public class TypedDataSource<T> {
         @Override
         public Spliterator<R> trySplit() {
             long remaining = limit - currentIndex;
-            if (remaining <= 1) {
-                return null;
+            if (remaining <= cacheSize * 2) {
+                return null; // Too few records to split efficiently
             }
 
-            // Split remaining in half
-            long splitIndex = currentIndex + remaining / 2;
-            Spliterator<R> newSpliterator = createNewSpliterator(currentIndex, splitIndex, recordSize);
-            currentIndex = splitIndex;
+            // Align split with cacheSize boundaries
+            long recordsPerCache = cacheSize;
+            long splitIndex = currentIndex + ((remaining / 2 + recordsPerCache - 1) / recordsPerCache) * recordsPerCache;
 
-            // Abandon cache after split
-            cachePosition = cacheLimit = 0;
+            // Ensure splitIndex creates a meaningful split
+            if (splitIndex >= limit) {
+                return null; // Cannot split meaningfully
+            }
+
+            // Create new Spliterator for [currentIndex, splitIndex)
+            Spliterator<R> newSpliterator = createNewSpliterator(currentIndex, splitIndex, recordSize);
+
+            // Update current Spliterator for [splitIndex, limit)
+            currentIndex = splitIndex;
+            cachePosition = cacheLimit = 0; // Reset cache for new range
+
             return newSpliterator;
         }
 
