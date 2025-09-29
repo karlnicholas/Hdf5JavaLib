@@ -393,7 +393,7 @@ public class TypedDataSource<T> {
         private long currentIndex;
         private final long limit;
         private final long recordSize;
-        private final int cacheSize = 10000; // Max records to cache
+        private final int cacheSize = 100_000; // Max records to cache
         private ByteBuffer cacheBuffer; // Cache for raw bytes
         private int cachePosition = 0; // Current position in cache (record index)
         private int cacheLimit = 0; // Number of records in cache
