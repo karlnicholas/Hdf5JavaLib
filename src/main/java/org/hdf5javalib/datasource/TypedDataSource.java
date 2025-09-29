@@ -385,19 +385,24 @@ public class TypedDataSource<T> {
     // --- Spliterators ---
 
     /**
-     * Abstract base class for dataset spliterators.
+     * Abstract base class for dataset spliterators with caching.
      *
      * @param <R> the type of elements produced by the spliterator
      */
-    private abstract class AbstractSpliterator<R> implements Spliterator<R> {
+    public abstract class AbstractSpliterator<R> implements Spliterator<R> {
         private long currentIndex;
         private final long limit;
         private final long recordSize;
+        private final int cacheSize = 10000; // Max records to cache
+        private ByteBuffer cacheBuffer; // Cache for raw bytes
+        private int cachePosition = 0; // Current position in cache (record index)
+        private int cacheLimit = 0; // Number of records in cache
 
         public AbstractSpliterator(long start, long limit, long recordSize) {
             this.currentIndex = start;
             this.limit = limit;
             this.recordSize = recordSize;
+            this.cacheBuffer = ByteBuffer.allocate((int) Math.min(cacheSize * recordSize, Integer.MAX_VALUE));
         }
 
         @Override
@@ -405,15 +410,76 @@ public class TypedDataSource<T> {
             if (currentIndex >= limit) {
                 return false;
             }
-            long offset = currentIndex * recordSize;
-            ByteBuffer buffer = null;
+
+            // Refresh cache if empty
+            if (cachePosition >= cacheLimit) {
+                if (!fillCache()) {
+                    return false;
+                }
+            }
+
             try {
-                buffer = readBytes(offset, recordSize);
-                R record = populateRecord(buffer);
+                // Process one record from cache
+                cacheBuffer.position(cachePosition * (int) recordSize);
+                R record = populateRecord(cacheBuffer);
                 action.accept(record);
+                cachePosition++;
                 currentIndex++;
                 return true;
-            } catch (InvocationTargetException | InstantiationException | IllegalAccessException | IOException e) {
+            } catch (IOException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        @Override
+        public void forEachRemaining(Consumer<? super R> action) {
+            while (currentIndex < limit) {
+                // Refresh cache if empty
+                if (cachePosition >= cacheLimit) {
+                    if (!fillCache()) {
+                        break;
+                    }
+                }
+
+                // Process all records in cache
+                while (cachePosition < cacheLimit && currentIndex < limit) {
+                    try {
+                        cacheBuffer.position(cachePosition * (int) recordSize);
+                        R record = populateRecord(cacheBuffer);
+                        action.accept(record);
+                        cachePosition++;
+                        currentIndex++;
+                    } catch (IOException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+            }
+        }
+
+        private boolean fillCache() {
+            if (currentIndex >= limit) {
+                return false;
+            }
+
+            try {
+                // Determine how many records to read: min(remaining, cacheSize)
+                int toRead = (int) Math.min(limit - currentIndex, cacheSize);
+                long offset = currentIndex * recordSize;
+                cacheBuffer.clear();
+                cacheBuffer.limit(toRead * (int) recordSize);
+
+                // Read bytes into cache
+                ByteBuffer readBuffer = readBytes(offset, toRead * recordSize);
+                if (readBuffer.remaining() != toRead * recordSize) {
+                    throw new IllegalStateException("Incomplete read: expected " + (toRead * recordSize) + " bytes, got " + readBuffer.remaining());
+                }
+
+                cacheBuffer.put(readBuffer); // Copy read bytes to cache
+                cacheBuffer.flip(); // Prepare for reading
+                cachePosition = 0;
+                cacheLimit = toRead;
+                return true;
+            } catch (IOException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 throw new IllegalStateException(e);
             }
         }
@@ -424,9 +490,14 @@ public class TypedDataSource<T> {
             if (remaining <= 1) {
                 return null;
             }
+
+            // Split remaining in half
             long splitIndex = currentIndex + remaining / 2;
             Spliterator<R> newSpliterator = createNewSpliterator(currentIndex, splitIndex, recordSize);
             currentIndex = splitIndex;
+
+            // Abandon cache after split
+            cachePosition = cacheLimit = 0;
             return newSpliterator;
         }
 
@@ -458,7 +529,6 @@ public class TypedDataSource<T> {
          */
         protected abstract Spliterator<R> createNewSpliterator(long start, long end, long recordSize);
     }
-
     /**
      * Spliterator for streaming vector (1D) elements.
      */

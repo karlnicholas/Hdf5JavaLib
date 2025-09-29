@@ -6,6 +6,7 @@ import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
+import org.hdf5javalib.utils.HdfDisplayCountUtils;
 import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,17 +65,18 @@ public class HDF5Debug {
     private static void processFile(Path filePath) {
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
-//            for (HdfDataset dataSet : reader.getDatasets()) {
-//                System.out.println("{} " + dataSet);
-////                log.info("{} ", dataSet);
-//                displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
-//            }
-            HdfDataset dataSet = reader.getDataset("/ancillary_data/calibrations/low_link_impulse_response/hist_x").get();
-            System.out.println("{} " + dataSet);
-//                System.out.println("{} " + dataSet.getObjectPath());
+            for (HdfDataset dataSet : reader.getDatasets()) {
+                System.out.println("{} " + dataSet);
 //                log.info("{} ", dataSet);
-                HdfDisplayUtils.displayData(channel, dataSet, reader);
+                HdfDisplayCountUtils.displayData(channel, dataSet, reader);
 //                displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
+            }
+//            HdfDataset dataSet = reader.getDataset("/ancillary_data/calibrations/low_link_impulse_response/hist_x").get();
+//            System.out.println("{} " + dataSet);
+////                System.out.println("{} " + dataSet.getObjectPath());
+////                log.info("{} ", dataSet);
+//                HdfDisplayUtils.displayData(channel, dataSet, reader);
+////                displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
         } catch (Exception e) {
             log.error("Exception in processFile: {}", filePath, e);
         }

@@ -158,10 +158,10 @@ public class HdfDisplayCountUtils {
     public static <T> void displayScalarData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
-//        Optional<String> max = dataSource.parallelStreamScalar().map(h->h.toString()).max(Comparator.naturalOrder());
-//        System.out.println(dataSet.getObjectPath() + " stream count = " + max.orElse("NO MAX"));
-        long count = dataSource.parallelStreamScalar().count();
-        System.out.println(dataSet.getObjectPath() + " stream count = " + String.format("%,d", count) + ":" + dataSet.getDatatype().toString());
+        Optional<String> max = dataSource.streamScalar().map(h->h.toString()).max(Comparator.naturalOrder());
+        System.out.println(dataSet.getObjectPath() + " streamScalar nax = " + max.orElse("NO MAX"));
+//        long count = dataSource.parallelStreamScalar().count();
+//        System.out.println(dataSet.getObjectPath() + " stream count = " + String.format("%,d", count) + ":" + dataSet.getDatatype().toString());
     }
 
     /**
@@ -185,11 +185,11 @@ public class HdfDisplayCountUtils {
 //        T[] resultArray = dataSource.readVector();
 //        log.info("{} read = {}", displayType(clazz, resultArray), displayValue(resultArray));
 
-//        Optional<String> max = dataSource.parallelStreamVector().map(h->h.toString()).max(Comparator.naturalOrder());
-//        System.out.println(dataSet.getObjectPath() + " stream count = " + max.orElse("NO MAX"));
+        Optional<String> max = dataSource.streamVector().map(h->h.toString()).max(Comparator.naturalOrder());
+        System.out.println(dataSet.getObjectPath() + " streamVector max = " + max.orElse("NO MAX"));
 
-        long count = dataSource.parallelStreamVector().count();
-        System.out.println(dataSet.getObjectPath() + " stream count = " + String.format("%,d", count) + ":" + dataSet.getDatatype().toString());
+//        long count = dataSource.parallelStreamVector().count();
+//        System.out.println(dataSet.getObjectPath() + " stream count = " + String.format("%,d", count) + ":" + dataSet.getDatatype().toString());
     }
 
     /**
@@ -210,8 +210,11 @@ public class HdfDisplayCountUtils {
     public static <T> void displayMatrixData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
-        long count = dataSource.parallelStreamMatrix().count();
-        System.out.println(dataSet.getObjectPath() + " stream count = " + String.format("%,d", count) + ":" + dataSet.getDatatype().toString());
+        Optional<String> max = dataSource.streamMatrix().map(h->h.toString()).max(Comparator.naturalOrder());
+        System.out.println(dataSet.getObjectPath() + " streamMatrix max = " + max.orElse("NO MAX"));
+
+//        long count = dataSource.parallelStreamMatrix().count();
+//        System.out.println(dataSet.getObjectPath() + " stream count = " + String.format("%,d", count) + ":" + dataSet.getDatatype().toString());
     }
 
     /**
@@ -235,8 +238,11 @@ public class HdfDisplayCountUtils {
 //        String readResult = flattenedArrayToString(dataSource.readFlattened(), dataSource.getShape());
 //        log.info("read = {}", readResult);
 
-        long count = dataSource.parallelStreamFlattened().count();
-        System.out.println(dataSet.getObjectPath() + " stream count = " + String.format("%,d", count) + ":" + dataSet.getDatatype().toString());
+        Optional<String> max = dataSource.streamFlattened().map(h->h.toString()).max(Comparator.naturalOrder());
+        System.out.println(dataSet.getObjectPath() + " streamFlattened max = " + max.orElse("NO MAX"));
+
+        //        long count = dataSource.parallelStreamFlattened().count();
+//        System.out.println(dataSet.getObjectPath() + " stream count = " + String.format("%,d", count) + ":" + dataSet.getDatatype().toString());
     }
 
 }
