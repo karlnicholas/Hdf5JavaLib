@@ -145,6 +145,10 @@ public class HdfFileReader implements HdfDataFile {
 //        fileChannel.position(fractalHeapOffset);
 
         HdfFixedPoint v2BTreeNameIndexAddress = rootGroup.getObjectHeader().findMessageByType(LinkInfoMessage.class).orElseThrow().getV2BTreeNameIndexAddress();
+        if ( v2BTreeNameIndexAddress.isUndefined()) {
+            addLinkMessageDatasets(fileChannel, rootGroup, this);
+            return;
+        }
         long v2BTreeNameIndexOffset = v2BTreeNameIndexAddress.getInstance(Long.class);
         fileChannel.position(v2BTreeNameIndexOffset);
 
@@ -172,7 +176,7 @@ public class HdfFileReader implements HdfDataFile {
         // 7. --- RETRIEVE THE OBJECT AND VERIFY ---
         for (BTreeV2Record bTreeV2Record: allRecords) {
 
-            byte[] heapId = ((Type5Record)bTreeV2Record).heapId;
+            byte[] heapId = ((Type5Record) bTreeV2Record).heapId;
             ParsedHeapId parsedHeapId = new ParsedHeapId(heapId, fractalHeap);
 
 //            byte[] retrievedData = heap.getObject(heapId);
@@ -200,23 +204,23 @@ public class HdfFileReader implements HdfDataFile {
 //            System.out.println("Retrieved Data: '" + new String(retrievedData, StandardCharsets.UTF_8) + "'");
             String hardLink = isHardLink(rootGroup, objectHeaderOffset);
             HdfObjectHeaderPrefix objectHeader = null;
-            if ( hardLink == null ) {
+            if (hardLink == null) {
 //                objectHeader = readObjectHeader(fileChannel, objectHeaderOffset, this);
                 objectHeader = readObjectHeaderPrefixFromSeekableByteChannel(fileChannel, objectHeaderOffset, this, groupName);
             }
 //            HdfObjectHeaderPrefix objectHeaderG1 = readObjectHeaderPrefixFromSeekableByteChannel(fileChannel, objectHeaderOffset, this, groupName);
 //            System.out.println(groupName + ":" + objectHeaderG1.getHeaderMessages());
 
-            if ( objectHeader != null && objectHeader.findMessageByType(DataLayoutMessage.class).isEmpty() ) {
+            if (objectHeader != null && objectHeader.findMessageByType(DataLayoutMessage.class).isEmpty()) {
                 HdfGroup groupObject = new HdfGroup(groupName, objectHeader, rootGroup, hardLink);
                 rootGroup.addChild(groupObject);
-    System.out.println("ADDED GROUP: " +  groupObject.getObjectPath() + " at " + objectHeaderOffset);
+                System.out.println("ADDED GROUP: " + groupObject.getObjectPath() + " at " + objectHeaderOffset);
 //                HdfDisplayUtils.displayLinkMessages(objectHeader);
                 addLinkMessageDatasets(fileChannel, groupObject, this);
 
-                if ( hardLink == null ) {
+                if (hardLink == null) {
                     LinkInfoMessage linkInfoMessage = objectHeader.findMessageByType(LinkInfoMessage.class).orElseThrow();
-                    if ( !linkInfoMessage.getFractalHeapAddress().isUndefined() &&  !linkInfoMessage.getV2BTreeNameIndexAddress().isUndefined() ) {
+                    if (!linkInfoMessage.getFractalHeapAddress().isUndefined() && !linkInfoMessage.getV2BTreeNameIndexAddress().isUndefined()) {
                         readV2Arch(fileChannel, groupObject);
                     }
                 }
@@ -224,10 +228,8 @@ public class HdfFileReader implements HdfDataFile {
             } else {
                 HdfDataset datasetObject = new HdfDataset(groupName, objectHeader, rootGroup, hardLink);
                 rootGroup.addChild(datasetObject);
-System.out.println("ADDED DATASET: " + datasetObject.getObjectPath() + " at " + objectHeaderOffset);
+                System.out.println("ADDED DATASET: " + datasetObject.getObjectPath() + " at " + objectHeaderOffset);
             }
-
-
         }
 
 /*
