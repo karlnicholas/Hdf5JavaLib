@@ -11,7 +11,6 @@ import org.hdf5javalib.hdffile.infrastructure.fractalheap.grok.ParsedHeapId;
 import org.hdf5javalib.hdffile.infrastructure.fractalheap.grok.FractalHeap;
 import org.hdf5javalib.hdffile.infrastructure.v2btree.gemini.*;
 import org.hdf5javalib.hdffile.metadata.HdfSuperblock;
-import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
@@ -46,7 +45,6 @@ public class HdfFileReader implements HdfDataFile {
 //    /** The superblock containing metadata about the HDF5 file. */
     public static final byte[] BTREE_SIGNATURE = {'T', 'R', 'E', 'E'};
     public static final int BTREE_HEADER_INITIAL_SIZE = 8;
-    private static final int MAX_SNOD_ENTRIES = 8;
 
     /**
      * The seekable byte channel for reading the HDF5 file.
@@ -75,317 +73,107 @@ public class HdfFileReader implements HdfDataFile {
         this.globalHeap = new HdfGlobalHeap(this::initializeGlobalHeap, this);
     }
 
+
     /**
      * Reads and parses the HDF5 file structure.
      * <p>
-     * Initializes the superblock, root group, B-tree, local heap, and datasets by
-     * reading from the file channel. Constructs the group and dataset hierarchy and
-     * returns this reader instance for further operations.
+     * This is the main entry point. It reads the superblock, finds the root group's
+     * object header, and then dispatches to the correct V1 or V2 parsing logic
+     * based on the object header's format.
      * </p>
      *
-     * @return this HdfFileReader instance
-     * @throws IOException if an I/O error occurs during reading
+     * @return this HdfFileReader instance, populated with the file's structure.
+     * @throws Exception if an I/O error or parsing error occurs.
      */
     public HdfFileReader readFile() throws Exception {
         long superblockOffset = findSuperblockOffset(fileChannel);
         superblock = readSuperblockFromSeekableByteChannel(fileChannel, superblockOffset, this);
-        long objectHeaderAddress;
-        HdfSymbolTableEntry rootGroupSymbolTableEntry = null;
-        if ( superblock.getVersion() < 2 ) {
-            rootGroupSymbolTableEntry = readSteFromSeekableByteChannel(fileChannel, this);
-            // determine version of data object headers
-            objectHeaderAddress = rootGroupSymbolTableEntry.getObjectHeaderAddress().getInstance(Long.class);
 
+        // Step 1: Get the root object header address. This logic IS dependent on the superblock version.
+        long rootObjectHeaderAddr;
+        HdfSymbolTableEntry rootGroupSTE = null; // This is only needed for V1 parsing context.
+
+        if (superblock.getVersion() < 2) {
+            rootGroupSTE = readSteFromSeekableByteChannel(fileChannel, this);
+            rootObjectHeaderAddr = rootGroupSTE.getObjectHeaderAddress().getInstance(Long.class);
         } else {
-            objectHeaderAddress = superblock.getRootGroupObjectHeaderAddresss().getInstance(Long.class);
+            rootObjectHeaderAddr = superblock.getRootGroupObjectHeaderAddress().getInstance(Long.class);
         }
-        if ( fileChannel.size() <= objectHeaderAddress ) {
+
+        if (fileChannel.size() <= rootObjectHeaderAddr) {
             throw new UnsupportedOperationException("File only contains a superblock.");
         }
-        // The first part of the header is 6 bytes: Signature (4) + Version (1) + Flags (1)
-        ByteBuffer headerStartBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
-        fileChannel.position(objectHeaderAddress);
+
+        // Step 2: CRITICAL FIX - Inspect the object header's signature to determine its format (V1 or V2),
+        // regardless of the superblock version. This restores the logic from the original code.
+        ByteBuffer headerStartBuffer = ByteBuffer.allocate(BTREE_SIGNATURE.length).order(ByteOrder.LITTLE_ENDIAN);
+        fileChannel.position(rootObjectHeaderAddr);
         fileChannel.read(headerStartBuffer);
         headerStartBuffer.flip();
-        HdfObjectHeaderPrefix objectHeader;
+
         if (Arrays.equals(headerStartBuffer.array(), HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE)) {
-            objectHeader = readV2ObjectHeader(fileChannel, objectHeaderAddress, this);
-            // set BTree
-            HdfGroup rootGroup = new HdfGroup("", objectHeader, null, null);
-            bTree = new HdfTree(rootGroup);
-            readV2Arch(fileChannel, rootGroup);
+            // The object header has a V2 signature ('OHDR').
+            readV2Structure(rootObjectHeaderAddr);
         } else {
-            int version = Byte.toUnsignedInt(headerStartBuffer.get());
-            if( version > 1 ) {
-                throw new UnsupportedOperationException("V2 architecture not supported. Header Object version: " + version);
+            // The object header does not have a V2 signature, so we treat it as V1.
+            // This case should only happen with V1 superblocks.
+            if (superblock.getVersion() >= 2) {
+                throw new IllegalStateException("HDF5 format inconsistency: Superblock is V2+ but root object header is not.");
             }
-            objectHeader = readObjectHeader(fileChannel, objectHeaderAddress, this);
-            readV1Arch(fileChannel, rootGroupSymbolTableEntry, objectHeader);
+            readV1Structure(rootObjectHeaderAddr, rootGroupSTE, headerStartBuffer);
         }
 
         return this;
     }
 
-    private void readV1Arch(SeekableByteChannel fileChannel, HdfSymbolTableEntry rootGroupSymbolTableEntry, HdfObjectHeaderPrefix objectHeader) throws Exception {
-        long heapOffset = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
-        long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch)rootGroupSymbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
+    // --- V1 Architecture Reading Logic ---
+
+    /**
+     * Handles the reading and parsing of HDF5 v1 file structures.
+     * @param rootObjectHeaderAddr The address of the root object header.
+     * @param rootGroupSTE The root group's Symbol Table Entry.
+     * @param headerStartBuffer The already-read first few bytes of the header, containing the version.
+     */
+    private void readV1Structure(long rootObjectHeaderAddr, HdfSymbolTableEntry rootGroupSTE, ByteBuffer headerStartBuffer) throws Exception {
+        // The version check is now more robust. We use the buffer that was already read.
+        int version = Byte.toUnsignedInt(headerStartBuffer.get(0));
+        if (version > 1) {
+            // The character 'O' has ASCII value 79. This error indicates we are incorrectly trying to parse
+            // a V2 'OHDR' signature as a V1 header version.
+            throw new UnsupportedOperationException("Unsupported V1 Object Header version: " + version);
+        }
+
+        HdfObjectHeaderPrefix rootObjectHeader = readObjectHeader(fileChannel, rootObjectHeaderAddr, this);
+
+        // Extract V1-specific metadata (heap and B-Tree addresses)
+        long heapOffset = ((HdfSymbolTableEntryCacheWithScratch) rootGroupSTE.getCache()).getLocalHeapAddress().getInstance(Long.class);
+        long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch) rootGroupSTE.getCache()).getbTreeAddress().getInstance(Long.class);
+
         HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, heapOffset, this);
         HdfBTreeV1 groupBTree = readBTreeFromSeekableByteChannel(fileChannel, bTreeAddress, this);
-        String groupName = localHeap.stringAtOffset(rootGroupSymbolTableEntry.getLinkNameOffset());
-        // set BTree
-        HdfGroup groupObject = new HdfGroup(groupName, objectHeader, null, null);
-        bTree = new HdfTree(groupObject);
-        // recurse through infrastructure
-        readInfrastructure(groupObject, localHeap, groupBTree);
+
+        String rootGroupName = localHeap.stringAtOffset(rootGroupSTE.getLinkNameOffset());
+        HdfGroup rootGroup = new HdfGroup(rootGroupName, rootObjectHeader, null, null);
+
+        this.bTree = new HdfTree(rootGroup);
+
+        readV1GroupHierarchy(rootGroup, localHeap, groupBTree);
     }
 
-    private void readV2Arch(SeekableByteChannel fileChannel, HdfGroup rootGroup) throws Exception {
-//        HdfFixedPoint fractalHeapAddress = objectHeader.findMessageByType(LinkInfoMessage.class).orElseThrow().getFractalHeapAddress();
-//        long fractalHeapOffset = fractalHeapAddress.getInstance(Long.class);
-//        fileChannel.position(fractalHeapOffset);
-
-        HdfFixedPoint v2BTreeNameIndexAddress = rootGroup.getObjectHeader().findMessageByType(LinkInfoMessage.class).orElseThrow().getV2BTreeNameIndexAddress();
-        if ( v2BTreeNameIndexAddress.isUndefined()) {
-            addLinkMessageDatasets(fileChannel, rootGroup, this);
-            return;
-        }
-        long v2BTreeNameIndexOffset = v2BTreeNameIndexAddress.getInstance(Long.class);
-        fileChannel.position(v2BTreeNameIndexOffset);
-
-//        System.out.println("Starting B-tree v2 Read...");
-        BTreeV2Reader bTreeV2Reader = new BTreeV2Reader(fileChannel, 8, 8);
-        BTreeV2Header bTreeV2Header = bTreeV2Reader.getHeader();
-
-//        System.out.println("Header parsed successfully:");
-//        System.out.println("  Type: " + bTreeV2Header.type);
-//        System.out.println("  Depth: " + bTreeV2Header.depth);
-//        System.out.println("  Total Records: " + bTreeV2Header.totalNumberOfRecordsInBTree);
-//        System.out.println("  Root Node Address: " + bTreeV2Header.rootNodeAddress);
-
-        List<BTreeV2Record> allRecords = bTreeV2Reader.getAllRecords();
-
-//        System.out.println("\nTraversal complete. Found " + allRecords.size() + " records:");
-
-        HdfFixedPoint fractalHeapAddress = rootGroup.getObjectHeader().findMessageByType(LinkInfoMessage.class).orElseThrow().getFractalHeapAddress();
-        long fractalHeapOffset = fractalHeapAddress.getInstance(Long.class);
-        fileChannel.position(fractalHeapOffset);
-
-        // 6. --- EXECUTE THE READER ---
-        FractalHeap fractalHeap = FractalHeap.read(fileChannel, fractalHeapOffset, 8, 8);
-
-        // 7. --- RETRIEVE THE OBJECT AND VERIFY ---
-        for (BTreeV2Record bTreeV2Record: allRecords) {
-
-            byte[] heapId = ((Type5Record) bTreeV2Record).heapId;
-            ParsedHeapId parsedHeapId = new ParsedHeapId(heapId, fractalHeap);
-
-//            byte[] retrievedData = heap.getObject(heapId);
-//            System.out.println("Row: " + Arrays.toString(Arrays.copyOfRange(retrievedData, 0, 10))
-//            + " : " + retrievedData[10]
-//            + " : " + new String(Arrays.copyOfRange(retrievedData, 11, 11+retrievedData[10]))
-//            + " : " + Arrays.toString(Arrays.copyOfRange(retrievedData, 10+1+retrievedData[10], retrievedData.length))
-//            );
-            byte[] objectData = fractalHeap.getObject(parsedHeapId);
-            ByteBuffer retrievedData = ByteBuffer.wrap(objectData).order(ByteOrder.LITTLE_ENDIAN);
-            byte[] rowHeader = new byte[10];
-            retrievedData.get(rowHeader);
-            int sLength = Byte.toUnsignedInt(retrievedData.get());
-            byte[] stringBuffer = new byte[sLength];
-            retrievedData.get(stringBuffer);
-            String groupName = new String(stringBuffer);
-            long objectHeaderOffset = retrievedData.getLong();
-//            System.out.println("Row: " + Arrays.toString(rowHeader)
-//            + " : " + sLength
-//            + " : " + groupName
-//            + " : " + objectHeaderOffset
-//            );
-
-            //            System.out.println("Heap ID: " + Arrays.toString(heapId));
-//            System.out.println("Retrieved Data: '" + new String(retrievedData, StandardCharsets.UTF_8) + "'");
-            String hardLink = isHardLink(rootGroup, objectHeaderOffset);
-            HdfObjectHeaderPrefix objectHeader = null;
-            if (hardLink == null) {
-//                objectHeader = readObjectHeader(fileChannel, objectHeaderOffset, this);
-                objectHeader = readObjectHeaderPrefixFromSeekableByteChannel(fileChannel, objectHeaderOffset, this, groupName);
-            }
-//            HdfObjectHeaderPrefix objectHeaderG1 = readObjectHeaderPrefixFromSeekableByteChannel(fileChannel, objectHeaderOffset, this, groupName);
-//            System.out.println(groupName + ":" + objectHeaderG1.getHeaderMessages());
-
-            if (objectHeader != null && objectHeader.findMessageByType(DataLayoutMessage.class).isEmpty()) {
-                HdfGroup groupObject = new HdfGroup(groupName, objectHeader, rootGroup, hardLink);
-                rootGroup.addChild(groupObject);
-                System.out.println("ADDED GROUP: " + groupObject.getObjectPath() + " at " + objectHeaderOffset);
-//                HdfDisplayUtils.displayLinkMessages(objectHeader);
-                addLinkMessageDatasets(fileChannel, groupObject, this);
-
-                if (hardLink == null) {
-                    LinkInfoMessage linkInfoMessage = objectHeader.findMessageByType(LinkInfoMessage.class).orElseThrow();
-                    if (!linkInfoMessage.getFractalHeapAddress().isUndefined() && !linkInfoMessage.getV2BTreeNameIndexAddress().isUndefined()) {
-                        readV2Arch(fileChannel, groupObject);
-                    }
-                }
-
-            } else {
-                HdfDataset datasetObject = new HdfDataset(groupName, objectHeader, rootGroup, hardLink);
-                rootGroup.addChild(datasetObject);
-                System.out.println("ADDED DATASET: " + datasetObject.getObjectPath() + " at " + objectHeaderOffset);
-            }
-        }
-
-/*
-        HdfFixedPoint attributeInfoV2BTreeNameIndexAddress = rootGroup.getObjectHeader().findMessageByType(AttributeInfoMessage.class).orElseThrow().getAttributeNameV2BtreeAddress();
-        long attributeInfoV2BTreeNameIndexOffset = attributeInfoV2BTreeNameIndexAddress.getInstance(Long.class);
-        fileChannel.position(attributeInfoV2BTreeNameIndexOffset);
-
-        System.out.println("Starting B-tree v2 Read...");
-        BTreeV2Reader attributeInfoBTreeV2Reader = new BTreeV2Reader(fileChannel, 8, 8);
-        BTreeV2Header attributeInfoBTreeV2Header = attributeInfoBTreeV2Reader.getHeader();
-
-        System.out.println("Header parsed successfully:");
-        System.out.println("  Type: " + attributeInfoBTreeV2Header.type);
-        System.out.println("  Depth: " + attributeInfoBTreeV2Header.depth);
-        System.out.println("  Total Records: " + attributeInfoBTreeV2Header.totalNumberOfRecordsInBTree);
-        System.out.println("  Root Node Address: " + attributeInfoBTreeV2Header.rootNodeAddress);
-
-        List<BTreeV2Record> attributeInfoAllRecords = attributeInfoBTreeV2Reader.getAllRecords();
-
-        System.out.println("\nTraversal complete. Found " + attributeInfoAllRecords.size() + " records:");
-
-
-        HdfFixedPoint attributeInfoFractalHeapAddress = rootGroup.getObjectHeader().findMessageByType(AttributeInfoMessage.class).orElseThrow().getFractalHeapAddress();
-        long attributeInfoFractalHeapOffset = attributeInfoFractalHeapAddress.getInstance(Long.class);
-        fileChannel.position(attributeInfoFractalHeapOffset);
-
-        FractalHeap fractalHeap = FractalHeap.read(fileChannel, attributeInfoFractalHeapOffset, 8, 8);
-        // 7. --- RETRIEVE THE OBJECT AND VERIFY ---
-        for (BTreeV2Record bTreeV2Record: attributeInfoAllRecords) {
-
-            byte[] heapId = ((Type8Record)bTreeV2Record).heapId;
-            ParsedHeapId parsedHeapId = new ParsedHeapId(heapId, fractalHeap);
-
-            byte[] retrievedData = fractalHeap.getObject(parsedHeapId);
-            System.out.println("Row: " + Arrays.toString(retrievedData));
-            printRows(retrievedData);
-            System.out.println();
-        }
-*/
-
-    }
-
-    private void addLinkMessageDatasets(SeekableByteChannel fileChannel, HdfGroup rootGroup, HdfDataFile hdfDataFile) throws Exception {
-        for(HdfMessage hdfMessage: rootGroup.getObjectHeader().getHeaderMessages()) {
-            if ( hdfMessage instanceof LinkMessage) {
-                LinkMessage linkMessage = (LinkMessage) hdfMessage;
-                long objectHeaderOffset = linkMessage.getLinkInformation().getInstance(Long.class);
-                String groupName = linkMessage.getLinkName();
-                String hardLink = isHardLink(rootGroup, objectHeaderOffset);
-                HdfObjectHeaderPrefix objectHeader = null;
-                if ( hardLink == null ) {
-//                objectHeader = readObjectHeader(fileChannel, objectHeaderOffset, this);
-                    objectHeader = readObjectHeaderPrefixFromSeekableByteChannel(fileChannel, objectHeaderOffset, this, groupName);
-                }
-//            HdfObjectHeaderPrefix objectHeaderG1 = readObjectHeaderPrefixFromSeekableByteChannel(fileChannel, objectHeaderOffset, this, groupName);
-//            System.out.println(groupName + ":" + objectHeaderG1.getHeaderMessages());
-
-                if ( objectHeader != null && objectHeader.findMessageByType(DataLayoutMessage.class).isEmpty() ) {
-                    HdfGroup groupObject = new HdfGroup(groupName, objectHeader, rootGroup, hardLink);
-                    rootGroup.addChild(groupObject);
-                    System.out.println("ADDED GROUP: " +  groupObject.getObjectPath() + " at  " + objectHeaderOffset);
-                    addLinkMessageDatasets(fileChannel, groupObject, this);
-
-                    if ( hardLink == null ) {
-                        Optional<LinkInfoMessage> linkInfoMessageOpt = objectHeader.findMessageByType(LinkInfoMessage.class);
-                        if ( linkInfoMessageOpt.isPresent() ) {
-                            LinkInfoMessage linkInfoMessage = linkInfoMessageOpt.get();
-                            if ( !linkInfoMessage.getFractalHeapAddress().isUndefined() &&  !linkInfoMessage.getV2BTreeNameIndexAddress().isUndefined() ) {
-                                readV2Arch(fileChannel, groupObject);
-                            }
-                        } else {
-                            System.out.println("No LinkInfoMessage");
-                        }
-                    }
-
-                } else {
-                    HdfDataset datasetObject = new HdfDataset(groupName, objectHeader, rootGroup, hardLink);
-                    rootGroup.addChild(datasetObject);
-                    System.out.println("ADDED DATASET: " + datasetObject.getObjectPath() + " at  " + objectHeaderOffset);
-                }
-            }
-        }
-    }
-
-    public static void printRows(byte[] input) {
-        // First row: 8 bytes, print as Arrays.toString
-        byte[] firstRow = Arrays.copyOfRange(input, 0, 8);
-        System.out.println(Arrays.toString(firstRow));
-
-        // Second row: null-terminated string, length from firstRow[2], padded to 8-byte boundary
-        int stringLength = firstRow[2] & 0xFF; // Convert byte to unsigned int
-        int stringStart = 8;
-        int paddedLength = ((stringLength + 7) / 8) * 8; // Round up to next multiple of 8
-        byte[] secondRow = Arrays.copyOfRange(input, stringStart, stringStart + stringLength);
-        StringBuilder secondString = new StringBuilder();
-        for (byte b : secondRow) {
-            if (b == 0) break; // Stop at null terminator
-            secondString.append((char) (b & 0xFF));
-        }
-        System.out.println(secondString.toString());
-
-        // Third row: 16 bytes, print as Arrays.toString
-        int thirdRowStart = stringStart + paddedLength;
-        byte[] thirdRow = Arrays.copyOfRange(input, thirdRowStart, thirdRowStart + 16);
-        System.out.println(Arrays.toString(thirdRow));
-
-        // Fourth row: null-terminated string
-        int fourthRowStart = thirdRowStart + 16;
-        StringBuilder fourthString = new StringBuilder();
-        for (int i = fourthRowStart; i < input.length && input[i] != 0; i++) {
-            fourthString.append((char) (input[i] & 0xFF));
-        }
-        System.out.println(fourthString.toString());
-    }
-    private static long findSuperblockOffset(SeekableByteChannel fileChannel) throws IOException {
-        long size = fileChannel.size();
-        long offset = 0;
-        while ( (offset + SIGNATURE_SIZE + VERSION_SIZE) < size ) {
-            fileChannel.position(offset);
-            // Step 1: Allocate the minimum buffer size to determine the version
-            ByteBuffer buffer = ByteBuffer.allocate(SIGNATURE_SIZE + VERSION_SIZE); // File signature (8 bytes) + version (1 byte)
-            buffer.order(ByteOrder.LITTLE_ENDIAN);
-
-            // Read the initial bytes to determine the version
-            fileChannel.read(buffer);
-            buffer.flip();
-
-            // Verify file signature
-            byte[] signature = new byte[FILE_SIGNATURE.length];
-            buffer.get(signature);
-            if (!Arrays.equals(signature, FILE_SIGNATURE)) {
-                offset += 500;
-                continue;
-            }
-
-            // Read version
-//            int version = Byte.toUnsignedInt(buffer.get());
-//            if ( version > 1) {
-//                throw new UnsupportedOperationException("V2 architecture not supported. Superblock version: " + version);
-//            }
-            return offset;
-        }
-        throw new IllegalArgumentException("HDF file signature not found");
-    }
-
-    private void readInfrastructure(HdfGroup parentGroup, HdfLocalHeap localHeap, HdfBTreeV1 groupBTree) throws Exception {
+    /**
+     * Recursively traverses the V1 B-Tree and Symbol Table Nodes to build the group/dataset hierarchy.
+     */
+    private void readV1GroupHierarchy(HdfGroup parentGroup, HdfLocalHeap localHeap, HdfBTreeV1 groupBTree) throws Exception {
         if (groupBTree.getNodeLevel() > 0) {
             // Internal node: recurse on child B-Trees
             for (HdfBTreeEntryBase entry : groupBTree.getEntries()) {
                 HdfBTreeV1 childBTree = entry.getChildBTree();
                 if (childBTree != null) {
-                    readInfrastructure(parentGroup, localHeap, childBTree);
+                    readV1GroupHierarchy(parentGroup, localHeap, childBTree);
                 }
             }
         } else {
-            // Leaf node: process SNODs
+            // Leaf node: process symbol table entries
             for (HdfBTreeEntryBase entry : groupBTree.getEntries()) {
                 HdfGroupSymbolTableNode groupSymbolTableNode = ((HdfGroupBTreeEntry) entry).getGroupSymbolTableNode();
                 if (groupSymbolTableNode != null) {
@@ -394,29 +182,30 @@ public class HdfFileReader implements HdfDataFile {
                         Long objectHeaderAddress = symbolTableEntry.getObjectHeaderAddress().getInstance(Long.class);
                         String hardLink = isHardLink(parentGroup, objectHeaderAddress);
                         HdfObjectHeaderPrefixV1 objectHeader = null;
-                        if ( hardLink == null ) {
+                        if (hardLink == null) {
                             objectHeader = readObjectHeader(fileChannel, objectHeaderAddress, this);
                         }
 
                         switch (symbolTableEntry.getCache().getCacheType()) {
-                            case 0:
+                            case 0: // Dataset
                                 HdfDataset datasetObject = new HdfDataset(objectName, objectHeader, parentGroup, hardLink);
                                 parentGroup.addChild(datasetObject);
                                 break;
-                            case 1:
+                            case 1: // Group
                                 HdfGroup groupObject = new HdfGroup(objectName, objectHeader, parentGroup, hardLink);
                                 parentGroup.addChild(groupObject);
 
-                                long newHeapOffset = ((HdfSymbolTableEntryCacheWithScratch) symbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
-                                long newBTreeAddress = ((HdfSymbolTableEntryCacheWithScratch) symbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
-                                HdfLocalHeap newLocalHeap = readLocalHeapFromSeekableByteChannel(fileChannel, newHeapOffset, this);
-                                HdfBTreeV1 newGroupBTree = readBTreeFromSeekableByteChannel(fileChannel, newBTreeAddress, this);
-                                if ( hardLink == null ) {
-                                    readInfrastructure(groupObject, newLocalHeap, newGroupBTree);
+                                if (hardLink == null) {
+                                    // A new group has its own heap and B-Tree
+                                    long newHeapOffset = ((HdfSymbolTableEntryCacheWithScratch) symbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
+                                    long newBTreeAddress = ((HdfSymbolTableEntryCacheWithScratch) symbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
+                                    HdfLocalHeap newLocalHeap = readLocalHeapFromSeekableByteChannel(fileChannel, newHeapOffset, this);
+                                    HdfBTreeV1 newGroupBTree = readBTreeFromSeekableByteChannel(fileChannel, newBTreeAddress, this);
+                                    readV1GroupHierarchy(groupObject, newLocalHeap, newGroupBTree);
                                 }
                                 break;
                             default:
-                                throw new UnsupportedOperationException("Unknown type: " + symbolTableEntry.getCache().getCacheType());
+                                throw new UnsupportedOperationException("Unknown cache type: " + symbolTableEntry.getCache().getCacheType());
                         }
                     }
                 }
@@ -424,14 +213,142 @@ public class HdfFileReader implements HdfDataFile {
         }
     }
 
-    private String isHardLink(HdfGroup parentGroup, Long objectHeaderAddress) {
-        AtomicReference<String> result = new AtomicReference(null);
+
+    // --- V2 Architecture Reading Logic ---
+
+    /**
+     * Handles the reading and parsing of HDF5 v2 file structures.
+     * @param rootObjectHeaderAddr The address of the root object header.
+     */
+    private void readV2Structure(long rootObjectHeaderAddr) throws Exception {
+        // The signature check was already performed in readFile(), so we can proceed directly.
+        HdfObjectHeaderPrefix rootObjectHeader = readV2ObjectHeader(fileChannel, rootObjectHeaderAddr, this);
+        HdfGroup rootGroup = new HdfGroup("", rootObjectHeader, null, null);
+
+        this.bTree = new HdfTree(rootGroup);
+
+        processV2GroupLinks(rootGroup);
+    }
+
+    /**
+     * Processes all links within a V2 group to find and create child groups and datasets.
+     */
+    private void processV2GroupLinks(HdfGroup group) throws Exception {
+        LinkInfoMessage linkInfoMessage = group.getObjectHeader().findMessageByType(LinkInfoMessage.class).orElse(null);
+
+        // 1. Process links stored in a B-Tree v2 (for large, dense groups)
+        if (linkInfoMessage != null && !linkInfoMessage.getV2BTreeNameIndexAddress().isUndefined()) {
+            processV2BTreeLinks(group, linkInfoMessage);
+        }
+
+        // 2. Process links stored directly as Link Messages in the header (for smaller, compact groups)
+        for (HdfMessage hdfMessage : group.getObjectHeader().getHeaderMessages()) {
+            if (hdfMessage instanceof LinkMessage) {
+                LinkMessage linkMessage = (LinkMessage) hdfMessage;
+                long objectHeaderOffset = linkMessage.getLinkInformation().getInstance(Long.class);
+                String linkName = linkMessage.getLinkName();
+                processLink(group, linkName, objectHeaderOffset);
+            }
+        }
+    }
+
+    /**
+     * Helper to process links found in a V2 B-Tree.
+     */
+    private void processV2BTreeLinks(HdfGroup group, LinkInfoMessage linkInfoMessage) throws Exception {
+        long v2BTreeNameIndexOffset = linkInfoMessage.getV2BTreeNameIndexAddress().getInstance(Long.class);
+
+        // Position the file channel AT the start of the B-Tree before constructing the reader.
+        fileChannel.position(v2BTreeNameIndexOffset);
+        BTreeV2Reader bTreeV2Reader = new BTreeV2Reader(fileChannel, 8, 8); // Assuming these params are constant
+
+        long fractalHeapOffset = linkInfoMessage.getFractalHeapAddress().getInstance(Long.class);
+        FractalHeap fractalHeap = FractalHeap.read(fileChannel, fractalHeapOffset, 8, 8); // Assuming params
+
+        for (BTreeV2Record bTreeV2Record : bTreeV2Reader.getAllRecords()) {
+            byte[] heapId = ((Type5Record) bTreeV2Record).heapId;
+            ParsedHeapId parsedHeapId = new ParsedHeapId(heapId, fractalHeap);
+            byte[] objectData = fractalHeap.getObject(parsedHeapId);
+            ByteBuffer retrievedData = ByteBuffer.wrap(objectData).order(ByteOrder.LITTLE_ENDIAN);
+
+            retrievedData.position(10); // Skip rowHeader
+            int sLength = Byte.toUnsignedInt(retrievedData.get());
+            byte[] stringBuffer = new byte[sLength];
+            retrievedData.get(stringBuffer);
+            String linkName = new String(stringBuffer);
+            long objectHeaderOffset = retrievedData.getLong();
+
+            processLink(group, linkName, objectHeaderOffset);
+        }
+    }
+
+    /**
+     * Core logic to process a single link, create a Group or Dataset, and recurse if it's a group.
+     */
+    private void processLink(HdfGroup parentGroup, String linkName, long objectHeaderOffset) throws Exception {
+        String hardLink = isHardLink(parentGroup, objectHeaderOffset);
+        HdfObjectHeaderPrefix objectHeader = null;
+        if (hardLink == null) {
+            objectHeader = readObjectHeaderPrefixFromSeekableByteChannel(fileChannel, objectHeaderOffset, this, linkName);
+        }
+
+        // A node is a dataset if it has a DataLayoutMessage, otherwise it's a group.
+        boolean isGroup = (objectHeader != null && objectHeader.findMessageByType(DataLayoutMessage.class).isEmpty());
+
+        if (isGroup) {
+            HdfGroup groupObject = new HdfGroup(linkName, objectHeader, parentGroup, hardLink);
+            parentGroup.addChild(groupObject);
+            System.out.println("ADDED GROUP: " + groupObject.getObjectPath() + " at " + objectHeaderOffset);
+
+            if (hardLink == null) {
+                processV2GroupLinks(groupObject);
+            }
+        } else {
+            HdfDataset datasetObject = new HdfDataset(linkName, objectHeader, parentGroup, hardLink);
+            parentGroup.addChild(datasetObject);
+            System.out.println("ADDED DATASET: " + datasetObject.getObjectPath() + " at " + objectHeaderOffset);
+        }
+    }
+
+    /*
+     *
+     * The original, unchanged helper methods from your code would go here.
+     * For example:
+     *
+     * private static long findSuperblockOffset(SeekableByteChannel fileChannel) throws IOException { ... }
+     *
+     * private String isHardLink(HdfGroup parentGroup, Long objectHeaderAddress) { ... }
+     *
+     * // ...and any other custom reader methods like readV2ObjectHeader, readObjectHeader, etc.
+     *
+     */
+
+    private static long findSuperblockOffset(SeekableByteChannel fileChannel) throws IOException {
+        long size = fileChannel.size();
+        long offset = 0;
+        while ((offset + SIGNATURE_SIZE + VERSION_SIZE) < size) {
+            fileChannel.position(offset);
+            ByteBuffer buffer = ByteBuffer.allocate(SIGNATURE_SIZE + VERSION_SIZE).order(ByteOrder.LITTLE_ENDIAN);
+            fileChannel.read(buffer);
+            buffer.flip();
+            byte[] signature = new byte[FILE_SIGNATURE.length];
+            buffer.get(signature);
+            if (Arrays.equals(signature, FILE_SIGNATURE)) {
+                return offset;
+            }
+            offset += 512; // Common superblock alignment is 512, 1024, etc.; adjust if needed
+        }
+        throw new IllegalArgumentException("HDF file signature not found");
+    }
+
+    private String isHardLink(HdfGroup parentGroup, long objectHeaderAddress) {
+        AtomicReference<String> result = new AtomicReference<>(null);
         HdfGroup rootGroup = (HdfGroup) parentGroup.getRoot();
         rootGroup.visitAllNodes(hdfBTreeNode -> {
             try {
-                if ( hdfBTreeNode.getObjectHeader() != null ) {
-                    Long testObjectHeaderOffset = hdfBTreeNode.getDataObject().getObjectHeader().getOffset().getInstance(Long.class);
-                    if (Objects.equals(testObjectHeaderOffset, objectHeaderAddress)) {
+                if (hdfBTreeNode.getObjectHeader() != null) {
+                    long testObjectHeaderOffset = hdfBTreeNode.getDataObject().getObjectHeader().getOffset().getInstance(Long.class);
+                    if (testObjectHeaderOffset == objectHeaderAddress) {
                         result.set(hdfBTreeNode.getObjectPath());
                         return true;
                     }
@@ -443,8 +360,6 @@ public class HdfFileReader implements HdfDataFile {
         });
         return result.get();
     }
-
-
 
     /**
      * Retrieves all datasets in the group.
@@ -1222,5 +1137,36 @@ public class HdfFileReader implements HdfDataFile {
     public HdfTree getBTree() {
         return bTree;
     }
+    public static void printRows(byte[] input) {
+        // First row: 8 bytes, print as Arrays.toString
+        byte[] firstRow = Arrays.copyOfRange(input, 0, 8);
+        System.out.println(Arrays.toString(firstRow));
+
+        // Second row: null-terminated string, length from firstRow[2], padded to 8-byte boundary
+        int stringLength = firstRow[2] & 0xFF; // Convert byte to unsigned int
+        int stringStart = 8;
+        int paddedLength = ((stringLength + 7) / 8) * 8; // Round up to next multiple of 8
+        byte[] secondRow = Arrays.copyOfRange(input, stringStart, stringStart + stringLength);
+        StringBuilder secondString = new StringBuilder();
+        for (byte b : secondRow) {
+            if (b == 0) break; // Stop at null terminator
+            secondString.append((char) (b & 0xFF));
+        }
+        System.out.println(secondString.toString());
+
+        // Third row: 16 bytes, print as Arrays.toString
+        int thirdRowStart = stringStart + paddedLength;
+        byte[] thirdRow = Arrays.copyOfRange(input, thirdRowStart, thirdRowStart + 16);
+        System.out.println(Arrays.toString(thirdRow));
+
+        // Fourth row: null-terminated string
+        int fourthRowStart = thirdRowStart + 16;
+        StringBuilder fourthString = new StringBuilder();
+        for (int i = fourthRowStart; i < input.length && input[i] != 0; i++) {
+            fourthString.append((char) (input[i] & 0xFF));
+        }
+        System.out.println(fourthString.toString());
+    }
+
 
 }

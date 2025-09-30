@@ -3,7 +3,6 @@ package org.hdf5javalib.hdffile.metadata;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.datatype.FixedPointDatatype;
 import org.hdf5javalib.hdfjava.HdfDataFile;
-import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.hdf5javalib.utils.HdfDisplayUtils;
 
 import java.io.IOException;
@@ -230,7 +229,7 @@ public class HdfSuperblock {
         return groupInternalNodeK;
     }
 
-    public HdfFixedPoint getRootGroupObjectHeaderAddresss() {
+    public HdfFixedPoint getRootGroupObjectHeaderAddress() {
         return rootGroupObjectHeaderAddress;
     }
 
