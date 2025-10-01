@@ -13,6 +13,8 @@ import org.hdf5javalib.hdffile.infrastructure.v2btree.gemini.*;
 import org.hdf5javalib.hdffile.metadata.HdfSuperblock;
 import org.hdf5javalib.utils.HdfReadUtils;
 import org.hdf5javalib.utils.HdfWriteUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -42,6 +44,7 @@ import static org.hdf5javalib.hdffile.metadata.HdfSuperblock.*;
  * </p>
  */
 public class HdfFileReader implements HdfDataFile {
+    private static final Logger log = LoggerFactory.getLogger(HdfFileReader.class);
 //    /** The superblock containing metadata about the HDF5 file. */
     public static final byte[] BTREE_SIGNATURE = {'T', 'R', 'E', 'E'};
     public static final int BTREE_HEADER_INITIAL_SIZE = 8;
@@ -88,6 +91,7 @@ public class HdfFileReader implements HdfDataFile {
     public HdfFileReader readFile() throws Exception {
         long superblockOffset = findSuperblockOffset(fileChannel);
         superblock = readSuperblockFromSeekableByteChannel(fileChannel, superblockOffset, this);
+        log.debug("HdfFileReader::readFile superblock: {}", superblock);
 
         // Step 1: Get the root object header address. This logic IS dependent on the superblock version.
         long rootObjectHeaderAddr;
@@ -297,7 +301,7 @@ public class HdfFileReader implements HdfDataFile {
         if (isGroup) {
             HdfGroup groupObject = new HdfGroup(linkName, objectHeader, parentGroup, hardLink);
             parentGroup.addChild(groupObject);
-            System.out.println("ADDED GROUP: " + groupObject.getObjectPath() + " at " + objectHeaderOffset);
+            log.debug("HdfFileReader::processLink - added group {} at {}", groupObject.getObjectPath(), objectHeaderOffset);
 
             if (hardLink == null) {
                 processV2GroupLinks(groupObject);
@@ -305,7 +309,8 @@ public class HdfFileReader implements HdfDataFile {
         } else {
             HdfDataset datasetObject = new HdfDataset(linkName, objectHeader, parentGroup, hardLink);
             parentGroup.addChild(datasetObject);
-            System.out.println("ADDED DATASET: " + datasetObject.getObjectPath() + " at " + objectHeaderOffset);
+            log.debug("HdfFileReader::processLink - added dataset {} at {}", datasetObject.getObjectPath(), objectHeaderOffset);
+            log.trace("HdfFileReader::processLink - added dataset {}:{}", datasetObject.getObjectPath(), datasetObject.getObjectHeader());
         }
     }
 
@@ -475,10 +480,10 @@ public class HdfFileReader implements HdfDataFile {
         FixedPointDatatype fixedPointDatatypeForLength;
 
         // Parse addresses using HdfFixedPoint
-        HdfFixedPoint baseAddress = null;
+        HdfFixedPoint baseAddress;
         HdfFixedPoint freeSpaceAddress = null;
         HdfFixedPoint extensionAddress = null;
-        HdfFixedPoint endOfFileAddress = null;
+        HdfFixedPoint endOfFileAddress;
         HdfFixedPoint driverInformationAddress = null;
         HdfFixedPoint rootObjectHeaderAddress = null;
         buffer.position(SIGNATURE_SIZE + VERSION_SIZE); // Skip the file signature
@@ -540,7 +545,7 @@ public class HdfFileReader implements HdfDataFile {
 
         }
 
-        HdfSuperblock superblock = new HdfSuperblock(
+        return new HdfSuperblock(
                 version,
                 freeSpaceVersion,
                 rootGroupVersion,
@@ -559,7 +564,6 @@ public class HdfFileReader implements HdfDataFile {
                 fixedPointDatatypeForOffset,
                 fixedPointDatatypeForLength
         );
-        return superblock;
     }
 
     /**
