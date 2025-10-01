@@ -1,4 +1,4 @@
-package org.hdf5javalib.hdffile.infrastructure.v2btree.gemini;
+package org.hdf5javalib.hdffile.infrastructure.v2btree;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;

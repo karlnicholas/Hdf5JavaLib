@@ -1,4 +1,4 @@
-package org.hdf5javalib.hdffile.infrastructure.v2btree.gemini;
+package org.hdf5javalib.hdffile.infrastructure.v2btree;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

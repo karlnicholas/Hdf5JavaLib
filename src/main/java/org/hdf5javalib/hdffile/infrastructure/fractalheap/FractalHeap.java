@@ -1,9 +1,16 @@
-package org.hdf5javalib.hdffile.infrastructure.fractalheap.grok;
+package org.hdf5javalib.hdffile.infrastructure.fractalheap;
+
+import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.datatype.FixedPointDatatype;
+import org.hdf5javalib.hdfjava.HdfDataFile;
+import org.hdf5javalib.utils.HdfReadUtils;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,10 +28,10 @@ public class FractalHeap {
         return rootBlock;
     }
 
-    public static FractalHeap read(SeekableByteChannel channel, long position, int sizeOfOffsets, int sizeOfLengths) throws IOException {
-        HdfReader reader = new HdfReader(channel);
-        reader.seek(position);
-        FractalHeapHeader header = readHeader(reader, sizeOfOffsets, sizeOfLengths);
+    public static FractalHeap read(SeekableByteChannel channel, long position, HdfDataFile hdfDataFile) throws IOException {
+        FixedPointDatatype sizeOfOffsets = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset();
+        channel.position(position);
+        FractalHeapHeader header = readHeader(channel, hdfDataFile);
         long rootAddress = header.addressRootBlock;
         short nrows = header.currentNumRowsRootIndirectBlock;
         long filteredSize = -1;
@@ -46,53 +53,131 @@ public class FractalHeap {
         return heap;
     }
 
-    private static FractalHeapHeader readHeader(HdfReader reader, int sizeOfOffsets, int sizeOfLengths) throws IOException {
+    private static FractalHeapHeader readHeader(SeekableByteChannel channel, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        FixedPointDatatype sizeOfOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset();
+        FixedPointDatatype sizeOfLength = hdfDataFile.getSuperblock().getFixedPointDatatypeForLength().getSize();
+
         FractalHeapHeader h = new FractalHeapHeader();
-        h.signature = new String(reader.readBytes(4));
+        ByteBuffer signatureBuffer = ByteBuffer.allocate(4);
+        channel.read(signatureBuffer);
+        h.signature = new String(signatureBuffer.array(), StandardCharsets.US_ASCII);
         if (!Objects.equals(h.signature, "FRHP")) {
             throw new IOException("Invalid signature");
         }
-        h.version = reader.readByte();
-        h.heapIdLength = reader.readShort();
-        h.ioFiltersEncodedLength = reader.readShort();
-        h.flags = reader.readByte();
-        h.sizeOfManagedObjects = reader.readInt();
-        h.nextHugeObjectId = reader.readVariableLong(sizeOfLengths);
-        h.v2BtreeAddress = reader.readVariableLong(sizeOfOffsets);
-        h.amountFreeSpaceManagedBlocks = reader.readVariableLong(sizeOfLengths);
-        h.addressManagedBlockFreeSpaceManager = reader.readVariableLong(sizeOfOffsets);
-        h.amountManagedSpaceHeap = reader.readVariableLong(sizeOfLengths);
-        h.amountAllocatedManagedSpaceHeap = reader.readVariableLong(sizeOfLengths);
-        h.offsetDirectBlockAllocationIteratorManagedSpace = reader.readVariableLong(sizeOfLengths);
-        h.numberManagedObjectsHeap = reader.readVariableLong(sizeOfLengths);
-        h.numberHugeObjectsHeap = reader.readVariableLong(sizeOfLengths);
-        h.totalSizeHugeObjectsHeap = reader.readVariableLong(sizeOfLengths);
-        h.numberTinyObjectsHeap = reader.readVariableLong(sizeOfLengths);
-        h.totalSizeTinyObjectsHeap = reader.readVariableLong(sizeOfLengths);
-        h.tableWidth = reader.readShort();
-        h.startingBlockSize = reader.readVariableLong(sizeOfLengths);
-        h.maximumDirectBlockSize = reader.readVariableLong(sizeOfLengths);
-        h.maximumHeapSize = reader.readShort();
-        h.startingNumRowsRootIndirectBlock = reader.readShort();
-        h.addressRootBlock = reader.readVariableLong(sizeOfOffsets);
-        h.currentNumRowsRootIndirectBlock = reader.readShort();
+        int headerSize = getTotalBytesRead(sizeOfLength.getSize(), sizeOfLength.getSize());
+        ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize);
+        int bytesRead = channel.read(headerBuffer);
+        if ( bytesRead != headerSize) {
+            throw new IllegalStateException("Incorrect amount of bytes read: " + headerSize + " wanted but got " + bytesRead);
+        }
+
+        h.version = headerBuffer.get();
+        h.heapIdLength = Short.toUnsignedInt(headerBuffer.getShort());
+        h.ioFiltersEncodedLength = Short.toUnsignedInt(headerBuffer.getShort());
+        h.flags = headerBuffer.get();
+        h.sizeOfManagedObjects = Integer.toUnsignedLong(headerBuffer.getInt());
+        h.nextHugeObjectId = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+        h.v2BtreeAddress = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, headerBuffer);
+        h.amountFreeSpaceManagedBlocks = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+        h.addressManagedBlockFreeSpaceManager = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, headerBuffer);
+        h.amountManagedSpaceHeap = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+        h.amountAllocatedManagedSpaceHeap = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+        h.offsetDirectBlockAllocationIteratorManagedSpace = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+        h.numberManagedObjectsHeap = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+        h.numberHugeObjectsHeap = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+        h.totalSizeHugeObjectsHeap = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+        h.numberTinyObjectsHeap = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+        h.totalSizeTinyObjectsHeap = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+        h.tableWidth = Short.toUnsignedInt(headerBuffer.getShort());
+        h.startingBlockSize = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+        h.maximumDirectBlockSize = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+        h.maximumHeapSize = Short.toUnsignedInt(headerBuffer.getShort());
+        h.startingNumRowsRootIndirectBlock = Short.toUnsignedInt(headerBuffer.getShort());
+        h.addressRootBlock = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, headerBuffer);
+        h.currentNumRowsRootIndirectBlock = Short.toUnsignedInt(headerBuffer.getShort());
+
         h.hasFilters = h.ioFiltersEncodedLength > 0;
         h.checksumDirect = (h.flags & 0x02) != 0;
         if (h.hasFilters && h.currentNumRowsRootIndirectBlock == 0) {
-            h.filteredRootDirectSize = reader.readVariableLong(sizeOfLengths);
-            h.filterMaskRoot = reader.readInt();
+            headerSize = sizeOfLength.getSize() + 4;
+            headerBuffer = ByteBuffer.allocate(headerSize);
+            bytesRead = channel.read(headerBuffer);
+            if ( bytesRead != headerSize) {
+                throw new IllegalStateException("Incorrect amount of bytes read: " + headerSize + " wanted but got " + bytesRead);
+            }
+            h.filteredRootDirectSize = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+            h.filterMaskRoot = Integer.toUnsignedLong(headerBuffer.getInt());
         }
         if (h.hasFilters) {
-            byte[] filterData = reader.readBytes(h.ioFiltersEncodedLength);
+            headerBuffer = ByteBuffer.allocate(h.ioFiltersEncodedLength);
+            bytesRead = channel.read(headerBuffer);
+            if ( bytesRead != headerSize) {
+                throw new IllegalStateException("Incorrect amount of bytes read: " + headerSize + " wanted but got " + bytesRead);
+            }
+            channel.read(headerBuffer);
+            byte[] filterData = headerBuffer.array();
             h.filterPipeline = parseFilterPipeline(filterData);
         }
-        h.checksum = reader.readInt();
-        h.sizeOfOffsets = sizeOfOffsets;
-        h.sizeOfLengths = sizeOfLengths;
+        headerSize = 4;
+        headerBuffer = ByteBuffer.allocate(headerSize);
+        bytesRead = channel.read(headerBuffer);
+        if ( bytesRead != headerSize) {
+            throw new IllegalStateException("Incorrect amount of bytes read: " + headerSize + " wanted but got " + bytesRead);
+        }
+        channel.read(headerBuffer);
+        h.checksum = Integer.toUnsignedLong(headerBuffer.getInt());
         h.offsetBytes = (h.maximumHeapSize + 7) / 8;
-        double logVal = Math.log((double) h.maximumDirectBlockSize / h.startingBlockSize) / Math.log(2);
+        double logVal = Math.log((double) h.maximumDirectBlockSize.getInstance(Long.class) / h.startingBlockSize.getInstance(Long.class)) / Math.log(2);
         h.maxDblockRows = (int) Math.floor(logVal) + 1;
         return h;
+    }
+
+    /**
+     * Calculates the total number of bytes read by the reader for the header.
+     * Uses sizeOfOffsets and sizeOfLengths to determine the size of variable-length fields.
+     *
+     * @param sizeOfOffsets Number of bytes used for offset fields in readVariableLong.
+     * @param sizeOfLengths Number of bytes used for length fields in readVariableLong.
+     * @return Total bytes read as a long.
+     */
+    private static int getTotalBytesRead(int sizeOfOffsets, int sizeOfLengths) {
+        int totalBytes = 0;
+
+        // Fixed-size fields
+        totalBytes += 1; // version (byte)
+        totalBytes += 2; // heapIdLength (short)
+        totalBytes += 2; // ioFiltersEncodedLength (short)
+        totalBytes += 1; // flags (byte)
+        totalBytes += 4; // sizeOfManagedObjects (int)
+        totalBytes += 2; // tableWidth (short)
+        totalBytes += 2; // maximumHeapSize (short)
+        totalBytes += 2; // startingNumRowsRootIndirectBlock (short)
+        totalBytes += 2; // currentNumRowsRootIndirectBlock (short)
+//        totalBytes += 4; // checksum (int)
+        // Total fixed: 20 bytes
+
+        // Variable-length fields using sizeOfOffsets
+        totalBytes += sizeOfOffsets; // nextHugeObjectId
+        totalBytes += sizeOfOffsets; // v2BtreeAddress
+        totalBytes += sizeOfOffsets; // addressManagedBlockFreeSpaceManager
+        totalBytes += sizeOfOffsets; // addressRootBlock
+        // Total: 4 * sizeOfOffsets
+
+        // Variable-length fields using sizeOfLengths
+        totalBytes += sizeOfLengths; // amountFreeSpaceManagedBlocks
+        totalBytes += sizeOfLengths; // amountManagedSpaceHeap
+        totalBytes += sizeOfLengths; // amountAllocatedManagedSpaceHeap
+        totalBytes += sizeOfLengths; // offsetDirectBlockAllocationIteratorManagedSpace
+        totalBytes += sizeOfLengths; // numberManagedObjectsHeap
+        totalBytes += sizeOfLengths; // numberHugeObjectsHeap
+        totalBytes += sizeOfLengths; // totalSizeHugeObjectsHeap
+        totalBytes += sizeOfLengths; // numberTinyObjectsHeap
+        totalBytes += sizeOfLengths; // totalSizeTinyObjectsHeap
+        totalBytes += sizeOfLengths; // startingBlockSize
+        totalBytes += sizeOfLengths; // maximumDirectBlockSize
+        // Total: 11 * sizeOfLengths
+
+        return totalBytes;
     }
 
     private static FilterPipeline parseFilterPipeline(byte[] data) throws IOException {
@@ -314,35 +399,33 @@ public class FractalHeap {
     public static class FractalHeapHeader {
         String signature;
         byte version;
-        short heapIdLength;
-        short ioFiltersEncodedLength;
+        int heapIdLength;
+        int ioFiltersEncodedLength;
         byte flags;
-        int sizeOfManagedObjects;
-        long nextHugeObjectId;
-        long v2BtreeAddress;
-        long amountFreeSpaceManagedBlocks;
-        long addressManagedBlockFreeSpaceManager;
-        long amountManagedSpaceHeap;
-        long amountAllocatedManagedSpaceHeap;
-        long offsetDirectBlockAllocationIteratorManagedSpace;
-        long numberManagedObjectsHeap;
-        long numberHugeObjectsHeap;
-        long totalSizeHugeObjectsHeap;
-        long numberTinyObjectsHeap;
-        long totalSizeTinyObjectsHeap;
-        short tableWidth;
-        long startingBlockSize;
-        long maximumDirectBlockSize;
-        short maximumHeapSize;
-        short startingNumRowsRootIndirectBlock;
-        long addressRootBlock;
-        short currentNumRowsRootIndirectBlock;
-        long filteredRootDirectSize;
-        int filterMaskRoot;
+        long sizeOfManagedObjects;
+        HdfFixedPoint nextHugeObjectId;
+        HdfFixedPoint v2BtreeAddress;
+        HdfFixedPoint amountFreeSpaceManagedBlocks;
+        HdfFixedPoint addressManagedBlockFreeSpaceManager;
+        HdfFixedPoint amountManagedSpaceHeap;
+        HdfFixedPoint amountAllocatedManagedSpaceHeap;
+        HdfFixedPoint offsetDirectBlockAllocationIteratorManagedSpace;
+        HdfFixedPoint numberManagedObjectsHeap;
+        HdfFixedPoint numberHugeObjectsHeap;
+        HdfFixedPoint totalSizeHugeObjectsHeap;
+        HdfFixedPoint numberTinyObjectsHeap;
+        HdfFixedPoint totalSizeTinyObjectsHeap;
+        int tableWidth;
+        HdfFixedPoint startingBlockSize;
+        HdfFixedPoint maximumDirectBlockSize;
+        int maximumHeapSize;
+        int startingNumRowsRootIndirectBlock;
+        HdfFixedPoint addressRootBlock;
+        int currentNumRowsRootIndirectBlock;
+        HdfFixedPoint filteredRootDirectSize;
+        long filterMaskRoot;
         FilterPipeline filterPipeline;
         long checksum;
-        int sizeOfOffsets;
-        int sizeOfLengths;
         int offsetBytes;
         int maxDblockRows;
         boolean hasFilters;
@@ -397,61 +480,61 @@ public class FractalHeap {
         }
     }
 
-    private static class HdfReader {
-        private final SeekableByteChannel channel;
-
-        public HdfReader(SeekableByteChannel channel) {
-            this.channel = channel;
-        }
-
-        public void seek(long pos) throws IOException {
-            channel.position(pos);
-        }
-
-        public byte readByte() throws IOException {
-            ByteBuffer bb = ByteBuffer.allocate(1);
-            channel.read(bb);
-            bb.flip();
-            return bb.get();
-        }
-
-        public short readShort() throws IOException {
-            ByteBuffer bb = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN);
-            channel.read(bb);
-            bb.flip();
-            return bb.getShort();
-        }
-
-        public int readInt() throws IOException {
-            ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
-            channel.read(bb);
-            bb.flip();
-            return bb.getInt();
-        }
-
-        public byte[] readBytes(int n) throws IOException {
-            ByteBuffer bb = ByteBuffer.allocate(n);
-            channel.read(bb);
-            bb.flip();
-            byte[] res = new byte[n];
-            bb.get(res);
-            return res;
-        }
-
-        public long readVariableLong(int size) throws IOException {
-            byte[] bytes = readBytes(size);
-            long val = 0;
-            for (int i = 0; i < size; i++) {
-                val |= (bytes[i] & 0xFFL) << (8 * i);
-            }
-            // If the most significant bit is set, check if all bits are 1 (undefined address)
-            if (size < 8 && (val & (1L << (size * 8 - 1))) != 0) {
-                long mask = (1L << (size * 8)) - 1;
-                if (val == mask) {
-                    return -1L; // Undefined address
-                }
-            }
-            return val;
-        }
-    }
+//    private static class HdfReader {
+//        private final SeekableByteChannel channel;
+//
+//        public HdfReader(SeekableByteChannel channel) {
+//            this.channel = channel;
+//        }
+//
+//        public void seek(long pos) throws IOException {
+//            channel.position(pos);
+//        }
+//
+//        public byte readByte() throws IOException {
+//            ByteBuffer bb = ByteBuffer.allocate(1);
+//            channel.read(bb);
+//            bb.flip();
+//            return bb.get();
+//        }
+//
+//        public short readShort() throws IOException {
+//            ByteBuffer bb = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN);
+//            channel.read(bb);
+//            bb.flip();
+//            return bb.getShort();
+//        }
+//
+//        public int readInt() throws IOException {
+//            ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
+//            channel.read(bb);
+//            bb.flip();
+//            return bb.getInt();
+//        }
+//
+//        public byte[] readBytes(int n) throws IOException {
+//            ByteBuffer bb = ByteBuffer.allocate(n);
+//            channel.read(bb);
+//            bb.flip();
+//            byte[] res = new byte[n];
+//            bb.get(res);
+//            return res;
+//        }
+//
+//        public long readVariableLong(int size) throws IOException {
+//            byte[] bytes = readBytes(size);
+//            long val = 0;
+//            for (int i = 0; i < size; i++) {
+//                val |= (bytes[i] & 0xFFL) << (8 * i);
+//            }
+//            // If the most significant bit is set, check if all bits are 1 (undefined address)
+//            if (size < 8 && (val & (1L << (size * 8 - 1))) != 0) {
+//                long mask = (1L << (size * 8)) - 1;
+//                if (val == mask) {
+//                    return -1L; // Undefined address
+//                }
+//            }
+//            return val;
+//        }
+//    }
 }

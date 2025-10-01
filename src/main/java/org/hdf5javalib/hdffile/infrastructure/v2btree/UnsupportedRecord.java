@@ -1,4 +1,4 @@
-package org.hdf5javalib.hdffile.infrastructure.v2btree.gemini;
+package org.hdf5javalib.hdffile.infrastructure.v2btree;
 
 class UnsupportedRecord implements BTreeV2Record {
     public final BTreeV2Type type;
