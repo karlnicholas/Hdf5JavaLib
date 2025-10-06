@@ -28,14 +28,15 @@ public class FractalHeap {
         return rootBlock;
     }
 
-    public static FractalHeap read(SeekableByteChannel channel, long position, HdfDataFile hdfDataFile) throws IOException {
-        FixedPointDatatype sizeOfOffsets = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset();
+    public static FractalHeap read(SeekableByteChannel channel, long position, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        FixedPointDatatype sizeOfOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset();
+        FixedPointDatatype sizeOfLength = hdfDataFile.getSuperblock().getFixedPointDatatypeForLength();
         channel.position(position);
         FractalHeapHeader header = readHeader(channel, hdfDataFile);
-        long rootAddress = header.addressRootBlock;
-        short nrows = header.currentNumRowsRootIndirectBlock;
-        long filteredSize = -1;
-        int filterMask = 0;
+        HdfFixedPoint rootAddress = header.addressRootBlock;
+        int nrows = header.currentNumRowsRootIndirectBlock;
+        HdfFixedPoint filteredSize = sizeOfLength.undefined();
+        long filterMask = 0;
         if (header.hasFilters && nrows == 0) {
             filteredSize = header.filteredRootDirectSize;
             filterMask = header.filterMaskRoot;
@@ -43,9 +44,9 @@ public class FractalHeap {
         long expectedBlockOffset = 0;
         Block root;
         if (nrows == 0) {
-            root = readDirectBlock(reader, header, rootAddress, expectedBlockOffset, filteredSize, filterMask);
+            root = readDirectBlock(channel, header, rootAddress, sizeOfOffset, expectedBlockOffset, filteredSize, filterMask);
         } else {
-            root = readIndirectBlock(reader, header, rootAddress, expectedBlockOffset, -1, nrows);
+            root = readIndirectBlock(channel, header, sizeOfOffset, sizeOfLength, rootAddress, expectedBlockOffset, -1, nrows);
         }
         FractalHeap heap = new FractalHeap();
         heap.header = header;
@@ -55,11 +56,12 @@ public class FractalHeap {
 
     private static FractalHeapHeader readHeader(SeekableByteChannel channel, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         FixedPointDatatype sizeOfOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset();
-        FixedPointDatatype sizeOfLength = hdfDataFile.getSuperblock().getFixedPointDatatypeForLength().getSize();
+        FixedPointDatatype sizeOfLength = hdfDataFile.getSuperblock().getFixedPointDatatypeForLength();
 
         FractalHeapHeader h = new FractalHeapHeader();
         ByteBuffer signatureBuffer = ByteBuffer.allocate(4);
         channel.read(signatureBuffer);
+        signatureBuffer.flip();
         h.signature = new String(signatureBuffer.array(), StandardCharsets.US_ASCII);
         if (!Objects.equals(h.signature, "FRHP")) {
             throw new IOException("Invalid signature");
@@ -70,6 +72,7 @@ public class FractalHeap {
         if ( bytesRead != headerSize) {
             throw new IllegalStateException("Incorrect amount of bytes read: " + headerSize + " wanted but got " + bytesRead);
         }
+        headerBuffer.flip();
 
         h.version = headerBuffer.get();
         h.heapIdLength = Short.toUnsignedInt(headerBuffer.getShort());
@@ -105,6 +108,7 @@ public class FractalHeap {
             if ( bytesRead != headerSize) {
                 throw new IllegalStateException("Incorrect amount of bytes read: " + headerSize + " wanted but got " + bytesRead);
             }
+            headerBuffer.flip();
             h.filteredRootDirectSize = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
             h.filterMaskRoot = Integer.toUnsignedLong(headerBuffer.getInt());
         }
@@ -114,6 +118,7 @@ public class FractalHeap {
             if ( bytesRead != headerSize) {
                 throw new IllegalStateException("Incorrect amount of bytes read: " + headerSize + " wanted but got " + bytesRead);
             }
+            headerBuffer.flip();
             channel.read(headerBuffer);
             byte[] filterData = headerBuffer.array();
             h.filterPipeline = parseFilterPipeline(filterData);
@@ -124,7 +129,7 @@ public class FractalHeap {
         if ( bytesRead != headerSize) {
             throw new IllegalStateException("Incorrect amount of bytes read: " + headerSize + " wanted but got " + bytesRead);
         }
-        channel.read(headerBuffer);
+        headerBuffer.flip();
         h.checksum = Integer.toUnsignedLong(headerBuffer.getInt());
         h.offsetBytes = (h.maximumHeapSize + 7) / 8;
         double logVal = Math.log((double) h.maximumDirectBlockSize.getInstance(Long.class) / h.startingBlockSize.getInstance(Long.class)) / Math.log(2);
@@ -234,51 +239,59 @@ public class FractalHeap {
         return fp;
     }
 
-    private static Block readDirectBlock(HdfReader reader, FractalHeapHeader header, long address, long expectedBlockOffset, long filteredSize, int filterMask) throws IOException {
-        long undefined = -1L;
-        if (address == undefined) {
+    private static Block readDirectBlock(SeekableByteChannel channel, FractalHeapHeader header, HdfFixedPoint address, FixedPointDatatype sizeOfOffset, long expectedBlockOffset, HdfFixedPoint filteredSize, long filterMask) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        if (address.isUndefined()) {
             throw new IOException("Invalid direct block address");
         }
-        reader.seek(address);
-        String sig = new String(reader.readBytes(4));
+        channel.position(address.getInstance(Long.class));
+        //
+        int headerSize = 4 + 1 + sizeOfOffset.getSize() + header.offsetBytes + (header.checksumDirect ? 4 : 0);
+        ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
+        int bytesRead = channel.read(headerBuffer);
+        if ( headerSize != bytesRead)
+            throw new IllegalStateException("Incorrect bytesRead: " + bytesRead + ": expected " + headerSize);
+        headerBuffer.flip();
+        String sig = new String(Arrays.copyOfRange(headerBuffer.array(), 0, 4), StandardCharsets.US_ASCII);
         if (!Objects.equals(sig, "FHDB")) {
             throw new IOException("Invalid direct block signature");
         }
-        byte version = reader.readByte();
+        headerBuffer.position(4);
+        byte version = headerBuffer.get();
         if (version != 0) {
             throw new IOException("Unsupported version");
         }
-        long heapHeader = reader.readVariableLong(header.sizeOfOffsets);
-        if (heapHeader == undefined) {
+        HdfFixedPoint heapHeader = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, headerBuffer);
+        if (heapHeader.isUndefined()) {
             throw new IOException("Invalid heap header address in direct block");
         }
-        long blockOffset = reader.readVariableLong(header.offsetBytes);
-        if (blockOffset != expectedBlockOffset) {
+        HdfFixedPoint blockOffset = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, headerBuffer);
+        if (blockOffset.getInstance(Long.class) != expectedBlockOffset) {
             throw new IOException("Block offset mismatch");
         }
-        int checksum = 0;
+        headerBuffer.position(4 + 1 + sizeOfOffset.getSize()+header.offsetBytes);
+        long checksum = 0;
         if (header.checksumDirect) {
-            checksum = reader.readInt(); // checksum, not verifying
+            checksum = Integer.toUnsignedLong(headerBuffer.getInt()); // checksum, not verifying
         }
-        int headerSize = 4 + 1 + header.sizeOfOffsets + header.offsetBytes + (header.checksumDirect ? 4 : 0);
         long blockSize = getBlockSize(header, expectedBlockOffset);
         long dataSize;
-//        if (filteredSize != -1) {
-//            dataSize = filteredSize - headerSize;
-//        } else {
-//            dataSize = blockSize - headerSize;
-//        }
-        if (filteredSize != -1) {
-            dataSize = filteredSize;
+        if (!filteredSize.isUndefined()) {
+            dataSize = filteredSize.getInstance(Long.class);
         } else {
             dataSize = blockSize;
         }
         if (dataSize < 0) {
             throw new IOException("Invalid data size in direct block");
         }
-        byte[] data = reader.readBytes((int) dataSize);
+        headerBuffer = ByteBuffer.allocate((int) dataSize);
+        bytesRead = channel.read(headerBuffer);
+        if ( bytesRead != dataSize)
+            throw new IllegalStateException();
+        headerBuffer.flip();
+
+        byte[] data = headerBuffer.array();
         DirectBlock db = new DirectBlock();
-        db.blockOffset = blockOffset;
+        db.blockOffset = blockOffset.getInstance(Long.class);
         db.blockSize = blockSize;
         db.data = data;
         db.filterMask = filterMask;
@@ -287,35 +300,17 @@ public class FractalHeap {
         return db;
     }
 
-    private static Block readIndirectBlock(HdfReader reader, FractalHeapHeader header, long address, long expectedBlockOffset, long iblockSize, short passedNrows) throws IOException {
-        long undefined = -1L;
-        if (address == undefined) {
+    private static Block readIndirectBlock(SeekableByteChannel channel, FractalHeapHeader header, FixedPointDatatype sizeOfOffset, FixedPointDatatype sizeOfLength, HdfFixedPoint address, long expectedBlockOffset, long iblockSize, int passedNrows) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        if (address.isUndefined()) {
             throw new IOException("Invalid indirect block address");
         }
-        reader.seek(address);
-        String sig = new String(reader.readBytes(4));
-        if (!Objects.equals(sig, "FHIB")) {
-            throw new IOException("Invalid indirect block signature");
-        }
-        byte version = reader.readByte();
-        if (version != 0) {
-            throw new IOException("Unsupported version");
-        }
-        long heapHeader = reader.readVariableLong(header.sizeOfOffsets);
-        if (heapHeader == undefined) {
-            throw new IOException("Invalid heap header address in indirect block");
-        }
-        long blockOffset = reader.readVariableLong(header.offsetBytes);
-        if (blockOffset != expectedBlockOffset) {
-            throw new IOException("Block offset mismatch");
-        }
+        channel.position(address.getInstance(Long.class));
         IndirectBlock ib = new IndirectBlock();
-        ib.blockOffset = blockOffset;
-        ib.children = new ArrayList<>();
-        short nrows;
+        int nrows;
+        long startingBlockSize = header.startingBlockSize.getInstance(Long.class);
         if (iblockSize > 0) {
             long covered = 0;
-            long current = header.startingBlockSize;
+            long current = startingBlockSize;
             int nr = 0;
             while (covered < iblockSize) {
                 covered += (long) header.tableWidth * current;
@@ -326,36 +321,75 @@ public class FractalHeap {
         } else {
             nrows = passedNrows;
         }
+        int plusSize = 0;
         ib.nrows = nrows;
-        List<ChildInfo> childInfos = new ArrayList<>();
-        long currentOffset = expectedBlockOffset;
         for (short r = 0; r < nrows; r++) {
-            long rowBlockSize = header.startingBlockSize * (1L << r);
             for (int c = 0; c < header.tableWidth; c++) {
-                long childAddress = reader.readVariableLong(header.sizeOfOffsets);
-                long childFilteredSize = -1;
-                int childFilterMask = 0;
+                plusSize += sizeOfOffset.getSize();
                 boolean isDirect = r < header.maxDblockRows;
                 if (header.hasFilters && isDirect) {
-                    childFilteredSize = reader.readVariableLong(header.sizeOfLengths);
-                    childFilterMask = reader.readInt();
+                    plusSize += sizeOfLength.getSize();
+                    plusSize += 4;
                 }
-                if (childAddress != undefined) {
-                    long childBlockOffset = currentOffset;
-                    ChildInfo info = new ChildInfo(childAddress, childBlockOffset, isDirect, childFilteredSize, childFilterMask, rowBlockSize);
+            }
+        }
+        plusSize += 4;  // checksum
+
+        int headerSize = 4 + 1 + sizeOfOffset.getSize() + header.offsetBytes + plusSize;
+        ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize);
+        int bytesRead = channel.read(headerBuffer);
+        if ( headerSize != bytesRead)
+            throw new IllegalStateException("Incorrect bytesRead: " + bytesRead + ": expected " + headerSize);
+        headerBuffer.flip();
+
+        String sig = new String(Arrays.copyOfRange(headerBuffer.array(), 0, 4), StandardCharsets.US_ASCII);
+        if (!Objects.equals(sig, "FHIB")) {
+            throw new IOException("Invalid indirect block signature");
+        }
+        headerBuffer.position(4);
+        byte version = headerBuffer.get();
+        if (version != 0) {
+            throw new IOException("Unsupported version");
+        }
+        HdfFixedPoint heapHeader = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, headerBuffer);
+        if (heapHeader.isUndefined()) {
+            throw new IOException("Invalid heap header address in indirect block");
+        }
+        HdfFixedPoint blockOffset = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, headerBuffer);
+        if (blockOffset.getInstance(Long.class) != expectedBlockOffset) {
+            throw new IOException("Block offset mismatch");
+        }
+        headerBuffer.position(4 + 1 + sizeOfOffset.getSize() + header.offsetBytes);
+        ib.blockOffset = blockOffset.getInstance(Long.class);
+        ib.children = new ArrayList<>();
+        List<ChildInfo> childInfos = new ArrayList<>();
+        long currentOffset = expectedBlockOffset; // expectedBlockOffset;
+        for (short r = 0; r < nrows; r++) {
+            long rowBlockSize = startingBlockSize * (1L << r);
+            for (int c = 0; c < header.tableWidth; c++) {
+                HdfFixedPoint childAddress = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, headerBuffer);
+                HdfFixedPoint childFilteredSize = sizeOfOffset.undefined();
+                long childFilterMask = 0;
+                boolean isDirect = r < header.maxDblockRows;
+                if (header.hasFilters && isDirect) {
+                    childFilteredSize = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
+                    childFilterMask = headerBuffer.getInt();
+                }
+                if (!childAddress.isUndefined()) {
+                    ChildInfo info = new ChildInfo(childAddress, currentOffset, isDirect, childFilteredSize, childFilterMask, rowBlockSize);
                     childInfos.add(info);
                 }
                 currentOffset += rowBlockSize;
             }
         }
-        ib.checksum = reader.readInt();
+        ib.checksum = Integer.toUnsignedLong(headerBuffer.getInt());
         for (ChildInfo info : childInfos) {
-            if (info.address != undefined) {
+            if (!info.address.isUndefined()) {
                 Block child;
                 if (info.isDirect) {
-                    child = readDirectBlock(reader, header, info.address, info.blockOffset, info.filteredSize, info.filterMask);
+                    child = readDirectBlock(channel, header, info.address, sizeOfOffset, info.blockOffset, info.filteredSize, info.filterMask);
                 } else {
-                    child = readIndirectBlock(reader, header, info.address, info.blockOffset, info.blockSize, (short) 0);
+                    child = readIndirectBlock(channel, header, sizeOfOffset, sizeOfLength, info.address, info.blockOffset, info.blockSize, (short) 0);
                 }
                 ib.children.add(child);
             }
@@ -363,13 +397,14 @@ public class FractalHeap {
         return ib;
     }
 
-    private static long getBlockSize(FractalHeapHeader header, long blockOffset) {
+    private static long getBlockSize(FractalHeapHeader header, long blockOffset) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        long startingBlockSize = header.startingBlockSize.getInstance(Long.class);
         if (blockOffset == 0 && header.currentNumRowsRootIndirectBlock == 0) {
-            return header.startingBlockSize;
+            return startingBlockSize;
         }
-        double arg = ((double) blockOffset / (header.tableWidth * header.startingBlockSize)) + 1;
+        double arg = ((double) blockOffset / (header.tableWidth * header.startingBlockSize.getInstance(Long.class))) + 1;
         int row = (int) Math.floor(Math.log(arg) / Math.log(2));
-        return header.startingBlockSize * (1L << row);
+        return startingBlockSize * (1L << row);
     }
 
     public byte[] getObject(ParsedHeapId heapId) {
@@ -452,25 +487,25 @@ public class FractalHeap {
         public int headerSize;
         long blockSize;
         byte[] data;
-        int filterMask;
-        int checksum;
+        long filterMask;
+        long checksum;
     }
 
     public static class IndirectBlock extends Block {
-        short nrows;
+        int nrows;
         List<Block> children;
-        int checksum;
+        long checksum;
     }
 
     private static class ChildInfo {
-        long address;
+        HdfFixedPoint address;
         long blockOffset;
         boolean isDirect;
-        long filteredSize;
-        int filterMask;
+        HdfFixedPoint filteredSize;
+        long filterMask;
         long blockSize;
 
-        public ChildInfo(long address, long blockOffset, boolean isDirect, long filteredSize, int filterMask, long blockSize) {
+        public ChildInfo(HdfFixedPoint address, long blockOffset, boolean isDirect, HdfFixedPoint filteredSize, long filterMask, long blockSize) {
             this.address = address;
             this.blockOffset = blockOffset;
             this.isDirect = isDirect;
@@ -480,6 +515,21 @@ public class FractalHeap {
         }
     }
 
+//    public static long readVariableLong(byte[] bytes, int size) {
+//        long val = 0;
+//        for (int i = 0; i < size; i++) {
+//            val |= (bytes[i] & 0xFFL) << (8 * i);
+//        }
+//        // If the most significant bit is set, check if all bits are 1 (undefined address)
+//        if (size < 8 && (val & (1L << (size * 8 - 1))) != 0) {
+//            long mask = (1L << (size * 8)) - 1;
+//            if (val == mask) {
+//                return -1L; // Undefined address
+//            }
+//        }
+//        return val;
+//    }
+//
 //    private static class HdfReader {
 //        private final SeekableByteChannel channel;
 //

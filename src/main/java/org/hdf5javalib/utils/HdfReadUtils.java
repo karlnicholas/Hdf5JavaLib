@@ -120,7 +120,10 @@ public class HdfReadUtils {
     ) throws IOException {
         byte[] bytes = new byte[fixedPointDatatype.getSize()];
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(fixedPointDatatype.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
-        fileChannel.read(buffer);
+        int bytesRead = fileChannel.read(buffer);
+        if ( bytesRead != fixedPointDatatype.getSize()) {
+            throw new IllegalStateException("Incorrect amount of bytes read: " + fixedPointDatatype.getSize() + " wanted but got " + bytesRead);
+        }
         return new HdfFixedPoint(bytes, fixedPointDatatype);
     }
 
