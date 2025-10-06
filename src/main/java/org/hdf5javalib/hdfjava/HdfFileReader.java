@@ -268,7 +268,7 @@ public class HdfFileReader implements HdfDataFile {
         BTreeV2Reader bTreeV2Reader = new BTreeV2Reader(fileChannel, 8, 8); // Assuming these params are constant
 
         long fractalHeapOffset = linkInfoMessage.getFractalHeapAddress().getInstance(Long.class);
-        FractalHeap fractalHeap = FractalHeap.read(fileChannel, fractalHeapOffset, 8, 8); // Assuming params
+        FractalHeap fractalHeap = FractalHeap.read(fileChannel, fractalHeapOffset, this); // Assuming params
 
         for (BTreeV2Record bTreeV2Record : bTreeV2Reader.getAllRecords()) {
             byte[] heapId = ((Type5Record) bTreeV2Record).heapId;
@@ -503,11 +503,11 @@ public class HdfFileReader implements HdfDataFile {
             fixedPointDatatypeForOffset = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
                     FixedPointDatatype.createClassBitField(false, false, false, false),
-                    offsetSize, (short) 0, (short) (BIT_MULTIPLIER * offsetSize), hdfDataFile);
+                    offsetSize, 0, (BIT_MULTIPLIER * offsetSize), hdfDataFile);
             fixedPointDatatypeForLength = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
                     FixedPointDatatype.createClassBitField(false, false, false, false),
-                    lengthSize, (short) 0, (short) (BIT_MULTIPLIER * lengthSize), hdfDataFile);
+                    lengthSize, 0, (BIT_MULTIPLIER * lengthSize), hdfDataFile);
 
             groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
             groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());
@@ -527,11 +527,11 @@ public class HdfFileReader implements HdfDataFile {
             fixedPointDatatypeForOffset = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
                     FixedPointDatatype.createClassBitField(false, false, false, false),
-                    offsetSize, (short) 0, (short) (BIT_MULTIPLIER * offsetSize), hdfDataFile);
+                    offsetSize, 0, (BIT_MULTIPLIER * offsetSize), hdfDataFile);
             fixedPointDatatypeForLength = new FixedPointDatatype(
                     FixedPointDatatype.createClassAndVersion(),
                     FixedPointDatatype.createClassBitField(false, false, false, false),
-                    lengthSize, (short) 0, (short) (BIT_MULTIPLIER * lengthSize), hdfDataFile);
+                    lengthSize, 0, (BIT_MULTIPLIER * lengthSize), hdfDataFile);
 
 //            groupLeafNodeK = Short.toUnsignedInt(buffer.getShort());
 //            groupInternalNodeK = Short.toUnsignedInt(buffer.getShort());

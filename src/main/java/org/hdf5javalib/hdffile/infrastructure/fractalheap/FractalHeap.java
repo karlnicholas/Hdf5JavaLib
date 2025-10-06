@@ -126,7 +126,14 @@ public class FractalHeap {
         }
         channel.read(headerBuffer);
         h.checksum = Integer.toUnsignedLong(headerBuffer.getInt());
-        h.offsetBytes = (h.maximumHeapSize + 7) / 8;
+        int offsetBytesSize = (h.maximumHeapSize + 7) / 8;
+        h.offsetBytes = new FixedPointDatatype(
+                FixedPointDatatype.createClassAndVersion(),
+                FixedPointDatatype.createClassBitField(false, false, false, false),
+                offsetBytesSize,
+                0, 8 * offsetBytesSize, hdfDataFile);
+        ;
+
         double logVal = Math.log((double) h.maximumDirectBlockSize.getInstance(Long.class) / h.startingBlockSize.getInstance(Long.class)) / Math.log(2);
         h.maxDblockRows = (int) Math.floor(logVal) + 1;
         return h;
@@ -234,33 +241,76 @@ public class FractalHeap {
         return fp;
     }
 
-    private static Block readDirectBlock(HdfReader reader, FractalHeapHeader header, long address, long expectedBlockOffset, long filteredSize, int filterMask) throws IOException {
+    private static Block readDirectBlock(SeekableByteChannel channel, HdfDataFile hdfDataFile, FractalHeapHeader header, long address, HdfFixedPoint expectedBlockOffset, long filteredSize, int filterMask) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        FixedPointDatatype sizeOfOffset = hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset();
         long undefined = -1L;
         if (address == undefined) {
             throw new IOException("Invalid direct block address");
         }
-        reader.seek(address);
-        String sig = new String(reader.readBytes(4));
+        channel.position(address);
+        int directBlockSize = getDirectBlockSize(header, expectedBlockOffset.getInstance(Long.class), 8, filteredSize, filterMask);
+        ByteBuffer bb = ByteBuffer.allocateDirect(directBlockSize).order(ByteOrder.LITTLE_ENDIAN);
+        channel.read(bb);
+
+        String sig = new String(Arrays.copyOfRange(bb.array(), 0, 4), StandardCharsets.US_ASCII);
         if (!Objects.equals(sig, "FHDB")) {
             throw new IOException("Invalid direct block signature");
         }
-        byte version = reader.readByte();
+        bb.position(4);
+        byte version = bb.get();
         if (version != 0) {
             throw new IOException("Unsupported version");
         }
-        long heapHeader = reader.readVariableLong(header.sizeOfOffsets);
-        if (heapHeader == undefined) {
+        HdfFixedPoint heapHeader = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, bb);
+        if (heapHeader.isUndefined()) {
             throw new IOException("Invalid heap header address in direct block");
         }
-        long blockOffset = reader.readVariableLong(header.offsetBytes);
-        if (blockOffset != expectedBlockOffset) {
+        HdfFixedPoint blockOffset = HdfReadUtils.readHdfFixedPointFromBuffer(header.offsetBytes, bb);
+        if (blockOffset.compareTo(expectedBlockOffset) != 0) {
             throw new IOException("Block offset mismatch");
         }
-        int checksum = 0;
+        long checksum = 0;
         if (header.checksumDirect) {
-            checksum = reader.readInt(); // checksum, not verifying
+            checksum = Integer.toUnsignedLong(bb.getInt()); // checksum, not verifying
         }
-        int headerSize = 4 + 1 + header.sizeOfOffsets + header.offsetBytes + (header.checksumDirect ? 4 : 0);
+        int headerSize = 4 + 1 + sizeOfOffset.getSize() + header.offsetBytes.getSize() + (header.checksumDirect ? 4 : 0);
+        long blockSize = getBlockSize(header, expectedBlockOffset.getInstance(Long.class));
+        long dataSize;
+//        if (filteredSize != -1) {
+//            dataSize = filteredSize - headerSize;
+//        } else {
+//            dataSize = blockSize - headerSize;
+//        }
+        if (filteredSize != -1) {
+            dataSize = filteredSize;
+        } else {
+            dataSize = blockSize;
+        }
+        if (dataSize < 0) {
+            throw new IOException("Invalid data size in direct block");
+        }
+        ByteBuffer dbBlockBuffer = ByteBuffer.allocate((int) dataSize);
+        channel.read(dbBlockBuffer);
+        DirectBlock db = new DirectBlock();
+        db.blockOffset = blockOffset;
+        db.blockSize = blockSize;
+        db.data = dbBlockBuffer.array();
+        db.filterMask = filterMask;
+        db.checksum = checksum;
+        db.headerSize = headerSize;
+        return db;
+    }
+
+    private static int getDirectBlockSize(FractalHeapHeader header, long expectedBlockOffset, int sizeOfOffset, long filteredSize, int filterMask) throws IOException {
+        int size = 0;
+        size += 4;  // sig
+        size += 1;  // version
+        size += sizeOfOffset;   // heapHeader
+        size += sizeOfOffset;   // blockOffset
+        if (header.checksumDirect) {
+            size += 4; // checksum
+        }
+        int headerSize = 4 + 1 + sizeOfOffset + header.offsetBytes.getSize() + (header.checksumDirect ? 4 : 0);
         long blockSize = getBlockSize(header, expectedBlockOffset);
         long dataSize;
 //        if (filteredSize != -1) {
@@ -276,23 +326,18 @@ public class FractalHeap {
         if (dataSize < 0) {
             throw new IOException("Invalid data size in direct block");
         }
-        byte[] data = reader.readBytes((int) dataSize);
-        DirectBlock db = new DirectBlock();
-        db.blockOffset = blockOffset;
-        db.blockSize = blockSize;
-        db.data = data;
-        db.filterMask = filterMask;
-        db.checksum = checksum;
-        db.headerSize = headerSize;
-        return db;
+        size += ((int) dataSize);
+        return size;
     }
 
-    private static Block readIndirectBlock(HdfReader reader, FractalHeapHeader header, long address, long expectedBlockOffset, long iblockSize, short passedNrows) throws IOException {
+    private static Block readIndirectBlock(SeekableByteChannel channel, FractalHeapHeader header, long address, long expectedBlockOffset, long iblockSize, short passedNrows) throws IOException {
         long undefined = -1L;
         if (address == undefined) {
             throw new IOException("Invalid indirect block address");
         }
-        reader.seek(address);
+        channel.position(address);
+
+        
         String sig = new String(reader.readBytes(4));
         if (!Objects.equals(sig, "FHIB")) {
             throw new IOException("Invalid indirect block signature");
@@ -426,7 +471,7 @@ public class FractalHeap {
         long filterMaskRoot;
         FilterPipeline filterPipeline;
         long checksum;
-        int offsetBytes;
+        FixedPointDatatype offsetBytes;
         int maxDblockRows;
         boolean hasFilters;
         boolean checksumDirect;
@@ -445,7 +490,7 @@ public class FractalHeap {
     }
 
     public static abstract class Block {
-        long blockOffset;
+        HdfFixedPoint blockOffset;
     }
 
     public static class DirectBlock extends Block {
@@ -453,7 +498,7 @@ public class FractalHeap {
         long blockSize;
         byte[] data;
         int filterMask;
-        int checksum;
+        long checksum;
     }
 
     public static class IndirectBlock extends Block {

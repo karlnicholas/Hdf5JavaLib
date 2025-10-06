@@ -89,7 +89,7 @@ public class DataLayoutMessage extends HdfMessage {
         return new FixedPointDatatype(
                 FixedPointDatatype.createClassAndVersion(),
                 FixedPointDatatype.createClassBitField(false, false, false, false),
-                4, (short) 0, (short) (4 * 8),
+                4, 0, (4 * 8),
                 hdfDataFile);
     }
 
@@ -157,7 +157,7 @@ public class DataLayoutMessage extends HdfMessage {
                         FixedPointDatatype eightByteFixedPointType =  new FixedPointDatatype(
                                 FixedPointDatatype.createClassAndVersion(),
                                 FixedPointDatatype.createClassBitField(false, false, false, false),
-                                8, (short) 0, (short) (8 * 8),
+                                8, 0, (8 * 8),
                                 hdfDataFile);
 
                         bTree = readBTreeFromSeekableByteChannel(hdfDataFile.getSeekableByteChannel(), chunkedDataAddress.getInstance(Long.class), numDimensions, eightByteFixedPointType, hdfDataFile);
