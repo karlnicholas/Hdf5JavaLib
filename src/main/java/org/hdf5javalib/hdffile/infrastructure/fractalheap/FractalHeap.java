@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static org.hdf5javalib.datatype.FixedPointDatatype.BIT_MULTIPLIER;
+
 public class FractalHeap {
     private FractalHeapHeader header;
     private Block rootBlock;
@@ -59,7 +61,7 @@ public class FractalHeap {
         FixedPointDatatype sizeOfLength = hdfDataFile.getSuperblock().getFixedPointDatatypeForLength();
 
         FractalHeapHeader h = new FractalHeapHeader();
-        ByteBuffer signatureBuffer = ByteBuffer.allocate(4);
+        ByteBuffer signatureBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
         channel.read(signatureBuffer);
         signatureBuffer.flip();
         h.signature = new String(signatureBuffer.array(), StandardCharsets.US_ASCII);
@@ -67,7 +69,7 @@ public class FractalHeap {
             throw new IOException("Invalid signature");
         }
         int headerSize = getTotalBytesRead(sizeOfLength.getSize(), sizeOfLength.getSize());
-        ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize);
+        ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
         int bytesRead = channel.read(headerBuffer);
         if ( bytesRead != headerSize) {
             throw new IllegalStateException("Incorrect amount of bytes read: " + headerSize + " wanted but got " + bytesRead);
@@ -103,7 +105,7 @@ public class FractalHeap {
         h.checksumDirect = (h.flags & 0x02) != 0;
         if (h.hasFilters && h.currentNumRowsRootIndirectBlock == 0) {
             headerSize = sizeOfLength.getSize() + 4;
-            headerBuffer = ByteBuffer.allocate(headerSize);
+            headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
             bytesRead = channel.read(headerBuffer);
             if ( bytesRead != headerSize) {
                 throw new IllegalStateException("Incorrect amount of bytes read: " + headerSize + " wanted but got " + bytesRead);
@@ -113,25 +115,28 @@ public class FractalHeap {
             h.filterMaskRoot = Integer.toUnsignedLong(headerBuffer.getInt());
         }
         if (h.hasFilters) {
-            headerBuffer = ByteBuffer.allocate(h.ioFiltersEncodedLength);
+            headerBuffer = ByteBuffer.allocate(h.ioFiltersEncodedLength).order(ByteOrder.LITTLE_ENDIAN);
             bytesRead = channel.read(headerBuffer);
             if ( bytesRead != headerSize) {
                 throw new IllegalStateException("Incorrect amount of bytes read: " + headerSize + " wanted but got " + bytesRead);
             }
             headerBuffer.flip();
-            channel.read(headerBuffer);
             byte[] filterData = headerBuffer.array();
             h.filterPipeline = parseFilterPipeline(filterData);
         }
         headerSize = 4;
-        headerBuffer = ByteBuffer.allocate(headerSize);
+        headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
         bytesRead = channel.read(headerBuffer);
         if ( bytesRead != headerSize) {
             throw new IllegalStateException("Incorrect amount of bytes read: " + headerSize + " wanted but got " + bytesRead);
         }
         headerBuffer.flip();
         h.checksum = Integer.toUnsignedLong(headerBuffer.getInt());
-        h.offsetBytes = (h.maximumHeapSize + 7) / 8;
+        int offsetBytesSize = (h.maximumHeapSize + 7) / 8;
+        h.offsetBytes = new FixedPointDatatype(
+                FixedPointDatatype.createClassAndVersion(),
+                FixedPointDatatype.createClassBitField(false, false, false, false),
+                offsetBytesSize, 0, BIT_MULTIPLIER * offsetBytesSize, hdfDataFile);
         double logVal = Math.log((double) h.maximumDirectBlockSize.getInstance(Long.class) / h.startingBlockSize.getInstance(Long.class)) / Math.log(2);
         h.maxDblockRows = (int) Math.floor(logVal) + 1;
         return h;
@@ -245,7 +250,7 @@ public class FractalHeap {
         }
         channel.position(address.getInstance(Long.class));
         //
-        int headerSize = 4 + 1 + sizeOfOffset.getSize() + header.offsetBytes + (header.checksumDirect ? 4 : 0);
+        int headerSize = 4 + 1 + sizeOfOffset.getSize() + header.offsetBytes.getSize() + (header.checksumDirect ? 4 : 0);
         ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
         int bytesRead = channel.read(headerBuffer);
         if ( headerSize != bytesRead)
@@ -264,11 +269,11 @@ public class FractalHeap {
         if (heapHeader.isUndefined()) {
             throw new IOException("Invalid heap header address in direct block");
         }
-        HdfFixedPoint blockOffset = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, headerBuffer);
+        HdfFixedPoint blockOffset = HdfReadUtils.readHdfFixedPointFromBuffer(header.offsetBytes, headerBuffer);
         if (blockOffset.getInstance(Long.class) != expectedBlockOffset) {
             throw new IOException("Block offset mismatch");
         }
-        headerBuffer.position(4 + 1 + sizeOfOffset.getSize()+header.offsetBytes);
+        headerBuffer.position(4 + 1 + sizeOfOffset.getSize()+header.offsetBytes.getSize());
         long checksum = 0;
         if (header.checksumDirect) {
             checksum = Integer.toUnsignedLong(headerBuffer.getInt()); // checksum, not verifying
@@ -283,7 +288,7 @@ public class FractalHeap {
         if (dataSize < 0) {
             throw new IOException("Invalid data size in direct block");
         }
-        headerBuffer = ByteBuffer.allocate((int) dataSize);
+        headerBuffer = ByteBuffer.allocate((int) dataSize).order(ByteOrder.LITTLE_ENDIAN);
         bytesRead = channel.read(headerBuffer);
         if ( bytesRead != dataSize)
             throw new IllegalStateException();
@@ -335,8 +340,8 @@ public class FractalHeap {
         }
         plusSize += 4;  // checksum
 
-        int headerSize = 4 + 1 + sizeOfOffset.getSize() + header.offsetBytes + plusSize;
-        ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize);
+        int headerSize = 4 + 1 + sizeOfOffset.getSize() + header.offsetBytes.getSize() + plusSize;
+        ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
         int bytesRead = channel.read(headerBuffer);
         if ( headerSize != bytesRead)
             throw new IllegalStateException("Incorrect bytesRead: " + bytesRead + ": expected " + headerSize);
@@ -355,11 +360,11 @@ public class FractalHeap {
         if (heapHeader.isUndefined()) {
             throw new IOException("Invalid heap header address in indirect block");
         }
-        HdfFixedPoint blockOffset = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, headerBuffer);
+        HdfFixedPoint blockOffset = HdfReadUtils.readHdfFixedPointFromBuffer(header.offsetBytes, headerBuffer);
         if (blockOffset.getInstance(Long.class) != expectedBlockOffset) {
             throw new IOException("Block offset mismatch");
         }
-        headerBuffer.position(4 + 1 + sizeOfOffset.getSize() + header.offsetBytes);
+        headerBuffer.position(4 + 1 + sizeOfOffset.getSize() + header.offsetBytes.getSize());
         ib.blockOffset = blockOffset.getInstance(Long.class);
         ib.children = new ArrayList<>();
         List<ChildInfo> childInfos = new ArrayList<>();
@@ -461,7 +466,7 @@ public class FractalHeap {
         long filterMaskRoot;
         FilterPipeline filterPipeline;
         long checksum;
-        int offsetBytes;
+        FixedPointDatatype offsetBytes;
         int maxDblockRows;
         boolean hasFilters;
         boolean checksumDirect;
