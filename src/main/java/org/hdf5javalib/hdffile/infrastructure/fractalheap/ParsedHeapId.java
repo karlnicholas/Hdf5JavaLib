@@ -1,5 +1,8 @@
 package org.hdf5javalib.hdffile.infrastructure.fractalheap;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+
 //##############################################################################
 //### HEAP ID PARSER
 //##############################################################################
@@ -9,7 +12,7 @@ public class ParsedHeapId {
     public final int offset;
     public final int length;
 
-    public ParsedHeapId(byte[] rawId, FractalHeap fractalHeap) {
+    public ParsedHeapId(byte[] rawId, FractalHeap fractalHeap) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         BitReader reader = new BitReader(rawId);
         FractalHeap.FractalHeapHeader header = fractalHeap.getHeader();
         int reserved = (int) reader.read(4);
@@ -28,7 +31,7 @@ public class ParsedHeapId {
         } else {
             throw new IllegalStateException("Cannot parse heap id: header.maximumHeapSize == " +  header.maximumHeapSize);
         }
-        long minOfMaxs = Math.min(header.maximumDirectBlockSize, header.sizeOfManagedObjects);
+        long minOfMaxs = Math.min(header.maximumDirectBlockSize.getInstance(Long.class), header.sizeOfManagedObjects);
         if (  minOfMaxs < (1<<8) ) {
             this.length = (int) reader.read(8);
         } else if ( minOfMaxs < (1<<16) ) {
