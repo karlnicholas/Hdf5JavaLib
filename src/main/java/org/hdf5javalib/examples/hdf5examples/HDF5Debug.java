@@ -55,7 +55,7 @@ public class HDF5Debug {
             // List all .h5 files in HDF5Examples resources directory
             // ATL03_20250302235544_11742607_006_01
 //            Path dirPath = Paths.get(Objects.requireNonNull(HDF5Debug.class.getClassLoader().getResource("HDF5Examples/h5ex_g_compact2.h5")).toURI());
-            Path dirPath = Paths.get("c:/users/karnicho/Downloads/ATL03_20250302235544_11742607_006_01.h5");
+            Path dirPath = Paths.get("c:/users/karln/Downloads/ATL03_20250302235544_11742607_006_01.h5");
             processFile(dirPath);
         } catch (Exception e) {
             throw new IllegalStateException(e);
@@ -65,18 +65,21 @@ public class HDF5Debug {
     private static void processFile(Path filePath) {
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
+
 //            for (HdfDataset dataSet : reader.getDatasets()) {
 //                System.out.println("{} " + dataSet);
 ////                log.info("{} ", dataSet);
 //                HdfDisplayCountUtils.displayData(channel, dataSet, reader);
 ////                displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
 //            }
+
             HdfDataset dataSet = reader.getDataset("/gt1l/heights/delta_time").get();
             System.out.println("{} " + dataSet);
 //                System.out.println("{} " + dataSet.getObjectPath());
 //                log.info("{} ", dataSet);
                 HdfDisplayUtils.displayData(channel, dataSet, reader);
 //                displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
+
         } catch (Exception e) {
             log.error("Exception in processFile: {}", filePath, e);
         }
