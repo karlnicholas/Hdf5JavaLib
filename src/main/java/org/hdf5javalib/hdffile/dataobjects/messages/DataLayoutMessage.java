@@ -3,9 +3,7 @@ package org.hdf5javalib.hdffile.dataobjects.messages;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.reference.HdfDataspaceSelectionInstance;
 import org.hdf5javalib.datatype.FixedPointDatatype;
-import org.hdf5javalib.hdffile.infrastructure.HdfBTreeEntryBase;
 import org.hdf5javalib.hdffile.infrastructure.HdfBTreeV1;
-import org.hdf5javalib.hdffile.infrastructure.HdfChunkBTreeEntry;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.hdf5javalib.utils.HdfDisplayUtils;
@@ -15,11 +13,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.SeekableByteChannel;
 import java.util.*;
-
-import static org.hdf5javalib.hdfjava.HdfFileReader.BTREE_HEADER_INITIAL_SIZE;
-import static org.hdf5javalib.hdfjava.HdfFileReader.BTREE_SIGNATURE;
 
 /**
  * Represents a Data Layout Message in the HDF5 file format.
@@ -161,8 +155,7 @@ public class DataLayoutMessage extends HdfMessage {
                                 8, 0, (8 * 8),
                                 hdfDataFile);
 
-//                        bTree = HdfFileReader.readBTreeFromSeekableByteChannel(hdfDataFile.getSeekableByteChannel(), chunkedDataAddress.getInstance(Long.class), numDimensions, eightByteFixedPointType, hdfDataFile);
-                        bTree = HdfFileReader.readBTreeFromSeekableByteChannel(hdfDataFile.getSeekableByteChannel(), chunkedDataAddress.getInstance(Long.class), hdfDataFile);
+                        bTree = HdfFileReader.readBTreeFromSeekableByteChannelForChunked(hdfDataFile.getSeekableByteChannel(), chunkedDataAddress.getInstance(Long.class), numDimensions, eightByteFixedPointType, hdfDataFile);
                     } else {
                         bTree = null;
                     }
