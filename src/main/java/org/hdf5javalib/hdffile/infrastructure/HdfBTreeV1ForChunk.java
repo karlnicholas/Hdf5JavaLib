@@ -2,10 +2,7 @@ package org.hdf5javalib.hdffile.infrastructure;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.hdfjava.HdfDataFile;
-import org.hdf5javalib.utils.HdfDisplayUtils;
-import org.hdf5javalib.utils.HdfWriteUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

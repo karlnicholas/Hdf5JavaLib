@@ -1,31 +1,23 @@
 package org.hdf5javalib.examples.hdf5examples;
 
-import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.HdfFloatPoint;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.hdf5javalib.utils.HdfDisplayCountUtils;
-import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.DoubleSummaryStatistics;
-import java.util.Objects;
 import java.util.OptionalDouble;
-
-import static org.hdf5javalib.utils.HdfDisplayUtils.displayFile;
-import static org.hdf5javalib.utils.HdfDisplayUtils.displayValue;
 
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.

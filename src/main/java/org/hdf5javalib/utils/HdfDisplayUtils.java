@@ -8,7 +8,6 @@ import org.hdf5javalib.hdffile.dataobjects.messages.AttributeMessage;
 import org.hdf5javalib.hdffile.dataobjects.messages.HdfMessage;
 import org.hdf5javalib.hdffile.dataobjects.messages.LinkMessage;
 import org.hdf5javalib.hdfjava.HdfDataFile;
-import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.slf4j.Logger;
@@ -20,10 +19,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**

@@ -3,10 +3,6 @@ package org.hdf5javalib.hdffile.infrastructure;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfDisplayUtils;
-import org.hdf5javalib.utils.HdfWriteUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents an HDF5 B-Tree (version 1) as defined in the HDF5 specification.

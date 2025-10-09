@@ -2,10 +2,8 @@ package org.hdf5javalib.hdffile.infrastructure.v2btree;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 public class Hdf5Utils {
 

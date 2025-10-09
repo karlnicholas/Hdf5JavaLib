@@ -3,7 +3,6 @@ package org.hdf5javalib.hdffile.dataobjects.messages;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.reference.HdfDataspaceSelectionInstance;
 import org.hdf5javalib.datatype.FixedPointDatatype;
-import org.hdf5javalib.hdffile.infrastructure.HdfBTreeV1;
 import org.hdf5javalib.hdffile.infrastructure.HdfBTreeV1ForChunk;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfFileReader;
@@ -14,7 +13,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.*;
+import java.util.Arrays;
 
 /**
  * Represents a Data Layout Message in the HDF5 file format.

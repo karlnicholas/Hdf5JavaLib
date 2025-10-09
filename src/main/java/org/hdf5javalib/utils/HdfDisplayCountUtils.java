@@ -22,7 +22,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Utility class for displaying HDF5 dataset data and managing attributes.

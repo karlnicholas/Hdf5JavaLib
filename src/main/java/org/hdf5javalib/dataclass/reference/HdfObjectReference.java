@@ -6,16 +6,17 @@ import org.hdf5javalib.datatype.FixedPointDatatype;
 import org.hdf5javalib.datatype.ReferenceDatatype;
 import org.hdf5javalib.datatype.StringDatatype;
 import org.hdf5javalib.hdffile.metadata.HdfSuperblock;
+import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.hdfjava.HdfTree;
 import org.hdf5javalib.hdfjava.HdfTreeNode;
-import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.utils.HdfDataHolder;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class HdfObjectReference implements HdfReferenceInstance {
