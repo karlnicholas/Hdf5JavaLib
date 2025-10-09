@@ -249,6 +249,7 @@ public class HdfDisplayCountUtils {
 //        System.out.println(dataSet.getObjectPath() + " stream count = " + String.format("%,d", count) + ":" + dataSet.getDatatype().toString());
     }
 
+    @SuppressWarnings("unchecked")
     private static <T extends Comparable<T>> Class<T> getClassForDatatype(HdfDataset dataSet) {
         return (Class<T>) switch (dataSet.getDatatype().getDatatypeClass()) {
             case FIXED -> Long.class;
