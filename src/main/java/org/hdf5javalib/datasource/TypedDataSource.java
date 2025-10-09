@@ -405,7 +405,7 @@ public class TypedDataSource<T> {
 
             // Default cacheSize and maximum buffer size (e.g., 100 MB)
             long defaultCacheSize = 100_000; // Default: 100,000 records
-            long maxBufferSize = 100 * 1024 * 1024; // 100 MB
+            long maxBufferSize = 100 * 1024L * 1024L; // 100 MB
 
             // Adjust cacheSize to keep buffer size within maxBufferSize
             this.cacheSize = (int) Math.min(defaultCacheSize, maxBufferSize / recordSize);
@@ -415,7 +415,7 @@ public class TypedDataSource<T> {
 
             // Calculate buffer size
             long intendedSize = (long) this.cacheSize * recordSize;
-            int bSize = (int) Math.min(intendedSize, Integer.MAX_VALUE - 8); // Slightly below max
+            int bSize = (int) Math.min(intendedSize, Integer.MAX_VALUE - 8L); // Slightly below max
             if (bSize <= 0 || intendedSize < 0) {
                 throw new IllegalArgumentException("Invalid buffer size: " + intendedSize);
             }

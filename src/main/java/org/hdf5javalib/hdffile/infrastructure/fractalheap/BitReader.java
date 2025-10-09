@@ -19,7 +19,7 @@ class BitReader {
             int currentBitPos = bitPosition++;
             int byteIndex = currentBitPos / 8;
             int bitIndexInByte = currentBitPos % 8;
-            if ((data[byteIndex] & (1 << bitIndexInByte)) != 0) {
+            if ((data[byteIndex] & 0xff & (1 << bitIndexInByte)) != 0) {
                 value |= (1L << i);
             }
         }
