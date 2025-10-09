@@ -207,9 +207,9 @@ public class HdfSuperblock {
                 ", groupLeafNodeK=" + groupLeafNodeK +
                 ", groupInternalNodeK=" + groupInternalNodeK +
                 ", baseAddress=" + baseAddress +
-                ", freeSpaceAddress=" + (addressFileFreeSpaceInfo.isUndefined() ? HdfDisplayUtils.UNDEFINED: addressFileFreeSpaceInfo) +
-                ", endOfFileAddress=" + (endOfFileAddress.isUndefined() ?HdfDisplayUtils.UNDEFINED: endOfFileAddress) +
-                ", driverInformationAddress=" + (driverInformationAddress.isUndefined() ?HdfDisplayUtils.UNDEFINED: driverInformationAddress) +
+                ", freeSpaceAddress=" + (addressFileFreeSpaceInfo != null && addressFileFreeSpaceInfo.isUndefined() ? HdfDisplayUtils.UNDEFINED: addressFileFreeSpaceInfo) +
+                ", endOfFileAddress=" + (endOfFileAddress != null && endOfFileAddress.isUndefined() ?HdfDisplayUtils.UNDEFINED: endOfFileAddress) +
+                ", driverInformationAddress=" + (driverInformationAddress != null && driverInformationAddress.isUndefined() ?HdfDisplayUtils.UNDEFINED: driverInformationAddress) +
                 '}';
     }
 
