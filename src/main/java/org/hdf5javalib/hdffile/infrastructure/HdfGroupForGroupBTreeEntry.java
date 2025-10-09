@@ -15,25 +15,27 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
  * @see HdfGroupSymbolTableNode
  * @see HdfBTreeV1
  */
-public abstract class HdfGroupBTreeEntry {
+public class HdfGroupForGroupBTreeEntry extends HdfGroupBTreeEntry {
 
     /**
-     * The address of the child node (symbol table node or child B-Tree).
+     * The key for this B-Tree entry, linkNameOffset.
      */
-    final HdfFixedPoint childPointer;
+    private HdfFixedPoint key;
     /**
-     * The child B-Tree payload, non-null for internal entries (nodeLevel > 0).
+     * The symbol table node payload, non-null for leaf entries (nodeLevel == 0).
      */
-    final HdfBTreeV1 childBTree;
+    private final HdfGroupSymbolTableNode groupSymbolTableNode;
 
     /**
      * Constructs an HdfGroupForGroupBTreeEntry for a leaf node, pointing to a symbol table node.
      *
+     * @param key          the key for the entry
      * @param childPointer the address of the symbol table node
      */
-    public HdfGroupBTreeEntry(HdfFixedPoint childPointer, HdfBTreeV1 childBTree) {
-        this.childPointer = childPointer;
-        this.childBTree = childBTree;
+    public HdfGroupForGroupBTreeEntry(HdfFixedPoint key, HdfFixedPoint childPointer, HdfBTreeV1ForGroup childBTree, HdfGroupSymbolTableNode groupSymbolTableNode) {
+        super(childPointer, childBTree);
+        this.key = key;
+        this.groupSymbolTableNode = groupSymbolTableNode;
     }
 
     /**
@@ -47,7 +49,24 @@ public abstract class HdfGroupBTreeEntry {
      */
     @Override
     public String toString() {
-        return ", childPointer=\"" + childPointer + "\"";
+        return "key="+key+", childPointer=\"" + childPointer + "\"";
+    }
+
+    public HdfGroupSymbolTableNode getGroupSymbolTableNode() {
+        return groupSymbolTableNode;
+    }
+
+    public HdfBTreeV1ForGroup getChildBTree() {
+        return (HdfBTreeV1ForGroup)childBTree;
+    }
+
+
+    public void setKey(HdfFixedPoint key) {
+        this.key = key;
+    }
+
+    public HdfFixedPoint getKey() {
+        return key;
     }
 
     public HdfFixedPoint getChildPointer() {

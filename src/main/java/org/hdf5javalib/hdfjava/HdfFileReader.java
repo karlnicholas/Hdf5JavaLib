@@ -156,7 +156,7 @@ public class HdfFileReader implements HdfDataFile {
         long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch) rootGroupSTE.getCache()).getbTreeAddress().getInstance(Long.class);
 
         HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, heapOffset, this);
-        HdfBTreeV1 groupBTree = readBTreeFromSeekableByteChannelForGroups(fileChannel, bTreeAddress, this);
+        HdfBTreeV1ForGroup groupBTree = readBTreeFromSeekableByteChannelForGroups(fileChannel, bTreeAddress, this);
 
         String rootGroupName = localHeap.stringAtOffset(rootGroupSTE.getLinkNameOffset());
         HdfGroup rootGroup = new HdfGroup(rootGroupName, rootObjectHeader, null, null);
@@ -169,19 +169,19 @@ public class HdfFileReader implements HdfDataFile {
     /**
      * Recursively traverses the V1 B-Tree and Symbol Table Nodes to build the group/dataset hierarchy.
      */
-    private void readV1GroupHierarchy(HdfGroup parentGroup, HdfLocalHeap localHeap, HdfBTreeV1 groupBTree) throws Exception {
+    private void readV1GroupHierarchy(HdfGroup parentGroup, HdfLocalHeap localHeap, HdfBTreeV1ForGroup groupBTree) throws Exception {
         if (groupBTree.getNodeLevel() > 0) {
             // Internal node: recurse on child B-Trees
-            for (HdfBTreeEntryBase entry : groupBTree.getEntries()) {
-                HdfBTreeV1 childBTree = entry.getChildBTree();
+            for (HdfGroupForGroupBTreeEntry entry : groupBTree.getEntries()) {
+                HdfBTreeV1ForGroup childBTree = entry.getChildBTree();
                 if (childBTree != null) {
                     readV1GroupHierarchy(parentGroup, localHeap, childBTree);
                 }
             }
         } else {
             // Leaf node: process symbol table entries
-            for (HdfBTreeEntryBase entry : groupBTree.getEntries()) {
-                HdfGroupSymbolTableNode groupSymbolTableNode = ((HdfGroupBTreeEntry) entry).getGroupSymbolTableNode();
+            for (HdfGroupForGroupBTreeEntry entry : groupBTree.getEntries()) {
+                HdfGroupSymbolTableNode groupSymbolTableNode = ((HdfGroupForGroupBTreeEntry) entry).getGroupSymbolTableNode();
                 if (groupSymbolTableNode != null) {
                     for (HdfSymbolTableEntry symbolTableEntry : groupSymbolTableNode.getSymbolTableEntries()) {
                         String objectName = localHeap.stringAtOffset(symbolTableEntry.getLinkNameOffset());
@@ -206,7 +206,7 @@ public class HdfFileReader implements HdfDataFile {
                                     long newHeapOffset = ((HdfSymbolTableEntryCacheWithScratch) symbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
                                     long newBTreeAddress = ((HdfSymbolTableEntryCacheWithScratch) symbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
                                     HdfLocalHeap newLocalHeap = readLocalHeapFromSeekableByteChannel(fileChannel, newHeapOffset, this);
-                                    HdfBTreeV1 newGroupBTree = readBTreeFromSeekableByteChannelForGroups(fileChannel, newBTreeAddress, this);
+                                    HdfBTreeV1ForGroup newGroupBTree = readBTreeFromSeekableByteChannelForGroups(fileChannel, newBTreeAddress, this);
                                     readV1GroupHierarchy(groupObject, newLocalHeap, newGroupBTree);
                                 }
                                 break;
@@ -576,7 +576,7 @@ public class HdfFileReader implements HdfDataFile {
      * @return the constructed HdfTree instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
-    public static HdfBTreeV1 readBTreeFromSeekableByteChannelForGroups(
+    public static HdfBTreeV1ForGroup readBTreeFromSeekableByteChannelForGroups(
             SeekableByteChannel fileChannel,
             long btreeAddress,
             HdfDataFile hdfDataFile
@@ -594,7 +594,7 @@ public class HdfFileReader implements HdfDataFile {
      * @return the constructed HdfTree instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
-    private static HdfBTreeV1 readFromSeekableByteChannelRecursiveForGroups(SeekableByteChannel fileChannel,
+    private static HdfBTreeV1ForGroup readFromSeekableByteChannelRecursiveForGroups(SeekableByteChannel fileChannel,
                                                                             long nodeAddress,
                                                                             HdfDataFile hdfDataFile,
                                                                             Map<Long, HdfBTreeV1> visitedNodes
@@ -635,9 +635,9 @@ public class HdfFileReader implements HdfDataFile {
 
         HdfFixedPoint keyZero = HdfReadUtils.readHdfFixedPointFromBuffer(hdfLength, entriesBuffer);
 
-        List<HdfBTreeEntryBase> entries = new ArrayList<>(entriesUsed);
+        List<HdfGroupForGroupBTreeEntry> entries = new ArrayList<>(entriesUsed);
 
-        HdfBTreeV1 currentNode = new HdfBTreeV1(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries, hdfDataFile);
+        HdfBTreeV1ForGroup currentNode = new HdfBTreeV1ForGroup(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, keyZero, entries);
         visitedNodes.put(nodeAddress, currentNode);
 
         for (int i = 0; i < entriesUsed; i++) {
@@ -647,15 +647,15 @@ public class HdfFileReader implements HdfDataFile {
             long childAddress = childPointer.getInstance(Long.class);
             fileChannel.position(childAddress);
 
-            HdfGroupBTreeEntry entry;
+            HdfGroupForGroupBTreeEntry entry;
             if (nodeLevel == 1) {
                 // It's a sub B-Tree
-                HdfBTreeV1 child = readFromSeekableByteChannelRecursiveForGroups(fileChannel, childAddress, hdfDataFile, visitedNodes);
-                entry = new HdfGroupBTreeEntry(key, childPointer, child, null); // Assuming entry constructor accepts Object for last param
+                HdfBTreeV1ForGroup child = readFromSeekableByteChannelRecursiveForGroups(fileChannel, childAddress, hdfDataFile, visitedNodes);
+                entry = new HdfGroupForGroupBTreeEntry(key, childPointer, child, null); // Assuming entry constructor accepts Object for last param
             } else {
                 // It's a SNOD
                 HdfGroupSymbolTableNode child = readSnodFromSeekableByteChannel(fileChannel, hdfDataFile);
-                entry = new HdfGroupBTreeEntry(key, childPointer, null, child); // Assuming entry constructor accepts Object for last param
+                entry = new HdfGroupForGroupBTreeEntry(key, childPointer, null, child); // Assuming entry constructor accepts Object for last param
             }
             fileChannel.position(filePosAfterEntriesBlock);
             entries.add(entry);
@@ -671,7 +671,7 @@ public class HdfFileReader implements HdfDataFile {
      * @return the constructed HdfTree instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
-    public static HdfBTreeV1 readBTreeFromSeekableByteChannelForChunked(
+    public static HdfBTreeV1ForChunk readBTreeFromSeekableByteChannelForChunked(
             SeekableByteChannel fileChannel,
             long btreeAddress,
             int dimensions,
@@ -691,7 +691,7 @@ public class HdfFileReader implements HdfDataFile {
      * @return the constructed HdfTree instance
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
-    private static HdfBTreeV1 readFromSeekableByteChannelRecursiveForChunked(SeekableByteChannel fileChannel,
+    private static HdfBTreeV1ForChunk readFromSeekableByteChannelRecursiveForChunked(SeekableByteChannel fileChannel,
                                                                    long nodeAddress,
                                                                    int dimensions,
                                                                    FixedPointDatatype eightByteFixedPointType,
@@ -730,9 +730,9 @@ public class HdfFileReader implements HdfDataFile {
         fileChannel.read(entriesBuffer);
         entriesBuffer.flip();
 
-        List<HdfBTreeEntryBase> entries = new ArrayList<>(entriesUsed);
+        List<HdfGroupForChunkBTreeEntry> entries = new ArrayList<>(entriesUsed);
 
-        HdfBTreeV1 currentNode = new HdfBTreeV1(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, null, entries, hdfDataFile);
+        HdfBTreeV1ForChunk currentNode = new HdfBTreeV1ForChunk(nodeType, nodeLevel, entriesUsed, leftSiblingAddress, rightSiblingAddress, entries);
         visitedNodes.put(nodeAddress, currentNode);
 
         // (4 + 4 + 8*dimensions + 1*length + 1*length) * entriesUsed
@@ -747,15 +747,16 @@ public class HdfFileReader implements HdfDataFile {
             for (int j = 0; j < dimensions; j++) {
                 dimensionOffsets.add(HdfReadUtils.readHdfFixedPointFromBuffer(eightByteFixedPointType, entriesBuffer));
             }
-            HdfFixedPoint zeroValue = HdfReadUtils.readHdfFixedPointFromBuffer(hdfOffset, entriesBuffer);
+            HdfReadUtils.readHdfFixedPointFromBuffer(eightByteFixedPointType, entriesBuffer);
+
             HdfFixedPoint childPointer = HdfReadUtils.readHdfFixedPointFromBuffer(hdfOffset, entriesBuffer);
 
-            HdfBTreeEntryBase hdfBTreeEntryBase;
+            HdfGroupForChunkBTreeEntry hdfBTreeEntryBase;
             if ( nodeLevel == 0 ) {
-                hdfBTreeEntryBase = new HdfChunkBTreeEntry(zeroValue, childPointer, null, sizeOfChunk, filterMask, dimensionOffsets);
+                hdfBTreeEntryBase = new HdfGroupForChunkBTreeEntry(childPointer, null, sizeOfChunk, filterMask, dimensionOffsets);
             } else {
-                HdfBTreeV1 bTree = readFromSeekableByteChannelRecursiveForChunked(fileChannel, childPointer.getInstance(Long.class), dimensions, eightByteFixedPointType, hdfDataFile, visitedNodes);
-                hdfBTreeEntryBase = new HdfGroupBTreeEntry(zeroValue, childPointer, bTree, null);
+                HdfBTreeV1ForChunk bTree = readFromSeekableByteChannelRecursiveForChunked(fileChannel, childPointer.getInstance(Long.class), dimensions, eightByteFixedPointType, hdfDataFile, visitedNodes);
+                hdfBTreeEntryBase = new HdfGroupForChunkBTreeEntry(childPointer, bTree, sizeOfChunk, filterMask, dimensionOffsets);
             }
             entries.add(hdfBTreeEntryBase);
         }

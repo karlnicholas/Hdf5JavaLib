@@ -5,14 +5,15 @@ import org.hdf5javalib.datatype.Datatype;
 import org.hdf5javalib.datatype.ReferenceDatatype;
 import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.hdffile.dataobjects.messages.*;
-import org.hdf5javalib.hdffile.infrastructure.HdfBTreeV1;
-import org.hdf5javalib.hdffile.infrastructure.HdfChunkBTreeEntry;
+import org.hdf5javalib.hdffile.infrastructure.HdfBTreeV1ForChunk;
+import org.hdf5javalib.hdffile.infrastructure.HdfGroupForChunkBTreeEntry;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -183,7 +184,7 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
             HdfFixedPoint[] datasetDimsHdf = dataspace.getDimensions(); // e.g., [6, 8]
             long[] datasetDims = new long[datasetDimsHdf.length];
             for (int i = 0; i < datasetDims.length; i++) {
-                datasetDims[i] = datasetDimsHdf[i].getInstance(Long.class).longValue();
+                datasetDims[i] = datasetDimsHdf[i].getInstance(Long.class);
             }
 
             long elementSize = chunked.getDatasetElementSize().getInstance(Long.class); // e.g., 4
@@ -226,18 +227,18 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
             long numElements = size / elementSize;
             long endElement = startElement + numElements - 1;
 
-            HdfBTreeV1 bTree = chunked.getBTree();
+            HdfBTreeV1ForChunk bTree = chunked.getBTree();
             // Assuming simple leaf node with no siblings or internal nodes for this implementation
-            List<HdfChunkBTreeEntry> chunkEntries = bTree.getEntries().stream()
-                    .map(e -> (HdfChunkBTreeEntry) e)
-                    .collect(Collectors.toList());
+//            List<HdfGroupForChunkBTreeEntry> chunkEntries = bTree.getEntries().stream().toList();
+            List<HdfGroupForChunkBTreeEntry> chunkEntries = new ArrayList<>();
+            collectLeafEntries(bTree, chunkEntries);
 
             long[] chunkDims = new long[dimensions];
             for (int i = 0; i < dimensions; i++) {
                 chunkDims[i] = chunked.getDimensionSizes()[i].getInstance(Long.class); // e.g., [4, 4]
             }
 
-            for (HdfChunkBTreeEntry entry : chunkEntries) {
+            for (HdfGroupForChunkBTreeEntry entry : chunkEntries) {
                 List<HdfFixedPoint> offsets = entry.getDimensionOffsets();
                 if (offsets.size() != dimensions) {
                     throw new IOException("Invalid dimension offsets size");
@@ -346,6 +347,29 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
             return buffer;
         } else {
             throw new UnsupportedOperationException("Unsupported DataLayoutStorage type: " + dataLayoutStorage.getClass().getName());
+        }
+    }
+
+    private void collectLeafEntries(HdfBTreeV1ForChunk bTree, List<HdfGroupForChunkBTreeEntry> leafEntries) {
+        if (bTree == null) {
+            return;
+        }
+
+        // If this is a leaf node (nodeLevel == 0), add its entries
+        if (bTree.getNodeLevel() == 0) {
+            List<HdfGroupForChunkBTreeEntry> entries = bTree.getEntries();
+            if (entries != null) {
+                leafEntries.addAll(entries);
+            }
+        } else {
+            // If this is an internal node (nodeLevel > 0), recurse into child B-Trees
+            List<HdfGroupForChunkBTreeEntry> entries = bTree.getEntries();
+            if (entries != null) {
+                for (HdfGroupForChunkBTreeEntry entry : entries) {
+                    HdfBTreeV1ForChunk childBTree = entry.getChildBTree();
+                    collectLeafEntries(childBTree, leafEntries);
+                }
+            }
         }
     }
 

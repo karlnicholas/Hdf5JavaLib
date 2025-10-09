@@ -4,6 +4,7 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.dataclass.reference.HdfDataspaceSelectionInstance;
 import org.hdf5javalib.datatype.FixedPointDatatype;
 import org.hdf5javalib.hdffile.infrastructure.HdfBTreeV1;
+import org.hdf5javalib.hdffile.infrastructure.HdfBTreeV1ForChunk;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfFileReader;
 import org.hdf5javalib.utils.HdfDisplayUtils;
@@ -127,7 +128,7 @@ public class DataLayoutMessage extends HdfMessage {
                 HdfFixedPoint chunkedDataAddress;
                 HdfFixedPoint[] dimensionSizes;
                 HdfFixedPoint datasetElementSize;
-                HdfBTreeV1 bTree;
+                HdfBTreeV1ForChunk bTree;
                 int numDimensions;
                 if (version == 1 || version == 2) {
                     chunkedDataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
@@ -323,7 +324,7 @@ public class DataLayoutMessage extends HdfMessage {
         private final HdfFixedPoint chunkedDataAddress;
         private final HdfFixedPoint[] dimensionSizes;
         private final HdfFixedPoint datasetElementSize;
-        private final HdfBTreeV1 bTree;
+        private final HdfBTreeV1ForChunk bTree;
 
         /**
          * Constructs a ChunkedStorage instance.
@@ -332,7 +333,7 @@ public class DataLayoutMessage extends HdfMessage {
          * @param chunkedDataAddress    the file address of the chunked data
          * @param datasetElementSize datasetElementSize
          */
-        public ChunkedStorage(HdfFixedPoint chunkedDataAddress, HdfFixedPoint[] dimensionSizes, HdfFixedPoint datasetElementSize, HdfBTreeV1 bTree, HdfDataFile hdfDataFile) {
+        public ChunkedStorage(HdfFixedPoint chunkedDataAddress, HdfFixedPoint[] dimensionSizes, HdfFixedPoint datasetElementSize, HdfBTreeV1ForChunk bTree, HdfDataFile hdfDataFile) {
             super(hdfDataFile);
             this.chunkedDataAddress = chunkedDataAddress;
             this.dimensionSizes = dimensionSizes;
@@ -348,7 +349,7 @@ public class DataLayoutMessage extends HdfMessage {
             return datasetElementSize;
         }
 
-        public HdfBTreeV1 getBTree() {
+        public HdfBTreeV1ForChunk getBTree() {
             return bTree;
         }
 
