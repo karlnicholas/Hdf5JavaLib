@@ -41,7 +41,7 @@ public class TwentyScalarRead {
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             for (HdfDataset dataSet : reader.getDatasets()) {
                 try (HdfDataset ds = dataSet) {
-                    HdfDisplayUtils.displayScalarData(channel, ds, Long.class, reader);
+                    HdfDisplayUtils.displayScalarContent(channel, ds, Long.class, reader);
                 }
             }
             log.debug("Superblock: {} ", reader.getSuperblock());

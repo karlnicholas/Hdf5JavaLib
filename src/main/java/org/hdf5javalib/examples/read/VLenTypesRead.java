@@ -42,9 +42,9 @@ public class VLenTypesRead {
             for (HdfDataset dataSet : reader.getDatasets()) {
                 try (HdfDataset ds = dataSet) {
                     log.info("Dataset name: {}", ds.getObjectName());
-                    HdfDisplayUtils.displayScalarData(channel, ds, HdfVariableLength.class, reader);
-                    HdfDisplayUtils.displayScalarData(channel, ds, String.class, reader);
-                    HdfDisplayUtils.displayScalarData(channel, ds, Object.class, reader);
+                    HdfDisplayUtils.displayScalarContent(channel, ds, HdfVariableLength.class, reader);
+                    HdfDisplayUtils.displayScalarContent(channel, ds, String.class, reader);
+                    HdfDisplayUtils.displayScalarContent(channel, ds, Object.class, reader);
                 }
             }
             log.info("Superblock: {}", reader.getSuperblock());

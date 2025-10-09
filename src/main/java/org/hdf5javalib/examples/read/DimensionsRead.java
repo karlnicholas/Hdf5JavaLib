@@ -3,13 +3,13 @@ package org.hdf5javalib.examples.read;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
+import org.hdf5javalib.utils.HdfDisplayUtils;
 
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-import static org.hdf5javalib.utils.HdfDisplayUtils.displayData;
 import static org.hdf5javalib.utils.HdfReadUtils.getResourcePath;
 
 /**
@@ -43,7 +43,7 @@ public class DimensionsRead {
                 HdfFileReader reader = new HdfFileReader(channel).readFile();
                 log.debug("File BTree: {} ", reader.getBTree());
                 for (HdfDataset dataSet : reader.getDatasets()) {
-                    displayData(channel, dataSet, reader);
+                    HdfDisplayUtils.displayData(channel, dataSet, reader, HdfDisplayUtils.DisplayMode.FULL_CONTENT);
                 }
             }
         } catch (Exception e) {

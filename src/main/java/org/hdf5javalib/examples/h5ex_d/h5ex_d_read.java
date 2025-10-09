@@ -1,6 +1,7 @@
 package org.hdf5javalib.examples.h5ex_d;
 
 import org.hdf5javalib.datasource.TypedDataSource;
+import org.hdf5javalib.utils.HdfDisplayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,8 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.stream.Stream;
-
-import static org.hdf5javalib.utils.HdfDisplayUtils.displayFile;
 
 /**
  * Demonstrates reading and processing compound data from an HDF5 file.
@@ -45,7 +44,7 @@ public class h5ex_d_read {
                 streamList.filter(p -> p.toString().endsWith(".h5"))
                         .forEach(p -> {
                             log.info("Running {}", p.getFileName());
-                            displayFile(p);
+                            HdfDisplayUtils.displayFileContent(p);
                         });
 
             }

@@ -35,7 +35,7 @@ public class StringRead {
             FileChannel channel = fis.getChannel();
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             try (HdfDataset dataSet = reader.getDataset("/strings").orElseThrow()) {
-                HdfDisplayUtils.displayVectorData(channel, dataSet, String.class, reader);
+                HdfDisplayUtils.displayVectorContent(channel, dataSet, String.class, reader);
             }
         }
         filePath = Objects.requireNonNull(StringRead.class.getResource("/utf8_dataset.h5")).getFile();
@@ -43,7 +43,7 @@ public class StringRead {
             FileChannel channel = fis.getChannel();
             HdfFileReader reader = new HdfFileReader(channel).readFile();
             try (HdfDataset dataSet = reader.getDataset("/strings").orElseThrow()) {
-                HdfDisplayUtils.displayVectorData(channel, dataSet, String.class, reader);
+                HdfDisplayUtils.displayVectorContent(channel, dataSet, String.class, reader);
             }
         }
     }
