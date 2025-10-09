@@ -20,7 +20,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.util.Comparator;
+import java.util.DoubleSummaryStatistics;
+import java.util.Optional;
 
 /**
  * Utility class for displaying HDF5 dataset data and managing attributes.
@@ -31,8 +33,8 @@ import java.util.stream.Collectors;
  * handling both primitive and array types.
  * </p>
  */
-public class HdfDisplayUtils {
-    private static final Logger log = LoggerFactory.getLogger(HdfDisplayUtils.class);
+public class HdfDisplaySummaryStatsUtils {
+    private static final Logger log = LoggerFactory.getLogger(HdfDisplaySummaryStatsUtils.class);
     public static final String UNDEFINED = "<Undefined>";
     private static final String STREAM_EQUALS = " stream = ";
 
@@ -86,7 +88,7 @@ public class HdfDisplayUtils {
     }
 
     public static void displayFile(Path filePath) {
-        processFile(filePath, HdfDisplaySumUtils::displayData);
+        processFile(filePath, HdfDisplaySummaryStatsUtils::displayData);
     }
 
     public static void displayAttributes(HdfDataset dataSet) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
@@ -121,16 +123,16 @@ public class HdfDisplayUtils {
         if (ds.hasData()) {
             switch (ds.getDimensionality()) {
                 case 0:
-                    displayScalarData(channel, ds, HdfData.class, reader);
+                    displayScalarData(channel, ds, reader);
                     break;
                 case 1:
-                    displayVectorData(channel, ds, HdfData.class, reader);
+                    displayVectorData(channel, ds, reader);
                     break;
                 case 2:
-                    displayMatrixData(channel, ds, HdfData.class, reader);
+                    displayMatrixData(channel, ds, reader);
                     break;
                 default:
-                    displayNDimData(channel, ds, HdfData.class, reader);
+                    displayNDimData(channel, ds, reader);
                     break;
 
             }
@@ -148,20 +150,27 @@ public class HdfDisplayUtils {
      *
      * @param fileChannel the seekable byte channel for reading the HDF5 file
      * @param dataSet     the dataset to read from
-     * @param clazz       the class type of the data
      * @param hdfDataFile the HDF5 file context
      * @param <T>         the type of the data
      * @throws IOException if an I/O error occurs
      */
-    public static <T> void displayScalarData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public static <T extends Comparable<T>> void displayScalarData(SeekableByteChannel fileChannel, HdfDataset dataSet, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Class<T> clazz = getClassForDatatype(dataSet);
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
-        T result = dataSource.readScalar();
-        log.info("{}:{} read = {}", dataSet.getObjectName(), displayType(clazz, result), displayValue(result));
+//        Optional<String> max = dataSource.streamScalar().map(h->h.toString()).max(Comparator.naturalOrder());
+        DoubleSummaryStatistics stats = dataSource.streamScalar()
+                .mapToDouble(h -> {
+                    try {
+                        return Double.valueOf(h.toString());
+                    } catch (Exception ex) {
+                        return Double.NaN;
+                    }
+                }).summaryStatistics();
 
-
-        result = dataSource.streamScalar().findFirst().orElseThrow();
-        log.info("{}:{} stream = {}", dataSet.getObjectName(), displayType(clazz, result), displayValue(result));
+        System.out.println(dataSet.getObjectPath() + " " + dataSet.getDatatype().getDatatypeClass().name() + "->" + clazz.getSimpleName() + " streamScalar stats = " + stats);
+//        long count = dataSource.parallelStreamScalar().count();
+//        System.out.println(dataSet.getObjectPath() + " stream count = " + String.format("%,d", count) + ":" + dataSet.getDatatype().toString());
     }
 
     /**
@@ -174,21 +183,32 @@ public class HdfDisplayUtils {
      *
      * @param fileChannel the seekable byte channel for reading the HDF5 file
      * @param dataSet     the dataset to read from
-     * @param clazz       the class type of the data elements
      * @param hdfDataFile the HDF5 file context
      * @param <T>         the type of the data elements
      * @throws IOException if an I/O error occurs
      */
-    public static <T> void displayVectorData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public static <T extends Comparable<T>>  void displayVectorData(SeekableByteChannel fileChannel, HdfDataset dataSet, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Class<T> clazz = getClassForDatatype(dataSet);
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
-        T[] resultArray = dataSource.readVector();
-        log.info("{} read = {}", displayType(clazz, resultArray), displayValue(resultArray));
+//        T[] resultArray = dataSource.readVector();
+//        log.info("{} read = {}", displayType(clazz, resultArray), displayValue(resultArray));
 
-        String joined = dataSource.streamVector()
-                .map(HdfDisplayUtils::displayValue)
-                .collect(Collectors.joining(", "));
-        log.info("{} stream = [{}]", displayType(clazz, resultArray), joined);
+//        Optional<String> max = dataSource.streamVector().map(h->h.toString()).max(Comparator.naturalOrder());
+//        stats = dataSource.streamVector().mapToDouble(h->Double.valueOf(h.toString())).summaryStatistics();
+//        System.out.println(dataSet.getObjectPath() + " " + dataSet.getDatatype().getDatatypeClass().name() + "->" + clazz.getSimpleName() + " streamVector max = " + (max.isPresent() ? max.get().toString() : "NaN"));
+        DoubleSummaryStatistics stats = dataSource.streamVector()
+                .mapToDouble(h -> {
+                    try {
+                        return Double.valueOf(h.toString());
+                    } catch (Exception ex) {
+                        return Double.NaN;
+                    }
+                }).summaryStatistics();
+        System.out.println(dataSet.getObjectPath() + " " + dataSet.getDatatype().getDatatypeClass().name() + "->" + clazz.getSimpleName() + " streamVector stats = " + stats);
+
+//        long count = dataSource.parallelStreamVector().count();
+//        System.out.println(dataSet.getObjectPath() + " stream count = " + String.format("%,d", count) + ":" + dataSet.getDatatype().toString());
     }
 
     /**
@@ -201,21 +221,27 @@ public class HdfDisplayUtils {
      *
      * @param fileChannel the seekable byte channel for reading the HDF5 file
      * @param dataSet     the dataset to read from
-     * @param clazz       the class type of the data elements
      * @param hdfDataFile the HDF5 file context
      * @param <T>         the type of the data elements
      * @throws IOException if an I/O error occurs
      */
-    public static <T> void displayMatrixData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public static <T extends Comparable<T>> void displayMatrixData(SeekableByteChannel fileChannel, HdfDataset dataSet, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Class<T> clazz = getClassForDatatype(dataSet);
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
 
-        T[][] resultArray = dataSource.readMatrix();
-        log.info("{} read = {}", displayType(clazz, resultArray), displayValue(resultArray));
+        DoubleSummaryStatistics stats = dataSource.streamMatrix().flatMap(h -> Arrays.stream(h))
+                .mapToDouble(h -> {
+                    try {
+                        return Double.valueOf(h.toString());
+                    } catch (Exception ex) {
+                        return Double.NaN;
+                    }
+                }).summaryStatistics();
 
-        String joined = dataSource.streamMatrix()
-                .map(HdfDisplayUtils::displayValue)
-                .collect(Collectors.joining(", "));
-        log.info("{} stream = [{}]", displayType(clazz, resultArray), joined);
+        System.out.println(dataSet.getObjectPath() + " " + dataSet.getDatatype().getDatatypeClass().name() + "->" + clazz.getSimpleName() + " streamMatrix stats = " + stats);
+
+//        long count = dataSource.parallelStreamMatrix().count();
+//        System.out.println(dataSet.getObjectPath() + " stream count = " + String.format("%,d", count) + ":" + dataSet.getDatatype().toString());
     }
 
     /**
@@ -228,104 +254,38 @@ public class HdfDisplayUtils {
      *
      * @param fileChannel the seekable byte channel for reading the HDF5 file
      * @param dataSet     the dataset to read from
-     * @param clazz       the class type of the data elements
      * @param hdfDataFile the HDF5 file context
      * @param <T>         the type of the data elements
      * @throws IOException if an I/O error occurs
      */
-    private static <T> void displayNDimData(SeekableByteChannel fileChannel, HdfDataset dataSet, Class<T> clazz, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private static <T extends Comparable<T>> void displayNDimData(SeekableByteChannel fileChannel, HdfDataset dataSet, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Class<T> clazz = getClassForDatatype(dataSet);
         TypedDataSource<T> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, clazz);
+//        String readResult = flattenedArrayToString(dataSource.readFlattened(), dataSource.getShape());
+//        log.info("read = {}", readResult);
 
-        String readResult = flattenedArrayToString(dataSource.readFlattened(), dataSource.getShape());
-        log.info("read = {}", readResult);
+//        Optional<String> max = dataSource.streamFlattened().map(h->h.toString()).max(Comparator.naturalOrder());
+        DoubleSummaryStatistics stats = dataSource.streamFlattened()
+                .mapToDouble(h -> {
+                    try {
+                        return Double.valueOf(h.toString());
+                    } catch (Exception ex) {
+                        return Double.NaN;
+                    }
+                }).summaryStatistics();
+        System.out.println(dataSet.getObjectPath() + " " + dataSet.getDatatype().getDatatypeClass().name() + "->" + clazz.getSimpleName() + " streamFlattened stats = " + stats);
 
-        Object resultArray = FlattenedArrayUtils.streamToNDArray(dataSource.streamFlattened(), dataSource.getShape(), clazz);
-        log.info("{}{} {}", displayType(clazz, resultArray), STREAM_EQUALS, displayValue(resultArray));
+        //        long count = dataSource.parallelStreamFlattened().count();
+//        System.out.println(dataSet.getObjectPath() + " stream count = " + String.format("%,d", count) + ":" + dataSet.getDatatype().toString());
     }
 
-    // Method to convert flattened array to a string according to shape
-    public static <T> String flattenedArrayToString(T[] flatArray, int[] shape) {
-        if (flatArray == null || shape == null || shape.length == 0) {
-            return "[]";
-        }
-        StringBuilder sb = new StringBuilder();
-        // Start printing with an index tracker for the flattened array
-        int[] index = {0}; // Mutable index to track position in flatArray
-        arrayToString(sb, flatArray, shape, 0, index);
-        return sb.toString();
-    }
+    @SuppressWarnings("unchecked")
+    private static <T extends Comparable<T>> Class<T> getClassForDatatype(HdfDataset dataSet) {
+        return (Class<T>) switch (dataSet.getDatatype().getDatatypeClass()) {
+            case FIXED, TIME -> Long.class;
+            case FLOAT -> Double.class;
+            case STRING, BITFIELD, OPAQUE, COMPOUND, REFERENCE, ENUM, VLEN, ARRAY -> String.class;
+        };
 
-    private static <T> void arrayToString(StringBuilder sb, T[] flatArray, int[] shape, int dimIndex, int[] index) {
-        // Base case: at the last dimension, print a flat array
-        if (dimIndex == shape.length - 1) {
-            sb.append("[");
-            int size = shape[dimIndex];
-            for (int i = 0; i < size; i++) {
-                // Check if we have more elements in resultRead
-                if (index[0] < flatArray.length) {
-                    sb.append(flatArray[index[0]]);
-                    index[0]++;
-                } else {
-                    // Print null if out of elements
-                    sb.append("null");
-                }
-                if (i < size - 1) {
-                    sb.append(",");
-                }
-            }
-            sb.append("]");
-            return;
-        }
-
-        // Recursive case: print nested arrays
-        sb.append("[");
-        int currentSize = shape[dimIndex];
-        for (int i = 0; i < currentSize; i++) {
-            arrayToString(sb, flatArray, shape, dimIndex + 1, index);
-            if (i < currentSize - 1) {
-                sb.append(",");
-            }
-        }
-        sb.append("]");
-    }
-
-    /**
-     * Formats the type information for display.
-     *
-     * @param declaredType the declared type of the data
-     * @param actualValue  the actual value to determine the type
-     * @return a string representing the type, including array component type if applicable
-     */
-    private static String displayType(Class<?> declaredType, Object actualValue) {
-        if (actualValue == null) return declaredType.getSimpleName();
-        Class<?> actualClass = actualValue.getClass();
-        if (actualClass.isArray()) {
-            Class<?> componentType = actualClass.getComponentType();
-            return declaredType.getSimpleName() + "(" + componentType.getSimpleName() + "[])";
-        }
-        return declaredType.getSimpleName();
-    }
-
-    /**
-     * Formats a value for display.
-     *
-     * @param value the value to format
-     * @return a string representation of the value, handling arrays appropriately
-     */
-    public static String displayValue(Object value) {
-        if (value == null) return "null";
-        Class<?> clazz = value.getClass();
-        if (!clazz.isArray()) return value.toString();
-
-        if (clazz == int[].class) return Arrays.toString((int[]) value);
-        if (clazz == float[].class) return Arrays.toString((float[]) value);
-        if (clazz == double[].class) return Arrays.toString((double[]) value);
-        if (clazz == long[].class) return Arrays.toString((long[]) value);
-        if (clazz == short[].class) return Arrays.toString((short[]) value);
-        if (clazz == byte[].class) return Arrays.toString((byte[]) value);
-        if (clazz == char[].class) return Arrays.toString((char[]) value);
-        if (clazz == boolean[].class) return Arrays.toString((boolean[]) value);
-
-        return Arrays.deepToString((Object[]) value); // For Object[] or nested Object[][]
     }
 }

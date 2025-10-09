@@ -5,7 +5,7 @@ import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
-import org.hdf5javalib.utils.HdfDisplayCountUtils;
+import org.hdf5javalib.utils.HdfDisplaySummaryStatsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +61,7 @@ public class HDF5Debug {
             for (HdfDataset dataSet : reader.getDatasets()) {
                 System.out.println("{} " + dataSet);
 //                log.info("{} ", dataSet);
-                HdfDisplayCountUtils.displayData(channel, dataSet, reader);
+                HdfDisplaySummaryStatsUtils.displayData(channel, dataSet, reader);
 //                displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
             }
 
@@ -69,7 +69,7 @@ public class HDF5Debug {
 //            System.out.println("{} " + dataSet);
 ////                System.out.println("{} " + dataSet.getObjectPath());
 ////                log.info("{} ", dataSet);
-//                HdfDisplayCountUtils.displayData(channel, dataSet, reader);
+//                HdfDisplaySumUtils.displayData(channel, dataSet, reader);
 ////                displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
 
         } catch (Exception e) {

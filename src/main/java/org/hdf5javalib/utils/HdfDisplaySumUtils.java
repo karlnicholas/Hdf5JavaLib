@@ -15,14 +15,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Comparator;
 import java.util.Optional;
 
@@ -35,8 +32,8 @@ import java.util.Optional;
  * handling both primitive and array types.
  * </p>
  */
-public class HdfDisplayCountUtils {
-    private static final Logger log = LoggerFactory.getLogger(HdfDisplayCountUtils.class);
+public class HdfDisplaySumUtils {
+    private static final Logger log = LoggerFactory.getLogger(HdfDisplaySumUtils.class);
     public static final String UNDEFINED = "<Undefined>";
     private static final String STREAM_EQUALS = " stream = ";
 
@@ -90,7 +87,7 @@ public class HdfDisplayCountUtils {
     }
 
     public static void displayFile(Path filePath) {
-        processFile(filePath, HdfDisplayCountUtils::displayData);
+        processFile(filePath, HdfDisplaySumUtils::displayData);
     }
 
     public static void displayAttributes(HdfDataset dataSet) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
@@ -252,17 +249,9 @@ public class HdfDisplayCountUtils {
     @SuppressWarnings("unchecked")
     private static <T extends Comparable<T>> Class<T> getClassForDatatype(HdfDataset dataSet) {
         return (Class<T>) switch (dataSet.getDatatype().getDatatypeClass()) {
-            case FIXED -> Long.class;
+            case FIXED, TIME -> Long.class;
             case FLOAT -> Double.class;
-            case TIME -> Long.class;
-            case STRING -> String.class;
-            case BITFIELD -> String.class;
-            case OPAQUE -> String.class;
-            case COMPOUND -> String.class;
-            case REFERENCE -> String.class;
-            case ENUM -> String.class;
-            case VLEN -> String.class;
-            case ARRAY -> String.class;
+            case STRING, BITFIELD, OPAQUE, COMPOUND, REFERENCE, ENUM, VLEN, ARRAY -> String.class;
         };
 
     }
