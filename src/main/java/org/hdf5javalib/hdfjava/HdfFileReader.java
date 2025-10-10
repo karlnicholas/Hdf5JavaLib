@@ -181,7 +181,7 @@ public class HdfFileReader implements HdfDataFile {
         } else {
             // Leaf node: process symbol table entries
             for (HdfGroupForGroupBTreeEntry entry : groupBTree.getEntries()) {
-                HdfGroupSymbolTableNode groupSymbolTableNode = ((HdfGroupForGroupBTreeEntry) entry).getGroupSymbolTableNode();
+                HdfGroupSymbolTableNode groupSymbolTableNode = entry.getGroupSymbolTableNode();
                 if (groupSymbolTableNode != null) {
                     for (HdfSymbolTableEntry symbolTableEntry : groupSymbolTableNode.getSymbolTableEntries()) {
                         String objectName = localHeap.stringAtOffset(symbolTableEntry.getLinkNameOffset());
@@ -250,9 +250,7 @@ public class HdfFileReader implements HdfDataFile {
         // 2. Process links stored directly as Link Messages in the header (for smaller, compact groups)
         for (HdfMessage hdfMessage : group.getObjectHeader().getHeaderMessages()) {
             if (hdfMessage instanceof LinkMessage linkMessage) {
-                long objectHeaderOffset = linkMessage.getLinkInformation().getInstance(Long.class);
-                String linkName = linkMessage.getLinkName();
-                processLink(group, linkName, objectHeaderOffset);
+                processLink(group, linkMessage.getLinkName(), linkMessage.getLinkInformation().getInstance(Long.class));
             }
         }
     }
@@ -643,9 +641,7 @@ public class HdfFileReader implements HdfDataFile {
         for (int i = 0; i < entriesUsed; i++) {
             HdfFixedPoint childPointer = HdfReadUtils.readHdfFixedPointFromBuffer(hdfOffset, entriesBuffer);
             HdfFixedPoint key = HdfReadUtils.readHdfFixedPointFromBuffer(hdfLength, entriesBuffer);
-            long filePosAfterEntriesBlock = fileChannel.position();
             long childAddress = childPointer.getInstance(Long.class);
-            fileChannel.position(childAddress);
 
             HdfGroupForGroupBTreeEntry entry;
             if (nodeLevel == 1) {
@@ -657,7 +653,6 @@ public class HdfFileReader implements HdfDataFile {
                 HdfGroupSymbolTableNode child = readSnodFromSeekableByteChannel(fileChannel, hdfDataFile);
                 entry = new HdfGroupForGroupBTreeEntry(key, childPointer, null, child); // Assuming entry constructor accepts Object for last param
             }
-            fileChannel.position(filePosAfterEntriesBlock);
             entries.add(entry);
         }
         return currentNode;
