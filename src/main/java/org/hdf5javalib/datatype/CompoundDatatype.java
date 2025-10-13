@@ -148,8 +148,10 @@ public class CompoundDatatype implements Datatype {
             buffer.mark();
             String name = HdfReadUtils.readNullTerminatedString(buffer);
 
-            // Align to 8-byte boundary
-            alignBufferTo8ByteBoundary(buffer, name.length() + 1);
+            if ( version != 3) {
+                // Align to 8-byte boundary
+                alignBufferTo8ByteBoundary(buffer, name.length() + 1);
+            }
 
             int offset = buffer.getInt();
             int dimensionality;
@@ -165,7 +167,7 @@ public class CompoundDatatype implements Datatype {
                     dimensionSizes[j] = buffer.getInt();
                 }
 
-            } else if (version == 2) {
+            } else if (version == 2 || version == 3) {
                 dimensionality = 0;
                 for (int j = 0; j < 4; j++) {
                     dimensionSizes[j] = 0;
