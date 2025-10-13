@@ -106,9 +106,11 @@ public class DataspaceMessage extends HdfMessage {
         int dimensionality = Byte.toUnsignedInt(buffer.get());
         int flagByte = Byte.toUnsignedInt(buffer.get());
         BitSet flagSet = BitSet.valueOf(new byte[]{(byte) flagByte});
-
-        buffer.position(buffer.position() + DATASPACE_MESSAGE_RESERVED_1);
-
+        if (version == 1) {
+            buffer.position(buffer.position() + DATASPACE_MESSAGE_RESERVED_1);
+        } else {
+            int type = Byte.toUnsignedInt(buffer.get());
+        }
         HdfFixedPoint[] dimensions = new HdfFixedPoint[dimensionality];
         for (int i = 0; i < dimensionality; i++) {
             dimensions[i] = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), buffer);
@@ -124,6 +126,8 @@ public class DataspaceMessage extends HdfMessage {
         }
 
         return new DataspaceMessage(version, dimensionality, flagSet, dimensions, maxDimensions, hasMaxDimensions, flags, data.length);
+
+
     }
 
     /**

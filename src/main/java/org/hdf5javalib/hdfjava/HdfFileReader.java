@@ -117,16 +117,46 @@ public class HdfFileReader implements HdfDataFile {
         fileChannel.read(headerStartBuffer);
         headerStartBuffer.flip();
 
+        HdfGroup rootGroup;
         if (Arrays.equals(headerStartBuffer.array(), HdfObjectHeaderPrefixV2.OBJECT_HEADER_MESSAGE_SIGNATURE)) {
             // The object header has a V2 signature ('OHDR').
-            readV2Structure(rootObjectHeaderAddr);
+            // The signature check was already performed in readFile(), so we can proceed directly.
+            HdfObjectHeaderPrefix rootObjectHeader = readV2ObjectHeader(fileChannel, rootObjectHeaderAddr, this);
+            rootGroup = new HdfGroup("", rootObjectHeader, null, null);
+
+            this.bTree = new HdfTree(rootGroup);
+
         } else {
             // The object header does not have a V2 signature, so we treat it as V1.
             // This case should only happen with V1 superblocks.
-            if (superblock.getVersion() >= 2) {
-                throw new IllegalStateException("HDF5 format inconsistency: Superblock is V2+ but root object header is not.");
+            // The version check is now more robust. We use the buffer that was already read.
+            int version = Byte.toUnsignedInt(headerStartBuffer.get(0));
+            if (version > 1) {
+                // The character 'O' has ASCII value 79. This error indicates we are incorrectly trying to parse
+                // a V2 'OHDR' signature as a V1 header version.
+                throw new UnsupportedOperationException("Unsupported V1 Object Header version: " + version);
             }
-            readV1Structure(rootObjectHeaderAddr, rootGroupSTE, headerStartBuffer);
+
+            HdfObjectHeaderPrefix rootObjectHeader = readObjectHeader(fileChannel, rootObjectHeaderAddr, this);
+
+            rootGroup = new HdfGroup("", rootObjectHeader, null, null);
+
+            this.bTree = new HdfTree(rootGroup);
+
+        }
+
+        if (superblock.getVersion() < 2) {
+            // Extract V1-specific metadata (heap and B-Tree addresses)
+            long heapOffset = ((HdfSymbolTableEntryCacheWithScratch) rootGroupSTE.getCache()).getLocalHeapAddress().getInstance(Long.class);
+            long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch) rootGroupSTE.getCache()).getbTreeAddress().getInstance(Long.class);
+
+            HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, heapOffset, this);
+            HdfBTreeV1ForGroup groupBTree = readBTreeFromSeekableByteChannelForGroups(fileChannel, bTreeAddress, this);
+
+            String rootGroupName = localHeap.stringAtOffset(rootGroupSTE.getLinkNameOffset());
+            readV1GroupHierarchy(rootGroup, localHeap, groupBTree);
+        } else {
+            processV2GroupLinks(rootGroup);
         }
 
         return this;
@@ -134,37 +164,6 @@ public class HdfFileReader implements HdfDataFile {
 
     // --- V1 Architecture Reading Logic ---
 
-    /**
-     * Handles the reading and parsing of HDF5 v1 file structures.
-     * @param rootObjectHeaderAddr The address of the root object header.
-     * @param rootGroupSTE The root group's Symbol Table Entry.
-     * @param headerStartBuffer The already-read first few bytes of the header, containing the version.
-     */
-    private void readV1Structure(long rootObjectHeaderAddr, HdfSymbolTableEntry rootGroupSTE, ByteBuffer headerStartBuffer) throws Exception {
-        // The version check is now more robust. We use the buffer that was already read.
-        int version = Byte.toUnsignedInt(headerStartBuffer.get(0));
-        if (version > 1) {
-            // The character 'O' has ASCII value 79. This error indicates we are incorrectly trying to parse
-            // a V2 'OHDR' signature as a V1 header version.
-            throw new UnsupportedOperationException("Unsupported V1 Object Header version: " + version);
-        }
-
-        HdfObjectHeaderPrefix rootObjectHeader = readObjectHeader(fileChannel, rootObjectHeaderAddr, this);
-
-        // Extract V1-specific metadata (heap and B-Tree addresses)
-        long heapOffset = ((HdfSymbolTableEntryCacheWithScratch) rootGroupSTE.getCache()).getLocalHeapAddress().getInstance(Long.class);
-        long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch) rootGroupSTE.getCache()).getbTreeAddress().getInstance(Long.class);
-
-        HdfLocalHeap localHeap = readLocalHeapFromSeekableByteChannel(fileChannel, heapOffset, this);
-        HdfBTreeV1ForGroup groupBTree = readBTreeFromSeekableByteChannelForGroups(fileChannel, bTreeAddress, this);
-
-        String rootGroupName = localHeap.stringAtOffset(rootGroupSTE.getLinkNameOffset());
-        HdfGroup rootGroup = new HdfGroup(rootGroupName, rootObjectHeader, null, null);
-
-        this.bTree = new HdfTree(rootGroup);
-
-        readV1GroupHierarchy(rootGroup, localHeap, groupBTree);
-    }
 
     /**
      * Recursively traverses the V1 B-Tree and Symbol Table Nodes to build the group/dataset hierarchy.
@@ -219,22 +218,6 @@ public class HdfFileReader implements HdfDataFile {
         }
     }
 
-
-    // --- V2 Architecture Reading Logic ---
-
-    /**
-     * Handles the reading and parsing of HDF5 v2 file structures.
-     * @param rootObjectHeaderAddr The address of the root object header.
-     */
-    private void readV2Structure(long rootObjectHeaderAddr) throws Exception {
-        // The signature check was already performed in readFile(), so we can proceed directly.
-        HdfObjectHeaderPrefix rootObjectHeader = readV2ObjectHeader(fileChannel, rootObjectHeaderAddr, this);
-        HdfGroup rootGroup = new HdfGroup("", rootObjectHeader, null, null);
-
-        this.bTree = new HdfTree(rootGroup);
-
-        processV2GroupLinks(rootGroup);
-    }
 
     /**
      * Processes all links within a V2 group to find and create child groups and datasets.
