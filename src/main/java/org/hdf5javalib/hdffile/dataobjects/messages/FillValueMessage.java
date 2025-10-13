@@ -117,29 +117,58 @@ public class FillValueMessage extends HdfMessage {
      */
     public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-
-        // Parse the first 4 bytes
-        int version = Byte.toUnsignedInt(buffer.get());
-        int spaceAllocationTime = Byte.toUnsignedInt(buffer.get());
-        int fillValueWriteTime = Byte.toUnsignedInt(buffer.get());
-        int fillValueDefined = Byte.toUnsignedInt(buffer.get());
-
         // Initialize optional fields
         int size = 0;
         byte[] fillValue = null;
+        int spaceAllocationTime = -1;
+        int fillValueWriteTime = -1;
+        int fillValueDefined;
 
-        // Handle Version 2+ behavior and fillValueDefined flag
-        if (version >= 2 && fillValueDefined == 1) {
-            // Parse Size (unsigned 4 bytes)
-            size = buffer.getInt();
 
-            // Parse Fill Value
-            fillValue = new byte[size];
-            buffer.get(fillValue);
+        // Parse the first 4 bytes
+        int version = Byte.toUnsignedInt(buffer.get());
+        if (version < 3) {
+            spaceAllocationTime = Byte.toUnsignedInt(buffer.get());
+            fillValueWriteTime = Byte.toUnsignedInt(buffer.get());
+            fillValueDefined = Byte.toUnsignedInt(buffer.get());
+
+            // Handle Version 2+ behavior and fillValueDefined flag
+            if (version >= 2 && fillValueDefined == 1) {
+                // Parse Size (unsigned 4 bytes)
+                size = buffer.getInt();
+
+                // Parse Fill Value
+                fillValue = new byte[size];
+                buffer.get(fillValue);
+            }
+
+            // Return a constructed instance of FillValueMessage
+            return new FillValueMessage(version, spaceAllocationTime, fillValueWriteTime, fillValueDefined, size, fillValue, flags, data.length);
+
+        } else {
+            final int FILL_VALUE_DEFINED_MASK = 0x20;    // Bit 5// Read Flags (1 byte)
+
+            int fvFlags = buffer.get();
+
+            // Check if Fill Value Defined flag is set (bit 5)
+            fillValueDefined = (fvFlags & FILL_VALUE_DEFINED_MASK);
+
+            if (fillValueDefined != 0) {
+                // Read Size (4 bytes, assuming 32-bit integer as per HDF5 convention for size fields)
+                size = buffer.getInt();
+                if (size < 0) {
+                    throw new IllegalArgumentException("Invalid fill value size: " + size);
+                }
+                // Read Fill Value (variable size)
+                fillValue = new byte[Math.toIntExact(size)];
+                buffer.get(fillValue);
+            } else {
+                size = 0;
+                fillValue = null;
+            }            // Return a constructed instance of FillValueMessage
+            return new FillValueMessage(version, spaceAllocationTime, fillValueWriteTime, fillValueDefined, size, fillValue, flags, data.length);
+
         }
-
-        // Return a constructed instance of FillValueMessage
-        return new FillValueMessage(version, spaceAllocationTime, fillValueWriteTime, fillValueDefined, size, fillValue, flags, data.length);
     }
 
     /**
