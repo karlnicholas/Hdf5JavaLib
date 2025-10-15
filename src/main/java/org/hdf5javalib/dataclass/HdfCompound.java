@@ -59,7 +59,7 @@ public class HdfCompound implements HdfData {
         members = new ArrayList<>();
         datatype.getMembers().forEach(member -> {
             HdfCompoundMember hdfMember = new HdfCompoundMember(
-                    Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset() + member.getSize()),
+                    Arrays.copyOfRange(bytes, Math.toIntExact(member.getOffset()), Math.toIntExact(member.getOffset() + member.getSize())),
                     member
             );
             members.add(hdfMember);

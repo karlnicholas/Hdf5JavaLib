@@ -145,7 +145,7 @@ public class HdfFileReader implements HdfDataFile {
 
         }
 
-        if (superblock.getVersion() < 2) {
+        if (superblock.getVersion() < 2 && (rootGroupSTE.getCache() instanceof HdfSymbolTableEntryCacheWithScratch) ) {
             // Extract V1-specific metadata (heap and B-Tree addresses)
             long heapOffset = ((HdfSymbolTableEntryCacheWithScratch) rootGroupSTE.getCache()).getLocalHeapAddress().getInstance(Long.class);
             long bTreeAddress = ((HdfSymbolTableEntryCacheWithScratch) rootGroupSTE.getCache()).getbTreeAddress().getInstance(Long.class);

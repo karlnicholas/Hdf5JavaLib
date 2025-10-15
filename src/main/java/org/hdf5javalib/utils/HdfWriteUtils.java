@@ -107,7 +107,7 @@ public class HdfWriteUtils {
                             ? StandardCharsets.US_ASCII : StandardCharsets.UTF_8;
                     byte[] bytes = ((String) value).getBytes(charset);
                     HdfString hdfString = new HdfString(bytes, membertyped);
-                    buffer.position(member.getOffset());
+                    buffer.position(Math.toIntExact(member.getOffset()));
                     hdfString.writeValueToByteBuffer(buffer);
                 } else if (memberType instanceof VariableLengthDatatype membertyped) {
                     if (fieldType != String.class) {
@@ -120,17 +120,17 @@ public class HdfWriteUtils {
                     byte[] varInstanceBytes = hdfGlobalHeap.addToHeap(bytes);
 
                     HdfVariableLength hdfVariableLength = new HdfVariableLength(varInstanceBytes, membertyped);
-                    buffer.position(member.getOffset());
+                    buffer.position(Math.toIntExact(member.getOffset()));
                     hdfVariableLength.writeValueToByteBuffer(buffer);
                 } else if (memberType instanceof FixedPointDatatype membertyped) {
                     byte[] bytes = toFixedPointBytes(value, membertyped, fieldType);
                     HdfFixedPoint hdfFixedPoint = new HdfFixedPoint(bytes, membertyped);
-                    buffer.position(member.getOffset());
+                    buffer.position(Math.toIntExact(member.getOffset()));
                     hdfFixedPoint.writeValueToByteBuffer(buffer);
                 } else if (memberType instanceof FloatingPointDatatype membertyped) {
                     byte[] bytes = toFloatPointBytes(value, membertyped, fieldType);
                     HdfFloatPoint hdfFloatPoint = new HdfFloatPoint(bytes, membertyped);
-                    buffer.position(member.getOffset());
+                    buffer.position(Math.toIntExact(member.getOffset()));
                     hdfFloatPoint.writeValueToByteBuffer(buffer);
                 } else {
                     throw new UnsupportedOperationException("Unsupported member datatype: " + memberType.getClass().getName());

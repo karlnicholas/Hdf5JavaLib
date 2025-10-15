@@ -30,7 +30,7 @@ public class CompoundMemberDatatype implements Datatype {
     /**
      * The byte offset of the member within the compound datatype.
      */
-    private final int offset;
+    private final long offset;
     /**
      * The number of dimensions for the member, if an array.
      */
@@ -64,7 +64,7 @@ public class CompoundMemberDatatype implements Datatype {
      * @param datatype                 the base datatype of the member
      * @throws IllegalStateException if the datatype class is not supported
      */
-    public CompoundMemberDatatype(String name, int offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, Datatype datatype, HdfDataFile dataFile) {
+    public CompoundMemberDatatype(String name, long offset, int dimensionality, int dimensionPermutation, int[] dimensionSizes, Datatype datatype, HdfDataFile dataFile) {
         this.name = name;
         this.offset = offset;
         this.dimensionality = dimensionality;
@@ -217,7 +217,7 @@ public class CompoundMemberDatatype implements Datatype {
         buffer.put((byte) 0);
         int paddingSize = (8 - ((name.length() + 1) % 8)) % 8;
         buffer.put(new byte[paddingSize]);
-        buffer.putInt(offset);
+        buffer.putInt(Math.toIntExact(offset));
         buffer.put((byte) dimensionality);
         buffer.put(new byte[3]);
         buffer.putInt(dimensionPermutation);
@@ -317,7 +317,7 @@ public class CompoundMemberDatatype implements Datatype {
         return name;
     }
 
-    public int getOffset() {
+    public long getOffset() {
         return offset;
     }
 

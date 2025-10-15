@@ -148,12 +148,16 @@ public class CompoundDatatype implements Datatype {
             buffer.mark();
             String name = HdfReadUtils.readNullTerminatedString(buffer);
 
+            long offset;
             if ( version != 3) {
                 // Align to 8-byte boundary
                 alignBufferTo8ByteBoundary(buffer, name.length() + 1);
+                offset = buffer.getInt();
+            } else {
+                //TODO:Assuming I need to check this for all datatypes
+                offset = readNumberOfMembers(buffer, numberOfMembers);
             }
 
-            int offset = buffer.getInt();
             int dimensionality;
             int[] dimensionSizes = new int[4];
             int dimensionPermutation = 0;
@@ -177,6 +181,7 @@ public class CompoundDatatype implements Datatype {
                 throw new UnsupportedOperationException("Unsupported classAndVersion: " + classAndVersion);
             }
 
+
             CompoundMemberDatatype compoundMemberDatatype = new CompoundMemberDatatype(
                     name,
                     offset,
@@ -191,6 +196,53 @@ public class CompoundDatatype implements Datatype {
         }
     }
 
+    public static long readNumberOfMembers(ByteBuffer buffer, long elementSize) {
+//        // Set ByteBuffer to Little Endian
+//        buffer.order(ByteOrder.LITTLE_ENDIAN);
+
+        // Determine the field size based on elementSize
+        int fieldSize;
+        if (elementSize < 256) {
+            fieldSize = 1; // 1 byte
+        } else if (elementSize < 65536) {
+            fieldSize = 2; // 2 bytes
+        } else if (elementSize < 16777216) {
+            fieldSize = 3; // 3 bytes
+        } else if (elementSize < 4294967296L) {
+            fieldSize = 4; // 4 bytes
+        } else {
+            fieldSize = 8; // 8 bytes
+        }
+
+        // Read the appropriate number of bytes and convert to long
+        long numberOfMembers;
+        switch (fieldSize) {
+            case 1:
+                numberOfMembers = buffer.get() & 0xFF; // Read 1 byte, unsigned
+                break;
+            case 2:
+                numberOfMembers = buffer.getShort() & 0xFFFF; // Read 2 bytes, unsigned
+                break;
+            case 3:
+                // Read 3 bytes manually (ByteBuffer doesn't have a direct 3-byte read)
+                byte[] bytes3 = new byte[3];
+                buffer.get(bytes3);
+                numberOfMembers = ((bytes3[2] & 0xFFL) << 16) |
+                        ((bytes3[1] & 0xFFL) << 8) |
+                        (bytes3[0] & 0xFFL);
+                break;
+            case 4:
+                numberOfMembers = buffer.getInt() & 0xFFFFFFFFL; // Read 4 bytes, unsigned
+                break;
+            case 8:
+                numberOfMembers = buffer.getLong(); // Read 8 bytes
+                break;
+            default:
+                throw new IllegalStateException("Invalid field size: " + fieldSize);
+        }
+
+        return numberOfMembers;
+    }
 
     private static void alignBufferTo8ByteBoundary(ByteBuffer buffer, int dataLength) {
         int padding = (8 - (dataLength % 8)) % 8;
@@ -202,9 +254,9 @@ public class CompoundDatatype implements Datatype {
         byte[][] result = new byte[members.size()][];
         for (int i = 0; i < members.size(); i++) {
             CompoundMemberDatatype member = members.get(i);
-            int offset = member.getOffset();
+            long offset = member.getOffset();
             int memberSize = member.getSize();
-            result[i] = Arrays.copyOfRange(bytes, offset, offset + memberSize);
+            result[i] = Arrays.copyOfRange(bytes, Math.toIntExact(offset), Math.toIntExact(offset + memberSize));
         }
         return result;
     }
@@ -214,9 +266,9 @@ public class CompoundDatatype implements Datatype {
         HdfData[] result = new HdfData[members.size()];
         for (int i = 0; i < members.size(); i++) {
             CompoundMemberDatatype member = members.get(i);
-            int offset = member.getOffset();
+            long offset = member.getOffset();
             int memberSize = member.getSize();
-            byte[] memberBytes = Arrays.copyOfRange(bytes, offset, offset + memberSize);
+            byte[] memberBytes = Arrays.copyOfRange(bytes, Math.toIntExact(offset), Math.toIntExact(offset + memberSize));
             result[i] = member.getInstance(HdfData.class, memberBytes);
         }
         return result;
@@ -395,7 +447,7 @@ public class CompoundDatatype implements Datatype {
             CompoundMemberDatatype member = nameToMemberMap.get(componentName);
             if (member != null) {
                 Object value = member.getInstance(paramTypes[i], Arrays.copyOfRange(
-                        bytes, member.getOffset(), member.getOffset() + member.getSize()));
+                        bytes, Math.toIntExact(member.getOffset()), Math.toIntExact(member.getOffset() + member.getSize())));
                 if (paramTypes[i].isAssignableFrom(value.getClass())) {
                     args[i] = value;
                 } else {
@@ -447,7 +499,7 @@ public class CompoundDatatype implements Datatype {
             Field field = nameToFieldMap.get(member.getName());
             if (field != null) {
                 Object value = member.getInstance(field.getType(), Arrays.copyOfRange(
-                        bytes, member.getOffset(), member.getOffset() + member.getSize()));
+                        bytes, Math.toIntExact(member.getOffset()), Math.toIntExact(member.getOffset() + member.getSize())));
                 if (field.getType().isAssignableFrom(value.getClass())) {
                     field.setAccessible(true);
                     field.set(instance, value);
@@ -486,7 +538,7 @@ public class CompoundDatatype implements Datatype {
     public String toString(byte[] bytes) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         StringJoiner joiner = new StringJoiner(", ");
         for (CompoundMemberDatatype m : members) {
-            String string = m.toString(Arrays.copyOfRange(bytes, m.getOffset(), m.getOffset() + m.getSize()));
+            String string = m.toString(Arrays.copyOfRange(bytes, Math.toIntExact(m.getOffset()), Math.toIntExact(m.getOffset() + m.getSize())));
             joiner.add(string);
         }
         return joiner.toString();
