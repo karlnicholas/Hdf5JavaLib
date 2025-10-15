@@ -26,9 +26,10 @@ public abstract class HdfObjectHeaderPrefix {
     protected HdfObjectHeaderPrefix(
             List<HdfMessage> headerMessages,
             HdfFixedPoint offset,
-            long objectHeaderSize,
-            HdfDataFile hdfDataFile,
-            int OBJECT_HREADER_PREFIX_HEADER_SIZE
+            long objectHeaderSize
+//            ,
+//            HdfDataFile hdfDataFile,
+//            int OBJECT_HREADER_PREFIX_HEADER_SIZE
     ) {
         this.headerMessages = headerMessages;
         this.objectHeaderSize = objectHeaderSize;

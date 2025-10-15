@@ -47,7 +47,9 @@ public class HdfObjectHeaderPrefixV1 extends HdfObjectHeaderPrefix {
     public HdfObjectHeaderPrefixV1(int version, long objectReferenceCount, long objectHeaderSize, List<HdfMessage> headerMessages,
                                    HdfDataFile hdfDataFile, HdfFixedPoint offset
     ) {
-        super(headerMessages, offset, objectHeaderSize, hdfDataFile, OBJECT_HEADER_PREFIX_HEADER_SIZE);
+        super(headerMessages, offset, objectHeaderSize
+//                , hdfDataFile, OBJECT_HEADER_PREFIX_HEADER_SIZE
+        );
         this.version = version;
         this.objectReferenceCount = objectReferenceCount;
     }

@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import static org.hdf5javalib.datatype.FixedPointDatatype.BIT_MULTIPLIER;
 import static org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefixV1.*;
@@ -624,7 +625,9 @@ public class HdfFileReader implements HdfDataFile {
         for (int i = 0; i < entriesUsed; i++) {
             HdfFixedPoint childPointer = HdfReadUtils.readHdfFixedPointFromBuffer(hdfOffset, entriesBuffer);
             HdfFixedPoint key = HdfReadUtils.readHdfFixedPointFromBuffer(hdfLength, entriesBuffer);
+            long filePosAfterEntriesBlock = fileChannel.position();
             long childAddress = childPointer.getInstance(Long.class);
+            fileChannel.position(childAddress);
 
             HdfGroupForGroupBTreeEntry entry;
             if (nodeLevel == 1) {
@@ -636,6 +639,7 @@ public class HdfFileReader implements HdfDataFile {
                 HdfGroupSymbolTableNode child = readSnodFromSeekableByteChannel(fileChannel, hdfDataFile);
                 entry = new HdfGroupForGroupBTreeEntry(key, childPointer, null, child); // Assuming entry constructor accepts Object for last param
             }
+            fileChannel.position(filePosAfterEntriesBlock);
             entries.add(entry);
         }
         return currentNode;
@@ -989,13 +993,15 @@ public class HdfFileReader implements HdfDataFile {
                 HdfMessage.readMessagesFromByteBuffer(fileChannel, objectHeaderSize, hdfDataFile, HdfMessage.V1_OBJECT_HEADER_READ_PREFIX)
         );
 
-        for (HdfMessage hdfMessage : dataObjectHeaderMessages) {
-            if (hdfMessage instanceof ObjectHeaderContinuationMessage objectHeaderContinuationMessage) {
-                dataObjectHeaderMessages.addAll(HdfMessage.parseContinuationMessage(fileChannel, objectHeaderContinuationMessage, hdfDataFile, HdfMessage.V1_OBJECT_HEADER_READ_PREFIX));
-
-                break;
-            }
-        }
+//        for (HdfMessage hdfMessage : dataObjectHeaderMessages) {
+//            if (hdfMessage instanceof ObjectHeaderContinuationMessage objectHeaderContinuationMessage) {
+//                dataObjectHeaderMessages.addAll(HdfMessage.parseContinuationMessage(fileChannel, objectHeaderContinuationMessage, hdfDataFile, HdfMessage.V1_OBJECT_HEADER_READ_PREFIX));
+//
+//                break;
+//            }
+//        }
+        // --- 6. Handle Continuation Messages ---
+        parseContinuationMessages(fileChannel, HdfMessage.V1_OBJECT_HEADER_READ_PREFIX, dataObjectHeaderMessages, hdfDataFile);
 
         // Create the instance
         return new HdfObjectHeaderPrefixV1(
@@ -1096,7 +1102,9 @@ public class HdfFileReader implements HdfDataFile {
         // Here you would typically verify the checksum against the header chunk data.
 
         // --- 6. Handle Continuation Messages ---
-        parseContinuationMessages(fileChannel, flags, dataObjectHeaderMessages, hdfDataFile);
+        Function<ByteBuffer, HdfMessage.OBJECT_HEADER_PREFIX> prefixReader = (flags & 0b00000100) > 0 ? HdfMessage.V2OBJECT_HEADER_READ_PREFIX_WITHORDER : HdfMessage.V2_OBJECT_HEADER_READ_PREFIX;
+;
+        parseContinuationMessages(fileChannel, prefixReader, dataObjectHeaderMessages, hdfDataFile);
         // --- 7. Create the V2 Header Prefix Instance ---
         return new HdfObjectHeaderPrefixV2(flags, sizeOfChunk0, checksum,
                 accessTime, modificationTime, changeTime, birthTime,
@@ -1104,7 +1112,7 @@ public class HdfFileReader implements HdfDataFile {
                 dataObjectHeaderMessages, hdfDataFile, objectHeaderAddress, prefixSize);
     }
 
-    private static void parseContinuationMessages(SeekableByteChannel fileChannel, int flags, List<HdfMessage> currentMessages, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private static void parseContinuationMessages(SeekableByteChannel fileChannel, Function<ByteBuffer, HdfMessage.OBJECT_HEADER_PREFIX> prefixReader, List<HdfMessage> currentMessages, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         // Use a queue to process messages iteratively instead of recursively
         Queue<HdfMessage> messageQueue = new LinkedList<>(currentMessages);
 
@@ -1116,7 +1124,7 @@ public class HdfFileReader implements HdfDataFile {
                         fileChannel,
                         objectHeaderContinuationMessage,
                         hdfDataFile,
-                        (flags & 0b00000100) > 0 ? HdfMessage.V2OBJECT_HEADER_READ_PREFIX_WITHORDER : HdfMessage.V2_OBJECT_HEADER_READ_PREFIX
+                        prefixReader
                 );
                 // Add new messages to the queue for further processing
                 messageQueue.addAll(newContinuationMessages);

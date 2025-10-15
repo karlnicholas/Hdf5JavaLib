@@ -92,7 +92,7 @@ public class CompoundReadTest {
         CompoundDatatype.addConverter(MonitoringData.class, (bytes, datatype) -> {
             MonitoringData monitoringData = new MonitoringData();
             for (CompoundMemberDatatype member : datatype.getMembers()) {
-                byte[] memberBytes = Arrays.copyOfRange(bytes, member.getOffset(), member.getOffset() + member.getSize());
+                byte[] memberBytes = Arrays.copyOfRange(bytes, Math.toIntExact(member.getOffset()), Math.toIntExact(member.getOffset() + member.getSize()));
                 switch (member.getName()) {
                     case "recordId" -> {
                         long recordId = member.getInstance(Long.class, memberBytes);

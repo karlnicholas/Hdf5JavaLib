@@ -37,7 +37,9 @@ public class HdfObjectHeaderPrefixV2 extends HdfObjectHeaderPrefix {
     ) {
         super(headerMessages,
                 HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()),
-            objectHeaderSize, hdfDataFile, (int) prefixSize);
+            objectHeaderSize
+//                , hdfDataFile, (int) prefixSize
+        );
         this.flags = flags;
         this.checksum = checksum;
         this.accessTime = accessTime;

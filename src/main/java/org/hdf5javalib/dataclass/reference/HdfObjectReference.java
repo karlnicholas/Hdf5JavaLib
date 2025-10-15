@@ -113,6 +113,9 @@ public class HdfObjectReference implements HdfReferenceInstance {
 //            } else {
 //                objectPathString = hdfDataObject.getObjectPath();
 //            }
+            if ( hdfDataObject == null ) {
+                throw new IllegalStateException("DataObject for reference not found for: " + localHdfFixedPoint);
+            }
             String objectPathString = hdfDataObject.getObjectPath();
 
             this.hdfDataHolder = HdfDataHolder.ofScalar(
