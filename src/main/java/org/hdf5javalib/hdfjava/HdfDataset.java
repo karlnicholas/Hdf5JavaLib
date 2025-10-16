@@ -13,9 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Represents a leaf node (HdfDataset) in the B-Tree.
@@ -163,7 +161,31 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
             long endElement,
             Optional<FilterPipelineMessage> filterPipeline,
             FillValueMessage fillValueMessage
-    ) {}
+    ) {
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            ChunkedReadContext that = (ChunkedReadContext) o;
+            return dimensions == that.dimensions && endElement == that.endElement && elementSize == that.elementSize && startElement == that.startElement && Objects.deepEquals(chunkDims, that.chunkDims) && Objects.deepEquals(datasetDims, that.datasetDims);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(dimensions, Arrays.hashCode(datasetDims), Arrays.hashCode(chunkDims), elementSize, startElement, endElement);
+        }
+
+        @Override
+        public String toString() {
+            return "ChunkedReadContext{" +
+                    "dimensions=" + dimensions +
+                    ", datasetDims=" + Arrays.toString(datasetDims) +
+                    ", chunkDims=" + Arrays.toString(chunkDims) +
+                    ", elementSize=" + elementSize +
+                    ", startElement=" + startElement +
+                    ", endElement=" + endElement +
+                    '}';
+        }
+    }
 
     // In the method:
     public synchronized ByteBuffer getDatasetData(SeekableByteChannel channel, long offset, long size) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {

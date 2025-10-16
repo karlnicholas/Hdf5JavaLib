@@ -112,7 +112,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
         heapBytes.get(datasetReferenceBytes);
         HdfFixedPoint datasetReferenced = new HdfFixedPoint(datasetReferenceBytes, offsetSpec);
 
-        /* long length = */ Integer.toUnsignedLong(heapBytes.getInt()); // Length is read but not used
+        /* long length = */ heapBytes.getInt(); // Length is read but not used
         /* int selectionType = */ heapBytes.getInt(); // selectionType is read but not used
 
         HdfDataspaceSelectionInstance selectionInstance = HdfDataspaceSelectionInstance.parseSelectionInfo(heapBytes);
@@ -139,7 +139,7 @@ public class HdfObjectReference implements HdfReferenceInstance {
         heapBytes.get(datasetReferenceBytes);
         HdfFixedPoint datasetReferenced = new HdfFixedPoint(datasetReferenceBytes, offsetSpec);
 
-        /* long length = */ Integer.toUnsignedLong(heapBytes.getInt()); // Length is read but not used
+        /* long length = */ heapBytes.getInt(); // Length is read but not used
         int nameLength = heapBytes.getInt();
 
         // Parse attribute name
