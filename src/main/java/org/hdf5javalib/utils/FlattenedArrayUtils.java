@@ -266,7 +266,7 @@ public class FlattenedArrayUtils {
     /**
      * Private record to hold calculated information about a slice operation.
      */
-    @SuppressWarnings("java:S2157")
+    @SuppressWarnings("java:S6218")
     private record SliceInfo(int[] outShape, int[] sliceStarts, int outRank) { }
 
     /**

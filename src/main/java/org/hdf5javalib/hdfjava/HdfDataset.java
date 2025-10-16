@@ -152,7 +152,7 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
      * A private record to hold the context and pre-calculated values for a chunked data read.
      * This avoids passing numerous parameters to helper methods.
      */
-    @SuppressWarnings("java:S2157")
+    @SuppressWarnings("java:S6218")
     private record ChunkedReadContext(
             int dimensions,
             long[] datasetDims,
