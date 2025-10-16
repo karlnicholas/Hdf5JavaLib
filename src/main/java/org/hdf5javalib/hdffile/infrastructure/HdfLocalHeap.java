@@ -128,7 +128,7 @@ public class HdfLocalHeap {
 //            seekableByteChannel.write(buffer);
 //        }
 //
-        heapData.writeToByteChannel(seekableByteChannel, hdfDataFile);
+//        heapData.writeToByteChannel(seekableByteChannel, hdfDataFile);
     }
 
     /**
