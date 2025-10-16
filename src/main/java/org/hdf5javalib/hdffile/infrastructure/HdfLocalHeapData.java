@@ -70,10 +70,6 @@ public class HdfLocalHeapData {
         return null;
     }
 
-    public void writeToByteChannel(SeekableByteChannel seekableByteChannel, HdfDataFile hdfDataFile) throws IOException {
-        new UnsupportedOperationException("Writing not supported");
-    }
-
     @Override
     public String toString() {
         return "HdfLocalHeapData{" +
