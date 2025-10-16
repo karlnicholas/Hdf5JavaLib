@@ -162,6 +162,24 @@ public class HdfWriteUtils {
     }
 
     /**
+     * Converts a BigDecimal value to a BigInteger, applying scaling and precision masking.
+     * This helper method isolates the complex logic from the main conversion method.
+     */
+    private static BigInteger convertBigDecimalToBigInteger(BigDecimal value, FixedPointDatatype datatype) {
+        // Scale by 2^bitOffset to match fixed-point representation
+        BigDecimal scaledValue = value.multiply(BigDecimal.valueOf(1L << datatype.getBitOffset()));
+        BigInteger intValue = scaledValue.toBigInteger();
+
+        // Apply bitPrecision mask if necessary
+        int bitPrecision = datatype.getBitPrecision();
+        if (bitPrecision > 0 && bitPrecision < datatype.getSize() * 8) {
+            BigInteger mask = BigInteger.ONE.shiftLeft(bitPrecision).subtract(BigInteger.ONE);
+            intValue = intValue.and(mask);
+        }
+        return intValue;
+    }
+
+    /**
      * Converts a field value to a byte array for a FixedPointDatatype.
      *
      * @param value     the value to convert
@@ -172,57 +190,41 @@ public class HdfWriteUtils {
      */
     public static byte[] toFixedPointBytes(Object value, FixedPointDatatype datatype, Class<?> fieldType) {
         int size = datatype.getSize();
-        ByteBuffer temp = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
+        BigInteger intValue;
 
-        if (fieldType == Byte.class || fieldType == byte.class) {
-            temp.put((Byte) value);
-        } else if (fieldType == Short.class || fieldType == short.class) {
-            temp.putShort((Short) value);
-        } else if (fieldType == Integer.class || fieldType == int.class) {
-            temp.putInt((Integer) value);
-        } else if (fieldType == Long.class || fieldType == long.class) {
-            temp.putLong((Long) value);
-        } else if (fieldType == BigInteger.class) {
-            byte[] bytes = ((BigInteger) value).toByteArray();
-            reverseBytesInPlace(bytes);
-            if (bytes.length > size) {
-                bytes = trimTrailingZeros(bytes);
-            }
-            temp.put(bytes, 0, bytes.length);
-        } else if (fieldType == BigDecimal.class) {
-            BigDecimal bdValue = (BigDecimal) value;
-            // Scale by 2^bitOffset to match fixed-point representation
-            BigDecimal scaledValue = bdValue.multiply(BigDecimal.valueOf(1L << datatype.getBitOffset()));
-            BigInteger intValue = scaledValue.toBigInteger();
-
-            // Apply bitPrecision mask if necessary
-            int bitPrecision = datatype.getBitPrecision();
-            if (bitPrecision > 0 && bitPrecision < size * 8) {
-                BigInteger mask = BigInteger.ONE.shiftLeft(bitPrecision).subtract(BigInteger.ONE);
-                intValue = intValue.and(mask);
-            }
-
-            byte[] bytes = intValue.toByteArray();
-            reverseBytesInPlace(bytes);
-            if (bytes.length > size) {
-                bytes = trimTrailingZeros(bytes);
-            }
-            temp.put(bytes, 0, bytes.length);
+        // 1. Convert various numeric types to a canonical BigInteger representation.
+        if (value instanceof BigInteger) {
+            intValue = (BigInteger) value;
+        } else if (value instanceof BigDecimal) {
+            intValue = convertBigDecimalToBigInteger((BigDecimal) value, datatype);
+        } else if (value instanceof Long || value instanceof Integer || value instanceof Short || value instanceof Byte) {
+            intValue = BigInteger.valueOf(((Number) value).longValue());
         } else {
             throw new IllegalArgumentException("Field " + fieldType.getName() + " not supported for FixedPointDatatype");
         }
 
-        byte[] bytes = trimTrailingZeros(temp.array());
-        if (bytes.length > size) {
+        // 2. Convert BigInteger to a little-endian byte array.
+        byte[] valueBytes = intValue.toByteArray();
+        reverseBytesInPlace(valueBytes); // toByteArray() is big-endian, so reverse for LE processing.
+
+        // 3. Trim, validate size, and copy to a result array of the correct final size.
+        byte[] trimmedBytes = trimTrailingZeros(valueBytes);
+        if (trimmedBytes.length > size) {
             throw new IllegalArgumentException("Value " + value + " too large for " + size + " bytes");
         }
+
+        byte[] result = new byte[size]; // Padded with zeros by default.
+        System.arraycopy(trimmedBytes, 0, result, 0, trimmedBytes.length);
+
+        // 4. Adjust to the target endianness.
         if (datatype.isBigEndian()) {
-            reverseBytesInPlace(bytes);
+            // `result` is currently in little-endian format, so reverse it.
+            reverseBytesInPlace(result);
         }
-        byte[] result = new byte[size];
-        System.arraycopy(temp.array(), 0, result, 0, Math.min(size, temp.position()));
+
         return result;
     }
+
 
     /**
      * Converts a field value to a byte array for a FloatingPointDatatype.

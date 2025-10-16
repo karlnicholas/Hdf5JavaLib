@@ -334,100 +334,142 @@ public class FractalHeap {
         return db;
     }
 
+    //<editor-fold desc="Refactored readIndirectBlock Helper Methods">
+    private static int calculateNrows(FractalHeapHeader header, long iblockSize, int passedNrows) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
+        if (iblockSize <= 0) {
+            return passedNrows;
+        }
+
+        long startingBlockSize = header.startingBlockSize.getInstance(Long.class);
+        long covered = 0;
+        long current = startingBlockSize;
+        int nr = 0;
+        while (covered < iblockSize) {
+            covered += (long) header.tableWidth * current;
+            current *= 2;
+            nr++;
+        }
+        return nr;
+    }
+
+    private static int calculateChildrenEntriesSize(FractalHeapHeader header, int nrows, FixedPointDatatype sizeOfOffset, FixedPointDatatype sizeOfLength) {
+        int entriesSize = 0;
+        for (short r = 0; r < nrows; r++) {
+            for (int c = 0; c < header.tableWidth; c++) {
+                entriesSize += sizeOfOffset.getSize();
+                boolean isDirect = r < header.maxDblockRows;
+                if (header.hasFilters && isDirect) {
+                    entriesSize += sizeOfLength.getSize();
+                    entriesSize += 4; // filter mask
+                }
+            }
+        }
+        return entriesSize;
+    }
+
+    private static void readAndVerifyIndirectBlockHeader(ByteBuffer blockBuffer, long expectedBlockOffset, FixedPointDatatype sizeOfOffset, FixedPointDatatype offsetBytes) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        byte[] signatureBytes = new byte[4];
+        blockBuffer.get(signatureBytes);
+        String sig = new String(signatureBytes, StandardCharsets.US_ASCII);
+        if (!"FHIB".equals(sig)) {
+            throw new IOException("Invalid indirect block signature: " + sig);
+        }
+
+        byte version = blockBuffer.get();
+        if (version != 0) {
+            throw new IOException("Unsupported version: " + version);
+        }
+
+        HdfFixedPoint heapHeader = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, blockBuffer);
+        if (heapHeader.isUndefined()) {
+            throw new IOException("Invalid heap header address in indirect block");
+        }
+
+        HdfFixedPoint blockOffset = HdfReadUtils.readHdfFixedPointFromBuffer(offsetBytes, blockBuffer);
+        if (blockOffset.getInstance(Long.class) != expectedBlockOffset) {
+            throw new IOException("Block offset mismatch");
+        }
+    }
+
+    private static List<ChildInfo> parseChildInfos(ByteBuffer blockBuffer, FractalHeapHeader header, int nrows, long startOffset, FixedPointDatatype sizeOfOffset, FixedPointDatatype sizeOfLength) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
+        List<ChildInfo> childInfos = new ArrayList<>();
+        long currentOffset = startOffset;
+        long startingBlockSize = header.startingBlockSize.getInstance(Long.class);
+
+        for (short r = 0; r < nrows; r++) {
+            long rowBlockSize = startingBlockSize * (1L << r);
+            for (int c = 0; c < header.tableWidth; c++) {
+                HdfFixedPoint childAddress = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, blockBuffer);
+                HdfFixedPoint childFilteredSize = sizeOfOffset.undefined();
+                long childFilterMask = 0;
+
+                boolean isDirect = r < header.maxDblockRows;
+                if (header.hasFilters && isDirect) {
+                    childFilteredSize = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, blockBuffer);
+                    childFilterMask = Integer.toUnsignedLong(blockBuffer.getInt());
+                }
+
+                if (!childAddress.isUndefined()) {
+                    childInfos.add(new ChildInfo(childAddress, currentOffset, isDirect, childFilteredSize, childFilterMask, rowBlockSize));
+                }
+                currentOffset += rowBlockSize;
+            }
+        }
+        return childInfos;
+    }
+
+    private static List<Block> readChildren(SeekableByteChannel channel, FractalHeapHeader header, List<ChildInfo> childInfos, FixedPointDatatype sizeOfOffset, FixedPointDatatype sizeOfLength) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        List<Block> children = new ArrayList<>();
+        for (ChildInfo info : childInfos) {
+            Block child;
+            if (info.isDirect) {
+                child = readDirectBlock(channel, header, info.address, sizeOfOffset, info.blockOffset, info.filteredSize, info.filterMask);
+            } else {
+                child = readIndirectBlock(channel, header, sizeOfOffset, sizeOfLength, info.address, info.blockOffset, info.blockSize, 0);
+            }
+            children.add(child);
+        }
+        return children;
+    }
+    //</editor-fold>
+
     private static Block readIndirectBlock(SeekableByteChannel channel, FractalHeapHeader header, FixedPointDatatype sizeOfOffset, FixedPointDatatype sizeOfLength, HdfFixedPoint address, long expectedBlockOffset, long iblockSize, int passedNrows) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (address.isUndefined()) {
             throw new IOException("Invalid indirect block address");
         }
         channel.position(address.getInstance(Long.class));
+
+        // 1. Determine the number of rows in this indirect block.
+        int nrows = calculateNrows(header, iblockSize, passedNrows);
+
+        // 2. Calculate the total size of the child entries section.
+        int childrenEntriesSize = calculateChildrenEntriesSize(header, nrows, sizeOfOffset, sizeOfLength);
+
+        // 3. Read the entire block's header, entries, and checksum into a buffer.
+        int headerPortionSize = 4 + 1 + sizeOfOffset.getSize() + header.offsetBytes.getSize(); // sig+ver+heapAddr+blockOffset
+        int totalSizeToRead = headerPortionSize + childrenEntriesSize + 4; // 4 for checksum
+        ByteBuffer blockBuffer = ByteBuffer.allocate(totalSizeToRead).order(ByteOrder.LITTLE_ENDIAN);
+        int bytesRead = channel.read(blockBuffer);
+        if (totalSizeToRead != bytesRead) {
+            throw new IllegalStateException("Incorrect bytesRead: " + bytesRead + ": expected " + totalSizeToRead);
+        }
+        blockBuffer.flip();
+
+        // 4. Verify the block's header fields. The buffer position is advanced past the header.
+        readAndVerifyIndirectBlockHeader(blockBuffer, expectedBlockOffset, sizeOfOffset, header.offsetBytes);
+
+        // 5. Parse child information from the buffer. The buffer position is advanced past the entries.
+        List<ChildInfo> childInfos = parseChildInfos(blockBuffer, header, nrows, expectedBlockOffset, sizeOfOffset, sizeOfLength);
+
+        // 6. Create the block object and read the checksum from the end of the buffer.
         IndirectBlock ib = new IndirectBlock();
-        int nrows;
-        long startingBlockSize = header.startingBlockSize.getInstance(Long.class);
-        if (iblockSize > 0) {
-            long covered = 0;
-            long current = startingBlockSize;
-            int nr = 0;
-            while (covered < iblockSize) {
-                covered += (long) header.tableWidth * current;
-                current *= 2;
-                nr++;
-            }
-            nrows = (short) nr;
-        } else {
-            nrows = passedNrows;
-        }
-        int plusSize = 0;
         ib.nrows = nrows;
-        for (short r = 0; r < nrows; r++) {
-            for (int c = 0; c < header.tableWidth; c++) {
-                plusSize += sizeOfOffset.getSize();
-                boolean isDirect = r < header.maxDblockRows;
-                if (header.hasFilters && isDirect) {
-                    plusSize += sizeOfLength.getSize();
-                    plusSize += 4;
-                }
-            }
-        }
-        plusSize += 4;  // checksum
+        ib.blockOffset = expectedBlockOffset;
+        ib.checksum = Integer.toUnsignedLong(blockBuffer.getInt());
 
-        int headerSize = 4 + 1 + sizeOfOffset.getSize() + header.offsetBytes.getSize() + plusSize;
-        ByteBuffer headerBuffer = ByteBuffer.allocate(headerSize).order(ByteOrder.LITTLE_ENDIAN);
-        int bytesRead = channel.read(headerBuffer);
-        if ( headerSize != bytesRead)
-            throw new IllegalStateException("Incorrect bytesRead: " + bytesRead + ": expected " + headerSize);
-        headerBuffer.flip();
+        // 7. Recursively read all children based on the parsed info.
+        ib.children = readChildren(channel, header, childInfos, sizeOfOffset, sizeOfLength);
 
-        String sig = new String(Arrays.copyOfRange(headerBuffer.array(), 0, 4), StandardCharsets.US_ASCII);
-        if (!Objects.equals(sig, "FHIB")) {
-            throw new IOException("Invalid indirect block signature");
-        }
-        headerBuffer.position(4);
-        byte version = headerBuffer.get();
-        if (version != 0) {
-            throw new IOException("Unsupported version");
-        }
-        HdfFixedPoint heapHeader = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, headerBuffer);
-        if (heapHeader.isUndefined()) {
-            throw new IOException("Invalid heap header address in indirect block");
-        }
-        HdfFixedPoint blockOffset = HdfReadUtils.readHdfFixedPointFromBuffer(header.offsetBytes, headerBuffer);
-        if (blockOffset.getInstance(Long.class) != expectedBlockOffset) {
-            throw new IOException("Block offset mismatch");
-        }
-        headerBuffer.position(4 + 1 + sizeOfOffset.getSize() + header.offsetBytes.getSize());
-        ib.blockOffset = blockOffset.getInstance(Long.class);
-        ib.children = new ArrayList<>();
-        List<ChildInfo> childInfos = new ArrayList<>();
-        long currentOffset = expectedBlockOffset; // expectedBlockOffset;
-        for (short r = 0; r < nrows; r++) {
-            long rowBlockSize = startingBlockSize * (1L << r);
-            for (int c = 0; c < header.tableWidth; c++) {
-                HdfFixedPoint childAddress = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, headerBuffer);
-                HdfFixedPoint childFilteredSize = sizeOfOffset.undefined();
-                long childFilterMask = 0;
-                boolean isDirect = r < header.maxDblockRows;
-                if (header.hasFilters && isDirect) {
-                    childFilteredSize = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfLength, headerBuffer);
-                    childFilterMask = headerBuffer.getInt();
-                }
-                if (!childAddress.isUndefined()) {
-                    ChildInfo info = new ChildInfo(childAddress, currentOffset, isDirect, childFilteredSize, childFilterMask, rowBlockSize);
-                    childInfos.add(info);
-                }
-                currentOffset += rowBlockSize;
-            }
-        }
-        ib.checksum = Integer.toUnsignedLong(headerBuffer.getInt());
-        for (ChildInfo info : childInfos) {
-            if (!info.address.isUndefined()) {
-                Block child;
-                if (info.isDirect) {
-                    child = readDirectBlock(channel, header, info.address, sizeOfOffset, info.blockOffset, info.filteredSize, info.filterMask);
-                } else {
-                    child = readIndirectBlock(channel, header, sizeOfOffset, sizeOfLength, info.address, info.blockOffset, info.blockSize, (short) 0);
-                }
-                ib.children.add(child);
-            }
-        }
         return ib;
     }
 

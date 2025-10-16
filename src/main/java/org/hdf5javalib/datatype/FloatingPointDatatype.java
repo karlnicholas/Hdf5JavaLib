@@ -318,40 +318,71 @@ public class FloatingPointDatatype implements Datatype {
 
     /**
      * 3. Interprets the components to handle special cases and calculate the final double value.
-     * CC: 7
+     * CC: 3 (Refactored from 17)
      */
     private double interpretComponents(ComponentValues components) {
+        // Special case: Exponent is all 1s (NaN or Infinity)
         boolean allExponentBitsSet = this.exponentSize > 0 &&
-                components.rawExponent() == ((1L << this.exponentSize) - 1); // +1 for &&
+                components.rawExponent() == ((1L << this.exponentSize) - 1);
 
-        // Check for NaN or Infinity (Special Exponent Case)
-        if (allExponentBitsSet) { // +1
-            if (components.rawMantissa() != 0) return Double.NaN; // +1
-            return (components.sign() == 1) ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY; // +1 (ternary)
+        if (allExponentBitsSet) {
+            return handleInfinityOrNaN(components);
         }
 
-        // Check for True Zero
-        boolean isTrueZero = (this.exponentSize == 0 || components.rawExponent() == 0) && // +1 for ||
-                (this.mantissaSize == 0 || components.rawMantissa() == 0); // +1 for ||
-        if (isTrueZero) return components.sign() * 0.0; // +1
-
-        // Normal and Denormalized Cases
-        int exponent = (int) (components.rawExponent() - this.exponentBias);
-
-        boolean isDenormalizedSource = (this.exponentSize > 0 && components.rawExponent() == 0 && components.rawMantissa() != 0); // +1 for &&
-
-        double mantissaValue;
-        if (isDenormalizedSource) { // +1
-            mantissaValue = (this.mantissaSize == 0) ? 0.0 : (double) components.rawMantissa() / (1L << this.mantissaSize); // +1 (ternary)
-            exponent = 1 - this.exponentBias;
+        // Handle Zero, Denormalized, and Normalized cases based on the exponent value
+        if (components.rawExponent() == 0) {
+            return handleZeroOrDenormalized(components);
         } else {
-            // Normalized number: implicit leading 1
-            mantissaValue = 1.0;
-            if (this.mantissaSize > 0) { // +1
-                mantissaValue = 1.0 + (double) components.rawMantissa() / (1L << this.mantissaSize);
-            }
+            return handleNormalized(components);
+        }
+    }
+
+    /**
+     * Handles the case where the exponent bits are all set, returning NaN or Infinity.
+     *
+     * @param components The extracted sign, exponent, and mantissa.
+     * @return Double.NaN, Double.POSITIVE_INFINITY, or Double.NEGATIVE_INFINITY.
+     */
+    private double handleInfinityOrNaN(ComponentValues components) {
+        // Mantissa != 0 -> NaN
+        if (components.rawMantissa() != 0) {
+            return Double.NaN;
+        }
+        // Mantissa == 0 -> Infinity
+        return (components.sign() == 1) ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+    }
+
+    /**
+     * Handles cases where the raw exponent is zero, which can be a true zero or a denormalized number.
+     *
+     * @param components The extracted sign, exponent, and mantissa.
+     * @return The calculated double value for zero or denormalized numbers.
+     */
+    private double handleZeroOrDenormalized(ComponentValues components) {
+        // True Zero
+        if (components.rawMantissa() == 0) {
+            return components.sign() * 0.0;
         }
 
+        // Denormalized number
+        double mantissaValue = (this.mantissaSize == 0) ? 0.0 : (double) components.rawMantissa() / (1L << this.mantissaSize);
+        int exponent = 1 - this.exponentBias;
+        return components.sign() * mantissaValue * Math.pow(2, exponent);
+    }
+
+    /**
+     * Handles the calculation for a standard, normalized floating-point number.
+     *
+     * @param components The extracted sign, exponent, and mantissa.
+     * @return The calculated double value for a normalized number.
+     */
+    private double handleNormalized(ComponentValues components) {
+        int exponent = (int) (components.rawExponent() - this.exponentBias);
+        // Normalized number: implicit leading 1
+        double mantissaValue = 1.0;
+        if (this.mantissaSize > 0) {
+            mantissaValue += (double) components.rawMantissa() / (1L << this.mantissaSize);
+        }
         return components.sign() * mantissaValue * Math.pow(2, exponent);
     }
 

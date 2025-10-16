@@ -340,8 +340,8 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
 
     private void copyDataFromChunk(ByteBuffer chunkBuffer, ByteBuffer resultBuffer, long[] chunkOffset, long[] chunkActualSize, ChunkedReadContext context) {
         long[] localIdx = new long[context.dimensions()];
-        boolean done = false;
-        while (!done) {
+        // Loop using do-while and a helper for incrementing, starting with {0,0,...}
+        do {
             long[] globalIdx = new long[context.dimensions()];
             for (int i = 0; i < context.dimensions(); i++) {
                 globalIdx[i] = chunkOffset[i] + localIdx[i];
@@ -359,21 +359,28 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
                     resultBuffer.put(chunkBuffer.get());
                 }
             }
+        } while (incrementLocalIndex(localIdx, chunkActualSize));
+    }
 
-            // Increment local index (odometer)
-            int pos = context.dimensions() - 1;
-            while (pos >= 0) {
-                localIdx[pos]++;
-                if (localIdx[pos] < chunkActualSize[pos]) {
-                    break;
-                }
-                localIdx[pos] = 0;
-                pos--;
+    /**
+     * Increments a multi-dimensional index array in an "odometer" fashion. This helper method
+     * encapsulates the complex iteration logic, reducing the cognitive complexity of the calling method.
+     *
+     * @param localIdx The current index array to increment (mutated in place).
+     * @param chunkActualSize The maximum size of each dimension.
+     * @return {@code true} if the index was successfully incremented within bounds, {@code false} if it has rolled over the end.
+     */
+    private boolean incrementLocalIndex(long[] localIdx, long[] chunkActualSize) {
+        int pos = localIdx.length - 1;
+        while (pos >= 0) {
+            localIdx[pos]++;
+            if (localIdx[pos] < chunkActualSize[pos]) {
+                return true; // Still within bounds
             }
-            if (pos < 0) {
-                done = true;
-            }
+            localIdx[pos] = 0; // Reset and carry over
+            pos--;
         }
+        return false; // Reached the end
     }
 
 
