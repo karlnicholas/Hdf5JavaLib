@@ -343,68 +343,97 @@ public class FixedPointDatatype implements Datatype {
      * @throws IllegalArgumentException if the byte array size, bit offset, or bit precision is invalid
      */
     public BigInteger toBigInteger(byte[] bytes) {
-        if (bytes.length < size) {
-            throw new IllegalArgumentException("Byte array too small for specified size");
-        }
-        if (bitOffset < 0) {
-            throw new IllegalArgumentException("Invalid bitOffset");
-        }
+        // 1. Initial Validation and Parameter Check (Complexity 5)
+        validateInput(bytes);
+
         boolean isBigEndian = isBigEndian();
-        boolean isLoPad = isLoPad();
-        boolean isHiPad = isHiPad();
         boolean isSigned = isSigned();
         int effectivePrecision = (bitPrecision <= 0) ? size * 8 : bitPrecision;
-        if (effectivePrecision > size * 8) {
-            throw new IllegalArgumentException("Bit precision exceeds available bits");
-        }
 
+        // 2. Base Conversion (Byte Order and Basic Signedness Padding) (Complexity 2)
         byte[] workingBytes = bytes.clone();
         if (!isBigEndian) {
             HdfReadUtils.reverseBytesInPlace(workingBytes);
         }
+        BigInteger value = getBaseBigIntegerValue(workingBytes, isSigned);
 
-        BigInteger value;
-        if (!isSigned && workingBytes.length > 0 && (workingBytes[0] & 0x80) != 0) {
-            byte[] unsignedBytes = new byte[workingBytes.length + 1];
-            System.arraycopy(workingBytes, 0, unsignedBytes, 1, workingBytes.length);
-            unsignedBytes[0] = 0;
-            value = new BigInteger(unsignedBytes);
-        } else {
-            value = new BigInteger(workingBytes);
-        }
-
-        if (bitPrecision > 0) {
-            int totalBits = size * 8;
-            int startBit = totalBits - effectivePrecision;
-
-            BigInteger precisionValue = value.shiftRight(startBit);
-            BigInteger mask = BigInteger.ONE.shiftLeft(effectivePrecision).subtract(BigInteger.ONE);
-            precisionValue = precisionValue.and(mask);
-
-            if (isSigned && !isHiPad && !isLoPad && precisionValue.testBit(effectivePrecision - 1)) {
-                precisionValue = precisionValue.subtract(BigInteger.ONE.shiftLeft(effectivePrecision));
-            }
-
-            value = precisionValue;
-            if (isHiPad && startBit > 0) {
-                BigInteger hiMask = BigInteger.ONE.shiftLeft(startBit).subtract(BigInteger.ONE).shiftLeft(effectivePrecision);
-                value = value.or(hiMask);
-            }
-            if (isLoPad && startBit > 0) {
-                BigInteger loMask = BigInteger.ONE.shiftLeft(startBit).subtract(BigInteger.ONE);
-                value = value.or(loMask);
-            }
-
-            if (isSigned && (isHiPad || isLoPad)) {
-                BigInteger totalMask = BigInteger.ONE.shiftLeft(totalBits).subtract(BigInteger.ONE);
-                value = value.and(totalMask);
-                if (value.testBit(totalBits - 1)) {
-                    value = value.subtract(BigInteger.ONE.shiftLeft(totalBits));
-                }
-            }
+        // 3. Bit Precision/Padding Adjustment (Delegated Complexity)
+        if (bitPrecision > 0) { // +1
+            value = applyBitPrecisionAndPadding(value, effectivePrecision, isSigned);
         }
 
         return value;
+    }
+
+//
+// Helper Methods to Reduce Cognitive Complexity
+//
+
+    /** Helper to handle initial validation checks. */
+    private void validateInput(byte[] bytes) {
+        if (bytes.length < size) { // +1
+            throw new IllegalArgumentException("Byte array too small for specified size");
+        }
+        if (bitOffset < 0) { // +1
+            throw new IllegalArgumentException("Invalid bitOffset");
+        }
+        int effectivePrecision = (bitPrecision <= 0) ? size * 8 : bitPrecision;
+        if (effectivePrecision > size * 8) { // +1
+            throw new IllegalArgumentException("Bit precision exceeds available bits");
+        }
+    }
+
+    /** Helper to convert bytes to BigInteger, handling unsigned padding if necessary. */
+    private BigInteger getBaseBigIntegerValue(byte[] workingBytes, boolean isSigned) {
+        // The original logic for unsigned padding to prevent incorrect sign extension.
+        if (!isSigned && workingBytes.length > 0 && (workingBytes[0] & 0x80) != 0) { // +1 for if, +1 for &&
+            byte[] unsignedBytes = new byte[workingBytes.length + 1];
+            System.arraycopy(workingBytes, 0, unsignedBytes, 1, workingBytes.length);
+            unsignedBytes[0] = 0;
+            return new BigInteger(unsignedBytes);
+        }
+        return new BigInteger(workingBytes);
+    }
+
+    /** Helper to apply bit precision, padding, and final signedness adjustments. */
+    private BigInteger applyBitPrecisionAndPadding(BigInteger value, int effectivePrecision, boolean isSigned) {
+        boolean isLoPad = isLoPad();
+        boolean isHiPad = isHiPad();
+        int totalBits = size * 8;
+        int startBit = totalBits - effectivePrecision;
+
+        // Apply precision mask
+        BigInteger precisionValue = value.shiftRight(startBit);
+        BigInteger mask = BigInteger.ONE.shiftLeft(effectivePrecision).subtract(BigInteger.ONE);
+        precisionValue = precisionValue.and(mask);
+
+        BigInteger result = precisionValue;
+
+        // 1. Signedness adjustment for NO padding
+        if (isSigned && !isHiPad && !isLoPad && result.testBit(effectivePrecision - 1)) { // +1 for if, +1 for &&
+            result = result.subtract(BigInteger.ONE.shiftLeft(effectivePrecision));
+        }
+
+        // 2. Padding restoration
+        if (isHiPad && startBit > 0) { // +1 for if, +1 for &&
+            BigInteger hiMask = BigInteger.ONE.shiftLeft(startBit).subtract(BigInteger.ONE).shiftLeft(effectivePrecision);
+            result = result.or(hiMask);
+        }
+        if (isLoPad && startBit > 0) { // +1 for if, +1 for &&
+            BigInteger loMask = BigInteger.ONE.shiftLeft(startBit).subtract(BigInteger.ONE);
+            result = result.or(loMask);
+        }
+
+        // 3. Signedness adjustment for YES padding (if total bits need sign extension)
+        if (isSigned && (isHiPad || isLoPad)) { // +1 for if, +1 for ||
+            BigInteger totalMask = BigInteger.ONE.shiftLeft(totalBits).subtract(BigInteger.ONE);
+            result = result.and(totalMask);
+            if (result.testBit(totalBits - 1)) { // +1 for if (nesting 1)
+                result = result.subtract(BigInteger.ONE.shiftLeft(totalBits));
+            }
+        }
+
+        return result;
     }
 
     /**

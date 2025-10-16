@@ -150,204 +150,233 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
         return index;
     }
 
+    /**
+     * A private record to hold the context and pre-calculated values for a chunked data read.
+     * This avoids passing numerous parameters to helper methods.
+     */
+    private record ChunkedReadContext(
+            int dimensions,
+            long[] datasetDims,
+            long[] chunkDims,
+            long elementSize,
+            long startElement,
+            long endElement,
+            Optional<FilterPipelineMessage> filterPipeline,
+            FillValueMessage fillValueMessage
+    ) {}
+
     // In the method:
     public synchronized ByteBuffer getDatasetData(SeekableByteChannel channel, long offset, long size) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        DataLayoutMessage.DataLayoutStorage dataLayoutStorage = objectHeader.findMessageByType(DataLayoutMessage.class).orElseThrow().getDataLayoutStorage();
+        DataLayoutMessage.DataLayoutStorage dataLayoutStorage = objectHeader.findMessageByType(DataLayoutMessage.class)
+                .orElseThrow(() -> new IOException("DataLayoutMessage not found"))
+                .getDataLayoutStorage();
 
         if (dataLayoutStorage instanceof DataLayoutMessage.CompactStorage compact) {
-            if (offset < 0 || size < 0 || offset + size > compact.getCompactDataSize()) {
-                throw new IllegalArgumentException("Invalid offset or size for compact data");
-            }
-            ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
-            buffer.put(compact.getCompactData(), (int) offset, (int) size);
-            buffer.flip();
-            return buffer;
+            return readCompactData(compact, offset, size);
         } else if (dataLayoutStorage instanceof DataLayoutMessage.ContiguousStorage contiguous) {
-            long addr = contiguous.getDataAddress().getInstance(Long.class);
-            long totalSize = contiguous.getDataSize().getInstance(Long.class);
-            if (offset < 0 || size < 0 || offset + size > totalSize) {
-                throw new IllegalArgumentException("Invalid offset or size for contiguous data");
-            }
-            ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
-            channel.position(addr + offset);
-            int bytesRead = channel.read(buffer);
-            if (bytesRead != size) {
-                throw new IOException("Failed to read the expected number of bytes: read " + bytesRead + ", expected " + size);
-            }
-            buffer.flip();
-            return buffer;
+            return readContiguousData(contiguous, channel, offset, size);
         } else if (dataLayoutStorage instanceof DataLayoutMessage.ChunkedStorage chunked) {
-            // The full chunked branch:
-            DataspaceMessage dataspace = objectHeader.findMessageByType(DataspaceMessage.class).orElseThrow();
-            int dimensions = dataspace.getDimensionality();
-            HdfFixedPoint[] datasetDimsHdf = dataspace.getDimensions(); // e.g., [6, 8]
-            long[] datasetDims = new long[datasetDimsHdf.length];
-            for (int i = 0; i < datasetDims.length; i++) {
-                datasetDims[i] = datasetDimsHdf[i].getInstance(Long.class);
-            }
-
-            long elementSize = chunked.getDatasetElementSize().getInstance(Long.class); // e.g., 4
-
-            long totalElements = 1;
-            for (long dim : datasetDims) {
-                totalElements *= dim;
-            }
-            long totalSize = totalElements * elementSize;
-            if (offset < 0 || size < 0 || offset + size > totalSize) {
-                throw new IllegalArgumentException("Invalid offset or size for chunked data");
-            }
-
-            // Assuming offset and size are aligned to element boundaries
-            if (offset % elementSize != 0 || size % elementSize != 0) {
-                throw new IllegalArgumentException("Offset and size must be multiples of element size");
-            }
-
-            ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
-
-            // Pre-fill buffer with fill value (defaults to zero if undefined or size=0)
-            FillValueMessage fillMsg = objectHeader.findMessageByType(FillValueMessage.class).orElse(null);
-            byte[] fillPattern = null;
-            int patternLength = 0;
-            if (fillMsg != null && fillMsg.getFillValueDefined() == 1) {  // Assuming getter methods like getFillValueDefined(), getSize(), getFillValue()
-                patternLength = fillMsg.getSize();
-                fillPattern = fillMsg.getFillValue();
-            }
-            if (patternLength > 0) {
-                if (patternLength != elementSize) {
-                    throw new UnsupportedOperationException("Fill pattern size != element size; complex types not handled yet");
-                }
-                for (int p = 0; p < buffer.capacity(); p += patternLength) {
-                    buffer.position(p);
-                    buffer.put(fillPattern);
-                }
-            }  // Else, leave as zero-filled (matches example where size=0 and fill=0)
-
-            long startElement = offset / elementSize;
-            long numElements = size / elementSize;
-            long endElement = startElement + numElements - 1;
-
-            HdfBTreeV1ForChunk bTree = chunked.getBTree();
-            // Assuming simple leaf node with no siblings or internal nodes for this implementation
-//            List<HdfGroupForChunkBTreeEntry> chunkEntries = bTree.getEntries().stream().toList();
-            List<HdfGroupForChunkBTreeEntry> chunkEntries = new ArrayList<>();
-            collectLeafEntries(bTree, chunkEntries);
-
-            long[] chunkDims = new long[dimensions];
-            for (int i = 0; i < dimensions; i++) {
-                chunkDims[i] = chunked.getDimensionSizes()[i].getInstance(Long.class); // e.g., [4, 4]
-            }
-
-            for (HdfGroupForChunkBTreeEntry entry : chunkEntries) {
-                List<HdfFixedPoint> offsets = entry.getDimensionOffsets();
-                if (offsets.size() != dimensions) {
-                    throw new IOException("Invalid dimension offsets size");
-                }
-                long lastOffset = offsets.get(dimensions-1).getInstance(Long.class);
-//                if (lastOffset != 0) {
-//                    throw new IOException("Last dimension offset should be zero");
-//                }
-
-                long[] chunkOffset = new long[dimensions];
-                for (int i = 0; i < dimensions; i++) {
-                    chunkOffset[i] = offsets.get(i).getInstance(Long.class);
-                }
-
-                long[] chunkActualSize = new long[dimensions];
-                for (int i = 0; i < dimensions; i++) {
-                    chunkActualSize[i] = Math.min(chunkDims[i], datasetDims[i] - chunkOffset[i]);
-                }
-
-                // Compute min and max element for quick overlap test
-                long[] minIdx = chunkOffset.clone();
-                long chunkMinElement = computeFlattenedIndex(minIdx, datasetDims);
-
-                long[] maxIdx = new long[dimensions];
-                for (int i = 0; i < dimensions; i++) {
-                    maxIdx[i] = chunkOffset[i] + chunkActualSize[i] - 1;
-                }
-                long chunkMaxElement = computeFlattenedIndex(maxIdx, datasetDims);
-
-                if (chunkMaxElement < startElement || chunkMinElement > endElement) {
-                    continue; // No overlap
-                }
-
-                // Read the raw chunk (full size, even if partial)
-                long addr = entry.getChildPointer().getInstance(Long.class);
-                long sizeOnDisk = entry.getSizeOfChunk();
-                ByteBuffer chunkBuffer = ByteBuffer.allocate((int) sizeOnDisk).order(ByteOrder.LITTLE_ENDIAN);
-                channel.position(addr);
-                int bytesRead = channel.read(chunkBuffer);
-                if (bytesRead != sizeOnDisk) {
-                    throw new IOException("Failed to read chunk: read " + bytesRead + ", expected " + sizeOnDisk);
-                }
-                chunkBuffer.flip();
-
-                Optional<FilterPipelineMessage> fpm = objectHeader.findMessageByType(FilterPipelineMessage.class);
-                if ( fpm.isPresent() ) {
-                    chunkBuffer = fpm.get().getDeflater().deflate(chunkBuffer);
-                }
-                // Handle filters/decompression (stubbed)
-                if (entry.getFilterMask() != 0) {
-                    throw new UnsupportedOperationException("Filters  not supported yet");
-                }
-
-                // Validate chunk size matches expected full size (uncompressed)
-                long expectedChunkSize = 1;
-                for (long s : chunkDims) {  // Use chunkDims for full stored size
-                    expectedChunkSize *= s;
-                }
-                expectedChunkSize *= elementSize;
-                if (chunkBuffer.remaining() != expectedChunkSize) {
-                    throw new IOException("Chunk size mismatch: got " + chunkBuffer.remaining() + ", expected " + expectedChunkSize);
-                }
-
-                // Iterate over all valid local indices using odometer
-                long[] localIdx = new long[dimensions];
-                boolean done = false;
-                long[] globalIdx = new long[dimensions];
-                while (!done) {
-                    // Compute global element index
-                    for (int i = 0; i < dimensions; i++) {
-                        globalIdx[i] = chunkOffset[i] + localIdx[i];
-                    }
-                    long globalElement = computeFlattenedIndex(globalIdx, datasetDims);
-
-                    if (globalElement >= startElement && globalElement <= endElement) {
-                        // Compute local flat position (using chunkDims strides)
-                        long localElement = computeFlattenedIndex(localIdx, chunkDims);
-                        long sourcePos = localElement * elementSize;
-                        long destPos = (globalElement - startElement) * elementSize;
-
-                        chunkBuffer.position((int) sourcePos);
-                        buffer.position((int) destPos);
-
-                        for (int b = 0; b < elementSize; b++) {
-                            buffer.put(chunkBuffer.get());
-                        }
-                    }
-
-                    // Increment localIdx
-                    int pos = dimensions - 1;
-                    while (pos >= 0) {
-                        localIdx[pos]++;
-                        if (localIdx[pos] < chunkActualSize[pos]) {
-                            break;
-                        }
-                        localIdx[pos] = 0;
-                        pos--;
-                    }
-                    if (pos < 0) {
-                        done = true;
-                    }
-                }
-            }
-
-            buffer.flip();
-            return buffer;
+            return readChunkedData(chunked, channel, offset, size);
         } else {
             throw new UnsupportedOperationException("Unsupported DataLayoutStorage type: " + dataLayoutStorage.getClass().getName());
         }
     }
+
+    private ByteBuffer readCompactData(DataLayoutMessage.CompactStorage compact, long offset, long size) {
+        if (offset < 0 || size < 0 || offset + size > compact.getCompactDataSize()) {
+            throw new IllegalArgumentException("Invalid offset or size for compact data");
+        }
+        // Use wrap to create a view into the existing array without copying
+        return ByteBuffer.wrap(compact.getCompactData(), (int) offset, (int) size).order(ByteOrder.LITTLE_ENDIAN);
+    }
+
+    private ByteBuffer readContiguousData(DataLayoutMessage.ContiguousStorage contiguous, SeekableByteChannel channel, long offset, long size) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        long addr = contiguous.getDataAddress().getInstance(Long.class);
+        long totalSize = contiguous.getDataSize().getInstance(Long.class);
+        if (offset < 0 || size < 0 || offset + size > totalSize) {
+            throw new IllegalArgumentException("Invalid offset or size for contiguous data");
+        }
+
+        ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
+        channel.position(addr + offset);
+        int bytesRead = channel.read(buffer);
+        if (bytesRead != size) {
+            throw new IOException("Failed to read the expected number of bytes: read " + bytesRead + ", expected " + size);
+        }
+        buffer.flip();
+        return buffer;
+    }
+
+    private ByteBuffer readChunkedData(DataLayoutMessage.ChunkedStorage chunked, SeekableByteChannel channel, long offset, long size) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        ChunkedReadContext context = setupChunkedReadContext(chunked, offset, size);
+        ByteBuffer buffer = createAndFillResultBuffer(size, context.fillValueMessage(), context.elementSize());
+
+        List<HdfGroupForChunkBTreeEntry> chunkEntries = new ArrayList<>();
+        collectLeafEntries(chunked.getBTree(), chunkEntries);
+
+        for (HdfGroupForChunkBTreeEntry entry : chunkEntries) {
+            processSingleChunk(entry, channel, buffer, context);
+        }
+
+        buffer.flip();
+        return buffer;
+    }
+
+    private ChunkedReadContext setupChunkedReadContext(DataLayoutMessage.ChunkedStorage chunked, long offset, long size) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        DataspaceMessage dataspace = objectHeader.findMessageByType(DataspaceMessage.class).orElseThrow(() -> new IOException("DataspaceMessage not found"));
+        int dimensions = dataspace.getDimensionality();
+
+        long[] datasetDims = new long[dimensions];
+        HdfFixedPoint[] datasetDimsHdf = dataspace.getDimensions();
+        for (int i = 0; i < dimensions; i++) {
+            datasetDims[i] = datasetDimsHdf[i].getInstance(Long.class);
+        }
+
+        long[] chunkDims = new long[dimensions];
+        for (int i = 0; i < dimensions; i++) {
+            chunkDims[i] = chunked.getDimensionSizes()[i].getInstance(Long.class);
+        }
+
+        long elementSize = chunked.getDatasetElementSize().getInstance(Long.class);
+        long totalElements = 1;
+        for (long dim : datasetDims) {
+            totalElements *= dim;
+        }
+
+        long totalSize = totalElements * elementSize;
+        if (offset < 0 || size < 0 || offset + size > totalSize) {
+            throw new IllegalArgumentException("Invalid offset or size for chunked data");
+        }
+        if (offset % elementSize != 0 || size % elementSize != 0) {
+            throw new IllegalArgumentException("Offset and size must be multiples of element size");
+        }
+
+        long startElement = offset / elementSize;
+        long numElements = size / elementSize;
+        long endElement = startElement + numElements - 1;
+
+        FillValueMessage fillMsg = objectHeader.findMessageByType(FillValueMessage.class).orElse(null);
+        Optional<FilterPipelineMessage> fpm = objectHeader.findMessageByType(FilterPipelineMessage.class);
+
+        return new ChunkedReadContext(dimensions, datasetDims, chunkDims, elementSize, startElement, endElement, fpm, fillMsg);
+    }
+
+    private ByteBuffer createAndFillResultBuffer(long size, FillValueMessage fillMsg, long elementSize) {
+        ByteBuffer buffer = ByteBuffer.allocate((int) size).order(ByteOrder.LITTLE_ENDIAN);
+        if (fillMsg == null || fillMsg.getFillValueDefined() != 1 || fillMsg.getSize() == 0) {
+            return buffer; // Defaults to zero-filled, which is the common case
+        }
+
+        int patternLength = fillMsg.getSize();
+        byte[] fillPattern = fillMsg.getFillValue();
+
+        if (patternLength > 0) {
+            if (patternLength != elementSize) {
+                throw new UnsupportedOperationException("Fill pattern size != element size; complex types not handled yet");
+            }
+            for (int p = 0; p < buffer.capacity(); p += patternLength) {
+                buffer.put(fillPattern);
+                buffer.position(p + patternLength);
+            }
+            buffer.position(0); // Reset position after filling
+        }
+        return buffer;
+    }
+
+    private void processSingleChunk(HdfGroupForChunkBTreeEntry entry, SeekableByteChannel channel, ByteBuffer resultBuffer, ChunkedReadContext context) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        long[] chunkOffset = new long[context.dimensions()];
+        for (int i = 0; i < context.dimensions(); i++) {
+            chunkOffset[i] = entry.getDimensionOffsets().get(i).getInstance(Long.class);
+        }
+
+        long[] chunkActualSize = new long[context.dimensions()];
+        for (int i = 0; i < context.dimensions(); i++) {
+            chunkActualSize[i] = Math.min(context.chunkDims()[i], context.datasetDims()[i] - chunkOffset[i]);
+        }
+
+        // Quick overlap test
+        long chunkMinElement = computeFlattenedIndex(chunkOffset, context.datasetDims());
+        long[] maxIdx = new long[context.dimensions()];
+        for (int i = 0; i < context.dimensions(); i++) {
+            maxIdx[i] = chunkOffset[i] + chunkActualSize[i] - 1;
+        }
+        long chunkMaxElement = computeFlattenedIndex(maxIdx, context.datasetDims());
+
+        if (chunkMaxElement < context.startElement() || chunkMinElement > context.endElement()) {
+            return; // No overlap with this chunk
+        }
+
+        ByteBuffer chunkBuffer = readAndDecodeChunk(entry, channel, context);
+        copyDataFromChunk(chunkBuffer, resultBuffer, chunkOffset, chunkActualSize, context);
+    }
+
+    private ByteBuffer readAndDecodeChunk(HdfGroupForChunkBTreeEntry entry, SeekableByteChannel channel, ChunkedReadContext context) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        long addr = entry.getChildPointer().getInstance(Long.class);
+        long sizeOnDisk = entry.getSizeOfChunk();
+        ByteBuffer chunkBuffer = ByteBuffer.allocate((int) sizeOnDisk).order(ByteOrder.LITTLE_ENDIAN);
+        channel.position(addr);
+        int bytesRead = channel.read(chunkBuffer);
+        if (bytesRead != sizeOnDisk) {
+            throw new IOException("Failed to read chunk: read " + bytesRead + ", expected " + sizeOnDisk);
+        }
+        chunkBuffer.flip();
+
+        if (context.filterPipeline().isPresent()) {
+            chunkBuffer = context.filterPipeline().get().getDeflater().deflate(chunkBuffer);
+        }
+        if (entry.getFilterMask() != 0) {
+            throw new UnsupportedOperationException("Filters not supported yet");
+        }
+
+        long expectedChunkSize = 1;
+        for (long s : context.chunkDims()) {
+            expectedChunkSize *= s;
+        }
+        expectedChunkSize *= context.elementSize();
+        if (chunkBuffer.remaining() != expectedChunkSize) {
+            throw new IOException("Chunk size mismatch: got " + chunkBuffer.remaining() + ", expected " + expectedChunkSize);
+        }
+        return chunkBuffer;
+    }
+
+    private void copyDataFromChunk(ByteBuffer chunkBuffer, ByteBuffer resultBuffer, long[] chunkOffset, long[] chunkActualSize, ChunkedReadContext context) {
+        long[] localIdx = new long[context.dimensions()];
+        boolean done = false;
+        while (!done) {
+            long[] globalIdx = new long[context.dimensions()];
+            for (int i = 0; i < context.dimensions(); i++) {
+                globalIdx[i] = chunkOffset[i] + localIdx[i];
+            }
+            long globalElement = computeFlattenedIndex(globalIdx, context.datasetDims());
+
+            if (globalElement >= context.startElement() && globalElement <= context.endElement()) {
+                long localElement = computeFlattenedIndex(localIdx, context.chunkDims());
+                long sourcePos = localElement * context.elementSize();
+                long destPos = (globalElement - context.startElement()) * context.elementSize();
+
+                chunkBuffer.position((int) sourcePos);
+                resultBuffer.position((int) destPos);
+                for (int b = 0; b < context.elementSize(); b++) {
+                    resultBuffer.put(chunkBuffer.get());
+                }
+            }
+
+            // Increment local index (odometer)
+            int pos = context.dimensions() - 1;
+            while (pos >= 0) {
+                localIdx[pos]++;
+                if (localIdx[pos] < chunkActualSize[pos]) {
+                    break;
+                }
+                localIdx[pos] = 0;
+                pos--;
+            }
+            if (pos < 0) {
+                done = true;
+            }
+        }
+    }
+
 
     private void collectLeafEntries(HdfBTreeV1ForChunk bTree, List<HdfGroupForChunkBTreeEntry> leafEntries) {
         if (bTree == null) {
@@ -374,9 +403,9 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
 
     public boolean hasData() {
         return hardLink == null
-            && hasDataspaceMessage()
-            && objectHeader.findMessageByType(DatatypeMessage.class).isPresent()
-            && objectHeader.findMessageByType(DataLayoutMessage.class).orElseThrow().hasData();
+                && hasDataspaceMessage()
+                && objectHeader.findMessageByType(DatatypeMessage.class).isPresent()
+                && objectHeader.findMessageByType(DataLayoutMessage.class).orElseThrow().hasData();
     }
 
     /**

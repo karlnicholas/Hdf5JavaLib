@@ -196,38 +196,62 @@ public class HdfFixedPoint implements HdfData, Comparable<HdfFixedPoint> {
         if (other == null) {
             throw new NullPointerException("Cannot compare to null");
         }
+
+        // Optimization: If datatypes are the same, use the faster byte comparison
         if (Objects.equals(datatype, other.datatype)) {
             return compareToBytes(bytes, other.getBytes());
-        } else {
-            // Handle undefined values
-            boolean thisUndefined = isUndefined();
-            boolean otherUndefined = other.isUndefined();
-            if (thisUndefined && otherUndefined) {
-                return 0; // Both undefined, considered equal
-            }
-            if (thisUndefined) {
-                return 1; // Undefined is less than defined
-            }
-            if (otherUndefined) {
-                return -1; // Defined is greater than undefined
-            }
-
-            // Convert byte arrays to BigInteger for comparison
-            byte[] thisBytes = bytes.clone();
-            byte[] otherBytes = other.getBytes();
-
-            // Adjust for endianness if necessary
-            if (!datatype.isBigEndian()) {
-                HdfReadUtils.reverseBytesInPlace(thisBytes);
-                HdfReadUtils.reverseBytesInPlace(otherBytes);
-            }
-
-            // Interpret bytes as BigInteger, considering signedness
-            BigInteger thisValue = datatype.isSigned() ? new BigInteger(thisBytes) : new BigInteger(1, thisBytes);
-            BigInteger otherValue = other.getDatatype().isSigned() ? new BigInteger(otherBytes) : new BigInteger(1, otherBytes);
-
-            return thisValue.compareTo(otherValue);
         }
+
+        // Handle undefined values check and comparison result
+        int undefinedComparison = compareUndefined(this, other);
+        if (undefinedComparison != Integer.MIN_VALUE) {
+            return undefinedComparison;
+        }
+
+        // Datatypes differ and neither is undefined, perform conversion and comparison
+
+        // Convert byte arrays to BigInteger for comparison
+        byte[] thisBytes = bytes.clone();
+        byte[] otherBytes = other.getBytes();
+
+        // Adjust for endianness if necessary
+        if (!datatype.isBigEndian()) {
+            HdfReadUtils.reverseBytesInPlace(thisBytes);
+        }
+        if (!other.getDatatype().isBigEndian()) {
+            HdfReadUtils.reverseBytesInPlace(otherBytes);
+        }
+
+        // Interpret bytes as BigInteger, considering signedness
+        BigInteger thisValue = datatype.isSigned() ? new BigInteger(thisBytes) : new BigInteger(1, thisBytes);
+        BigInteger otherValue = other.getDatatype().isSigned() ? new BigInteger(otherBytes) : new BigInteger(1, otherBytes);
+
+        return thisValue.compareTo(otherValue);
+    }
+
+    /**
+     * Compares two HdfFixedPoint objects based on their undefined status.
+     *
+     * @param a The first HdfFixedPoint.
+     * @param b The second HdfFixedPoint.
+     * @return 0 if both are undefined, 1 if 'a' is undefined and 'b' is defined,
+     * -1 if 'a' is defined and 'b' is undefined,
+     * Integer.MIN_VALUE if neither is undefined (comparison should continue).
+     */
+    private int compareUndefined(HdfFixedPoint a, HdfFixedPoint b) {
+        boolean thisUndefined = a.isUndefined();
+        boolean otherUndefined = b.isUndefined();
+
+        if (thisUndefined && otherUndefined) {
+            return 0; // Both undefined, considered equal
+        }
+        if (thisUndefined) {
+            return 1; // Undefined is greater than defined (following the original logic)
+        }
+        if (otherUndefined) {
+            return -1; // Defined is less than undefined (following the original logic)
+        }
+        return Integer.MIN_VALUE; // Neither is undefined
     }
 
     public static int compareToBytes(byte[] first, byte[] second) {

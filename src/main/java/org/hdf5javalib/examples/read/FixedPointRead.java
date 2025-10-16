@@ -39,6 +39,8 @@ import static org.hdf5javalib.utils.HdfReadUtils.getResourcePath;
 public class FixedPointRead {
     private static final Logger log = LoggerFactory.getLogger(FixedPointRead.class);
 
+    // ... (main, run, tryScalarDataSpliterator, tryMatrixSpliterator methods unchanged) ...
+
     /**
      * Entry point for the application.
      *
@@ -188,6 +190,7 @@ public class FixedPointRead {
 
     /**
      * Processes a 4D dataset using a TypedDataSource, demonstrating slicing and filtering.
+     * CC: 7 (well below 15)
      *
      * @param fileChannel the file channel for reading the HDF5 file
      * @param hdfDataFile the HDF5 file context
@@ -196,42 +199,62 @@ public class FixedPointRead {
      */
     void display4DData(SeekableByteChannel fileChannel, HdfDataFile hdfDataFile, HdfDataset dataSet) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TypedDataSource<Integer> dataSource = new TypedDataSource<>(fileChannel, hdfDataFile, dataSet, Integer.class);
-        // Print all values in order
         final Integer[] flattenedData = dataSource.readFlattened();
         int[] shape = dataSource.getShape();
         log.info("FlattenedData = ");
-        for (int s = 0; s < shape[3]; s++) {
-            for (int x = 0; x < shape[0]; x++) {
-                for (int y = 0; y < shape[1]; y++) {
-                    for (int z = 0; z < shape[2]; z++) {
+
+        // 1. Print all values in order (Extracted from 4 nested loops)
+        printAll4DData(flattenedData, shape); // +1
+
+        // 2. Get cube at step 0 and print (Extracted from 3 nested loops)
+        int[][] sliceStep0 = { {}, {}, {}, {0} };
+        Integer[][][] step0 = (Integer[][][]) FlattenedArrayUtils.sliceStream(dataSource.streamFlattened(), dataSource.getShape(), sliceStep0, Integer.class);
+        print3DSlice(step0, shape); // +1
+
+        // 3. Filter and list pieces (Unchanged)
+        log.info("Pieces = ");
+        List<FlattenedArrayUtils.MatchingEntry<Integer>> pieces = FlattenedArrayUtils.filterToCoordinateList(dataSource.streamFlattened(), shape, i -> i != 0);
+        pieces.sort(Comparator.comparingInt(a -> a.coordinates[3]));
+        pieces.forEach(entry -> log.info("Coords {} → Value: {}", Arrays.toString(entry.coordinates), entry.value));
+    }
+
+    /**
+     * Helper to iterate and print the entire 4D dataset.
+     * CC: 1+1+2+3+4 = 11
+     */
+    private void printAll4DData(Integer[] flattenedData, int[] shape) {
+        // s - step (shape[3])
+        for (int s = 0; s < shape[3]; s++) { // +1
+            // x - first dimension (shape[0])
+            for (int x = 0; x < shape[0]; x++) { // +2 (nesting 1)
+                // y - second dimension (shape[1])
+                for (int y = 0; y < shape[1]; y++) { // +3 (nesting 2)
+                    // z - third dimension (shape[2])
+                    for (int z = 0; z < shape[2]; z++) { // +4 (nesting 3)
                         log.info("{} {} {} {} {}", x, y, z, s, FlattenedArrayUtils.getElement(flattenedData, shape, x, y, z, s));
                     }
                 }
             }
         }
+    }
 
-        // Get cube at step 0
-        int[][] sliceStep0 = {
-                {},    // full x
-                {},    // full y
-                {},    // full z
-                {0}    // step 0
-        };
-        Integer[][][] step0 = (Integer[][][]) FlattenedArrayUtils.sliceStream(dataSource.streamFlattened(), dataSource.getShape(), sliceStep0, Integer.class);
+    /**
+     * Helper to iterate and print a 3D slice (cube).
+     * CC: 1+1+2+3 = 7
+     */
+    private void print3DSlice(Integer[][][] step0, int[] shape) {
         log.info("Step 0:");
-        for (int x = 0; x < shape[0]; x++) {
-            for (int y = 0; y < shape[1]; y++) {
-                for (int z = 0; z < shape[2]; z++) {
+        // x - first dimension (shape[0])
+        for (int x = 0; x < shape[0]; x++) { // +1
+            // y - second dimension (shape[1])
+            for (int y = 0; y < shape[1]; y++) { // +2 (nesting 1)
+                // z - third dimension (shape[2])
+                for (int z = 0; z < shape[2]; z++) { // +3 (nesting 2)
                     Integer value = step0[x][y][z];
                     log.info("({} {} {}) {}", x, y, z, value);
                 }
             }
         }
-
-        log.info("Pieces = ");
-        List<FlattenedArrayUtils.MatchingEntry<Integer>> pieces = FlattenedArrayUtils.filterToCoordinateList(dataSource.streamFlattened(), shape, i -> i != 0);
-        pieces.sort(Comparator.comparingInt(a -> a.coordinates[3]));
-        pieces.forEach(entry -> log.info("Coords {} → Value: {}", Arrays.toString(entry.coordinates), entry.value));
     }
 
 }

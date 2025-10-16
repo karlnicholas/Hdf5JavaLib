@@ -54,7 +54,7 @@ public class HdfGlobalHeap {
     /**
      * Constructs an HdfGlobalHeap with an initializer and file context.
      *
-     * @param initialize  the initializer for lazy loading heap collections
+     * @param initialize the initializer for lazy loading heap collections
      * @param hdfDataFile the HDF5 file context
      */
     public HdfGlobalHeap(GlobalHeapInitialize initialize, HdfDataFile hdfDataFile) {
@@ -80,10 +80,10 @@ public class HdfGlobalHeap {
      * Retrieves the data bytes for a specific global heap object.
      *
      * @param heapOffset the offset of the heap collection
-     * @param objectId   the ID of the object
+     * @param objectId the ID of the object
      * @return the data bytes of the object
      * @throws IllegalArgumentException if the object ID is 0 or invalid
-     * @throws IllegalStateException    if the heap or object is not found
+     * @throws IllegalStateException if the heap or object is not found
      */
     public byte[] getDataBytes(HdfFixedPoint heapOffset, int objectId) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (objectId == 0) {
@@ -106,6 +106,7 @@ public class HdfGlobalHeap {
 
     /**
      * Reads a global heap collection from a file channel.
+     * CC: 11
      *
      * @param fileChannel the file channel to read from
      * @param hdfDataFile the HDF5 file context
@@ -119,12 +120,12 @@ public class HdfGlobalHeap {
 
         byte[] signatureBytes = new byte[GLOBAL_HEAP_SIGNATURE.length];
         headerBuffer.get(signatureBytes);
-        if (Arrays.compare(GLOBAL_HEAP_SIGNATURE, signatureBytes) != 0) {
+        if (Arrays.compare(GLOBAL_HEAP_SIGNATURE, signatureBytes) != 0) { // +1
             throw new IllegalArgumentException("Invalid global heap signature: '" + Arrays.toString(signatureBytes) + "' at offset: " + startOffset);
         }
 
         int version = Byte.toUnsignedInt(headerBuffer.get());
-        if (version != VERSION) {
+        if (version != VERSION) { // +1
             throw new IllegalArgumentException("Unsupported global heap version: " + version + " at offset: " + startOffset);
         }
 
@@ -136,7 +137,7 @@ public class HdfGlobalHeap {
 
         ByteBuffer objectBuffer = null;
 
-        if (objectDataBufferSize > 0) {
+        if (objectDataBufferSize > 0) { // +1
             objectBuffer = ByteBuffer.allocate(objectDataBufferSize).order(ByteOrder.LITTLE_ENDIAN);
             fileChannel.read(objectBuffer);
             objectBuffer.flip();
@@ -145,30 +146,38 @@ public class HdfGlobalHeap {
         LinkedHashMap<Integer, HdfGlobalHeapBlock.GlobalHeapObject> localObjects = new LinkedHashMap<>();
         int localNextObjectId = 1;
 
-        try {
-            if (objectBuffer != null) {
-                while (objectBuffer.hasRemaining()) {
-                    if (objectBuffer.remaining() < GLOBAL_HEAP_OBJECT_SIZE ) {
-                        break;
-                    }
-                    HdfGlobalHeapBlock.GlobalHeapObject obj = HdfGlobalHeapBlock.GlobalHeapObject.readFromByteBuffer(objectBuffer);
-                    if (obj.getHeapObjectIndex() == 0) {
-                        localObjects.put(obj.getHeapObjectIndex(), obj);
-                        break;
-                    }
-                    if (localObjects.containsKey(obj.getHeapObjectIndex())) {
-                        throw new IllegalStateException("Duplicate object ID " + obj.getHeapObjectIndex() + " found in heap at offset: " + startOffset);
-                    }
-                    if (obj.getHeapObjectIndex() < 1 || obj.getHeapObjectIndex() > 0xFFFF) {
-                        throw new IllegalStateException("Invalid object ID " + obj.getHeapObjectIndex() + " found in heap at offset: " + startOffset);
-                    }
-                    localObjects.put(obj.getHeapObjectIndex(), obj);
-                    localNextObjectId = Math.max(localNextObjectId, obj.getHeapObjectIndex() + 1);
-                }
+        try { // +1
+            if (objectBuffer != null) { // +1 (nesting 1)
+                localNextObjectId = processGlobalHeapObjects(objectBuffer, startOffset, localObjects, localNextObjectId); // +1 (function call)
             }
-        } catch (Exception e) {
+        } catch (Exception e) { // +1
             throw new IOException("Unexpected error processing global heap object data buffer at offset: " + startOffset, e);
         }
+
+//        try {
+//            if (objectBuffer != null) {
+//                while (objectBuffer.hasRemaining()) {
+//                    if (objectBuffer.remaining() < GLOBAL_HEAP_OBJECT_SIZE ) {
+//                        break;
+//                    }
+//                    HdfGlobalHeapBlock.GlobalHeapObject obj = HdfGlobalHeapBlock.GlobalHeapObject.readFromByteBuffer(objectBuffer);
+//                    if (obj.getHeapObjectIndex() == 0) {
+//                        localObjects.put(obj.getHeapObjectIndex(), obj);
+//                        break;
+//                    }
+//                    if (localObjects.containsKey(obj.getHeapObjectIndex())) {
+//                        throw new IllegalStateException("Duplicate object ID " + obj.getHeapObjectIndex() + " found in heap at offset: " + startOffset);
+//                    }
+//                    if (obj.getHeapObjectIndex() < 1 || obj.getHeapObjectIndex() > 0xFFFF) {
+//                        throw new IllegalStateException("Invalid object ID " + obj.getHeapObjectIndex() + " found in heap at offset: " + startOffset);
+//                    }
+//                    localObjects.put(obj.getHeapObjectIndex(), obj);
+//                    localNextObjectId = Math.max(localNextObjectId, obj.getHeapObjectIndex() + 1);
+//                }
+//            }
+//        } catch (Exception e) {
+//            throw new IOException("Unexpected error processing global heap object data buffer at offset: " + startOffset, e);
+//        }
 
         HdfFixedPoint hdfStartOffset = HdfWriteUtils.hdfFixedPointFromValue(startOffset, hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset());
 
@@ -182,12 +191,47 @@ public class HdfGlobalHeap {
     }
 
     /**
+     * Reads global heap objects from the buffer, performs validation, and populates localObjects.
+     * CC: 9
+     */
+    private int processGlobalHeapObjects(ByteBuffer objectBuffer, long startOffset,
+                                         LinkedHashMap<Integer, HdfGlobalHeapBlock.GlobalHeapObject> localObjects,
+                                         int localNextObjectId) throws IOException {
+
+        while (objectBuffer.hasRemaining()) { // +1
+            if (objectBuffer.remaining() < GLOBAL_HEAP_OBJECT_SIZE) { // +1 (nesting 1)
+                break;
+            }
+
+            HdfGlobalHeapBlock.GlobalHeapObject obj = HdfGlobalHeapBlock.GlobalHeapObject.readFromByteBuffer(objectBuffer);
+
+            if (obj.getHeapObjectIndex() == 0) { // +1 (nesting 1)
+                localObjects.put(obj.getHeapObjectIndex(), obj);
+                break;
+            }
+
+            if (localObjects.containsKey(obj.getHeapObjectIndex())) { // +1 (nesting 1)
+                throw new IllegalStateException("Duplicate object ID " + obj.getHeapObjectIndex() + " found in heap at offset: " + startOffset);
+            }
+
+            if (obj.getHeapObjectIndex() < 1 || obj.getHeapObjectIndex() > 0xFFFF) { // +2 (1 for if, 1 for ||) (nesting 1)
+                throw new IllegalStateException("Invalid object ID " + obj.getHeapObjectIndex() + " found in heap at offset: " + startOffset);
+            }
+
+            localObjects.put(obj.getHeapObjectIndex(), obj);
+            localNextObjectId = Math.max(localNextObjectId, obj.getHeapObjectIndex() + 1);
+        }
+        return localNextObjectId;
+    }
+
+
+    /**
      * Adds a byte array to the global heap and returns a reference to it.
      *
      * @param bytes the byte array to add
      * @return a byte array containing the heap offset and object ID
      * @throws IllegalArgumentException if the input byte array is null
-     * @throws IllegalStateException    if the heap block is not allocated or full
+     * @throws IllegalStateException if the heap block is not allocated or full
      */
     public byte[] addToHeap(byte[] bytes) {
         return null;

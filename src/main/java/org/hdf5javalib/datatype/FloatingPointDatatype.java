@@ -244,85 +244,115 @@ public class FloatingPointDatatype implements Datatype {
         return toDoubleValue(bytes);
     }
 
+    /**
+     * Converts the byte array to a double value, handling bit parsing, component extraction, and floating-point interpretation.
+     *
+     * @param rawBuffer the byte array to convert (assumes Little-Endian)
+     * @return the double value
+     */
     public double toDoubleValue(byte[] rawBuffer) {
-        // 1. Read 'size' bytes into 'overallBits' assuming LITTLE_ENDIAN.
+        // 1. Read bytes and apply bit offset/precision. (CC: 3)
+        long workingBits = parseWorkingBits(rawBuffer);
+
+        // 2. Extract components (Sign, Exponent, Mantissa) (CC: 2)
+        ComponentValues components = extractComponents(workingBits);
+
+        // 3. Interpret components and calculate final value. (CC: 7)
+        return interpretComponents(components);
+    }
+
+//
+// Helper Classes and Methods for Complexity Reduction
+//
+
+    private record ComponentValues(int sign, long rawExponent, long rawMantissa) { }
+
+    /**
+     * 1. Reads 'size' bytes into a long (overallBits, LE assumed) and applies bitOffset/bitPrecision.
+     * CC: 3
+     */
+    private long parseWorkingBits(byte[] rawBuffer) {
         long overallBits = 0L;
         // This loop will throw ArrayIndexOutOfBoundsException if rawBuffer.length < this.size
-        for (int i = 0; i < this.size; i++) {
+        for (int i = 0; i < this.size; i++) { // +1
             overallBits |= ((long) (rawBuffer[i] & 0xFF)) << (i * 8);
         }
 
-        // 2. Apply bitOffset and mask to bitPrecision.
         long workingBits = overallBits >>> this.bitOffset;
 
-        if (this.bitPrecision < 64 && this.bitPrecision > 0) { // bitPrecision=0 would be 1L<<0 -1 = 0 mask
+        // Apply bitPrecision mask
+        if (this.bitPrecision < 64 && this.bitPrecision > 0) { // +1
             long precisionMask = (1L << this.bitPrecision) - 1;
             workingBits &= precisionMask;
-        } else if (this.bitPrecision == 0) {
-            workingBits = 0; // No bits of precision means value is effectively zero before interpretation
+        } else if (this.bitPrecision == 0) { // +1
+            workingBits = 0;
         }
-        // If bitPrecision >= 64, workingBits uses all 64 bits of the long.
+        return workingBits;
+    }
 
-        // 3. Extract components.
+    /**
+     * 2. Extracts the Sign, Exponent, and Mantissa from the workingBits.
+     * CC: 2
+     */
+    private ComponentValues extractComponents(long workingBits) {
         int sign = 1;
-        if (this.bitPrecision > 0) { // Avoid 1L << -1 if bitPrecision is 0
+        if (this.bitPrecision > 0) { // +1
             long signBitMaskInWindow = 1L << (this.bitPrecision - 1);
-            if ((workingBits & signBitMaskInWindow) != 0) {
+            if ((workingBits & signBitMaskInWindow) != 0) { // +1
                 sign = -1;
             }
         }
 
-        long rawExponent = 0;
-        if (this.exponentSize > 0) {
-            long exponentFieldMask = (this.exponentSize >= 64) ? -1L : ((1L << this.exponentSize) - 1);
-            rawExponent = (workingBits >>> this.exponentLocation) & exponentFieldMask;
+        long rawExponent = getRawField(workingBits, this.exponentSize, this.exponentLocation);
+        long rawMantissa = getRawField(workingBits, this.mantissaSize, this.mantissaLocation);
+
+        return new ComponentValues(sign, rawExponent, rawMantissa);
+    }
+
+    /** Helper to extract a generic field (exponent or mantissa) from the workingBits. CC: 1 */
+    private long getRawField(long workingBits, int size, int location) {
+        if (size <= 0) return 0; // +1
+        long fieldMask = (size >= 64) ? -1L : ((1L << size) - 1);
+        return (workingBits >>> location) & fieldMask;
+    }
+
+    /**
+     * 3. Interprets the components to handle special cases and calculate the final double value.
+     * CC: 7
+     */
+    private double interpretComponents(ComponentValues components) {
+        boolean allExponentBitsSet = this.exponentSize > 0 &&
+                components.rawExponent() == ((1L << this.exponentSize) - 1); // +1 for &&
+
+        // Check for NaN or Infinity (Special Exponent Case)
+        if (allExponentBitsSet) { // +1
+            if (components.rawMantissa() != 0) return Double.NaN; // +1
+            return (components.sign() == 1) ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY; // +1 (ternary)
         }
 
-        long rawMantissa = 0;
-        if (this.mantissaSize > 0) {
-            long mantissaFieldMask = (this.mantissaSize >= 64) ? -1L : ((1L << this.mantissaSize) - 1);
-            rawMantissa = (workingBits >>> this.mantissaLocation) & mantissaFieldMask;
-        }
+        // Check for True Zero
+        boolean isTrueZero = (this.exponentSize == 0 || components.rawExponent() == 0) && // +1 for ||
+                (this.mantissaSize == 0 || components.rawMantissa() == 0); // +1 for ||
+        if (isTrueZero) return components.sign() * 0.0; // +1
 
-        // --- Numerical Interpretation ---
-        boolean allExponentBitsSet = this.exponentSize > 0 && rawExponent == ((1L << this.exponentSize) - 1);
+        // Normal and Denormalized Cases
+        int exponent = (int) (components.rawExponent() - this.exponentBias);
 
-        if (allExponentBitsSet) {
-            if (rawMantissa != 0) return Double.NaN;
-            return (sign == 1) ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-        }
-
-        int exponent = (int) (rawExponent - this.exponentBias);
-
-        boolean isDenormalizedSource = (this.exponentSize > 0 && rawExponent == 0 && rawMantissa != 0);
-        boolean isTrueZero = ((this.exponentSize == 0 || rawExponent == 0) &&
-                (this.mantissaSize == 0 || rawMantissa == 0));
-
-
-        if (isTrueZero) return sign * 0.0;
+        boolean isDenormalizedSource = (this.exponentSize > 0 && components.rawExponent() == 0 && components.rawMantissa() != 0); // +1 for &&
 
         double mantissaValue;
-        if (isDenormalizedSource) {
-            mantissaValue = (this.mantissaSize == 0) ? 0.0 : (double) rawMantissa / (1L << this.mantissaSize);
+        if (isDenormalizedSource) { // +1
+            mantissaValue = (this.mantissaSize == 0) ? 0.0 : (double) components.rawMantissa() / (1L << this.mantissaSize); // +1 (ternary)
             exponent = 1 - this.exponentBias;
         } else {
             // Normalized number: implicit leading 1
-            // If mantissaSize is 0, this implies 1.0 for the fractional part.
-            // If mantissaSize > 0, it's 1.fractional_part
-            mantissaValue = (this.mantissaSize == 0 && this.exponentSize == 0 && this.bitPrecision > 0 && rawMantissa == 0 && rawExponent == 0) ? 0.0 : 1.0; // if only sign bit, it's +/- value based on exp=0, man=0
-            if (this.mantissaSize > 0) {
-                mantissaValue = 1.0 + (double) rawMantissa / (1L << this.mantissaSize);
-            } else if (this.exponentSize == 0 && this.bitPrecision > 0 && rawMantissa == 0 && rawExponent == 0) {
-                // If there's only a sign bit defined by bitPrecision=1, expSize=0, manSize=0.
-                // e.g. descriptor (1,0,1, 0,0,0,0, 0) -> S * 1.0 * 2^(0 - 0) -> S * 1.0
-                // This case needs careful thought if mantissaSize is truly 0.
-                // Standard interpretation is that if a number is not denormalized and not zero,
-                // it has an implicit 1. So mantissaValue should be 1.0.
-                mantissaValue = 1.0;
+            mantissaValue = 1.0;
+            if (this.mantissaSize > 0) { // +1
+                mantissaValue = 1.0 + (double) components.rawMantissa() / (1L << this.mantissaSize);
             }
-
         }
-        return sign * mantissaValue * Math.pow(2, exponent);
+
+        return components.sign() * mantissaValue * Math.pow(2, exponent);
     }
 
     /**

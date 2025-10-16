@@ -38,6 +38,11 @@ public class ScaleOffsetByteBufferDeflater implements ByteBufferDeflater {
     private final int scaleFactor; // User-provided minbits hint
 
     /**
+     * A private record to hold the results of the min/max calculation.
+     */
+    private record MinMaxResult(long minVal, long maxVal) {}
+
+    /**
      * Constructs a deflater for the HDF5 Scale-Offset filter.
      *
      * @param clientData The filter parameters provided by the HDF5 file.
@@ -78,11 +83,33 @@ public class ScaleOffsetByteBufferDeflater implements ByteBufferDeflater {
 
         // 1. Read input data into a primitive array
         input.order(this.byteOrder);
-        IntBuffer intBuffer = input.asIntBuffer();
         int[] data = new int[nelmts];
-        intBuffer.get(data);
+        input.asIntBuffer().get(data);
 
-        // 2. Find min and max values, ignoring the fill value if defined
+        // 2. Find min/max and determine bits needed
+        MinMaxResult minMax = findMinAndMax(data);
+        int minbits = determineMinBits(minMax);
+
+        // 3. Allocate the output buffer
+        int dataSizeBytes = calculateDataPayloadSize(minbits);
+        ByteBuffer output = ByteBuffer.allocate(HEADER_SIZE + dataSizeBytes);
+        output.order(ByteOrder.LITTLE_ENDIAN); // Header and packed data are LE.
+
+        // 4. Write the 21-byte header
+        writeHeader(output, minbits, minMax.minVal());
+
+        // 5. Write the data payload
+        writeDataPayload(output, input, data, minbits, minMax.minVal());
+
+        // 6. Prepare the buffer for reading by the caller.
+        output.flip();
+        return output;
+    }
+
+    /**
+     * Finds the minimum and maximum values in the data, ignoring the fill value.
+     */
+    private MinMaxResult findMinAndMax(int[] data) {
         long minVal = Long.MAX_VALUE;
         long maxVal = Long.MIN_VALUE;
         boolean foundData = false;
@@ -92,105 +119,120 @@ public class ScaleOffsetByteBufferDeflater implements ByteBufferDeflater {
                 continue;
             }
             foundData = true;
-            if (val < minVal) {
-                minVal = val;
-            }
-            if (val > maxVal) {
-                maxVal = val;
-            }
+            minVal = Math.min(minVal, val);
+            maxVal = Math.max(maxVal, val);
         }
 
         if (!foundData) {
-            // All elements were fill values.
-            minVal = 0;
-            maxVal = -1; // Makes range < 0, resulting in minbits = 0.
+            // All elements were fill values. Range < 0 will result in minbits = 0.
+            return new MinMaxResult(0, -1);
         }
+        return new MinMaxResult(minVal, maxVal);
+    }
 
-        // 3. Calculate minbits needed
-        int minbits;
+    /**
+     * Determines the minimum number of bits required for packing.
+     */
+    private int determineMinBits(MinMaxResult minMax) {
         if (scaleFactor > 0) {
             // A non-zero scale_factor from the user is a request for a fixed number of bits.
-            minbits = scaleFactor;
+            return scaleFactor;
+        }
+
+        int bits;
+        long range = minMax.maxVal() - minMax.minVal();
+        if (range < 0) {
+            bits = 0; // Happens if all data are fill values.
         } else {
-            long range = maxVal - minVal;
-            if (range < 0) {
-                minbits = 0; // Happens if all data are fill values.
-            } else {
-                long valuesToRepresent = range + 1;
-                if (fillValueDefined) {
-                    valuesToRepresent++; // An extra value is needed to represent the fill value.
-                }
-                minbits = calculateMinBits(valuesToRepresent);
+            long valuesToRepresent = range + 1;
+            if (fillValueDefined) {
+                valuesToRepresent++; // An extra value is needed to represent the fill value.
             }
+            bits = calculateMinBits(numberOfValuesToRepresent(range));
         }
 
-        if (minbits >= dtypeSize * 8) {
-            // If the required bits are the same or more than the original,
-            // we store the data un-packed.
-            minbits = dtypeSize * 8;
-        }
+        // If required bits are same or more than original, store un-packed.
+        return Math.min(bits, dtypeSize * 8);
+    }
 
-        // 4. Allocate the output buffer
-        final int dataSizeBytes;
+    /**
+     * Calculates the number of distinct values to represent based on the data range.
+     */
+    private long numberOfValuesToRepresent(long range) {
+        long values = range + 1;
+        if (fillValueDefined) {
+            values++; // An extra value is needed to represent the fill value.
+        }
+        return values;
+    }
+
+    /**
+     * Calculates the size of the data payload in bytes.
+     */
+    private int calculateDataPayloadSize(int minbits) {
         if (minbits == dtypeSize * 8) {
-            dataSizeBytes = nelmts * dtypeSize;
+            return nelmts * dtypeSize;
         } else if (minbits > 0) {
-            // The size calculation from H5Zscale.c is `floor(total_bits / 8) + 1` for packed data.
-            // This can allocate one more byte than is strictly necessary but must be replicated for compatibility.
-            dataSizeBytes = (int) ((((long) nelmts * minbits) / 8) + 1);
+            // This calculation must match H5Zscale.c for compatibility.
+            return (int) ((((long) nelmts * minbits) / 8) + 1);
         } else { // minbits == 0
-            dataSizeBytes = 0;
+            return 0;
         }
+    }
 
-        ByteBuffer output = ByteBuffer.allocate(HEADER_SIZE + dataSizeBytes);
-        output.order(ByteOrder.LITTLE_ENDIAN); // Header and packed data are LE.
-
-        // 5. Write the 21-byte header
+    /**
+     * Writes the 21-byte scale-offset header to the output buffer.
+     */
+    private void writeHeader(ByteBuffer output, int minbits, long minVal) {
         output.putInt(minbits);
-        output.put((byte) 8); // Corresponds to sizeof(unsigned long long) on 64-bit systems
+        output.put((byte) 8); // Corresponds to sizeof(unsigned long long)
         output.putLong(minVal);
         output.put(new byte[8]); // Padding to reach 21 bytes
+    }
 
-        // 6. Write the data payload
+    /**
+     * Writes the data payload, either by copying or by bit-packing.
+     */
+    private void writeDataPayload(ByteBuffer output, ByteBuffer input, int[] data, int minbits, long minVal) {
         if (minbits == dtypeSize * 8) {
-            // Full precision: copy the original data, no transformation.
+            // Full precision: copy the original data.
             input.rewind();
             output.put(input);
         } else if (minbits > 0) {
             // Bit-packing required.
-            long fillValueRepresentation = (1L << minbits) - 1;
-            long bitBuffer = 0;
-            int bitsInLBuffer = 0;
-
-            for (int val : data) {
-                long transformedVal;
-                if (fillValueDefined && val == fillValue) {
-                    transformedVal = fillValueRepresentation;
-                } else {
-                    transformedVal = (long) val - minVal;
-                }
-
-                // Add the new bits to the buffer.
-                bitBuffer |= (transformedVal << bitsInLBuffer);
-                bitsInLBuffer += minbits;
-
-                // Write out full bytes from the buffer.
-                while (bitsInLBuffer >= 8) {
-                    output.put((byte) bitBuffer); // Puts the lower 8 bits.
-                    bitBuffer >>>= 8; // Unsigned shift to process next bits.
-                    bitsInLBuffer -= 8;
-                }
-            }
-            // Write any remaining bits in the buffer.
-            if (bitsInLBuffer > 0) {
-                output.put((byte) bitBuffer);
-            }
+            packBits(output, data, minbits, minVal);
         }
         // If minbits is 0, the data payload is empty.
+    }
 
-        // 7. Prepare the buffer for reading by the caller.
-        output.flip();
-        return output;
+    /**
+     * Performs the bit-packing of integer data into the output buffer.
+     */
+    private void packBits(ByteBuffer output, int[] data, int minbits, long minVal) {
+        long fillValueRepresentation = (1L << minbits) - 1;
+        long bitBuffer = 0;
+        int bitsInLBuffer = 0;
+
+        for (int val : data) {
+            long transformedVal = (fillValueDefined && val == fillValue)
+                    ? fillValueRepresentation
+                    : (long) val - minVal;
+
+            // Add the new bits to the buffer.
+            bitBuffer |= (transformedVal << bitsInLBuffer);
+            bitsInLBuffer += minbits;
+
+            // Write out full bytes from the buffer.
+            while (bitsInLBuffer >= 8) {
+                output.put((byte) bitBuffer); // Puts the lower 8 bits.
+                bitBuffer >>>= 8; // Unsigned shift to process next bits.
+                bitsInLBuffer -= 8;
+            }
+        }
+        // Write any remaining bits.
+        if (bitsInLBuffer > 0) {
+            output.put((byte) bitBuffer);
+        }
     }
 
     /**

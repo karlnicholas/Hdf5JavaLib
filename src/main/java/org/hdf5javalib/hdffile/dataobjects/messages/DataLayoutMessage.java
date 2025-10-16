@@ -25,30 +25,30 @@ import java.util.Arrays;
  *
  * <h2>Structure</h2>
  * <ul>
- *   <li><b>Version (1 byte)</b>: The version of the data layout message format.</li>
- *   <li><b>Layout Class (1 byte)</b>: The storage method:
- *       <ul>
- *         <li><b>Contiguous (0)</b>: Data stored in a single continuous block.</li>
- *         <li><b>Chunked (1)</b>: Data divided into fixed-size chunks, allowing
- *             partial I/O and compression.</li>
- *         <li><b>Compact (2)</b>: Small datasets stored directly within the
- *             object header.</li>
- *       </ul>
- *   </li>
- *   <li><b>Storage Properties</b>: Varies by layout class:
- *       <ul>
- *         <li><b>Contiguous:</b> 8-byte file address for data start.</li>
- *         <li><b>Chunked:</b> Dimensionality, chunk dimensions, and chunk addresses.</li>
- *         <li><b>Compact:</b> Raw data stored in the message.</li>
- *       </ul>
- *   </li>
+ * <li><b>Version (1 byte)</b>: The version of the data layout message format.</li>
+ * <li><b>Layout Class (1 byte)</b>: The storage method:
+ * <ul>
+ * <li><b>Contiguous (0)</b>: Data stored in a single continuous block.</li>
+ * <li><b>Chunked (1)</b>: Data divided into fixed-size chunks, allowing
+ * partial I/O and compression.</li>
+ * <li><b>Compact (2)</b>: Small datasets stored directly within the
+ * object header.</li>
+ * </ul>
+ * </li>
+ * <li><b>Storage Properties</b>: Varies by layout class:
+ * <ul>
+ * <li><b>Contiguous:</b> 8-byte file address for data start.</li>
+ * <li><b>Chunked:</b> Dimensionality, chunk dimensions, and chunk addresses.</li>
+ * <li><b>Compact:</b> Raw data stored in the message.</li>
+ * </ul>
+ * </li>
  * </ul>
  *
  * <h2>Layout Classes</h2>
  * <ul>
- *   <li><b>Contiguous</b>: Efficient for sequential access but not ideal for partial modifications.</li>
- *   <li><b>Chunked</b>: Supports compression, partial I/O, and expansion for large datasets.</li>
- *   <li><b>Compact</b>: Optimized for small datasets, reducing file overhead.</li>
+ * <li><b>Contiguous</b>: Efficient for sequential access but not ideal for partial modifications.</li>
+ * <li><b>Chunked</b>: Supports compression, partial I/O, and expansion for large datasets.</li>
+ * <li><b>Compact</b>: Optimized for small datasets, reducing file overhead.</li>
  * </ul>
  *
  * @see HdfMessage
@@ -64,10 +64,10 @@ public class DataLayoutMessage extends HdfMessage {
     /**
      * Constructs a DataLayoutMessage with the specified components.
      *
-     * @param version            the version of the data layout message format
-     * @param dataLayoutStorage  dataLayoutStorage
-     * @param flags              message flags
-     * @param sizeMessageData    the size of the message data in bytes
+     * @param version the version of the data layout message format
+     * @param dataLayoutStorage dataLayoutStorage
+     * @param flags message flags
+     * @param sizeMessageData the size of the message data in bytes
      */
     public DataLayoutMessage(
             int version,
@@ -91,8 +91,8 @@ public class DataLayoutMessage extends HdfMessage {
     /**
      * Parses a DataLayoutMessage from the provided data and file context.
      *
-     * @param flags       message flags
-     * @param data        the byte array containing the message data
+     * @param flags message flags
+     * @param data the byte array containing the message data
      * @param hdfDataFile the HDF5 file context for datatype and heap resources
      * @return a new DataLayoutMessage instance parsed from the data
      * @throws IllegalArgumentException if the version or layout class is unsupported
@@ -111,7 +111,7 @@ public class DataLayoutMessage extends HdfMessage {
         switch (layoutClass) {
             case 0: // Compact Storage
                 int compactDataSize = Short.toUnsignedInt(buffer.getShort()); // Compact data size (2 bytes)
-                byte[] compactData = compactData = new byte[compactDataSize];
+                byte[] compactData = new byte[compactDataSize];
                 buffer.get(compactData); // Read compact data
                 dataLayoutStorage = new CompactStorage(compactDataSize, compactData, hdfDataFile);
                 break;
@@ -122,67 +122,12 @@ public class DataLayoutMessage extends HdfMessage {
                 dataLayoutStorage = new ContiguousStorage(dataAddress, dataSize, hdfDataFile);
                 break;
 
-            case 2: // Chunked Storage
-                FixedPointDatatype fourByteDt = getFourByteUnsignedDatatype(hdfDataFile);
-                HdfFixedPoint chunkedDataAddress;
-                HdfFixedPoint[] dimensionSizes;
-                HdfFixedPoint datasetElementSize;
-                HdfBTreeV1ForChunk bTree;
-                int numDimensions;
-                if (version == 1 || version == 2) {
-                    chunkedDataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
-                    numDimensions = Byte.toUnsignedInt(buffer.get()); // Number of dimensions (1 byte)
-                    dimensionSizes = new HdfFixedPoint[numDimensions];
-                    for (int i = 0; i < numDimensions; i++) {
-                        dimensionSizes[i] = HdfReadUtils.readHdfFixedPointFromBuffer(fourByteDt, buffer);
-                    }
-                    datasetElementSize = HdfReadUtils.readHdfFixedPointFromBuffer(fourByteDt, buffer);
-                } else {
-                    int dimensionality = Byte.toUnsignedInt(buffer.get()); // Number of dimensions (1 byte)
-                    chunkedDataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
-                    numDimensions = dimensionality - 1;
-                    dimensionSizes = new HdfFixedPoint[numDimensions];
-                    for (int i = 0; i < numDimensions; i++) {
-                        dimensionSizes[i] = HdfReadUtils.readHdfFixedPointFromBuffer(fourByteDt, buffer);
-                    }
-                    datasetElementSize = HdfReadUtils.readHdfFixedPointFromBuffer(fourByteDt, buffer);
-                }
-                try {
-                    if (!chunkedDataAddress.isUndefined()) {
-                        FixedPointDatatype eightByteFixedPointType =  new FixedPointDatatype(
-                                FixedPointDatatype.createClassAndVersion(),
-                                FixedPointDatatype.createClassBitField(false, false, false, false),
-                                8, 0, (8 * 8),
-                                hdfDataFile);
-
-                        bTree = HdfFileReader.readBTreeFromSeekableByteChannelForChunked(hdfDataFile.getSeekableByteChannel(), chunkedDataAddress.getInstance(Long.class), numDimensions, eightByteFixedPointType, hdfDataFile);
-                    } else {
-                        bTree = null;
-                    }
-                } catch (Exception e) {
-                    throw new IllegalStateException(e);
-                }
-                dataLayoutStorage = new ChunkedStorage(chunkedDataAddress, dimensionSizes, datasetElementSize, bTree, hdfDataFile);
+            case 2: // Chunked Storage (Delegate complex logic)
+                dataLayoutStorage = parseChunkedStorage(version, buffer, hdfDataFile);
                 break;
 
-            case 3: // Virtual Storage
-                if (version == 4) {
-                    dataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
-                    long index = Integer.toUnsignedLong(buffer.getInt());
-                    byte[] dataBytes = hdfDataFile.getGlobalHeap().getDataBytes(dataAddress, (int) index);
-                    ByteBuffer dataBuffer = ByteBuffer.wrap(dataBytes).order(ByteOrder.LITTLE_ENDIAN);
-                    int vVersion = Byte.toUnsignedInt(dataBuffer.get());
-                    HdfFixedPoint numEntries = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), dataBuffer);
-                    int iNumEntries = numEntries.getInstance(Long.class).intValue();
-                    for (int i = 0; i < iNumEntries; i++) {
-                        String sourceFilename = HdfReadUtils.readNullTerminatedString(dataBuffer);
-                        String sourceDataset = HdfReadUtils.readNullTerminatedString(dataBuffer);
-                        HdfDataspaceSelectionInstance sourceSelection = HdfDataspaceSelectionInstance.parseSelectionInfo(dataBuffer);
-                        HdfDataspaceSelectionInstance virtualSelection = HdfDataspaceSelectionInstance.parseSelectionInfo(dataBuffer);
-                    }
-                    long checkSum = Integer.toUnsignedLong(dataBuffer.getInt());
-                }
-                dataLayoutStorage = null;
+            case 3: // Virtual Storage (Delegate complex logic)
+                dataLayoutStorage = parseVirtualStorage(version, buffer, hdfDataFile);
                 break;
 
             default:
@@ -191,6 +136,79 @@ public class DataLayoutMessage extends HdfMessage {
 
         // Return a constructed instance of DataLayoutMessage
         return new DataLayoutMessage(version, dataLayoutStorage, flags, data.length);
+    }
+
+    /**
+     * Helper to parse the highly complex Chunked Storage message.
+     * CC: 10
+     */
+    private static DataLayoutStorage parseChunkedStorage(int version, ByteBuffer buffer, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        FixedPointDatatype fourByteDt = getFourByteUnsignedDatatype(hdfDataFile);
+        HdfFixedPoint chunkedDataAddress;
+        HdfFixedPoint[] dimensionSizes;
+        HdfFixedPoint datasetElementSize;
+        int numDimensions;
+
+        if (version == 1 || version == 2) {
+            chunkedDataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+            numDimensions = Byte.toUnsignedInt(buffer.get());
+        } else {
+            int dimensionality = Byte.toUnsignedInt(buffer.get());
+            chunkedDataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+            numDimensions = dimensionality - 1;
+        }
+
+        dimensionSizes = new HdfFixedPoint[numDimensions];
+        for (int i = 0; i < numDimensions; i++) {
+            dimensionSizes[i] = HdfReadUtils.readHdfFixedPointFromBuffer(fourByteDt, buffer);
+        }
+        datasetElementSize = HdfReadUtils.readHdfFixedPointFromBuffer(fourByteDt, buffer);
+
+        // Nested try-catch block for reading the B-Tree
+        HdfBTreeV1ForChunk bTree;
+        try {
+            if (!chunkedDataAddress.isUndefined()) {
+                FixedPointDatatype eightByteFixedPointType = new FixedPointDatatype(
+                        FixedPointDatatype.createClassAndVersion(),
+                        FixedPointDatatype.createClassBitField(false, false, false, false),
+                        8, 0, (8 * 8),
+                        hdfDataFile);
+
+                bTree = HdfFileReader.readBTreeFromSeekableByteChannelForChunked(hdfDataFile.getSeekableByteChannel(), chunkedDataAddress.getInstance(Long.class), numDimensions, eightByteFixedPointType, hdfDataFile);
+            } else {
+                bTree = null;
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+
+        return new ChunkedStorage(chunkedDataAddress, dimensionSizes, datasetElementSize, bTree, hdfDataFile);
+    }
+
+    /**
+     * Helper to parse the highly complex Virtual Storage message.
+     * CC: 3
+     */
+    private static DataLayoutStorage parseVirtualStorage(int version, ByteBuffer buffer, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        DataLayoutStorage dataLayoutStorage = null;
+        if (version == 4) {
+            HdfFixedPoint dataAddress = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForOffset(), buffer);
+            long index = Integer.toUnsignedLong(buffer.getInt());
+            byte[] dataBytes = hdfDataFile.getGlobalHeap().getDataBytes(dataAddress, (int) index);
+            ByteBuffer dataBuffer = ByteBuffer.wrap(dataBytes).order(ByteOrder.LITTLE_ENDIAN);
+            int vVersion = Byte.toUnsignedInt(dataBuffer.get());
+            HdfFixedPoint numEntries = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), dataBuffer);
+            int iNumEntries = numEntries.getInstance(Long.class).intValue();
+
+            for (int i = 0; i < iNumEntries; i++) {
+                String sourceFilename = HdfReadUtils.readNullTerminatedString(dataBuffer);
+                String sourceDataset = HdfReadUtils.readNullTerminatedString(dataBuffer);
+                HdfDataspaceSelectionInstance sourceSelection = HdfDataspaceSelectionInstance.parseSelectionInfo(dataBuffer);
+                HdfDataspaceSelectionInstance virtualSelection = HdfDataspaceSelectionInstance.parseSelectionInfo(dataBuffer);
+            }
+            long checkSum = Integer.toUnsignedLong(dataBuffer.getInt());
+        }
+        return dataLayoutStorage;
     }
 
 

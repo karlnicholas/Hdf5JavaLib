@@ -48,7 +48,7 @@ import static org.hdf5javalib.hdffile.metadata.HdfSuperblock.*;
  */
 public class HdfFileReader implements HdfDataFile {
     private static final Logger log = LoggerFactory.getLogger(HdfFileReader.class);
-//    /** The superblock containing metadata about the HDF5 file. */
+    //    /** The superblock containing metadata about the HDF5 file. */
     public static final byte[] BTREE_SIGNATURE = {'T', 'R', 'E', 'E'};
     public static final int BTREE_HEADER_INITIAL_SIZE = 8;
 
@@ -168,55 +168,84 @@ public class HdfFileReader implements HdfDataFile {
 
     /**
      * Recursively traverses the V1 B-Tree and Symbol Table Nodes to build the group/dataset hierarchy.
+     * This method dispatches to helpers based on whether the B-Tree node is internal or a leaf.
      */
     private void readV1GroupHierarchy(HdfGroup parentGroup, HdfLocalHeap localHeap, HdfBTreeV1ForGroup groupBTree) throws Exception {
         if (groupBTree.getNodeLevel() > 0) {
-            // Internal node: recurse on child B-Trees
-            for (HdfGroupForGroupBTreeEntry entry : groupBTree.getEntries()) {
-                HdfBTreeV1ForGroup childBTree = entry.getChildBTree();
-                if (childBTree != null) {
-                    readV1GroupHierarchy(parentGroup, localHeap, childBTree);
-                }
-            }
+            processV1InternalNode(parentGroup, localHeap, groupBTree);
         } else {
-            // Leaf node: process symbol table entries
-            for (HdfGroupForGroupBTreeEntry entry : groupBTree.getEntries()) {
-                HdfGroupSymbolTableNode groupSymbolTableNode = entry.getGroupSymbolTableNode();
-                if (groupSymbolTableNode != null) {
-                    for (HdfSymbolTableEntry symbolTableEntry : groupSymbolTableNode.getSymbolTableEntries()) {
-                        String objectName = localHeap.stringAtOffset(symbolTableEntry.getLinkNameOffset());
-                        Long objectHeaderAddress = symbolTableEntry.getObjectHeaderAddress().getInstance(Long.class);
-                        String hardLink = isHardLink(parentGroup, objectHeaderAddress);
-                        HdfObjectHeaderPrefixV1 objectHeader = null;
-                        if (hardLink == null) {
-                            objectHeader = readObjectHeader(fileChannel, objectHeaderAddress, this);
-                        }
+            processV1LeafNode(parentGroup, localHeap, groupBTree);
+        }
+    }
 
-                        switch (symbolTableEntry.getCache().getCacheType()) {
-                            case 0: // Dataset
-                                HdfDataset datasetObject = new HdfDataset(objectName, objectHeader, parentGroup, hardLink);
-                                parentGroup.addChild(datasetObject);
-                                break;
-                            case 1: // Group
-                                HdfGroup groupObject = new HdfGroup(objectName, objectHeader, parentGroup, hardLink);
-                                parentGroup.addChild(groupObject);
+    /**
+     * Processes an internal V1 B-Tree node by recursing on its children.
+     */
+    private void processV1InternalNode(HdfGroup parentGroup, HdfLocalHeap localHeap, HdfBTreeV1ForGroup groupBTree) throws Exception {
+        for (HdfGroupForGroupBTreeEntry entry : groupBTree.getEntries()) {
+            HdfBTreeV1ForGroup childBTree = entry.getChildBTree();
+            if (childBTree != null) {
+                readV1GroupHierarchy(parentGroup, localHeap, childBTree);
+            }
+        }
+    }
 
-                                if (hardLink == null) {
-                                    // A new group has its own heap and B-Tree
-                                    long newHeapOffset = ((HdfSymbolTableEntryCacheWithScratch) symbolTableEntry.getCache()).getLocalHeapAddress().getInstance(Long.class);
-                                    long newBTreeAddress = ((HdfSymbolTableEntryCacheWithScratch) symbolTableEntry.getCache()).getbTreeAddress().getInstance(Long.class);
-                                    HdfLocalHeap newLocalHeap = readLocalHeapFromSeekableByteChannel(fileChannel, newHeapOffset, this);
-                                    HdfBTreeV1ForGroup newGroupBTree = readBTreeFromSeekableByteChannelForGroups(fileChannel, newBTreeAddress, this);
-                                    readV1GroupHierarchy(groupObject, newLocalHeap, newGroupBTree);
-                                }
-                                break;
-                            default:
-                                throw new UnsupportedOperationException("Unknown cache type: " + symbolTableEntry.getCache().getCacheType());
-                        }
-                    }
+    /**
+     * Processes a leaf V1 B-Tree node by reading its symbol table entries.
+     */
+    private void processV1LeafNode(HdfGroup parentGroup, HdfLocalHeap localHeap, HdfBTreeV1ForGroup groupBTree) throws Exception {
+        for (HdfGroupForGroupBTreeEntry entry : groupBTree.getEntries()) {
+            HdfGroupSymbolTableNode stn = entry.getGroupSymbolTableNode();
+            if (stn != null) {
+                for (HdfSymbolTableEntry ste : stn.getSymbolTableEntries()) {
+                    processSymbolTableEntry(parentGroup, localHeap, ste);
                 }
             }
         }
+    }
+
+    /**
+     * Processes a single symbol table entry, creating a group or dataset accordingly.
+     */
+    private void processSymbolTableEntry(HdfGroup parentGroup, HdfLocalHeap localHeap, HdfSymbolTableEntry symbolTableEntry) throws Exception {
+        String objectName = localHeap.stringAtOffset(symbolTableEntry.getLinkNameOffset());
+        long objectHeaderAddress = symbolTableEntry.getObjectHeaderAddress().getInstance(Long.class);
+        String hardLink = isHardLink(parentGroup, objectHeaderAddress);
+
+        HdfObjectHeaderPrefixV1 objectHeader = null;
+        if (hardLink == null) {
+            objectHeader = readObjectHeader(fileChannel, objectHeaderAddress, this);
+        }
+
+        switch (symbolTableEntry.getCache().getCacheType()) {
+            case 0: // Dataset
+                HdfDataset datasetObject = new HdfDataset(objectName, objectHeader, parentGroup, hardLink);
+                parentGroup.addChild(datasetObject);
+                break;
+            case 1: // Group
+                HdfGroup groupObject = new HdfGroup(objectName, objectHeader, parentGroup, hardLink);
+                parentGroup.addChild(groupObject);
+                if (hardLink == null) {
+                    processNewV1Group(groupObject, symbolTableEntry);
+                }
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown cache type: " + symbolTableEntry.getCache().getCacheType());
+        }
+    }
+
+    /**
+     * For a newly created V1 group, reads its local heap and B-Tree and continues the hierarchy traversal.
+     */
+    private void processNewV1Group(HdfGroup newGroup, HdfSymbolTableEntry symbolTableEntry) throws Exception {
+        HdfSymbolTableEntryCacheWithScratch cache = (HdfSymbolTableEntryCacheWithScratch) symbolTableEntry.getCache();
+        long newHeapOffset = cache.getLocalHeapAddress().getInstance(Long.class);
+        long newBTreeAddress = cache.getbTreeAddress().getInstance(Long.class);
+
+        HdfLocalHeap newLocalHeap = readLocalHeapFromSeekableByteChannel(fileChannel, newHeapOffset, this);
+        HdfBTreeV1ForGroup newGroupBTree = readBTreeFromSeekableByteChannelForGroups(fileChannel, newBTreeAddress, this);
+
+        readV1GroupHierarchy(newGroup, newLocalHeap, newGroupBTree);
     }
 
 
@@ -577,9 +606,9 @@ public class HdfFileReader implements HdfDataFile {
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
     private static HdfBTreeV1ForGroup readFromSeekableByteChannelRecursiveForGroups(SeekableByteChannel fileChannel,
-                                                                            long nodeAddress,
-                                                                            HdfDataFile hdfDataFile,
-                                                                            Map<Long, HdfBTreeV1> visitedNodes
+                                                                                    long nodeAddress,
+                                                                                    HdfDataFile hdfDataFile,
+                                                                                    Map<Long, HdfBTreeV1> visitedNodes
     ) throws Exception {
         if (visitedNodes.containsKey(nodeAddress)) {
             throw new IllegalStateException("Cycle detected or node re-visited: BTree node address "
@@ -674,11 +703,11 @@ public class HdfFileReader implements HdfDataFile {
      * @throws IOException if an I/O error occurs or the B-Tree data is invalid
      */
     private static HdfBTreeV1ForChunk readFromSeekableByteChannelRecursiveForChunked(SeekableByteChannel fileChannel,
-                                                                   long nodeAddress,
-                                                                   int dimensions,
-                                                                   FixedPointDatatype eightByteFixedPointType,
-                                                                   HdfDataFile hdfDataFile,
-                                                                   Map<Long, HdfBTreeV1> visitedNodes
+                                                                                     long nodeAddress,
+                                                                                     int dimensions,
+                                                                                     FixedPointDatatype eightByteFixedPointType,
+                                                                                     HdfDataFile hdfDataFile,
+                                                                                     Map<Long, HdfBTreeV1> visitedNodes
     ) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (visitedNodes.containsKey(nodeAddress)) {
             throw new IllegalStateException("Cycle detected or node re-visited: BTree node address "
@@ -1103,7 +1132,7 @@ public class HdfFileReader implements HdfDataFile {
 
         // --- 6. Handle Continuation Messages ---
         Function<ByteBuffer, HdfMessage.OBJECT_HEADER_PREFIX> prefixReader = (flags & 0b00000100) > 0 ? HdfMessage.V2OBJECT_HEADER_READ_PREFIX_WITHORDER : HdfMessage.V2_OBJECT_HEADER_READ_PREFIX;
-;
+        ;
         parseContinuationMessages(fileChannel, prefixReader, dataObjectHeaderMessages, hdfDataFile);
         // --- 7. Create the V2 Header Prefix Instance ---
         return new HdfObjectHeaderPrefixV2(flags, sizeOfChunk0, checksum,

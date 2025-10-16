@@ -194,54 +194,83 @@ public class FractalHeap {
         FilterPipeline fp = new FilterPipeline();
         ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         fp.version = bb.get() & 0xFF;
-        if (fp.version == 1) {
-            fp.filters = new ArrayList<>();
-            int n = bb.get() & 0xFF;
-            bb.get(); // reserved
-            bb.getShort(); // reserved
-            bb.getShort(); // reserved
-            for (int i = 0; i < n; i++) {
-                Filter f = new Filter();
-                f.id = bb.getShort() & 0xFFFF;
-                short nameLen = bb.getShort();
-                f.flags = bb.getShort() & 0xFFFF;
-                short c = bb.getShort();
-                if (nameLen > 0) {
-                    byte[] nameBytes = new byte[nameLen];
-                    bb.get(nameBytes);
-                    f.name = new String(nameBytes);
-                    int pad = (nameLen % 4);
-                    if (pad > 0) {
-                        bb.position(bb.position() + (4 - pad));
-                    }
+        fp.filters = new ArrayList<>();
+        int n; // Number of filters
+
+        switch (fp.version) {
+            case 1:
+                n = bb.get() & 0xFF;
+                // Skip reserved bytes
+                bb.position(bb.position() + 5);
+                for (int i = 0; i < n; i++) {
+                    fp.filters.add(parseV1Filter(bb));
                 }
-                f.clientData = new int[c];
-                for (int j = 0; j < c; j++) {
-                    f.clientData[j] = bb.getInt();
+                break;
+            case 2:
+                n = bb.get() & 0xFF;
+                // Skip reserved bytes
+                bb.position(bb.position() + 6);
+                for (int i = 0; i < n; i++) {
+                    fp.filters.add(parseV2Filter(bb));
                 }
-                if (c % 2 != 0) {
-                    bb.getInt(); // pad
-                }
-                fp.filters.add(f);
-            }
-        } else if (fp.version == 2) {
-            fp.filters = new ArrayList<>();
-            int n = bb.get() & 0xFF;
-            bb.position(bb.position() + 6); // reserved
-            for (int i = 0; i < n; i++) {
-                Filter f = new Filter();
-                f.id = bb.getShort() & 0xFFFF;
-                short c = bb.getShort();
-                f.clientData = new int[c];
-                for (int j = 0; j < c; j++) {
-                    f.clientData[j] = bb.getInt();
-                }
-                fp.filters.add(f);
-            }
-        } else {
-            throw new IOException("Unsupported filter pipeline version");
+                break;
+            default:
+                throw new IOException("Unsupported filter pipeline version");
         }
         return fp;
+    }
+
+    /**
+     * Parses a single filter of version 1 from the ByteBuffer.
+     *
+     * @param bb The ByteBuffer to read from.
+     * @return The parsed Filter object.
+     */
+    private static Filter parseV1Filter(ByteBuffer bb) {
+        Filter f = new Filter();
+        f.id = bb.getShort() & 0xFFFF;
+        short nameLen = bb.getShort();
+        f.flags = bb.getShort() & 0xFFFF;
+        short c = bb.getShort();
+
+        if (nameLen > 0) {
+            byte[] nameBytes = new byte[nameLen];
+            bb.get(nameBytes);
+            f.name = new String(nameBytes);
+            // Skip padding bytes to align to a 4-byte boundary
+            int pad = nameLen % 4;
+            if (pad > 0) {
+                bb.position(bb.position() + (4 - pad));
+            }
+        }
+
+        f.clientData = new int[c];
+        for (int j = 0; j < c; j++) {
+            f.clientData[j] = bb.getInt();
+        }
+
+        // Skip padding for client data
+        if (c % 2 != 0) {
+            bb.getInt();
+        }
+        return f;
+    }
+
+    /**
+     * Parses a single filter of version 2 from the ByteBuffer.
+     *
+     * @param bb The ByteBuffer to read from.
+     * @return The parsed Filter object.
+     */
+    private static Filter parseV2Filter(ByteBuffer bb) {
+        Filter f = new Filter();
+        f.id = bb.getShort() & 0xFFFF;
+        short c = bb.getShort();
+        f.clientData = new int[c];
+        for (int j = 0; j < c; j++) {
+            f.clientData[j] = bb.getInt();
+        }
+        return f;
     }
 
     private static Block readDirectBlock(SeekableByteChannel channel, FractalHeapHeader header, HdfFixedPoint address, FixedPointDatatype sizeOfOffset, long expectedBlockOffset, HdfFixedPoint filteredSize, long filterMask) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {

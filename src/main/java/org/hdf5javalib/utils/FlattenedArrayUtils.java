@@ -138,7 +138,6 @@ public class FlattenedArrayUtils {
      * @return an Object representing the N-D array (e.g., int[] for N=1, int[][] for N=2, etc.)
      */
     public static <T> Object streamToNDArray(Stream<T> stream, int[] shape, Class<T> clazz) {
-        int totalSize = Arrays.stream(shape).reduce(1, (a, b) -> a * b);
         Object ndArray = Array.newInstance(clazz, shape);
         int[] strides = computeStrides(shape);
         AtomicInteger index = new AtomicInteger(0);
@@ -185,6 +184,46 @@ public class FlattenedArrayUtils {
     }
 
     /**
+     * Applies a reduction operation to a value at a specific coordinate in the result array.
+     *
+     * @param <T>          the type of elements
+     * @param resultArray  the N-1 dimensional array to update
+     * @param reducedCoord the coordinate in the result array
+     * @param value        the new value to apply
+     * @param reducer      the binary operator for reduction
+     */
+    private static <T> void setReducedValue(Object resultArray, int[] reducedCoord, T value, BinaryOperator<T> reducer) {
+        Object current = resultArray;
+        for (int i = 0; i < reducedCoord.length - 1; i++) {
+            current = Array.get(current, reducedCoord[i]);
+        }
+
+        int lastIndex = reducedCoord[reducedCoord.length - 1];
+        @SuppressWarnings("unchecked")
+        T currentValue = (T) Array.get(current, lastIndex);
+
+        T newValue = (currentValue == null) ? value : reducer.apply(currentValue, value);
+        Array.set(current, lastIndex, newValue);
+    }
+
+    /**
+     * Creates a coordinate for the reduced array by excluding the specified axis.
+     *
+     * @param originalCoord the coordinate in the original array
+     * @param axis          the axis to exclude
+     * @return the coordinate in the reduced array
+     */
+    private static int[] getReducedCoordinate(int[] originalCoord, int axis) {
+        int[] reducedCoord = new int[originalCoord.length - 1];
+        for (int i = 0, j = 0; i < originalCoord.length; i++) {
+            if (i != axis) {
+                reducedCoord[j++] = originalCoord[i];
+            }
+        }
+        return reducedCoord;
+    }
+
+    /**
      * Reduces a multi-dimensional array along a specified axis using a binary operator.
      *
      * @param <T>     the type of elements in the stream and the resulting array
@@ -196,7 +235,6 @@ public class FlattenedArrayUtils {
      * @return the reduced array (N-1 dimensions) or scalar if 1D
      * @throws IllegalArgumentException if the axis is invalid
      */
-    @SuppressWarnings("unchecked")
     public static <T> Object reduceAlongAxis(
             Stream<T> stream, int[] shape, int axis, BinaryOperator<T> reducer, Class<T> clazz) {
 
@@ -204,50 +242,101 @@ public class FlattenedArrayUtils {
             throw new IllegalArgumentException("Invalid axis for reduction: " + axis);
         }
 
-        // Handle 1D → scalar reduction
         if (shape.length == 1) {
             return stream.limit(shape[0]).reduce(reducer).orElse(null);
         }
 
-        // Compute shape of the result (N-1)
-        int[] reducedShape = new int[shape.length - 1];
-        for (int i = 0, j = 0; i < shape.length; i++) {
-            if (i != axis) reducedShape[j++] = shape[i];
-        }
-
+        int[] reducedShape = getReducedCoordinate(shape, axis);
         Object resultArray = Array.newInstance(clazz, reducedShape);
-
-        int totalSize = Arrays.stream(shape).reduce(1, (a, b) -> a * b);
         int[] strides = computeStrides(shape);
         AtomicInteger index = new AtomicInteger(0);
+        int totalSize = totalSize(shape);
 
         stream.limit(totalSize).forEach(value -> {
             int flat = index.getAndIncrement();
             int[] coord = unflattenIndex(flat, strides, shape);
-
-            // Create coordinate for the reduced array (exclude the axis)
-            int[] reducedCoord = new int[coord.length - 1];
-            for (int i = 0, j = 0; i < coord.length; i++) {
-                if (i != axis) reducedCoord[j++] = coord[i];
-            }
-
-            // Navigate to target cell in result array
-            Object current = resultArray;
-            for (int i = 0; i < reducedCoord.length - 1; i++) {
-                current = Array.get(current, reducedCoord[i]);
-            }
-
-            int lastIndex = reducedCoord[reducedCoord.length - 1];
-            T currentValue = (T) Array.get(current, lastIndex);
-
-            if (currentValue == null) {
-                Array.set(current, lastIndex, value);
-            } else {
-                Array.set(current, lastIndex, reducer.apply(currentValue, value));
-            }
+            int[] reducedCoord = getReducedCoordinate(coord, axis);
+            setReducedValue(resultArray, reducedCoord, value, reducer);
         });
 
         return resultArray;
+    }
+
+    /**
+     * Private record to hold calculated information about a slice operation.
+     */
+    private record SliceInfo(int[] outShape, int[] sliceStarts, int outRank) {}
+
+    /**
+     * Calculates the output shape, starting indices, and rank of a sliced array.
+     *
+     * @param shape             The shape of the original array.
+     * @param slicingDescriptor The slicing specifications.
+     * @return A {@link SliceInfo} object containing the results.
+     */
+    private static SliceInfo calculateSliceInfo(int[] shape, int[][] slicingDescriptor) {
+        int dims = shape.length;
+        int outRank = (int) Arrays.stream(slicingDescriptor).filter(desc -> desc.length != 1).count();
+        int[] outShape = new int[outRank];
+        int[] sliceStarts = new int[dims];
+        int outIndex = 0;
+
+        for (int i = 0; i < dims; i++) {
+            int[] desc = slicingDescriptor[i];
+            switch (desc.length) {
+                case 1 -> sliceStarts[i] = desc[0];
+                case 2 -> {
+                    sliceStarts[i] = desc[0];
+                    outShape[outIndex++] = desc[1] - desc[0];
+                }
+                case 0 -> {
+                    sliceStarts[i] = 0;
+                    outShape[outIndex++] = shape[i];
+                }
+                default -> throw new IllegalArgumentException("Invalid slice spec at dimension " + i);
+            }
+        }
+        return new SliceInfo(outShape, sliceStarts, outRank);
+    }
+
+    /**
+     * Checks if a given coordinate matches the slicing criteria.
+     *
+     * @param coords            The N-D coordinate to check.
+     * @param slicingDescriptor The slicing specifications.
+     * @return {@code true} if the coordinate is within the slice, {@code false} otherwise.
+     */
+    private static boolean isMatch(int[] coords, int[][] slicingDescriptor) {
+        for (int i = 0; i < coords.length; i++) {
+            int[] desc = slicingDescriptor[i];
+            int coord = coords[i];
+            if (desc.length == 1 && coord != desc[0]) {
+                return false;
+            } else if (desc.length == 2 && (coord < desc[0] || coord >= desc[1])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Computes the output coordinate in the sliced array from an original coordinate.
+     *
+     * @param coords            The coordinate in the original array.
+     * @param sliceStarts       The starting indices for each slice dimension.
+     * @param slicingDescriptor The slicing specifications.
+     * @param outRank           The rank of the output array.
+     * @return The corresponding coordinate in the output array.
+     */
+    private static int[] getOutputCoords(int[] coords, int[] sliceStarts, int[][] slicingDescriptor, int outRank) {
+        int[] outCoord = new int[outRank];
+        int outIdx = 0;
+        for (int i = 0; i < coords.length; i++) {
+            if (slicingDescriptor[i].length != 1) {
+                outCoord[outIdx++] = coords[i] - sliceStarts[i];
+            }
+        }
+        return outCoord;
     }
 
     /**
@@ -262,9 +351,9 @@ public class FlattenedArrayUtils {
      * <p><b>Slicing Descriptor Format:</b></p>
      * The slicing descriptor is an {@code int[][]} where each inner array corresponds to one axis:
      * <ul>
-     *     <li>{@code []} → full slice (equivalent to ":" in Python)</li>
-     *     <li>{@code [index]} → fixed index (select a single element along that axis, reducing dimensionality)</li>
-     *     <li>{@code [start, end]} → range slice (inclusive start, exclusive end)</li>
+     * <li>{@code []} → full slice (equivalent to ":" in Python)</li>
+     * <li>{@code [index]} → fixed index (select a single element along that axis, reducing dimensionality)</li>
+     * <li>{@code [start, end]} → range slice (inclusive start, exclusive end)</li>
      * </ul>
      *
      * @param <T>               the type of elements in the dataset
@@ -281,113 +370,34 @@ public class FlattenedArrayUtils {
             int[][] slicingDescriptor,
             Class<T> clazz
     ) {
-        int dims = shape.length;
-        if (slicingDescriptor.length != dims)
+        if (slicingDescriptor.length != shape.length) {
             throw new IllegalArgumentException("Slicing descriptor must match shape dimensions");
-
-        // Step 1: Compute input strides
-        int[] inStrides = new int[dims];
-        inStrides[dims - 1] = 1;
-        for (int i = dims - 2; i >= 0; i--) {
-            inStrides[i] = inStrides[i + 1] * shape[i + 1];
         }
 
-        // Step 2: Compute output shape and output strides
-        int outRank = (int) Arrays.stream(slicingDescriptor).filter(desc -> desc.length != 1).count();
+        SliceInfo sliceInfo = calculateSliceInfo(shape, slicingDescriptor);
+        int[] inStrides = computeStrides(shape);
 
-        int[] outShape = new int[outRank];
-        int[] sliceStarts = new int[dims];
-        int outIndex = 0;
-        for (int i = 0; i < dims; i++) {
-            int[] desc = slicingDescriptor[i];
-            if (desc.length == 1) {
-                sliceStarts[i] = desc[0];
-            } else if (desc.length == 2) {
-                sliceStarts[i] = desc[0];
-                outShape[outIndex++] = desc[1] - desc[0];
-            } else if (desc.length == 0) {
-                sliceStarts[i] = 0;
-                outShape[outIndex++] = shape[i];
-            } else {
-                throw new IllegalArgumentException("Invalid slice spec at dimension " + i);
-            }
-        }
+        Object outputArray = (sliceInfo.outRank == 0)
+                ? Array.newInstance(clazz, 1) // Temp array for a single scalar value
+                : Array.newInstance(clazz, sliceInfo.outShape);
 
-        int[] outStrides = new int[outRank];
-        if (outRank > 0) {
-            outStrides[outRank - 1] = 1;
-            for (int i = outRank - 2; i >= 0; i--) {
-                outStrides[i] = outStrides[i + 1] * outShape[i + 1];
-            }
-        }
-
-        // Step 3: Preallocate output array
-        Object outputArray;
-        if (outRank == 0) {
-            outputArray = Array.newInstance(clazz, 1); // scalar result
-        } else {
-            outputArray = Array.newInstance(clazz, outShape);
-        }
-
-        // Step 4: Iterate stream and populate output directly
         AtomicInteger counter = new AtomicInteger(0);
-        AtomicInteger writeIndex = new AtomicInteger(0);
 
         data.forEach(value -> {
             int flatIndex = counter.getAndIncrement();
+            int[] coords = unflattenIndex(flatIndex, inStrides, shape);
 
-            // Convert flatIndex to coordinates
-            int[] coords = new int[dims];
-            int rem = flatIndex;
-            for (int i = 0; i < dims; i++) {
-                coords[i] = rem / inStrides[i];
-                rem = rem % inStrides[i];
-            }
-
-            // Check slice match
-            boolean match = true;
-            for (int i = 0; i < dims; i++) {
-                int[] desc = slicingDescriptor[i];
-                if (desc.length == 1) {
-                    if (coords[i] != desc[0]) {
-                        match = false;
-                        break;
-                    }
-                } else if (desc.length == 2) {
-                    if (coords[i] < desc[0] || coords[i] >= desc[1]) {
-                        match = false;
-                        break;
-                    }
-                }
-                // [] means accept all
-            }
-
-            if (!match) return;
-
-            // Compute output coordinate
-            int[] outCoord = new int[outRank];
-            int outIdx = 0;
-            for (int i = 0; i < dims; i++) {
-                int[] desc = slicingDescriptor[i];
-                if (desc.length != 1) {
-                    outCoord[outIdx++] = coords[i] - sliceStarts[i];
+            if (isMatch(coords, slicingDescriptor)) {
+                if (sliceInfo.outRank == 0) {
+                    Array.set(outputArray, 0, value);
+                } else {
+                    int[] outCoord = getOutputCoords(coords, sliceInfo.sliceStarts, slicingDescriptor, sliceInfo.outRank);
+                    setValue(outputArray, outCoord, value);
                 }
             }
-
-            // Set the value in the nested output array
-            Object arrayRef = outputArray;
-            for (int i = 0; i < outCoord.length - 1; i++) {
-                arrayRef = Array.get(arrayRef, outCoord[i]);
-            }
-            Array.set(arrayRef, outCoord[outCoord.length - 1], value);
         });
 
-        // Return scalar if output shape is empty
-        if (outRank == 0) {
-            return Array.get(outputArray, 0);
-        }
-
-        return outputArray;
+        return (sliceInfo.outRank == 0) ? Array.get(outputArray, 0) : outputArray;
     }
 
     /**
@@ -498,6 +508,43 @@ public class FlattenedArrayUtils {
     }
 
     /**
+     * Validates that the slicing descriptor is valid for the given shape.
+     *
+     * @param shape      The shape of the array.
+     * @param descriptor The slicing descriptor.
+     * @throws IllegalArgumentException if the descriptor is invalid.
+     */
+    private static void validateSlicingDescriptor(int[] shape, int[][] descriptor) {
+        if (descriptor.length != shape.length) {
+            throw new IllegalArgumentException("Slicing descriptor must match shape dimensions");
+        }
+
+        for (int i = 0; i < shape.length; i++) {
+            int[] desc = descriptor[i];
+            switch (desc.length) {
+                case 1: // Fixed index
+                    if (desc[0] < 0 || desc[0] >= shape[i]) {
+                        throw new IllegalArgumentException("Fixed index " + desc[0] + " for dimension " + i +
+                                " is out of bounds for shape " + shape[i]);
+                    }
+                    break;
+                case 2: // Range [start, end)
+                    if (desc[0] < 0 || desc[1] > shape[i] || desc[0] >= desc[1]) {
+                        throw new IllegalArgumentException("Invalid range [" + desc[0] + "," + desc[1] +
+                                ") for dimension " + i + " with shape " + shape[i]);
+                    }
+                    break;
+                case 0: // Full slice, valid
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid slice spec (length " + desc.length +
+                            ") at dimension " + i + ". Must be length 0, 1, or 2.");
+            }
+        }
+    }
+
+
+    /**
      * Slices an N-dimensional dataset streamed as a flattened {@code Stream<T>} and returns
      * a new {@code Stream<T>} containing only the elements within the specified slice.
      * The elements in the output stream maintain their original flattened (row-major) order
@@ -510,9 +557,9 @@ public class FlattenedArrayUtils {
      * <p><b>Slicing Descriptor Format:</b></p>
      * The slicing descriptor is an {@code int[][]} where each inner array corresponds to one axis:
      * <ul>
-     *     <li>{@code []} → full slice (equivalent to ":" in Python)</li>
-     *     <li>{@code [index]} → fixed index (select a single element along that axis)</li>
-     *     <li>{@code [start, end]} → range slice (inclusive start, exclusive end)</li>
+     * <li>{@code []} → full slice (equivalent to ":" in Python)</li>
+     * <li>{@code [index]} → fixed index (select a single element along that axis)</li>
+     * <li>{@code [start, end]} → range slice (inclusive start, exclusive end)</li>
      * </ul>
      * Note: When an axis is fixed with {@code [index]}, elements from that axis are still
      * included in the output stream if they are part of the overall N-D slice. This method
@@ -532,62 +579,20 @@ public class FlattenedArrayUtils {
             int[] originalShape,
             int[][] slicingDescriptor
     ) {
-        int dims = originalShape.length;
-        if (slicingDescriptor.length != dims) {
-            throw new IllegalArgumentException("Slicing descriptor must match shape dimensions");
-        }
+        validateSlicingDescriptor(originalShape, slicingDescriptor);
 
-        // Validate slicingDescriptor ranges against originalShape (important for safety)
-        for (int i = 0; i < dims; i++) {
-            int[] desc = slicingDescriptor[i];
-            if (desc.length == 1) { // Fixed index
-                if (desc[0] < 0 || desc[0] >= originalShape[i]) {
-                    throw new IllegalArgumentException("Fixed index " + desc[0] + " for dimension " + i +
-                            " is out of bounds for shape " + originalShape[i]);
-                }
-            } else if (desc.length == 2) { // Range [start, end)
-                if (desc[0] < 0 || desc[1] > originalShape[i] || desc[0] >= desc[1]) {
-                    throw new IllegalArgumentException("Invalid range [" + desc[0] + "," + desc[1] +
-                            ") for dimension " + i + " with shape " + originalShape[i]);
-                }
-            } else if (desc.length != 0) { // Empty array means full slice
-                throw new IllegalArgumentException("Invalid slice spec (length " + desc.length +
-                        ") at dimension " + i + ". Must be length 0, 1, or 2.");
-            }
-        }
+        final int[] strides = computeStrides(originalShape);
+        final AtomicInteger flatIndexCounter = new AtomicInteger(0);
 
-        // Pre-compute strides for converting flat index to N-D coordinates
-        final int[] strides = computeStrides(originalShape); // Use the existing helper
-
-        // We need to associate each element from the stream with its original flat index.
-        // A simple way is to create an indexed stream first.
-        AtomicInteger flatIndexCounter = new AtomicInteger(0);
+        Predicate<IndexedValue<T>> sliceMatcher = indexedValue -> {
+            int[] coords = unflattenIndex(indexedValue.index, strides, originalShape);
+            return isMatch(coords, slicingDescriptor);
+        };
 
         return dataStream
                 .map(value -> new IndexedValue<>(flatIndexCounter.getAndIncrement(), value))
-                .filter(indexedValue -> {
-                    int flatIndex = indexedValue.index;
-                    int[] coords = unflattenIndex(flatIndex, strides, originalShape); // Use existing helper
-
-                    // Check if these coordinates match the slicing descriptor
-                    for (int i = 0; i < dims; i++) {
-                        int[] desc = slicingDescriptor[i];
-                        int coord_i = coords[i];
-
-                        if (desc.length == 1) { // Fixed index
-                            if (coord_i != desc[0]) {
-                                return false; // Does not match fixed index
-                            }
-                        } else if (desc.length == 2) { // Range [start, end)
-                            if (coord_i < desc[0] || coord_i >= desc[1]) {
-                                return false; // Outside specified range
-                            }
-                        }
-                        // If desc.length == 0, it's a full slice for this dimension, so always matches.
-                    }
-                    return true; // All dimension constraints met
-                })
-                .map(indexedValue -> indexedValue.value); // Extract the original value
+                .filter(sliceMatcher)
+                .map(indexedValue -> indexedValue.value);
     }
 
     /**

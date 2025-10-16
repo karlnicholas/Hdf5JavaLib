@@ -585,48 +585,73 @@ public class CompoundDatatype implements Datatype {
 
     // Helper to provide default values for parameters or fields, generic for any type
     private Object getDefaultValue(Class<?> type) {
-        // Primitives
-        if (type == int.class) return 0;
-        if (type == float.class) return 0.0f;
-        if (type == double.class) return 0.0;
-        if (type == long.class) return 0L;
-        if (type == short.class) return (short) 0;
-        if (type == byte.class) return (byte) 0;
-        if (type == char.class) return (char) 0;
-        if (type == boolean.class) return false;
+        // 1. Handle Primitives using switch expression (Complexity reduced from 8 ifs to 1 switch)
+        Object primitiveDefault = getPrimitiveDefault(type);
+        if (primitiveDefault != null) {
+            return primitiveDefault;
+        }
 
-        // Arrays
-        if (type.isArray()) {
+        // 2. Handle Arrays
+        if (type.isArray()) { // +1
             return Array.newInstance(type.getComponentType(), 0); // Zero-length array
         }
 
-        // Enums
-        if (type.isEnum()) {
+        // 3. Handle Enums
+        if (type.isEnum()) { // +1
             Object[] constants = type.getEnumConstants();
-            return constants.length > 0 ? constants[0] : null; // First enum constant or null
+            return constants.length > 0 ? constants[0] : null; // +1 (ternary/if)
         }
 
-        // Records
-        if (type.isRecord()) {
-            try {
-                RecordComponent[] components = type.getRecordComponents();
-                Class<?>[] paramTypes = Arrays.stream(components)
-                        .map(RecordComponent::getType)
-                        .toArray(Class<?>[]::new);
-                Constructor<?> constructor = type.getDeclaredConstructor(paramTypes);
-                Object[] args = new Object[paramTypes.length];
-                for (int i = 0; i < paramTypes.length; i++) {
-                    args[i] = getDefaultValue(paramTypes[i]); // Recursive call for nested types
-                }
-                return constructor.newInstance(args);
-            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException |
-                     InvocationTargetException e) {
-                return null; // Fallback to null if instantiation fails
-            }
+        // 4. Handle Records
+        if (type.isRecord()) { // +1
+            return createDefaultRecordInstance(type); // Delegate complex record logic
         }
 
-        // Other reference types (e.g., String, List, custom classes)
+        // 5. Other reference types (e.g., String, List, custom classes)
         return null;
+    }
+
+    /**
+     * Provides the default value for primitive types using a switch expression.
+     * Cognitive Complexity: 1
+     */
+    private Object getPrimitiveDefault(Class<?> type) {
+        // The switch expression itself counts as 1 in cognitive complexity.
+        // The default case returns null, which allows the calling method to continue.
+        return switch (type.getName()) {
+            case "int" -> 0;
+            case "float" -> 0.0f;
+            case "double" -> 0.0;
+            case "long" -> 0L;
+            case "short" -> (short) 0;
+            case "byte" -> (byte) 0;
+            case "char" -> (char) 0;
+            case "boolean" -> false;
+            default -> null;
+        };
+    }
+
+    /**
+     * Handles the complex reflection and instantiation logic for Records.
+     * Cognitive Complexity: 8
+     */
+    private Object createDefaultRecordInstance(Class<?> type) {
+        try { // +1 for try
+            RecordComponent[] components = type.getRecordComponents();
+            Class<?>[] paramTypes = Arrays.stream(components)
+                    .map(RecordComponent::getType)
+                    .toArray(Class<?>[]::new);
+            Constructor<?> constructor = type.getDeclaredConstructor(paramTypes);
+            Object[] args = new Object[paramTypes.length];
+
+            for (int i = 0; i < paramTypes.length; i++) { // +1 for loop
+                args[i] = getDefaultValue(paramTypes[i]); // +1 for recursion/function call (cost of `getDefaultValue` is external)
+            }
+            return constructor.newInstance(args);
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException |
+                 InvocationTargetException e) { // +1 for catch
+            return null;
+        }
     }
 
     @Override
