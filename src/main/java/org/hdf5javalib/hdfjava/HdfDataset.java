@@ -152,6 +152,7 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
      * A private record to hold the context and pre-calculated values for a chunked data read.
      * This avoids passing numerous parameters to helper methods.
      */
+    @SuppressWarnings("java:S2157")
     private record ChunkedReadContext(
             int dimensions,
             long[] datasetDims,
@@ -161,31 +162,7 @@ public class HdfDataset extends HdfDataObject implements AutoCloseable {
             long endElement,
             Optional<FilterPipelineMessage> filterPipeline,
             FillValueMessage fillValueMessage
-    ) {
-        @Override
-        public boolean equals(Object o) {
-            if (o == null || getClass() != o.getClass()) return false;
-            ChunkedReadContext that = (ChunkedReadContext) o;
-            return dimensions == that.dimensions && endElement == that.endElement && elementSize == that.elementSize && startElement == that.startElement && Objects.deepEquals(chunkDims, that.chunkDims) && Objects.deepEquals(datasetDims, that.datasetDims);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(dimensions, Arrays.hashCode(datasetDims), Arrays.hashCode(chunkDims), elementSize, startElement, endElement);
-        }
-
-        @Override
-        public String toString() {
-            return "ChunkedReadContext{" +
-                    "dimensions=" + dimensions +
-                    ", datasetDims=" + Arrays.toString(datasetDims) +
-                    ", chunkDims=" + Arrays.toString(chunkDims) +
-                    ", elementSize=" + elementSize +
-                    ", startElement=" + startElement +
-                    ", endElement=" + endElement +
-                    '}';
-        }
-    }
+    ) {}
 
     // In the method:
     public synchronized ByteBuffer getDatasetData(SeekableByteChannel channel, long offset, long size) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {

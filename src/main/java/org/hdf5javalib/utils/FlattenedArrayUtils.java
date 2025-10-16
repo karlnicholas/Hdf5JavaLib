@@ -266,28 +266,8 @@ public class FlattenedArrayUtils {
     /**
      * Private record to hold calculated information about a slice operation.
      */
-    private record SliceInfo(int[] outShape, int[] sliceStarts, int outRank) {
-        @Override
-        public boolean equals(Object o) {
-            if (o == null || getClass() != o.getClass()) return false;
-            SliceInfo sliceInfo = (SliceInfo) o;
-            return outRank == sliceInfo.outRank && Objects.deepEquals(outShape, sliceInfo.outShape) && Objects.deepEquals(sliceStarts, sliceInfo.sliceStarts);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(Arrays.hashCode(outShape), Arrays.hashCode(sliceStarts), outRank);
-        }
-
-        @Override
-        public String toString() {
-            return "SliceInfo{" +
-                    "outShape=" + Arrays.toString(outShape) +
-                    ", sliceStarts=" + Arrays.toString(sliceStarts) +
-                    ", outRank=" + outRank +
-                    '}';
-        }
-    }
+    @SuppressWarnings("java:S2157")
+    private record SliceInfo(int[] outShape, int[] sliceStarts, int outRank) { }
 
     /**
      * Calculates the output shape, starting indices, and rank of a sliced array.
