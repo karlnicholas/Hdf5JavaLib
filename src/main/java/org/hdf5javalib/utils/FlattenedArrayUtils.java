@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
@@ -265,7 +266,28 @@ public class FlattenedArrayUtils {
     /**
      * Private record to hold calculated information about a slice operation.
      */
-    private record SliceInfo(int[] outShape, int[] sliceStarts, int outRank) {}
+    private record SliceInfo(int[] outShape, int[] sliceStarts, int outRank) {
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            SliceInfo sliceInfo = (SliceInfo) o;
+            return outRank == sliceInfo.outRank && Objects.deepEquals(outShape, sliceInfo.outShape) && Objects.deepEquals(sliceStarts, sliceInfo.sliceStarts);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(Arrays.hashCode(outShape), Arrays.hashCode(sliceStarts), outRank);
+        }
+
+        @Override
+        public String toString() {
+            return "SliceInfo{" +
+                    "outShape=" + Arrays.toString(outShape) +
+                    ", sliceStarts=" + Arrays.toString(sliceStarts) +
+                    ", outRank=" + outRank +
+                    '}';
+        }
+    }
 
     /**
      * Calculates the output shape, starting indices, and rank of a sliced array.
