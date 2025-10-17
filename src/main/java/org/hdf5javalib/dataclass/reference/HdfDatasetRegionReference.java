@@ -6,7 +6,6 @@ import org.hdf5javalib.datatype.ReferenceDatatype;
 import org.hdf5javalib.hdfjava.HdfDataObject;
 import org.hdf5javalib.hdfjava.HdfTree;
 import org.hdf5javalib.hdfjava.HdfTreeNode;
-import org.hdf5javalib.utils.HdfDataHolder;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;

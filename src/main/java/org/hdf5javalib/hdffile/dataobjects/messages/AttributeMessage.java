@@ -6,7 +6,7 @@ import org.hdf5javalib.dataclass.HdfString;
 import org.hdf5javalib.datatype.Datatype;
 import org.hdf5javalib.datatype.StringDatatype;
 import org.hdf5javalib.hdfjava.HdfDataFile;
-import org.hdf5javalib.utils.HdfDataHolder;
+import org.hdf5javalib.dataclass.reference.HdfDataHolder;
 
 import java.io.IOException;
 import java.lang.reflect.Array;

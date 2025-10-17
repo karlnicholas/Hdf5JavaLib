@@ -8,7 +8,7 @@ import org.hdf5javalib.dataclass.reference.HdfObjectReference;
 import org.hdf5javalib.dataclass.reference.HdfReferenceInstance;
 import org.hdf5javalib.hdffile.infrastructure.HdfGlobalHeap;
 import org.hdf5javalib.hdfjava.HdfDataFile;
-import org.hdf5javalib.utils.HdfDataHolder;
+import org.hdf5javalib.dataclass.reference.HdfDataHolder;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;

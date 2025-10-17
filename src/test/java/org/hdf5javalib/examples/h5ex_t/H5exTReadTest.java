@@ -10,7 +10,7 @@ import org.hdf5javalib.datatype.*;
 import org.hdf5javalib.examples.ResourceLoader;
 import org.hdf5javalib.hdfjava.HdfDataset;
 import org.hdf5javalib.hdfjava.HdfFileReader;
-import org.hdf5javalib.utils.HdfDataHolder;
+import org.hdf5javalib.dataclass.reference.HdfDataHolder;
 import org.junit.jupiter.api.Test;
 
 import java.nio.channels.SeekableByteChannel;

@@ -2,6 +2,7 @@ package org.hdf5javalib.utils;
 
 import org.hdf5javalib.dataclass.HdfData;
 import org.hdf5javalib.dataclass.HdfFixedPoint;
+import org.hdf5javalib.dataclass.reference.HdfDataHolder;
 import org.hdf5javalib.datasource.TypedDataSource;
 import org.hdf5javalib.hdffile.dataobjects.HdfObjectHeaderPrefix;
 import org.hdf5javalib.hdffile.dataobjects.messages.AttributeMessage;

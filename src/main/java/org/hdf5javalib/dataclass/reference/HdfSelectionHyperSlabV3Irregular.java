@@ -2,7 +2,6 @@ package org.hdf5javalib.dataclass.reference;
 
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.hdfjava.HdfDataObject;
-import org.hdf5javalib.utils.HdfDataHolder;
 
 public class HdfSelectionHyperSlabV3Irregular extends HdfDataspaceSelectionInstance {
     private final int version;

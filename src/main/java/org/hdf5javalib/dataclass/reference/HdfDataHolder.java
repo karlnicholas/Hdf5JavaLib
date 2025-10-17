@@ -1,4 +1,4 @@
-package org.hdf5javalib.utils;
+package org.hdf5javalib.dataclass.reference;
 
 import org.hdf5javalib.dataclass.HdfData;
 
