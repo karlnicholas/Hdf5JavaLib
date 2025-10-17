@@ -1,5 +1,8 @@
 java -cp target\hdf5javalib-0.2.2-SNAPSHOT.jar;C:\Users\karln\.m2\repository\org\slf4j\log4j-over-slf4j\2.0.6\log4j-over-slf4j-2.0.6.jar;C:\Users\karln\.m2\repository\org\slf4j\slf4j-api\2.0.6\slf4j-api-2.0.6.jar;C:\Users\karln\.m2\repository\org\slf4j\slf4j-simple\2.0.6\slf4j-simple-2.0.6.jar org.hdf5javalib.examples.hdf5examples.HDF5Debug > ex.out
 
+java -cp target\hdf5javalib-0.2.2-SNAPSHOT.jar;C:\Users\karnicho\.m2\repository\org\slf4j\slf4j-api\2.0.17\slf4j-api-2.0.17.jar;C:\Users\karnicho\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;C:\Users\karnicho\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar org.hdf5javalib.examples.hdf5examples.HDF5Debug > ex.out
+
+java -cp target\hdf5javalib-0.2.2-SNAPSHOT.jar;C:\Users\karnicho\.m2\repository\org\slf4j\slf4j-api\2.0.17\slf4j-api-2.0.17.jar org.hdf5javalib.examples.hdf5examples.HDF5Debug > ex.out
 
 The HDF5Examples repository (or directory in the HDF5 source distribution) contains code samples demonstrating how to use the HDF5 library across various programming languages. Below, I'll explain the purpose of the specified directories based on their structure and contents. Note that the examples are practical code snippets (e.g., .c files) that compile and run to illustrate specific HDF5 API features.
 
