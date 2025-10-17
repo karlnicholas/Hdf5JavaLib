@@ -94,28 +94,46 @@ public class DataspaceMessage extends HdfMessage {
     /**
      * Parses a DataspaceMessage from the provided data and file context.
      *
-     * @param flags       message flags
-     * @param data        the byte array containing the message data
-     * @param hdfDataFile the HDF5 file context for datatype resources
+     * @param messageFlags message flags
+     * @param data         the byte array containing the message data
+     * @param hdfDataFile  the HDF5 file context for datatype resources
      * @return a new DataspaceMessage instance parsed from the data
      */
-    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public static HdfMessage parseHeaderMessage(int messageFlags, byte[] data, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         int version = Byte.toUnsignedInt(buffer.get());
-        int dimensionality = Byte.toUnsignedInt(buffer.get());
-        int flagByte = Byte.toUnsignedInt(buffer.get());
-        BitSet flagSet = BitSet.valueOf(new byte[]{(byte) flagByte});
+        int dimensionality;
+        BitSet flagSet;
+
         if (version == 1) {
+            dimensionality = Byte.toUnsignedInt(buffer.get());
+            byte flagByte = buffer.get();
+            flagSet = BitSet.valueOf(new byte[]{flagByte});
+            // Version 1 has 5 reserved bytes that must be skipped.
             buffer.position(buffer.position() + DATASPACE_MESSAGE_RESERVED_1);
-        } else {
+
+        } else if (version == 2) {
+            dimensionality = Byte.toUnsignedInt(buffer.get());
+            byte flagByte = buffer.get();
+            flagSet = BitSet.valueOf(new byte[]{flagByte});
+            // Version 2 has a 'Type' field here. We must read it to advance the buffer,
+            // even if we don't use the 'type' value directly.
             int type = Byte.toUnsignedInt(buffer.get());
+
+        } else {
+            throw new IOException("Unsupported DataspaceMessage version: " + version);
         }
+
+        // --- Common logic for reading dimensions ---
+        // This part now works correctly because the buffer is positioned properly for any supported version.
         HdfFixedPoint[] dimensions = new HdfFixedPoint[dimensionality];
         for (int i = 0; i < dimensionality; i++) {
             dimensions[i] = HdfReadUtils.readHdfFixedPointFromBuffer(hdfDataFile.getSuperblock().getFixedPointDatatypeForLength(), buffer);
         }
 
+        // The spec states bit 0 of the flags indicates if max dimensions are present.
+        // Assuming your DataspaceFlag enum handles this correctly.
         boolean hasMaxDimensions = flagSet.get(DataspaceFlag.MAX_DIMENSIONS_PRESENT.getBitIndex());
         HdfFixedPoint[] maxDimensions = null;
         if (hasMaxDimensions) {
@@ -125,9 +143,7 @@ public class DataspaceMessage extends HdfMessage {
             }
         }
 
-        return new DataspaceMessage(version, dimensionality, flagSet, dimensions, maxDimensions, hasMaxDimensions, flags, data.length);
-
-
+        return new DataspaceMessage(version, dimensionality, flagSet, dimensions, maxDimensions, hasMaxDimensions, messageFlags, data.length);
     }
 
     /**

@@ -89,48 +89,79 @@ public class AttributeMessage extends HdfMessage {
     /**
      * Parses an AttributeMessage from the provided data and file context.
      *
-     * @param flags       message flags
-     * @param data        the byte array containing the message data
-     * @param hdfDataFile the HDF5 file context for global heap and other resources
+     * @param messageFlags message flags
+     * @param data         the byte array containing the message data
+     * @param hdfDataFile  the HDF5 file context for global heap and other resources
      * @return a new AttributeMessage instance parsed from the data
      */
-    public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
+    public static HdfMessage parseHeaderMessage(int messageFlags, byte[] data, HdfDataFile hdfDataFile) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         // Read the version (1 byte)
         int version = Byte.toUnsignedInt(buffer.get());
 
-        // Skip the reserved byte (1 byte, should be zero)
-        buffer.get();
+        int nameSize;
+        int datatypeSize;
+        int dataspaceSize;
+        HdfString name;
 
-        // Read the sizes of name, datatype, and dataspace (2 bytes each)
-        int nameSize = Short.toUnsignedInt(buffer.getShort());
-        int datatypeSize = Short.toUnsignedInt(buffer.getShort());
-        int dataspaceSize = Short.toUnsignedInt(buffer.getShort());
+        byte[] dtBytes;
+        byte[] dsBytes;
 
-        // Read the name (variable size)
-        byte[] nameBytes = new byte[nameSize];
-        buffer.get(nameBytes);
-        BitSet bitSet = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
-        HdfString name = new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, nameSize, hdfDataFile));
-        // get padding bytes
-        int padding = (8 - (nameSize % 8)) % 8;
-        byte[] paddingBytes = new byte[padding];
-        buffer.get(paddingBytes);
+        if (version == 1) {
+            // Version 1 requires 8-byte padding between fields.
+            buffer.get(); // Skip reserved byte
+            nameSize = Short.toUnsignedInt(buffer.getShort());
+            datatypeSize = Short.toUnsignedInt(buffer.getShort());
+            dataspaceSize = Short.toUnsignedInt(buffer.getShort());
 
-        byte[] dtBytes = new byte[datatypeSize];
-        buffer.get(dtBytes);
-        // get padding bytes
-        padding = (8 - (datatypeSize % 8)) % 8;
-        paddingBytes = new byte[padding];
-        buffer.get(paddingBytes);
+            byte[] nameBytes = new byte[nameSize];
+            buffer.get(nameBytes);
+            BitSet bitSet = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
+            name = new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, nameSize, hdfDataFile));
 
-        byte[] dsBytes = new byte[dataspaceSize];
-        buffer.get(dsBytes);
-        // get padding bytes
-        padding = (8 - (dataspaceSize % 8)) % 8;
-        paddingBytes = new byte[padding];
-        buffer.get(paddingBytes);
+            // Apply 8-byte alignment padding after the name
+            buffer.position((buffer.position() + 7) & ~7);
 
+            dtBytes = new byte[datatypeSize];
+            buffer.get(dtBytes);
+            // Apply 8-byte alignment padding after the datatype
+            buffer.position((buffer.position() + 7) & ~7);
+
+            dsBytes = new byte[dataspaceSize];
+            buffer.get(dsBytes);
+            // Apply 8-byte alignment padding after the dataspace
+            buffer.position((buffer.position() + 7) & ~7);
+
+        } else if (version == 2 || version == 3) {
+            // Versions 2 & 3 have NO PADDING between fields.
+            buffer.get(); // Read flags (for v3) or reserved byte (for v2)
+            nameSize = Short.toUnsignedInt(buffer.getShort());
+            datatypeSize = Short.toUnsignedInt(buffer.getShort());
+            dataspaceSize = Short.toUnsignedInt(buffer.getShort());
+
+            StringDatatype.CharacterSet characterSet = StringDatatype.CharacterSet.ASCII;
+            if (version == 3) {
+                byte charSetByte = buffer.get();
+                characterSet = (charSetByte == 0) ? StringDatatype.CharacterSet.ASCII : StringDatatype.CharacterSet.UTF8;
+            }
+
+            byte[] nameBytes = new byte[nameSize];
+            buffer.get(nameBytes);
+            BitSet bitSet = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, characterSet);
+            name = new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, nameSize, hdfDataFile));
+
+            // Read fields sequentially with no padding
+            dtBytes = new byte[datatypeSize];
+            buffer.get(dtBytes);
+
+            dsBytes = new byte[dataspaceSize];
+            buffer.get(dsBytes);
+
+        } else {
+            throw new IOException("Unsupported AttributeMessage version: " + version);
+        }
+
+        // --- (This section is restored to your original code) ---
         HdfMessage hdfDataObjectHeaderDt = parseHeaderMessage(MessageType.DATATYPE_MESSAGE, (byte) 0, dtBytes, hdfDataFile);
         DatatypeMessage dt = (DatatypeMessage) hdfDataObjectHeaderDt;
         HdfMessage hdfDataObjectHeaderDs = parseHeaderMessage(MessageType.DATASPACE_MESSAGE, (byte) 0, dsBytes, hdfDataFile);
@@ -146,7 +177,7 @@ public class AttributeMessage extends HdfMessage {
             byte[] dataBytes = new byte[dtDataSize];
             buffer.get(dataBytes);
             HdfData scalarValue = dt.getHdfDatatype().getInstance(HdfData.class, dataBytes);
-            return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofScalar(scalarValue), flags, data.length);
+            return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofScalar(scalarValue), messageFlags, data.length);
         }
 
         // Case 2: Array data (dimensionality is 1 or more)
@@ -160,15 +191,12 @@ public class AttributeMessage extends HdfMessage {
         dimensions = Arrays.copyOfRange(dimensions, 0, count);
 
         // Step 1: Create the n-dimensional array dynamically.
-        // Array.newInstance() is the key. It can create an array of any type with any dimensions.
-        // Example: Array.newInstance(HdfData.class, 2, 3) creates a HdfData[2][3]
         Object multiDimArray = Array.newInstance(HdfData.class, dimensions);
 
         // Step 2: Populate the array recursively from the flat buffer.
         populateArray(multiDimArray, dimensions, 0, buffer, dt.getHdfDatatype(), dtDataSize);
 
-        return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofArray(multiDimArray, dimensions), flags, data.length);
-
+        return new AttributeMessage(version, name, dt, ds, HdfDataHolder.ofArray(multiDimArray, dimensions), messageFlags, data.length);
     }
 
     /**
