@@ -71,7 +71,7 @@ public class LinkMessage extends HdfMessage {
         this.linkInformation = linkInformation;
     }
 
-    public static HdfMessage parseHeaderMessage(int messageFlags, byte[] data, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public static LinkMessage parseHeaderMessage(int messageFlags, byte[] data, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         int version = Byte.toUnsignedInt(buffer.get());

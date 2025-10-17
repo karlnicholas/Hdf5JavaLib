@@ -281,20 +281,15 @@ public class HdfFileReader implements HdfDataFile {
         long fractalHeapOffset = linkInfoMessage.getFractalHeapAddress().getInstance(Long.class);
         FractalHeap fractalHeap = FractalHeap.read(fileChannel, fractalHeapOffset, this); // Assuming params
 
-        for (BTreeV2Record bTreeV2Record : bTreeV2Reader.getAllRecords()) {
+        List<BTreeV2Record> allRecs = bTreeV2Reader.getAllRecords();
+        for (BTreeV2Record bTreeV2Record : allRecs) {
             byte[] heapId = ((Type5Record) bTreeV2Record).heapId;
             ParsedHeapId parsedHeapId = new ParsedHeapId(heapId, fractalHeap);
             byte[] objectData = fractalHeap.getObject(parsedHeapId);
-            ByteBuffer retrievedData = ByteBuffer.wrap(objectData).order(ByteOrder.LITTLE_ENDIAN);
 
-            retrievedData.position(10); // Skip rowHeader
-            int sLength = Byte.toUnsignedInt(retrievedData.get());
-            byte[] stringBuffer = new byte[sLength];
-            retrievedData.get(stringBuffer);
-            String linkName = new String(stringBuffer);
-            long objectHeaderOffset = retrievedData.getLong();
+            LinkMessage linkMessage = LinkMessage.parseHeaderMessage(0, objectData, this);
 
-            processLink(group, linkName, objectHeaderOffset);
+            processLink(group, linkMessage.getLinkName(), linkMessage.getLinkInformation().getInstance(Long.class));
         }
     }
 
@@ -1132,7 +1127,7 @@ public class HdfFileReader implements HdfDataFile {
 
         // --- 6. Handle Continuation Messages ---
         Function<ByteBuffer, HdfMessage.OBJECT_HEADER_PREFIX> prefixReader = (flags & 0b00000100) > 0 ? HdfMessage.V2OBJECT_HEADER_READ_PREFIX_WITHORDER : HdfMessage.V2_OBJECT_HEADER_READ_PREFIX;
-        ;
+
         parseContinuationMessages(fileChannel, prefixReader, dataObjectHeaderMessages, hdfDataFile);
         // --- 7. Create the V2 Header Prefix Instance ---
         return new HdfObjectHeaderPrefixV2(flags, sizeOfChunk0, checksum,
