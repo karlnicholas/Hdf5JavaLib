@@ -22,23 +22,23 @@ import java.util.List;
  *
  * <h2>Structure</h2>
  * <ul>
- *   <li><b>Version (1 byte)</b>: The version of the fill value format.</li>
- *   <li><b>Space Allocation Time (1 byte, version-dependent)</b>: When space for
- *       fill values is allocated (Early, Late, or Incremental).</li>
- *   <li><b>Fill Value Write Time (1 byte, version-dependent)</b>: When the fill
- *       value is written (on creation or first write).</li>
- *   <li><b>Fill Value Defined Flag (1 byte)</b>: Indicates if a user-defined fill
- *       value is provided.</li>
- *   <li><b>Fill Value Size (4 bytes, optional)</b>: The size of the fill value in bytes.</li>
- *   <li><b>Fill Value Data (variable, optional)</b>: The actual fill value, matching
- *       the dataset's datatype.</li>
+ * <li><b>Version (1 byte)</b>: The version of the fill value format.</li>
+ * <li><b>Space Allocation Time (1 byte, version-dependent)</b>: When space for
+ * fill values is allocated (Early, Late, or Incremental).</li>
+ * <li><b>Fill Value Write Time (1 byte, version-dependent)</b>: When the fill
+ * value is written (on creation or first write).</li>
+ * <li><b>Fill Value Defined Flag (1 byte)</b>: Indicates if a user-defined fill
+ * value is provided.</li>
+ * <li><b>Fill Value Size (4 bytes, optional)</b>: The size of the fill value in bytes.</li>
+ * <li><b>Fill Value Data (variable, optional)</b>: The actual fill value, matching
+ * the dataset's datatype.</li>
  * </ul>
  *
  * <h2>Usage</h2>
  * <ul>
- *   <li>Defining default values for missing or newly allocated data.</li>
- *   <li>Ensuring consistency when reading uninitialized portions of a dataset.</li>
- *   <li>Improving dataset integrity in applications requiring structured default data.</li>
+ * <li>Defining default values for missing or newly allocated data.</li>
+ * <li>Ensuring consistency when reading uninitialized portions of a dataset.</li>
+ * <li>Improving dataset integrity in applications requiring structured default data.</li>
  * </ul>
  *
  * @see HdfMessage
@@ -75,7 +75,7 @@ public class FilterPipelineMessage extends HdfMessage {
             int flags,
             int sizeMessageData
     ) {
-        super(MessageType.FILL_VALUE_MESSAGE, sizeMessageData, flags);
+        super(MessageType.FILTER_PIPELINE_MESSAGE, sizeMessageData, flags);
         this.version = version;
         this.numberOfFilters = numberOfFilters;
         this.filterDescriptions = filterDescriptions;
@@ -104,22 +104,23 @@ public class FilterPipelineMessage extends HdfMessage {
     public static HdfMessage parseHeaderMessage(int flags, byte[] data, HdfDataFile hdfDataFile) {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
-        // Parse the first 4 bytes
         int version = Byte.toUnsignedInt(buffer.get());
         int numberOfFilters = Byte.toUnsignedInt(buffer.get());
-        buffer.position(buffer.position() + 2);
-        buffer.position(buffer.position() + 4);
 
-        // Handle Version 2+ behavior and fillValueDefined flag
         if (version == 1) {
-            List<FilterDescription> filterDescriptions = new ArrayList<>();
-            for(int i = 0; i < numberOfFilters; i++) {
-                filterDescriptions.add(FilterDescription.parseFilterDescription(buffer));
-            }
-            // Return a constructed instance of FillValueMessage
-            return new FilterPipelineMessage(version, numberOfFilters, filterDescriptions, flags, data.length);
+            // Skip 6 bytes of reserved space for V1
+            buffer.position(buffer.position() + 6);
+        } else if (version != 2) {
+            // Version 2 has no extra header bytes to skip.
+            throw new UnsupportedOperationException("Filter pipeline message version not supported: " + version);
         }
-        throw new UnsupportedOperationException("Version not supported: "  + version);
+
+        List<FilterDescription> filterDescriptions = new ArrayList<>();
+        for (int i = 0; i < numberOfFilters; i++) {
+            filterDescriptions.add(FilterDescription.parseFilterDescription(buffer, version));
+        }
+
+        return new FilterPipelineMessage(version, numberOfFilters, filterDescriptions, flags, data.length);
     }
 
     /**
@@ -173,21 +174,30 @@ public class FilterPipelineMessage extends HdfMessage {
                     '}';
         }
 
-        public static FilterDescription parseFilterDescription(ByteBuffer buffer) {
+        public static FilterDescription parseFilterDescription(ByteBuffer buffer, int version) {
             int filterIndentification = Short.toUnsignedInt(buffer.getShort());
-            int nameLength = Short.toUnsignedInt(buffer.getShort());
+            int nameLength = 0;
+            if ( version == 1 || (version == 2 && filterIndentification > 256)) {
+                nameLength = Short.toUnsignedInt(buffer.getShort());
+            }
             byte[] flagBytes = new byte[2];
             buffer.get(flagBytes);
             BitSet flags = BitSet.valueOf(flagBytes);
+
             int numberOfValuesForClientData = Short.toUnsignedInt(buffer.getShort());
-            byte[] nameBytes = new byte[nameLength];
-            buffer.get(nameBytes);
-            String name = new String(HdfReadUtils.trimZeroBytes(nameBytes));
+
+            String name = null;
+            if( nameLength > 0) {
+                byte[] nameBytes = new byte[nameLength];
+                buffer.get(nameBytes);
+                name = new String(HdfReadUtils.trimZeroBytes(nameBytes));
+            }
+
             int[] clientData = new int[numberOfValuesForClientData];
             for(int i = 0; i < numberOfValuesForClientData; i++) {
                 clientData[i] = buffer.getInt();
             }
-            if ( numberOfValuesForClientData%2 != 0) {
+            if ( version == 1 && numberOfValuesForClientData%2 != 0) {
                 int[] padding = new int[1];
                 padding[0] = buffer.getInt();
             }
