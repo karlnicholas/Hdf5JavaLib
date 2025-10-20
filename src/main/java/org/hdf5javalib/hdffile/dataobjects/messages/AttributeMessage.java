@@ -99,26 +99,28 @@ public class AttributeMessage extends HdfMessage {
         // Read the version (1 byte)
         int version = Byte.toUnsignedInt(buffer.get());
 
-        int nameSize;
-        int datatypeSize;
-        int dataspaceSize;
-        HdfString name;
+        // Version 1 requires 8-byte padding between fields.
+        buffer.get(); // Skip reserved byte
+        int nameSize = Short.toUnsignedInt(buffer.getShort());
+        int datatypeSize = Short.toUnsignedInt(buffer.getShort());
+        int dataspaceSize = Short.toUnsignedInt(buffer.getShort());
+
+        // Versions 2 & 3 have NO PADDING between fields.
+        StringDatatype.CharacterSet characterSet = StringDatatype.CharacterSet.ASCII;
+        if (version == 3) {
+            byte charSetByte = buffer.get();
+            characterSet = (charSetByte == 0) ? StringDatatype.CharacterSet.ASCII : StringDatatype.CharacterSet.UTF8;
+        }
+
+        byte[] nameBytes = new byte[nameSize];
+        buffer.get(nameBytes);
+        BitSet bitSet = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, characterSet);
+        HdfString name = new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, nameSize, hdfDataFile));
 
         byte[] dtBytes;
         byte[] dsBytes;
 
         if (version == 1) {
-            // Version 1 requires 8-byte padding between fields.
-            buffer.get(); // Skip reserved byte
-            nameSize = Short.toUnsignedInt(buffer.getShort());
-            datatypeSize = Short.toUnsignedInt(buffer.getShort());
-            dataspaceSize = Short.toUnsignedInt(buffer.getShort());
-
-            byte[] nameBytes = new byte[nameSize];
-            buffer.get(nameBytes);
-            BitSet bitSet = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, StringDatatype.CharacterSet.ASCII);
-            name = new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, nameSize, hdfDataFile));
-
             // Apply 8-byte alignment padding after the name
             buffer.position((buffer.position() + 7) & ~7);
 
@@ -133,23 +135,6 @@ public class AttributeMessage extends HdfMessage {
             buffer.position((buffer.position() + 7) & ~7);
 
         } else if (version == 2 || version == 3) {
-            // Versions 2 & 3 have NO PADDING between fields.
-            buffer.get(); // Read flags (for v3) or reserved byte (for v2)
-            nameSize = Short.toUnsignedInt(buffer.getShort());
-            datatypeSize = Short.toUnsignedInt(buffer.getShort());
-            dataspaceSize = Short.toUnsignedInt(buffer.getShort());
-
-            StringDatatype.CharacterSet characterSet = StringDatatype.CharacterSet.ASCII;
-            if (version == 3) {
-                byte charSetByte = buffer.get();
-                characterSet = (charSetByte == 0) ? StringDatatype.CharacterSet.ASCII : StringDatatype.CharacterSet.UTF8;
-            }
-
-            byte[] nameBytes = new byte[nameSize];
-            buffer.get(nameBytes);
-            BitSet bitSet = StringDatatype.createClassBitField(StringDatatype.PaddingType.NULL_TERMINATE, characterSet);
-            name = new HdfString(nameBytes, new StringDatatype(StringDatatype.createClassAndVersion(), bitSet, nameSize, hdfDataFile));
-
             // Read fields sequentially with no padding
             dtBytes = new byte[datatypeSize];
             buffer.get(dtBytes);
