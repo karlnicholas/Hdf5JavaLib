@@ -53,4 +53,31 @@ public class HdfObjectHeaderPrefixV2 extends HdfObjectHeaderPrefix {
     public void writeAsGroupToByteChannel(SeekableByteChannel seekableByteChannel) throws IOException {
         // not implemented
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("HdfObjectHeaderPrefixV2 {")
+                .append(" Version: 2")
+                .append(", Flags: ").append(flags)
+                .append(", Checksum: ").append(checksum)
+                .append(", Access Time: ").append(accessTime)
+                .append(", Modification Time: ").append(modificationTime)
+                .append(", Change Time: ").append(changeTime)
+                .append(", Birth Time: ").append(birthTime)
+                .append(", Max Compact Attributes: ").append(maxCompactAttributes)
+                .append(", Min Dense Attributes: ").append(minDenseAttributes)
+                .append(", Total Header Messages: ").append(headerMessages.size())
+                .append(", Object Header Size: ").append(objectHeaderSize);
+
+        // Parse header messages
+        for (HdfMessage message : headerMessages) {
+            String ms = message.toString();
+            // Indent the nested message string
+            builder.append("\r\n\t\t").append(ms.replaceAll("\r\n", "\r\n\t\t"));
+        }
+        builder.append("\r\n}"); // Added newline for final brace readability
+
+        return builder.toString();
+    }
 }
