@@ -395,7 +395,7 @@ public class FractalHeap {
         for (short r = 0; r < nrows; r++) {
             // --- Corrected Logic ---
             // Calculate the exponent: 0 for rows 0 and 1, then 1, 2, 3...
-            long exponent = Math.max(0L, r - 1);
+            long exponent = Math.max(0L, r - 1L);
             long rowBlockSize = startingBlockSize * (1L << exponent);
             // --- End Corrected Logic ---
 
@@ -481,7 +481,7 @@ public class FractalHeap {
         }
         double arg = ((double) blockOffset / (header.tableWidth * header.startingBlockSize.getInstance(Long.class))) + 1;
         int row = (int) Math.floor(Math.log(arg) / Math.log(2));
-        long exponent = Math.max(0L, row - 1);
+        long exponent = Math.max(0L, row - 1L);
         return startingBlockSize * (1L << exponent);
     }
 
