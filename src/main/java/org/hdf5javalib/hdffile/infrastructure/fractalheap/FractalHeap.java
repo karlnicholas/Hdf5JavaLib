@@ -313,23 +313,17 @@ public class FractalHeap {
         if (dataSize < 0) {
             throw new IOException("Invalid data size in direct block");
         }
-        // Determine the maximum number of bytes that can be read
-        long fSize = channel.size();
-        long fPosition = channel.position();
-        long bytesRemainingInFile = fSize - fPosition;
-
-        // The actual size to read is the smaller of the two values
-        long actualReadSize = Math.min(dataSize, bytesRemainingInFile);
-        headerBuffer = ByteBuffer.allocate((int) actualReadSize).order(ByteOrder.LITTLE_ENDIAN);
+        blockSize = dataSize - headerSize;
+        headerBuffer = ByteBuffer.allocate((int) blockSize).order(ByteOrder.LITTLE_ENDIAN);
         bytesRead = channel.read(headerBuffer);
-        if ( bytesRead != actualReadSize)
+        if ( bytesRead != blockSize)
             throw new IllegalStateException();
         headerBuffer.flip();
 
         byte[] data = headerBuffer.array();
         DirectBlock db = new DirectBlock();
         db.blockOffset = blockOffset.getInstance(Long.class);
-        db.blockSize = actualReadSize;
+        db.blockSize = dataSize;
         db.data = data;
         db.filterMask = filterMask;
         db.checksum = checksum;
@@ -399,7 +393,12 @@ public class FractalHeap {
         long startingBlockSize = header.startingBlockSize.getInstance(Long.class);
 
         for (short r = 0; r < nrows; r++) {
-            long rowBlockSize = startingBlockSize * (1L << r);
+            // --- Corrected Logic ---
+            // Calculate the exponent: 0 for rows 0 and 1, then 1, 2, 3...
+            long exponent = Math.max(0L, r - 1);
+            long rowBlockSize = startingBlockSize * (1L << exponent);
+            // --- End Corrected Logic ---
+
             for (int c = 0; c < header.tableWidth; c++) {
                 HdfFixedPoint childAddress = HdfReadUtils.readHdfFixedPointFromBuffer(sizeOfOffset, blockBuffer);
                 HdfFixedPoint childFilteredSize = sizeOfOffset.undefined();
@@ -482,7 +481,8 @@ public class FractalHeap {
         }
         double arg = ((double) blockOffset / (header.tableWidth * header.startingBlockSize.getInstance(Long.class))) + 1;
         int row = (int) Math.floor(Math.log(arg) / Math.log(2));
-        return startingBlockSize * (1L << row);
+        long exponent = Math.max(0L, row - 1);
+        return startingBlockSize * (1L << exponent);
     }
 
     public byte[] getObject(ParsedHeapId heapId) {
