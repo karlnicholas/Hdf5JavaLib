@@ -2,7 +2,6 @@ package org.hdf5javalib.hdffile.dataobjects;
 
 import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.hdffile.dataobjects.messages.HdfMessage;
-import org.hdf5javalib.hdfjava.HdfDataFile;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

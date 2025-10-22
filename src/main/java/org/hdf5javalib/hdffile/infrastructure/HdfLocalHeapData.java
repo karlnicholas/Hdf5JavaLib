@@ -4,8 +4,6 @@ import org.hdf5javalib.dataclass.HdfFixedPoint;
 import org.hdf5javalib.hdfjava.HdfDataFile;
 import org.hdf5javalib.utils.HdfWriteUtils;
 
-import java.io.IOException;
-import java.nio.channels.SeekableByteChannel;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

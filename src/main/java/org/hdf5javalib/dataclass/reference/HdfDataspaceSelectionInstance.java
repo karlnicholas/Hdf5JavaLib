@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 
-import static org.hdf5javalib.dataclass.reference.HdfDataspaceSelectionInstance.HdfSelectionType.*;
+import static org.hdf5javalib.dataclass.reference.HdfDataspaceSelectionInstance.HdfSelectionType.fromValue;
 
 public abstract class HdfDataspaceSelectionInstance {
     public abstract HdfDataHolder getData(HdfDataObject hdfDataObject, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException;

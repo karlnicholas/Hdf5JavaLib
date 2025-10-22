@@ -32,8 +32,7 @@ public class HdfObjectHeaderPrefixV2 extends HdfObjectHeaderPrefix {
             Integer minDenseAttributes,
             List<HdfMessage> headerMessages,
             HdfDataFile hdfDataFile,
-            long offset,
-            long prefixSize
+            long offset
     ) {
         super(headerMessages,
                 HdfWriteUtils.hdfFixedPointFromValue(offset, hdfDataFile.getSuperblock().getFixedPointDatatypeForLength()),

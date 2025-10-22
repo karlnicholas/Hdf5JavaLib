@@ -3,7 +3,6 @@ package org.hdf5javalib.utils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.IntBuffer;
 
 /**
  * An implementation of the HDF5 scale-offset filter for integer data.

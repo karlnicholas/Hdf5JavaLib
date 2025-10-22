@@ -1133,7 +1133,7 @@ public class HdfFileReader implements HdfDataFile {
         return new HdfObjectHeaderPrefixV2(flags, sizeOfChunk0, checksum,
                 accessTime, modificationTime, changeTime, birthTime,
                 maxCompactAttributes, minDenseAttributes,
-                dataObjectHeaderMessages, hdfDataFile, objectHeaderAddress, prefixSize);
+                dataObjectHeaderMessages, hdfDataFile, objectHeaderAddress);
     }
 
     private static void parseContinuationMessages(SeekableByteChannel fileChannel, Function<ByteBuffer, HdfMessage.OBJECT_HEADER_PREFIX> prefixReader, List<HdfMessage> currentMessages, HdfDataFile hdfDataFile) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
