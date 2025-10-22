@@ -74,7 +74,7 @@ public class HdfObjectHeaderPrefixV2 extends HdfObjectHeaderPrefix {
         for (HdfMessage message : headerMessages) {
             String ms = message.toString();
             // Indent the nested message string
-            builder.append("\r\n\t\t").append(ms.replaceAll("\r\n", "\r\n\t\t"));
+            builder.append("\r\n\t\t").append(ms.replace("\r\n", "\r\n\t\t"));
         }
         builder.append("\r\n}"); // Added newline for final brace readability
 
