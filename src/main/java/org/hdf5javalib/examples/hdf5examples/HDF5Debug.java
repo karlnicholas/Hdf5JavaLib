@@ -49,7 +49,11 @@ public class HDF5Debug {
 //            Path dirPath = Paths.get(Objects.requireNonNull(HDF5Debug.class.getClassLoader().getResource("HDF5Examples/h5ex_g_compact2.h5")).toURI());
 //            Path dirPath = Paths.get("c:/users/karln/Downloads/ATL03_20250302235544_11742607_007_01.h5");
 //            Path dirPath = Paths.get("c:/users/karln/Downloads/ATL03_20250302235544_11742607_006_01.h5");
-            Path dirPath = Paths.get("c:/users/karln/Downloads/SMAP_L1B_TB_57204_D_20251016T224815_R19240_001.h5");
+//            Path dirPath = Paths.get("c:/users/karln/Downloads/SMAP_L1B_TB_57204_D_20251016T224815_R19240_001.h5");
+//            Path dirPath = Paths.get("c:/users/karln/Downloads/ATL08_20250610011615_13002704_007_01.h5");
+            Path dirPath = Paths.get("c:/users/karln/Downloads/SMAP_L2_SM_P_55348_A_20250612T001323_R19240_001.h5");
+
+
             processFile(dirPath);
         } catch (Exception e) {
             throw new IllegalStateException(e);

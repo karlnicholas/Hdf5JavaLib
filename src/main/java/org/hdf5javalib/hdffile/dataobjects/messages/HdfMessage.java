@@ -244,6 +244,7 @@ public abstract class HdfMessage {
             case OBJECT_MODIFICATION_TIME_MESSAGE -> ObjectModificationTimeMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case BTREE_K_VALUES_MESSAGE -> BTreeKValuesMessage.parseHeaderMessage(flags, data, hdfDataFile);
             case ATTRIBUTE_INFO_MESSAGE -> AttributeInfoMessage.parseHeaderMessage(flags, data, hdfDataFile);
+            case OBJECT_REFERENCE_COUNT_MESSAGE ->  ObjectReferenceCountMessage.parseHeaderMessage(flags, data, hdfDataFile);
             default -> throw new IllegalArgumentException("Unknown message type: " + type);
         };
     }
