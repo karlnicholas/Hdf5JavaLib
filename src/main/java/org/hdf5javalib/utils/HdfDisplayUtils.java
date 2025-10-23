@@ -223,20 +223,20 @@ public class HdfDisplayUtils {
 
         switch (ds.getDimensionality()) {
             case 0:
-                streamType = "streamScalar";
+                streamType = "Scalar";
                 aggregationResult = aggregateStream(dataSource.parallelStreamScalar(), mode);
                 break;
             case 1:
-                streamType = "streamVector";
+                streamType = "Vector";
                 aggregationResult = aggregateStream(dataSource.parallelStreamVector(), mode);
                 break;
             case 2:
-                streamType = "streamMatrix";
+                streamType = "Matrix";
                 Stream<T> matrixStream = dataSource.parallelStreamMatrix().flatMap(Arrays::stream);
                 aggregationResult = aggregateStream(matrixStream, mode);
                 break;
             default:
-                streamType = "streamFlattened";
+                streamType = "Flattened";
                 aggregationResult = aggregateStream(dataSource.parallelStreamFlattened(), mode);
                 break;
         }
