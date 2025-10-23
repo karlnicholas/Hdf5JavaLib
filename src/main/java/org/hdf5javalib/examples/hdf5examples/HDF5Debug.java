@@ -16,6 +16,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.OptionalDouble;
 
@@ -48,10 +50,10 @@ public class HDF5Debug {
             // ATL03_20250302235544_11742607_006_01
 //            Path dirPath = Paths.get(Objects.requireNonNull(HDF5Debug.class.getClassLoader().getResource("HDF5Examples/h5ex_g_compact2.h5")).toURI());
 //            Path dirPath = Paths.get("c:/users/karln/Downloads/ATL03_20250302235544_11742607_007_01.h5");
-//            Path dirPath = Paths.get("c:/users/karln/Downloads/ATL03_20250302235544_11742607_006_01.h5");
+            Path dirPath = Paths.get("c:/users/karnicho/Downloads/ATL03_20250302235544_11742607_006_01.h5");
 //            Path dirPath = Paths.get("c:/users/karln/Downloads/SMAP_L1B_TB_57204_D_20251016T224815_R19240_001.h5");
 //            Path dirPath = Paths.get("c:/users/karln/Downloads/ATL08_20250610011615_13002704_007_01.h5");
-            Path dirPath = Paths.get("c:/users/karln/Downloads/SMAP_L2_SM_P_55348_A_20250612T001323_R19240_001.h5");
+//            Path dirPath = Paths.get("c:/users/karln/Downloads/SMAP_L2_SM_P_55348_A_20250612T001323_R19240_001.h5");
 
 
             processFile(dirPath);
@@ -62,6 +64,7 @@ public class HDF5Debug {
     // Generalized method to process the file and apply a custom action per dataset
     private static void processFile(Path filePath) {
         try (SeekableByteChannel channel = Files.newByteChannel(filePath, StandardOpenOption.READ)) {
+            Instant start = Instant.now();
             HdfFileReader reader = new HdfFileReader(channel).readFile();
 
             for (HdfDataset dataSet : reader.getDatasets()) {
@@ -78,6 +81,7 @@ public class HDF5Debug {
 //                HdfDisplayUtils.displayData(channel, dataSet, reader, HdfDisplayUtils.DisplayMode.SUMMARY_STATS);
 ////                displayScalarData(channel, dataSet, HdfFloatPoint.class, reader);
 
+            System.out.println("Total duration: " + Duration.between(start, Instant.now()));
         } catch (Exception e) {
             log.error("Exception in processFile: {}", filePath, e);
         }
