@@ -474,13 +474,76 @@ public class FractalHeap {
         return ib;
     }
 
+//    private static long getBlockSize(FractalHeapHeader header, long blockOffset) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+//        long startingBlockSize = header.startingBlockSize.getInstance(Long.class);
+//        if (blockOffset == 0 && header.currentNumRowsRootIndirectBlock == 0) {
+//            return startingBlockSize;
+//        }
+//        double arg = ((double) blockOffset / (header.tableWidth * header.startingBlockSize.getInstance(Long.class))) + 1;
+//        int row = (int) Math.floor(Math.log(arg) / Math.log(2));
+//        long exponent = Math.max(0L, row - 1L);
+//        return startingBlockSize * (1L << exponent);
+//    }
+    /**
+     * Calculates the block size for a given offset based on the HDF5 Fractal Heap spec.
+     *
+     * The block size is startingBlockSize for the first two rows (row 0 and row 1)
+     * of the indirect block. It then doubles for each subsequent row.
+     *
+     * @param header      The FractalHeapHeader, containing startingBlockSize and tableWidth
+     * @param blockOffset The absolute offset of the block in the heap
+     * @return The calculated block size for that offset
+     */
     private static long getBlockSize(FractalHeapHeader header, long blockOffset) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+
         long startingBlockSize = header.startingBlockSize.getInstance(Long.class);
+
+        // Original special case for an empty heap's root block
         if (blockOffset == 0 && header.currentNumRowsRootIndirectBlock == 0) {
             return startingBlockSize;
         }
-        double arg = ((double) blockOffset / (header.tableWidth * header.startingBlockSize.getInstance(Long.class))) + 1;
-        int row = (int) Math.floor(Math.log(arg) / Math.log(2));
+
+        // N = baseRowSize
+        long baseRowSize = header.tableWidth * startingBlockSize; // e.g., 4 * 512 = 2048
+
+        int row;
+
+        // Check if we are in Row 0 (offsets 0 to 2047)
+        if (blockOffset < baseRowSize) {
+            row = 0;
+        }
+        // Check if we are in Row 1 (offsets 2048 to 4095)
+        else if (blockOffset < 2 * baseRowSize) {
+            row = 1;
+        }
+        // We are in Row 2 or higher (offset >= 4096)
+        else {
+            // We need to find the row 'i' (where i >= 2)
+            // The starting offset for row 'i' is (2^(i-1)) * baseRowSize
+            // We are looking for 'i' where:
+            // 2^(i-1) * baseRowSize <= blockOffset < 2^i * baseRowSize
+            //
+            // Divide by baseRowSize:
+            // 2^(i-1) <= (blockOffset / baseRowSize) < 2^i
+            //
+            // Let arg = (double) blockOffset / baseRowSize
+            // Take log2 of the left side:
+            // i - 1 <= log2(arg)  =>  i <= log2(arg) + 1
+            //
+            // Take log2 of the right side:
+            // log2(arg) < i
+            //
+            // This means 'i' is exactly floor(log2(arg)) + 1
+
+            double arg = (double) blockOffset / baseRowSize;
+            row = (int) Math.floor(Math.log(arg) / Math.log(2)) + 1;
+        }
+
+        // The first two rows (0 and 1) have exponent 0.
+        // Row 2 has exponent 1 (size = 512 * 2^1 = 1024)
+        // Row 3 has exponent 2 (size = 512 * 2^2 = 2048)
+        // Pattern: exponent = max(0, row - 1)
+
         long exponent = Math.max(0L, row - 1L);
         return startingBlockSize * (1L << exponent);
     }
