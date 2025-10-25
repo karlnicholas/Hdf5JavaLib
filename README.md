@@ -6,7 +6,7 @@ Hdf5JavaLib is a pure Java library for reading HDF5 files, released as version 0
 
 ### Add the Dependency
 
-Hdf5JavaLib is available on [Maven Central](https://search.maven.org/artifact/org.hdf5javalib/hdf5javalib/0.1.1/jar). Add the following dependency to your `pom.xml`:
+Hdf5JavaLib is available on [Maven Central](https://search.maven.org/artifact/org.hdf5javalib/hdf5javalib/0.3.0/jar). Add the following dependency to your `pom.xml`:
 
 ```xml
 <dependency>
